@@ -1,0 +1,25 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Dark Theme Palette -->
+    <!-- Colors -->
+    <Color x:Key="PrimaryColor">#00A896</Color>
+    <Color x:Key="SecondaryColor">#4A6A8E</Color>
+    <Color x:Key="HeaderColor">#121418</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="AppBackground" Color="#0F1114"/>
+    <SolidColorBrush x:Key="SurfaceBrush"   Color="#1C1F26"/>
+    <SolidColorBrush x:Key="PrimaryBrush"   Color="{StaticResource PrimaryColor}"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource SecondaryColor}"/>
+    <SolidColorBrush x:Key="HeaderBrush"    Color="{StaticResource HeaderColor}"/>
+    <SolidColorBrush x:Key="TextPrimary"    Color="#F0F2F5"/>
+    <SolidColorBrush x:Key="TextMuted"      Color="#8E9AA7"/>
+    <SolidColorBrush x:Key="BorderBrush"    Color="#2E343D"/>
+    <SolidColorBrush x:Key="DangerBrush"    Color="#E74C3C"/>
+    <SolidColorBrush x:Key="SuccessBrush"   Color="#2ECC71"/>
+
+    <!-- Glassmorphism / Transparency effects for Dark Mode -->
+    <SolidColorBrush x:Key="GlassSurface" Color="#CC1C1F26"/>
+
+</ResourceDictionary>
