@@ -160,13 +160,13 @@ Status legend: `Open` | `In Progress` | `Mitigated` | `Closed`
 - **Risk:** Connection strings and secrets can leak or be reused insecurely.
 - **Impact:** Security and compliance exposure.
 - **Priority:** `P0`
-- **Status:** `Open`
+- **Status:** `In Progress`
 - **Owner:** DevOps + App owner
 - **Actions:**
-  1. Replace concrete connection values with placeholders in tracked config.
+  1. [DONE] Replace concrete connection values with placeholders in tracked config (Default config uses LocalDB).
   2. Add environment-specific config (`appsettings.Development.json`, secure prod source).
   3. Use environment variables or secure secret storage for production.
-  4. Add `.gitignore`/deployment docs for local secret files.
+  4. [DONE] Add `.gitignore`/deployment docs for local secret files (`appsettings.Development.json` and `secrets.json` excluded).
 - **Done criteria:** No production secrets in repo; deployment docs include secure configuration steps.
 
 ### Risk 3: Service lifetime mismatch (singletons vs scoped dependencies)
@@ -197,17 +197,17 @@ Status legend: `Open` | `In Progress` | `Mitigated` | `Closed`
   4. [DONE] Add tests for `UpdateOrderAsync` stock reconciliation (rollback/re-apply).
 - **Done criteria:** Critical order flow tests pass in CI; failures block release.
 
-### Risk 5: Seeded default admin credential policy
+### Risk 5: Seeded default admin credential policy (MITIGATED)
 
 - **Risk:** Default credential assumptions can persist into deployed environments.
 - **Impact:** Unauthorized access risk.
 - **Priority:** `P0`
-- **Status:** `Open`
+- **Status:** `Mitigated`
 - **Owner:** Security + App owner
 - **Actions:**
-  1. Ensure seeded credentials are development-only.
-  2. Enforce password reset on first successful login for seeded/admin bootstrap accounts.
-  3. Add minimum password policy and lockout/user feedback documentation.
+  1. [DONE] Ensure seeded credentials are development-only.
+  2. [DONE] Enforce password reset on first successful login for seeded/admin bootstrap accounts (`MustChangePassword` flag added).
+  3. [DONE] Add minimum password policy and lockout/user feedback documentation.
   4. Add deployment checklist step: rotate/disable bootstrap user post go-live.
 - **Done criteria:** No default credential remains active in staging/production.
 
