@@ -361,3 +361,37 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ==========================================
+# HotelPOS Project-Specific Rules
+# ==========================================
+
+# Compiled application output (publish/release builds)
+Build/
+build/
+
+# SQLite database files (runtime data, not source)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Local / development app settings (may contain secrets)
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Publish profiles (machine-specific)
+**/Properties/PublishProfiles/
+
+# Backup files
+*.bak
+Backups/
+backups/
+
+# Temporary files
+[Tt]emp/
+[Tt]mp/
+.DS_Store
+Thumbs.db
