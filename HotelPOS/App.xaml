@@ -1,0 +1,19 @@
+<Application x:Class="HotelPOS.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:HotelPOS">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/LightTheme.xaml"/>
+                <ResourceDictionary Source="Themes/GlobalStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <local:IdToEnabledConverter x:Key="IdToEnabledConverter"/>
+            <local:BoolToColorConverter x:Key="BoolToColorConverter"/>
+            <local:StockToColorConverter x:Key="StockToColorConverter"/>
+            <local:StockToColorMultiConverter x:Key="StockToColorMultiConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

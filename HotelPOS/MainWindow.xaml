@@ -1,0 +1,301 @@
+<Window x:Class="HotelPOS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HotelPOS"
+        mc:Ignorable="d"
+        Title="Hotel POS Billing"
+        Height="720"
+        Width="1280"
+        MinHeight="680"
+        MinWidth="1180"
+        Background="#F3F5F9"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        Closing="Window_Closing">
+    <Window.Resources>
+        <SolidColorBrush x:Key="HeaderBrush" Color="#173F5F"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#00A896"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#D8DFEA"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#5F6B7A"/>
+        <Style TargetType="Border">
+            <Setter Property="CornerRadius" Value="18"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource HeaderBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Margin" Value="0,0,12,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="15"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="15"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{StaticResource HeaderBrush}" Padding="24">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="Hotel POS Billing"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="White"/>
+                    <TextBlock Text="Fast hotel billing with GST and keyboard shortcuts for quick counter operations."
+                               Margin="0,8,0,0"
+                               FontSize="15"
+                               Foreground="#DDE7F0"/>
+                </StackPanel>
+
+                <Border Grid.Column="1" Background="#204E74" Padding="18,12">
+                    <StackPanel>
+                        <TextBlock Text="Quick Keys"
+                                   Foreground="White"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Ctrl+1..9 add menu item  |  Alt+1..5 switch table  |  F2 search  |  F4 checkout  |  F6 clear"
+                                   Margin="0,6,0,0"
+                                   Foreground="#DDE7F0"/>
+                        <TextBlock Text="Enter add selected item  |  +/- quantity  |  Delete remove cart line"
+                                   Margin="0,2,0,0"
+                                   Foreground="#DDE7F0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.15*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="1.25*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Background="{StaticResource SurfaceBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Menu"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="#1A2533"/>
+                        <TextBlock Text="Search items and use shortcuts to add them quickly to the active table."
+                                   Margin="0,6,0,0"
+                                   Foreground="{StaticResource MutedBrush}"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" Margin="0,18,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="SearchBox"
+                                 Grid.Column="0"
+                                 TextChanged="SearchBox_TextChanged"/>
+                        <Button Grid.Column="1"
+                                Margin="12,0,0,0"
+                                Content="Add Selected"
+                                Click="AddItem_Click"/>
+                    </Grid>
+
+                    <ListBox x:Name="ItemList"
+                             Grid.Row="3"
+                             BorderThickness="0"
+                             MouseDoubleClick="ItemList_MouseDoubleClick">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,0,10"
+                                        Padding="14"
+                                        Background="#F8FAFD"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontSize="17"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#16202D"/>
+                                            <TextBlock Text="Double-click or press Enter to add"
+                                                       Margin="0,4,0,0"
+                                                       Foreground="{StaticResource MutedBrush}"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1"
+                                                Padding="12,8"
+                                                Background="#E9F8F5">
+                                            <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}"
+                                                       FontSize="16"
+                                                       FontWeight="Bold"
+                                                       Foreground="{StaticResource AccentBrush}"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Grid.Row="4"
+                               Margin="0,14,0,0"
+                               Foreground="{StaticResource MutedBrush}"
+                               Text="Shortcut tip: Ctrl+1 adds the first visible menu item, Ctrl+2 the second, and so on."/>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2"
+                    Background="{StaticResource SurfaceBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="Current Bill"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="#1A2533"/>
+                            <TextBlock Text="Manage active table billing, GST, and final checkout."
+                                       Margin="0,6,0,0"
+                                       Foreground="{StaticResource MutedBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Top">
+                            <TextBlock Text="Table"
+                                       Margin="0,0,10,0"
+                                       VerticalAlignment="Center"
+                                       FontWeight="SemiBold"/>
+                            <ComboBox x:Name="TableSelector"
+                                      Width="150"
+                                      SelectionChanged="TableSelector_SelectionChanged">
+                                <ComboBoxItem Content="Table 1" Tag="1"/>
+                                <ComboBoxItem Content="Table 2" Tag="2"/>
+                                <ComboBoxItem Content="Table 3" Tag="3"/>
+                                <ComboBoxItem Content="Table 4" Tag="4"/>
+                                <ComboBoxItem Content="Table 5" Tag="5"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock x:Name="StatusText"
+                               Grid.Row="1"
+                               Margin="0,14,0,0"
+                               Padding="12,10"
+                               Background="#EEF6FF"
+                               Foreground="#214B72"
+                               Text="Ready for billing."/>
+
+                    <DataGrid x:Name="CartGrid"
+                              Grid.Row="3"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="True"
+                              HeadersVisibility="Column"
+                              RowHeaderWidth="0"
+                              SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Item" Binding="{Binding ItemName}" Width="*"/>
+                            <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="90"/>
+                            <DataGridTextColumn Header="Price" Binding="{Binding Price, StringFormat=Rs. {0:N2}}" Width="120"/>
+                            <DataGridTextColumn Header="Tax %" Binding="{Binding TaxPercentage, StringFormat={}{0:N2}%}" Width="100"/>
+                            <DataGridTextColumn Header="Tax Amt" Binding="{Binding TaxAmount, StringFormat=Rs. {0:N2}}" Width="120"/>
+                            <DataGridTextColumn Header="Line Total" Binding="{Binding Total, StringFormat=Rs. {0:N2}}" Width="140"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="4"
+                                Orientation="Horizontal"
+                                Margin="0,16,0,0">
+                        <Button Content="+ Qty" Tag="1" Click="AdjustQuantity_Click"/>
+                        <Button Content="- Qty" Tag="-1" Click="AdjustQuantity_Click" Background="#3D5A80"/>
+                        <Button Content="Remove" Click="RemoveItem_Click" Background="#B23A48"/>
+                        <Button Content="Clear Table" Click="ClearCart_Click" Background="#6C757D"/>
+                    </StackPanel>
+
+                    <Border Grid.Row="5"
+                            Margin="0,12,0,0"
+                            Background="#F8FAFD"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            BorderThickness="1"
+                            Padding="18">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Subtotal" FontSize="16" Foreground="{StaticResource MutedBrush}"/>
+                            <TextBlock x:Name="TotalText" Grid.Column="1" FontSize="16" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="1" Text="GST (5%)" Margin="0,10,0,0" FontSize="16" Foreground="{StaticResource MutedBrush}"/>
+                            <TextBlock x:Name="GstText" Grid.Row="1" Grid.Column="1" Margin="0,10,0,0" FontSize="16" FontWeight="SemiBold"/>
+
+                            <TextBlock Grid.Row="2" Text="Grand Total" Margin="0,14,0,0" FontSize="20" FontWeight="Bold"/>
+                            <TextBlock x:Name="FinalText" Grid.Row="2" Grid.Column="1" Margin="0,14,0,0" FontSize="22" FontWeight="Bold" Foreground="{StaticResource AccentBrush}"/>
+                        </Grid>
+                    </Border>
+
+                    <Button Grid.Row="6"
+                            Margin="0,18,0,0"
+                            Content="Checkout Bill"
+                            Click="Checkout_Click"
+                            Padding="18,14"
+                            FontSize="18"
+                            Background="{StaticResource AccentBrush}"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
