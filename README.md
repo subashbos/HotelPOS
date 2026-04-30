@@ -1,79 +1,94 @@
-# HotelPOS
+# 🏨 HotelPOS
 
-HotelPOS is a Windows desktop point-of-sale application for hotel/restaurant billing, built with WPF and .NET.
+![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)
+![WPF](https://img.shields.io/badge/WPF-Desktop-0078D7?style=flat-square&logo=windows)
+![EF Core](https://img.shields.io/badge/EF_Core-SQL_Server-32B900?style=flat-square&logo=microsoft-sql-server)
 
-## Tech Stack
+HotelPOS is a robust, Windows desktop point-of-sale application designed specifically for hotel and restaurant billing. Built with WPF and modern .NET 10.0, it features a clean architecture, dependency injection, and a robust SQL Server backend.
 
-- .NET `10.0` (`net10.0-windows`)
-- WPF desktop UI
-- Entity Framework Core + SQL Server
-- xUnit + Moq for tests
-- Serilog file logging
+## ✨ Features
 
-## Solution Structure
+- **Billing & Order Management**: Comprehensive point-of-sale interface.
+- **Inventory Tracking**: Item management with category support and barcode scanning.
+- **Taxation & Discounts**: GST handling (0%, 5%, 12%, 18%, 28%) and custom discounts.
+- **Reporting & Ledger**: Daily cash sessions, date-wise reports, journal, and ledger views.
+- **Receipt Printing**: Integrated thermal printer receipt generation.
+- **Security & Auditing**: Role-based access control, soft-delete, and full audit logging.
+- **Themes**: Support for Light and Dark modes.
 
-The solution file is located at `HotelPOS/HotelPOS.slnx`.
+---
 
-- `HotelPOS/` - WPF UI application (startup project)
-- `HotelPOS.Domain/` - domain models and core contracts
-- `HotelPOS.Application/` - application services and interfaces
-- `HotelPOS.Persistence/` - EF Core persistence layer
-- `HotelPOS.Infrastructure/` - cross-cutting/infrastructure services
-- `HotelPOS.Tests/` - automated unit tests
+## 🏗️ Solution Architecture
 
-## Prerequisites
+The project follows a Clean Architecture approach to separate concerns and maintain testability.
 
-- Windows 10/11
-- .NET SDK 10.0 or later
-- SQL Server (local or remote)
+- `HotelPOS.slnx` - Main solution file.
+- `HotelPOS/` *(UI Layer)* - WPF desktop application, ViewModels, and Views.
+- `HotelPOS.Application/` *(Application Layer)* - Business logic, services, and interfaces.
+- `HotelPOS.Domain/` *(Domain Layer)* - Core entities, models, and domain events.
+- `HotelPOS.Persistence/` *(Persistence Layer)* - Entity Framework Core DbContext and repository implementations.
+- `HotelPOS.Infrastructure/` *(Infrastructure Layer)* - Cross-cutting concerns (e.g., Logging, Backups, Notifications).
+- `HotelPOS.Tests/` *(Test Layer)* - Automated unit and integration tests using xUnit and Moq.
 
-## Configuration
+---
 
-Main app configuration is in `HotelPOS/appsettings.json`.
+## 🚀 Getting Started
 
-Update the connection string before running:
+### Prerequisites
+
+- Windows 10 or Windows 11
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
+- SQL Server (LocalDB or full SQL Server)
+- Visual Studio 2022 (recommended)
+
+### Configuration
+
+The main application configuration is located in `HotelPOS/appsettings.json`.
+Before running the application, ensure your connection string is pointing to your local SQL Server instance:
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER;Database=HotelWPF;Trusted_Connection=True;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=HotelPOS;Trusted_Connection=True;TrustServerCertificate=True;"
   }
 }
 ```
 
-## Build and Run
+### Build & Run via CLI
 
 From the repository root:
 
 ```powershell
-dotnet restore .\HotelPOS\HotelPOS.slnx
-dotnet build .\HotelPOS\HotelPOS.slnx
-dotnet run --project .\HotelPOS\HotelPOS.csproj
+# Restore dependencies
+dotnet restore HotelPOS.slnx
+
+# Build the solution
+dotnet build HotelPOS.slnx
+
+# Run the application
+dotnet run --project HotelPOS\HotelPOS.csproj
 ```
 
-## Run Tests
+### Run Tests
+
+Execute the automated test suite to ensure system stability:
 
 ```powershell
-dotnet test .\HotelPOS.Tests\HotelPOS.Tests.csproj
+dotnet test HotelPOS.Tests\HotelPOS.Tests.csproj
 ```
 
-## Logging
+---
 
-Application logs are written to rolling files under:
+## 📜 Logging & Diagnostics
 
-- `HotelPOS/bin/<Configuration>/net10.0-windows/logs/`
+Application logs are handled by Serilog and are written to rolling files located in the output directory:
 
-Example log file pattern:
+- Path: `HotelPOS/bin/<Configuration>/net10.0-windows/logs/`
+- Pattern: `pos-log-YYYYMMDD.txt`
 
-- `pos-log-YYYYMMDD.txt`
+---
 
-## Notes
+## 📚 Documentation
 
-- `appsettings.json` is copied to the output directory on build.
-- The app uses dependency injection for services, repositories, and views.
-- Keep sensitive production connection strings out of source control.
-
-## Documentation
-
-- Knowledge transfer handbook: `docs/KNOWLEDGE_TRANSFER.md`
-
+For deeper technical insights and a history of architectural decisions, please refer to the Knowledge Transfer handbook:
+- 📖 [Knowledge Transfer Document](docs/KNOWLEDGE_TRANSFER.md)
