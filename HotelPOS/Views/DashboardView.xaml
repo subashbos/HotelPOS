@@ -1,0 +1,390 @@
+<UserControl x:Class="HotelPOS.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ctrl="clr-namespace:HotelPOS.Controls"
+             mc:Ignorable="d" d:DesignHeight="1200" d:DesignWidth="1400">
+
+    <UserControl.Resources>
+        <!-- DataGrid global styles -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background"               Value="Transparent"/>
+            <Setter Property="BorderThickness"          Value="0"/>
+            <Setter Property="GridLinesVisibility"      Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="RowBackground"            Value="Transparent"/>
+            <Setter Property="AlternatingRowBackground" Value="{DynamicResource AppBackground}"/>
+            <Setter Property="SelectionMode"            Value="Single"/>
+            <Setter Property="CanUserResizeRows"        Value="False"/>
+            <Setter Property="HeadersVisibility"        Value="Column"/>
+            <Setter Property="FontSize"                 Value="13"/>
+            
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background"      Value="{DynamicResource HeaderBrush}"/>
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="FontSize"        Value="11"/>
+            <Setter Property="Padding"         Value="14,10"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Height" Value="44"/>
+            
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/><Setter Property="Foreground" Value="White"/></Trigger>
+                <Trigger Property="IsSelected"  Value="True">
+                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding"           Value="14,0"/>
+            <Setter Property="BorderThickness"   Value="0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="Transparent"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="FilterPill" TargetType="RadioButton">
+            
+            <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding"         Value="16,8"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DateBoxStyle" TargetType="DatePicker">
+            <Setter Property="FontSize"    Value="13"/>
+            
+            <Setter Property="Background"  Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="Padding"     Value="6,5"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Width" Value="145"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Toolbar/Stats -->
+            <RowDefinition Height="*"/>     <!-- Scrollable Analytics -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ TOP BAR ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource AppBackground}" Padding="32,24,32,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Filters -->
+                    <RowDefinition Height="Auto"/> <!-- Cards -->
+                </Grid.RowDefinitions>
+                
+                <!-- Filters Row -->
+                <Grid Grid.Row="0" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Text="Performance Overview" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                    
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                            <RadioButton x:Name="TodayFilter" Content="Today" IsChecked="True" Style="{StaticResource FilterPill}" Click="Filter_Checked" Margin="0,0,8,0"/>
+                            <RadioButton x:Name="WeekFilter" Content="Weekly" Style="{StaticResource FilterPill}" Click="Filter_Checked" Margin="0,0,8,0"/>
+                            <RadioButton x:Name="AllFilter" Content="All Time" Style="{StaticResource FilterPill}" Click="Filter_Checked"/>
+                        </StackPanel>
+                        
+                        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="12,4" Margin="0,0,12,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="From:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}" FontSize="12" FontWeight="SemiBold"/>
+                                <DatePicker x:Name="CustomFrom" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="CustomDate_Changed" Margin="0,0,12,0" BorderThickness="0" Background="Transparent" Width="110"/>
+                                <TextBlock Text="To:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}" FontSize="12" FontWeight="SemiBold"/>
+                                <DatePicker x:Name="CustomTo" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="CustomDate_Changed" BorderThickness="0" Background="Transparent" Width="110"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Button Content="↻" Click="Refresh_Click" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" FontSize="18" Padding="12,4" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- KPI Cards Row -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Revenue Card -->
+                    <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="TOTAL REVENUE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="RevenueValueText" Text="Rs. 0.00" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#E6F6F4" VerticalAlignment="Top">
+                                <TextBlock Text="💰" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Orders Card -->
+                    <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="ORDERS PLACED" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="OrdersValueText" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#EAEFFA" VerticalAlignment="Top">
+                                <TextBlock Text="🧾" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Avg Ticket Card -->
+                    <Border Grid.Column="4" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="AVG. TICKET" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="AvgValueText" Text="Rs. 0.00" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#EAF7EC" VerticalAlignment="Top">
+                                <TextBlock Text="📈" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Top Item Card -->
+                    <Border Grid.Column="6" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="TOP ITEM" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="TopItemText" Text="—" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="40" Height="40" CornerRadius="20" Background="#FDECEE" VerticalAlignment="Top">
+                                <TextBlock Text="⭐" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Border Padding="32,24">
+                <StackPanel>
+                <!-- ── Row 1: Charts ── -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="420"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="24">
+                        <StackPanel>
+                            <TextBlock Text="Revenue Performance" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <ItemsControl x:Name="SalesChart" Height="220" Margin="0,16,0,0" Background="{DynamicResource AppBackground}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Canvas.Left="{Binding X}" Canvas.Bottom="25">
+                                            <Border Width="34" Height="{Binding BarHeight}" 
+                                                    Background="{DynamicResource PrimaryBrush}" 
+                                                    CornerRadius="6,6,2,2" 
+                                                    ToolTip="{Binding ToolTipText}"
+                                                    VerticalAlignment="Bottom">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Opacity" Value="0.8"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
+                                            <TextBlock Text="{Binding MonthName}" FontSize="10" 
+                                                       HorizontalAlignment="Center" Margin="0,0,0,-20"
+                                                       VerticalAlignment="Bottom"
+                                                       Foreground="{DynamicResource TextMuted}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="24">
+                        <StackPanel>
+                            <TextBlock Text="Sales Mix" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <Border Height="220" Margin="0,16,0,0" Background="{DynamicResource AppBackground}" CornerRadius="8" Padding="12">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl x:Name="SalesMixChart">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding CategoryName}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextPrimary}"/>
+                                                        <ProgressBar Value="{Binding Percentage}" Height="6" Margin="0,4,0,0" Foreground="{DynamicResource PrimaryBrush}" Background="#E0E9F2" BorderThickness="0"/>
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" Text="{Binding Revenue, StringFormat=Rs. {0:N0}}" VerticalAlignment="Center" Margin="12,0,0,0" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ── Row 2: Tables & Transactions ── -->
+                <Grid Margin="0,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Recent Transactions -->
+                    <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Recent Transactions" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
+                            <DataGrid x:Name="RecentGrid" Height="300" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="TIME" Binding="{Binding CreatedAt, StringFormat=hh:mm tt}" Width="90"/>
+                                    <DataGridTextColumn Header="TABLE" Binding="{Binding TableNumber, StringFormat=Table {0}}" Width="80"/>
+                                    <DataGridTextColumn Header="AMOUNT" Binding="{Binding Total, StringFormat=Rs. {0:N2}}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <ctrl:PaginationControl x:Name="RecentPager" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Table Performance -->
+                    <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Table Performance" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
+                            <DataGrid x:Name="TableGrid" Height="300" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="TABLE" Binding="{Binding TableNumber, StringFormat=Table {0}}" Width="100"/>
+                                    <DataGridTextColumn Header="ORDERS" Binding="{Binding OrderCount}" Width="80"/>
+                                    <DataGridTextColumn Header="REVENUE" Binding="{Binding TotalRevenue, StringFormat=Rs. {0:N2}}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <ctrl:PaginationControl x:Name="TablePager" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ── Row 3: Items & Dates ── -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Best Sellers -->
+                    <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Best Sellers" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
+                            <DataGrid x:Name="ItemGrid" Height="300" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*"/>
+                                    <DataGridTextColumn Header="QTY" Binding="{Binding TotalQuantity}" Width="60"/>
+                                    <DataGridTextColumn Header="REVENUE" Binding="{Binding TotalRevenue, StringFormat=Rs. {0:N2}}" Width="120"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <ctrl:PaginationControl x:Name="ItemPager" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Date-wise Summary -->
+                    <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Daily Summary" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
+                            <DataGrid x:Name="DateGrid" Height="300" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM}" Width="100"/>
+                                    <DataGridTextColumn Header="ORDERS" Binding="{Binding OrderCount}" Width="80"/>
+                                    <DataGridTextColumn Header="NET" Binding="{Binding NetIncome, StringFormat=Rs. {0:N2}}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <ctrl:PaginationControl x:Name="DatePager" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

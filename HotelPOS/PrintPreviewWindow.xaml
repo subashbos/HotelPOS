@@ -1,0 +1,108 @@
+<Window x:Class="HotelPOS.PrintPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Print Preview"
+        Height="760" Width="600"
+        MinHeight="600" MinWidth="480"
+        WindowStartupLocation="CenterOwner"
+        Background="#F3F5F9"
+        Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="HeaderBrush"  Color="#173F5F"/>
+        <SolidColorBrush x:Key="AccentBrush"  Color="#00A896"/>
+        <SolidColorBrush x:Key="BorderBrush"  Color="#D8DFEA"/>
+
+        <Style TargetType="Button">
+            <Setter Property="Background"      Value="{StaticResource HeaderBrush}"/>
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding"         Value="16,10"/>
+            <Setter Property="FontSize"        Value="14"/>
+            <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="FormatToggleButton" TargetType="RadioButton">
+            <Setter Property="Foreground"      Value="#5F6B7A"/>
+            <Setter Property="Background"      Value="White"/>
+            <Setter Property="BorderBrush"     Value="#C8D4E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding"         Value="12,8"/>
+            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E8F5F0"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#00A896"/>
+                                <Setter Property="Foreground" Value="#006B57"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- HEADER -->
+        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Receipt Preview" FontSize="18" FontWeight="Bold" Foreground="#1A2533" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Format toggles -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Layout:" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="#5F6B7A" FontSize="13"/>
+                    <RadioButton x:Name="ThermalToggle" Content="Thermal (80mm)" Style="{StaticResource FormatToggleButton}" GroupName="LayoutFormat" Checked="Format_Checked"/>
+                    <RadioButton x:Name="A4Toggle" Content="Standard (A4)" Style="{StaticResource FormatToggleButton}" GroupName="LayoutFormat" Margin="8,0,0,0" Checked="Format_Checked"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- DOCUMENT PREVIEWER -->
+        <FlowDocumentScrollViewer x:Name="DocViewer" Grid.Row="1" Margin="0" Background="#E9EDF2" VerticalScrollBarVisibility="Auto"/>
+
+        <!-- BOTTOM ACTION BAR -->
+        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16">
+            <Grid>
+                <Button Content="✕  Cancel" HorizontalAlignment="Left" Background="Transparent" Foreground="#5F6B7A" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Click="Cancel_Click"/>
+                <Button Content="🖨  Print Receipt" HorizontalAlignment="Right" Background="{StaticResource AccentBrush}" Click="Print_Click"/>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>

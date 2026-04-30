@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="HotelPOS.Application/HotelPOS.Application.csproj" />
+  <Project Path="HotelPOS.Domain/HotelPOS.Domain.csproj" />
+  <Project Path="HotelPOS.Infrastructure/HotelPOS.Infrastructure.csproj" />
+  <Project Path="HotelPOS.Persistence/HotelPOS.Persistence.csproj" />
+  <Project Path="HotelPOS/HotelPOS.csproj" />
+  <Project Path="HotelPOS.Tests/HotelPOS.Tests.csproj" />
+</Solution>
