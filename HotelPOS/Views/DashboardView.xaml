@@ -360,7 +360,7 @@
                             <DataGrid x:Name="ItemGrid" Height="300" AutoGenerateColumns="False">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*"/>
-                                    <DataGridTextColumn Header="QTY" Binding="{Binding TotalQuantity}" Width="60"/>
+                                    <DataGridTextColumn Header="QTY" Binding="{Binding TotalQtySold}" Width="60"/>
                                     <DataGridTextColumn Header="REVENUE" Binding="{Binding TotalRevenue, StringFormat=Rs. {0:N2}}" Width="120"/>
                                 </DataGrid.Columns>
                             </DataGrid>
