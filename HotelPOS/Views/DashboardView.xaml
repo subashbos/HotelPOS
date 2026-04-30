@@ -383,6 +383,30 @@
                         </StackPanel>
                     </Border>
                 </Grid>
+
+                <!-- ── Row 4: Payment Modes ── -->
+                <Grid Margin="0,24,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Payment Mode Summary -->
+                    <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="Sales by Payment Mode" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
+                            <DataGrid x:Name="PaymentModeGrid" Height="200" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="PAYMENT MODE" Binding="{Binding PaymentMode}" Width="*"/>
+                                    <DataGridTextColumn Header="ORDERS" Binding="{Binding OrderCount}" Width="80"/>
+                                    <DataGridTextColumn Header="REVENUE" Binding="{Binding Revenue, StringFormat=Rs. {0:N2}}" Width="120"/>
+                                    <DataGridTextColumn Header="PERCENTAGE" Binding="{Binding Percentage, StringFormat={}{0:N1}%}" Width="100"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
             </StackPanel>
             </Border>
         </ScrollViewer>

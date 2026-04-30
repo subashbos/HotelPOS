@@ -11,6 +11,15 @@ namespace HotelPOS.Application
         public List<TableSalesRowDto> SalesByTable { get; set; } = new();
         public List<RecentOrderRowDto> RecentOrders { get; set; } = new();
         public List<CategorySalesRowDto> SalesByCategory { get; set; } = new();
+        public List<PaymentModeSalesRowDto> SalesByPaymentMode { get; set; } = new();
+    }
+
+    public class PaymentModeSalesRowDto
+    {
+        public string PaymentMode { get; set; } = "Unknown";
+        public decimal Revenue { get; set; }
+        public int OrderCount { get; set; }
+        public double Percentage { get; set; }
     }
 
     public class CategorySalesRowDto

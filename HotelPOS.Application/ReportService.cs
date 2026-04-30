@@ -84,6 +84,22 @@ namespace HotelPOS.Application
                 .OrderByDescending(c => c.Revenue)
                 .ToList();
 
+            // Sales by payment mode
+            var paymentModeSales = orders
+                .GroupBy(o => string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode)
+                .Select(g => {
+                    var rev = g.Sum(o => o.TotalAmount);
+                    return new PaymentModeSalesRowDto
+                    {
+                        PaymentMode = g.Key,
+                        Revenue = rev,
+                        OrderCount = g.Count(),
+                        Percentage = total > 0 ? (double)(rev / total * 100) : 0
+                    };
+                })
+                .OrderByDescending(p => p.Revenue)
+                .ToList();
+
             return new SalesReportDto
             {
                 TotalRevenue = total,
@@ -92,7 +108,8 @@ namespace HotelPOS.Application
                 MostPopularItem = mostPopular,
                 SalesByTable = byTable,
                 RecentOrders = recent,
-                SalesByCategory = categorySales
+                SalesByCategory = categorySales,
+                SalesByPaymentMode = paymentModeSales
             };
         }
 

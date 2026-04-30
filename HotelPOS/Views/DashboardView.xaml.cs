@@ -110,6 +110,7 @@ namespace HotelPOS.Views
                 RecentPager.SetSource(sales.RecentOrders);
                 SalesMixChart.ItemsSource = sales.SalesByCategory;
                 ItemPager.SetSource(items);
+                PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
 
                 // Chart
                 var chartData = await _reportService.GetMonthlyChartDataAsync();
@@ -236,8 +237,27 @@ namespace HotelPOS.Views
                     ws3.Columns().AdjustToContents();
                 }
 
+                // Sheet 4: Payment Mode Report
+                if (LastSalesReport?.SalesByPaymentMode.Count > 0)
+                {
+                    var ws4 = wb.Worksheets.Add("Sales by Payment Mode");
+                    SetHeader(ws4.Row(1));
+                    ws4.Cell(1, 1).Value = "Payment Mode"; ws4.Cell(1, 2).Value = "Orders";
+                    ws4.Cell(1, 3).Value = "Total Revenue (Rs.)"; ws4.Cell(1, 4).Value = "Percentage (%)";
+                    int r = 2;
+                    foreach (var p in LastSalesReport.SalesByPaymentMode)
+                    {
+                        ws4.Cell(r, 1).Value = p.PaymentMode;
+                        ws4.Cell(r, 2).Value = p.OrderCount;
+                        ws4.Cell(r, 3).Value = (double)p.Revenue;
+                        ws4.Cell(r, 4).Value = p.Percentage;
+                        r++;
+                    }
+                    ws4.Columns().AdjustToContents();
+                }
+
                 wb.SaveAs(dlg.FileName);
-                MessageBox.Show("✅  Report exported successfully (3 sheets).", "Export Complete",
+                MessageBox.Show("✅  Report exported successfully (4 sheets).", "Export Complete",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
