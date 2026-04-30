@@ -46,24 +46,6 @@
                 </Style>
             </Style.Resources>
         </Style>
-
-        <!-- DataGrid Styles -->
-        <Style TargetType="DataGrid">
-            <Setter Property="Background"               Value="Transparent"/>
-            <Setter Property="BorderThickness"          Value="0"/>
-            <Setter Property="GridLinesVisibility"      Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="RowBackground"            Value="Transparent"/>
-            <Setter Property="AlternatingRowBackground" Value="{DynamicResource AppBackground}"/>
-            <Setter Property="HeadersVisibility"        Value="Column"/>
-            <Setter Property="FontSize"                 Value="13"/>
-        </Style>
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background"      Value="{DynamicResource HeaderBrush}"/>
-            <Setter Property="Foreground"      Value="White"/>
-            <Setter Property="FontWeight"      Value="SemiBold"/>
-            <Setter Property="Padding"         Value="14,10"/>
-        </Style>
     </UserControl.Resources>
 
     <Grid Background="{DynamicResource AppBackground}">
@@ -165,32 +147,36 @@
         </Border>
 
         <!-- ══ RIGHT: Add New User ══ -->
-        <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="24">
-            <StackPanel>
-                <TextBlock Text="Add New User" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                <TextBlock Text="Create a new team member account." FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,20"/>
+        <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Border Padding="24">
+                    <StackPanel>
+                    <TextBlock Text="Add New User" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Create a new team member account." FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,20"/>
 
-                <TextBlock Text="USERNAME" Style="{StaticResource Label}"/>
-                <TextBox x:Name="NewUsernameBox" Style="{StaticResource Field}" Margin="0,0,0,16"/>
+                    <TextBlock Text="USERNAME" Style="{StaticResource Label}"/>
+                    <TextBox x:Name="NewUsernameBox" Style="{StaticResource Field}" Margin="0,0,0,16"/>
 
-                <TextBlock Text="PASSWORD" Style="{StaticResource Label}"/>
-                <PasswordBox x:Name="NewPasswordBox" Padding="12,9" FontSize="14" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,0,16"
-                             Background="{DynamicResource AppBackground}" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="PASSWORD" Style="{StaticResource Label}"/>
+                    <PasswordBox x:Name="NewPasswordBox" Padding="12,9" FontSize="14" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,0,16"
+                                 Background="{DynamicResource AppBackground}" Foreground="{DynamicResource TextPrimary}"/>
 
-                <TextBlock Text="ROLE" Style="{StaticResource Label}"/>
-                <ComboBox x:Name="NewRoleCombo" Padding="10,8" FontSize="14" Margin="0,0,0,24"
-                          Background="{DynamicResource AppBackground}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderBrush}">
-                    <ComboBoxItem Content="Cashier" IsSelected="True"/>
-                    <ComboBoxItem Content="Admin"/>
-                </ComboBox>
+                    <TextBlock Text="ROLE" Style="{StaticResource Label}"/>
+                    <ComboBox x:Name="NewRoleCombo" Padding="10,8" FontSize="14" Margin="0,0,0,24"
+                              Background="{DynamicResource AppBackground}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderBrush}">
+                        <ComboBoxItem Content="Cashier" IsSelected="True"/>
+                        <ComboBoxItem Content="Admin"/>
+                    </ComboBox>
 
-                <Button Content="➕  Create User" Style="{StaticResource PrimaryBtn}" Click="AddUser_Click" HorizontalAlignment="Stretch"/>
+                    <Button Content="➕  Create User" Style="{StaticResource PrimaryBtn}" Click="AddUser_Click" HorizontalAlignment="Stretch"/>
 
-                <!-- Feedback -->
-                <Border x:Name="FeedbackBorder" Margin="0,16,0,0" Padding="14,10" CornerRadius="6" Visibility="Collapsed">
-                    <TextBlock x:Name="FeedbackText" TextWrapping="Wrap" FontSize="13"/>
+                    <!-- Feedback -->
+                    <Border x:Name="FeedbackBorder" Margin="0,16,0,0" Padding="14,10" CornerRadius="6" Visibility="Collapsed">
+                        <TextBlock x:Name="FeedbackText" TextWrapping="Wrap" FontSize="13"/>
+                    </Border>
+                    </StackPanel>
                 </Border>
-            </StackPanel>
+            </ScrollViewer>
         </Border>
     </Grid>
 </UserControl>

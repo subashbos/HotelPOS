@@ -48,49 +48,53 @@
 
             <!-- LEFT: Form -->
             <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Border Padding="24">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="24,20">
-                        <StackPanel>
-                            <TextBlock x:Name="FormTitle" Text="Add New Category"
-                                       FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                        </StackPanel>
+                            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,20">
+                                <StackPanel>
+                                    <TextBlock x:Name="FormTitle" Text="Add New Category"
+                                               FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <StackPanel Grid.Row="1" Margin="0,24">
+                                <TextBlock Text="CATEGORY NAME" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="NameBox" Style="{StaticResource InputField}"/>
+
+                                <Border x:Name="StatusBorder" CornerRadius="8" Padding="14,10" Margin="0,8,0,0" Visibility="Collapsed">
+                                    <TextBlock x:Name="StatusText" TextWrapping="Wrap" FontSize="13"/>
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2">
+                                <Button x:Name="SubmitButton" Content="＋  Add Category"
+                                        Click="Add_Click"
+                                        Background="{DynamicResource PrimaryBrush}" Foreground="White" 
+                                        Padding="0,14" FontWeight="Bold" Cursor="Hand" BorderThickness="0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="10"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                                
+                                <Button x:Name="CancelEditButton" Content="✕  Cancel Edit"
+                                        Click="CancelEdit_Click"
+                                        Background="Transparent" BorderBrush="{DynamicResource DangerBrush}" 
+                                        BorderThickness="1" Foreground="{DynamicResource DangerBrush}"
+                                        Padding="0,10" FontWeight="SemiBold" Cursor="Hand" Margin="0,10,0,0"
+                                        Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Grid>
                     </Border>
-
-                    <StackPanel Grid.Row="1" Margin="24">
-                        <TextBlock Text="CATEGORY NAME" Style="{StaticResource FieldLabel}"/>
-                        <TextBox x:Name="NameBox" Style="{StaticResource InputField}"/>
-
-                        <Border x:Name="StatusBorder" CornerRadius="8" Padding="14,10" Margin="0,8,0,0" Visibility="Collapsed">
-                            <TextBlock x:Name="StatusText" TextWrapping="Wrap" FontSize="13"/>
-                        </Border>
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="2" Margin="24">
-                        <Button x:Name="SubmitButton" Content="＋  Add Category"
-                                Click="Add_Click"
-                                Background="{DynamicResource PrimaryBrush}" Foreground="White" 
-                                Padding="0,14" FontWeight="Bold" Cursor="Hand" BorderThickness="0">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="10"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
-                        
-                        <Button x:Name="CancelEditButton" Content="✕  Cancel Edit"
-                                Click="CancelEdit_Click"
-                                Background="Transparent" BorderBrush="{DynamicResource DangerBrush}" 
-                                BorderThickness="1" Foreground="{DynamicResource DangerBrush}"
-                                Padding="0,10" FontWeight="SemiBold" Cursor="Hand" Margin="0,10,0,0"
-                                Visibility="Collapsed"/>
-                    </StackPanel>
-                </Grid>
+                </ScrollViewer>
             </Border>
 
             <!-- RIGHT: List -->
@@ -106,29 +110,7 @@
                     </Border>
 
                     <DataGrid x:Name="CategoryGrid" Grid.Row="1"
-                               AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                               RowHeight="50" Background="Transparent" BorderThickness="0"
-                               GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="{DynamicResource BorderBrush}"
-                               HeadersVisibility="Column" FontSize="14"
-                               RowBackground="Transparent"
-                               AlternatingRowBackground="{DynamicResource AppBackground}"
-                               Foreground="{DynamicResource TextPrimary}">
-                        <DataGrid.Resources>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="Background" Value="{DynamicResource HeaderBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter Property="Padding" Value="16,12"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
-                            </Style>
-                            <Style TargetType="DataGridRow">
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGrid.Resources>
+                               Style="{StaticResource PremiumGrid}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60">
                                 <DataGridTextColumn.ElementStyle>

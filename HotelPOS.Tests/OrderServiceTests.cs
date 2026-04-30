@@ -278,6 +278,9 @@ public class OrderServiceTests
     [Fact]
     public async Task DeleteOrderAsync_CallsRepository()
     {
+        var order = new Order { Id = 123, Items = new List<OrderItem>() };
+        _mockRepo.Setup(r => r.GetByIdWithItemsAsync(123)).ReturnsAsync(order);
+
         await _service.DeleteOrderAsync(123);
         _mockRepo.Verify(r => r.DeleteAsync(123), Times.Once);
     }
@@ -291,8 +294,8 @@ public class OrderServiceTests
         };
         var order = new Order { Id = 1, Items = items };
         
-        _mockRepo.Setup(r => r.GetAllWithItemsAsync())
-                 .ReturnsAsync(new List<Order> { order });
+        _mockRepo.Setup(r => r.GetByIdWithItemsAsync(1))
+                 .ReturnsAsync(order);
 
         await _service.UpdateOrderAsync(order);
 
@@ -334,8 +337,8 @@ public class OrderServiceTests
         var order = new Order { Id = 10, Items = items };
         
         // Setup repo to return the existing order
-        _mockRepo.Setup(r => r.GetAllWithItemsAsync())
-                 .ReturnsAsync(new List<Order> { order });
+        _mockRepo.Setup(r => r.GetByIdWithItemsAsync(10))
+                 .ReturnsAsync(order);
 
         await _service.UpdateOrderAsync(order);
 
@@ -348,6 +351,9 @@ public class OrderServiceTests
     [Fact]
     public async Task DeleteOrderAsync_LogsAuditAction()
     {
+        var order = new Order { Id = 99, Items = new List<OrderItem>() };
+        _mockRepo.Setup(r => r.GetByIdWithItemsAsync(99)).ReturnsAsync(order);
+
         await _service.DeleteOrderAsync(99);
 
         _mockMediator.Verify(m => m.Publish(

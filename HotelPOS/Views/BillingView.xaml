@@ -8,55 +8,6 @@
              d:DesignHeight="800" d:DesignWidth="1280"
              PreviewKeyDown="UserControl_PreviewKeyDown">
     <UserControl.Resources>
-        <Style TargetType="DataGrid" x:Key="PremiumGrid">
-            <Setter Property="Background"               Value="{DynamicResource SurfaceBrush}"/>
-            <Setter Property="BorderBrush"              Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="BorderThickness"          Value="0"/>
-            <Setter Property="GridLinesVisibility"      Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="RowBackground"            Value="Transparent"/>
-            <Setter Property="AlternatingRowBackground" Value="{DynamicResource AppBackground}"/>
-            <Setter Property="SelectionMode"            Value="Single"/>
-            <Setter Property="CanUserResizeRows"        Value="False"/>
-            <Setter Property="HeadersVisibility"        Value="Column"/>
-            <Setter Property="FontSize"                 Value="14"/>
-        </Style>
-
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background"      Value="{DynamicResource HeaderBrush}"/>
-            <Setter Property="Foreground"      Value="White"/>
-            <Setter Property="FontWeight"      Value="SemiBold"/>
-            <Setter Property="FontSize"        Value="12"/>
-            <Setter Property="Padding"         Value="14,10"/>
-            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-        </Style>
-        <Style TargetType="DataGridRow">
-            <Setter Property="Height" Value="46"/>
-            
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style TargetType="DataGridCell">
-            <Setter Property="Padding"           Value="14,0"/>
-            <Setter Property="BorderThickness"   Value="0"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="BorderBrush" Value="Transparent"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
         <Style x:Key="NavPillStyle" TargetType="Button">
             <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
             

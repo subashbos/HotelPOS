@@ -13,6 +13,7 @@ namespace HotelPOS.Domain.Interface
         Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, DateTime? from = null, DateTime? to = null, int? tableNumber = null);
 
         Task UpdateAsync(Order order);
+        Task<Order?> GetByIdWithItemsAsync(int id);
         Task DeleteAsync(int id);
     }
 }

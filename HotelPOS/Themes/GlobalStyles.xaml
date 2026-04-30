@@ -56,31 +56,39 @@
 
     <!-- ── Premium DataGrid ── -->
     <Style x:Key="PremiumGrid" TargetType="DataGrid">
-        <Setter Property="Background"               Value="Transparent"/>
-        <Setter Property="BorderThickness"          Value="0"/>
+        <Setter Property="Background"               Value="{DynamicResource SurfaceBrush}"/>
+        <Setter Property="BorderThickness"          Value="1"/>
+        <Setter Property="BorderBrush"              Value="{DynamicResource BorderBrush}"/>
         <Setter Property="GridLinesVisibility"      Value="Horizontal"/>
         <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}"/>
-        <Setter Property="RowBackground"            Value="Transparent"/>
+        <Setter Property="RowBackground"            Value="{DynamicResource SurfaceBrush}"/>
         <Setter Property="AlternatingRowBackground" Value="{DynamicResource AppBackground}"/>
         <Setter Property="HeadersVisibility"        Value="Column"/>
         <Setter Property="FontSize"                 Value="13"/>
-        <Setter Property="RowHeight"                Value="44"/>
+        <Setter Property="RowHeight"                Value="52"/>
         <Setter Property="Foreground"               Value="{DynamicResource TextPrimary}"/>
         <Setter Property="SelectionMode"            Value="Single"/>
         <Setter Property="SelectionUnit"            Value="FullRow"/>
         <Setter Property="CanUserResizeRows"        Value="False"/>
         <Setter Property="AutoGenerateColumns"      Value="False"/>
         <Setter Property="CanUserAddRows"           Value="False"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
 
         <Setter Property="ColumnHeaderStyle">
             <Setter.Value>
                 <Style TargetType="DataGridColumnHeader">
                     <Setter Property="Background" Value="{DynamicResource HeaderBrush}"/>
                     <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="Padding" Value="14,10"/>
+                    <Setter Property="Padding" Value="14,12"/>
                     <Setter Property="FontWeight" Value="Bold"/>
-                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+                    <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                    <Setter Property="BorderBrush" Value="#2C3E50"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#1C4B72"/>
+                        </Trigger>
+                    </Style.Triggers>
                 </Style>
             </Setter.Value>
         </Setter>
@@ -90,26 +98,10 @@
                 <Style TargetType="DataGridCell">
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                    <Setter Property="Padding" Value="10,0"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="DataGridCell">
-                                <Border Background="{TemplateBinding Background}" 
-                                        BorderBrush="{TemplateBinding BorderBrush}" 
-                                        BorderThickness="{TemplateBinding BorderThickness}" 
-                                        Padding="{TemplateBinding Padding}" 
-                                        SnapsToDevicePixels="True">
-                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
                     <Style.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="#D6EAF8"/> <!-- Light Blue Selection -->
-                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#D6EAF8"/>
                             <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                         </Trigger>
                     </Style.Triggers>
@@ -124,16 +116,39 @@
                     <Style.Triggers>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter Property="Background" Value="#D6EAF8"/>
-                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#EBF5FB"/> <!-- Even lighter blue for hover -->
-                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            <Setter Property="Background" Value="#F2F8FC"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Buttons -->
+    <Style x:Key="PrimaryBtn" TargetType="Button" BasedOn="{StaticResource TouchButton}">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+    </Style>
+    
+    <Style x:Key="DangerBtn" TargetType="Button" BasedOn="{StaticResource TouchButton}">
+        <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+    </Style>
+
+    <!-- Labels and Fields -->
+    <Style x:Key="Label" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+        <Setter Property="Margin" Value="0,0,0,6"/>
+    </Style>
+
+    <Style x:Key="Field" TargetType="TextBox">
+        <Setter Property="Padding" Value="12,10"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource AppBackground}"/>
+        <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
 </ResourceDictionary>

@@ -107,6 +107,13 @@ namespace HotelPOS.Persistence
     
             await _context.SaveChangesAsync();
         }
+        public async Task<Order?> GetByIdWithItemsAsync(int id)
+        {
+            return await _context.Orders
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id && !o.IsDeleted);
+        }
+
         public async Task DeleteAsync(int id)
         {
             var order = await _context.Orders.FindAsync(id);

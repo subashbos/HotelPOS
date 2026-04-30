@@ -146,7 +146,7 @@ namespace HotelPOS.Tests
                 }
             };
 
-            mockRepo.Setup(r => r.GetAllWithItemsAsync()).ReturnsAsync(new List<Order> { oldOrder });
+            mockRepo.Setup(r => r.GetByIdWithItemsAsync(1)).ReturnsAsync(oldOrder);
             
             // Act
             await service.UpdateOrderAsync(newOrder);

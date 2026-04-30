@@ -7,52 +7,6 @@
              mc:Ignorable="d" d:DesignHeight="1200" d:DesignWidth="1400">
 
     <UserControl.Resources>
-        <!-- DataGrid global styles -->
-        <Style TargetType="DataGrid">
-            <Setter Property="Background"               Value="Transparent"/>
-            <Setter Property="BorderThickness"          Value="0"/>
-            <Setter Property="GridLinesVisibility"      Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="RowBackground"            Value="Transparent"/>
-            <Setter Property="AlternatingRowBackground" Value="{DynamicResource AppBackground}"/>
-            <Setter Property="SelectionMode"            Value="Single"/>
-            <Setter Property="CanUserResizeRows"        Value="False"/>
-            <Setter Property="HeadersVisibility"        Value="Column"/>
-            <Setter Property="FontSize"                 Value="13"/>
-            
-        </Style>
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background"      Value="{DynamicResource HeaderBrush}"/>
-            <Setter Property="Foreground"      Value="White"/>
-            <Setter Property="FontWeight"      Value="SemiBold"/>
-            <Setter Property="FontSize"        Value="11"/>
-            <Setter Property="Padding"         Value="14,10"/>
-            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="BorderThickness" Value="0,0,1,0"/>
-        </Style>
-        <Style TargetType="DataGridRow">
-            <Setter Property="Height" Value="44"/>
-            
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/><Setter Property="Foreground" Value="White"/></Trigger>
-                <Trigger Property="IsSelected"  Value="True">
-                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style TargetType="DataGridCell">
-            <Setter Property="Padding"           Value="14,0"/>
-            <Setter Property="BorderThickness"   Value="0"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="BorderBrush" Value="Transparent"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
         <Style x:Key="FilterPill" TargetType="RadioButton">
             
             <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
@@ -318,7 +272,7 @@
                     <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
                         <StackPanel>
                             <TextBlock Text="Recent Transactions" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
-                            <DataGrid x:Name="RecentGrid" Height="300" AutoGenerateColumns="False">
+                            <DataGrid x:Name="RecentGrid" Height="300" AutoGenerateColumns="False" Style="{StaticResource PremiumGrid}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="TIME" Binding="{Binding CreatedAt, StringFormat=hh:mm tt}" Width="90"/>
                                     <DataGridTextColumn Header="TABLE" Binding="{Binding TableNumber, StringFormat=Table {0}}" Width="80"/>
@@ -333,7 +287,7 @@
                     <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
                         <StackPanel>
                             <TextBlock Text="Table Performance" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
-                            <DataGrid x:Name="TableGrid" Height="300" AutoGenerateColumns="False">
+                            <DataGrid x:Name="TableGrid" Height="300" AutoGenerateColumns="False" Style="{StaticResource PremiumGrid}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="TABLE" Binding="{Binding TableNumber, StringFormat=Table {0}}" Width="100"/>
                                     <DataGridTextColumn Header="ORDERS" Binding="{Binding OrderCount}" Width="80"/>
@@ -357,7 +311,7 @@
                     <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
                         <StackPanel>
                             <TextBlock Text="Best Sellers" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
-                            <DataGrid x:Name="ItemGrid" Height="300" AutoGenerateColumns="False">
+                            <DataGrid x:Name="ItemGrid" Height="300" AutoGenerateColumns="False" Style="{StaticResource PremiumGrid}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*"/>
                                     <DataGridTextColumn Header="QTY" Binding="{Binding TotalQtySold}" Width="60"/>
@@ -372,7 +326,7 @@
                     <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
                         <StackPanel>
                             <TextBlock Text="Daily Summary" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
-                            <DataGrid x:Name="DateGrid" Height="300" AutoGenerateColumns="False">
+                            <DataGrid x:Name="DateGrid" Height="300" AutoGenerateColumns="False" Style="{StaticResource PremiumGrid}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM}" Width="100"/>
                                     <DataGridTextColumn Header="ORDERS" Binding="{Binding OrderCount}" Width="80"/>
@@ -396,7 +350,7 @@
                     <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="20">
                         <StackPanel>
                             <TextBlock Text="Sales by Payment Mode" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
-                            <DataGrid x:Name="PaymentModeGrid" Height="200" AutoGenerateColumns="False">
+                            <DataGrid x:Name="PaymentModeGrid" Height="200" AutoGenerateColumns="False" Style="{StaticResource PremiumGrid}">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="PAYMENT MODE" Binding="{Binding PaymentMode}" Width="*"/>
                                     <DataGridTextColumn Header="ORDERS" Binding="{Binding OrderCount}" Width="80"/>

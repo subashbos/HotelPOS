@@ -139,11 +139,7 @@
                     <DataGrid x:Name="ItemGrid" Grid.Row="1"
                               ItemsSource="{Binding Items}"
                               Style="{StaticResource PremiumGrid}">
-                        <DataGrid.Resources>
-                            <Style TargetType="DataGridRow" BasedOn="{StaticResource {x:Type DataGridRow}}">
-                                <Setter Property="Height" Value="50"/>
-                            </Style>
-                        </DataGrid.Resources>
+
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60">
                                 <DataGridTextColumn.ElementStyle>

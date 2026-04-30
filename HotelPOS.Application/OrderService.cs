@@ -100,8 +100,7 @@ namespace HotelPOS.Application
             if (order.Items == null || order.Items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.");
     
-            var existing = await _repo.GetAllWithItemsAsync();
-            var oldOrder = existing.FirstOrDefault(o => o.Id == order.Id);
+            var oldOrder = await _repo.GetByIdWithItemsAsync(order.Id);
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
 
             // Stock Reconciliation
@@ -137,8 +136,17 @@ namespace HotelPOS.Application
         }
         public async Task DeleteOrderAsync(int orderId)
         {
-            await _repo.DeleteAsync(orderId);
-            await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
+            var existing = await _repo.GetByIdWithItemsAsync(orderId);
+            if (existing != null)
+            {
+                foreach (var item in existing.Items)
+                {
+                    await _itemService.DeductStockAsync(item.ItemId, -item.Quantity);
+                }
+                
+                await _repo.DeleteAsync(orderId);
+                await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
+            }
         }
     }
 }

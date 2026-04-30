@@ -12,6 +12,7 @@ HotelPOS is a WPF-based point-of-sale app for hotel/restaurant billing with:
 - Reports and ledgers
 - Audit logging
 - Settings-managed receipt rendering and printing
+- Unified Premium UI (Global DataGrid styling and consistent aesthetics)
 
 Primary startup flow:
 
@@ -82,6 +83,7 @@ Core data context is in `HotelPOS.Persistence/HotelDbContext.cs`.
 - Receipt generation: `HotelPOS/ReceiptGenerator.cs`
 - Supports thermal and A4 formats
 - Uses runtime system settings for branding and tax display behavior
+- All DataGrids are standardized using the `PremiumGrid` style defined in `Themes/GlobalStyles.xaml`.
 
 ## 4) Database and Configuration
 
@@ -182,6 +184,19 @@ Status legend: `Open` | `In Progress` | `Mitigated` | `Closed`
   3. Keep pure stateless utilities as singleton only.
   4. Add integration test that creates/disposes multiple scopes and validates behavior.
 - **Done criteria:** Lifetime audit completed and validated in repeated login/logout session tests.
+
+### Risk 6: UI Inconsistency across Modules (MITIGATED)
+
+- **Risk:** Variations in DataGrid styling and row heights made the app feel unpolished.
+- **Impact:** Poor user perception of the "Premium" product level.
+- **Priority:** `P2`
+- **Status:** `Mitigated`
+- **Owner:** Frontend/UI owner
+- **Actions:**
+  1. [DONE] Define `PremiumGrid` in `GlobalStyles.xaml`.
+  2. [DONE] Migrate all views (`Dashboard`, `Billing`, `Ledger`, `Journal`, `Users`, `Category`, `Audit`, `Session`) to use `PremiumGrid`.
+  3. [DONE] Standardize row height to `50px` for better touch and visual clarity.
+- **Done criteria:** All tables in the application share identical header colors, row hover effects, and typography.
 
 ### Risk 4: Targeted automated coverage gaps
 

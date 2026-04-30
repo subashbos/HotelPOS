@@ -46,8 +46,8 @@ public class StockReconciliationTests
             }
         };
 
-        _mockOrderRepo.Setup(r => r.GetAllWithItemsAsync())
-                     .ReturnsAsync(new List<Order> { oldOrder });
+        _mockOrderRepo.Setup(r => r.GetByIdWithItemsAsync(123))
+                     .ReturnsAsync(oldOrder);
 
         // Act
         await _service.UpdateOrderAsync(updatedOrder);
@@ -90,8 +90,8 @@ public class StockReconciliationTests
             }
         };
 
-        _mockOrderRepo.Setup(r => r.GetAllWithItemsAsync())
-                     .ReturnsAsync(new List<Order> { oldOrder });
+        _mockOrderRepo.Setup(r => r.GetByIdWithItemsAsync(456))
+                     .ReturnsAsync(oldOrder);
 
         // Act
         await _service.UpdateOrderAsync(updatedOrder);
