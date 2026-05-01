@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace HotelPOS.Views
 {
-    public record DailyRow(DateTime Date, int OrderCount, decimal GrossRevenue, decimal GstAmount, decimal NetIncome);
+    public record DailyRow(int SNo, DateTime Date, int OrderCount, decimal GrossRevenue, decimal GstAmount, decimal NetIncome);
 
     /// <summary>ViewModel for the simple bar chart.</summary>
     public class ChartBar
@@ -19,6 +19,17 @@ namespace HotelPOS.Views
         public string ToolTipText => $"{MonthName}: Rs. {Revenue:N0}";
     }
 
+    /// <summary>ViewModel for a pie chart segment.</summary>
+    public class PieSegment
+    {
+        public string CategoryName { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+        public double Percentage { get; set; }
+        public string PathData { get; set; } = string.Empty;
+        public System.Windows.Media.Brush FillColor { get; set; } = System.Windows.Media.Brushes.Gray;
+        public string ToolTipText => $"{CategoryName}: {Percentage:N1}% (Rs. {Revenue:N0})";
+    }
+
     public partial class DashboardView : UserControl
     {
         private readonly IOrderService _orderService;
@@ -28,6 +39,8 @@ namespace HotelPOS.Views
         public SalesReportDto? LastSalesReport { get; private set; }
         public List<ItemReportRowDto>? LastItemReport { get; private set; }
         public List<DailyRow>? LastDailyReport { get; private set; }
+
+        private readonly string[] _pieColors = { "#4facfe", "#00f2fe", "#f093fb", "#f5576c", "#48c6ef", "#6B8DD6", "#8E37D7", "#3B2667", "#BC78EC" };
 
         public DashboardView(IOrderService orderService, IReportService reportService)
         {
@@ -108,9 +121,11 @@ namespace HotelPOS.Views
 
                 TablePager.SetSource(sales.SalesByTable);
                 RecentPager.SetSource(sales.RecentOrders);
-                SalesMixChart.ItemsSource = sales.SalesByCategory;
                 ItemPager.SetSource(items);
                 PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
+
+                // Pie Chart Logic
+                RenderPieChart(sales.SalesByCategory);
 
                 // Chart
                 var chartData = await _reportService.GetMonthlyChartDataAsync();
@@ -149,7 +164,8 @@ namespace HotelPOS.Views
                 LastDailyReport = filtered
                     .GroupBy(o => o.CreatedAt.ToLocalTime().Date)
                     .OrderBy(g => g.Key)
-                    .Select(g => new DailyRow(
+                    .Select((g, idx) => new DailyRow(
+                        idx + 1,
                         g.Key,
                         g.Count(),
                         g.Sum(o => o.TotalAmount),
@@ -312,6 +328,68 @@ namespace HotelPOS.Views
                     }
                 }
             }
+        }
+
+        private void RenderPieChart(List<CategorySalesRowDto> categories)
+        {
+            if (categories == null || categories.Count == 0)
+            {
+                PieItemsControl.ItemsSource = null;
+                SalesMixLegend.ItemsSource = null;
+                PieTotalText.Text = "0%";
+                return;
+            }
+
+            double total = (double)categories.Sum(c => c.Revenue);
+            if (total == 0) total = 1;
+
+            double currentAngle = -90; // Start at top
+            var segments = new List<PieSegment>();
+            int colorIdx = 0;
+
+            foreach (var cat in categories.OrderByDescending(c => c.Revenue))
+            {
+                double percentage = (double)cat.Revenue / total;
+                double sweepAngle = percentage * 360;
+
+                if (sweepAngle > 0)
+                {
+                    segments.Add(new PieSegment
+                    {
+                        CategoryName = cat.CategoryName,
+                        Revenue = cat.Revenue,
+                        Percentage = percentage * 100,
+                        FillColor = (System.Windows.Media.Brush?)new System.Windows.Media.BrushConverter().ConvertFrom(_pieColors[colorIdx % _pieColors.Length]) ?? System.Windows.Media.Brushes.Gray,
+                        PathData = GetPiePathData(90, 90, 90, currentAngle, sweepAngle)
+                    });
+                }
+                currentAngle += sweepAngle;
+                colorIdx++;
+            }
+
+            PieItemsControl.ItemsSource = segments;
+            SalesMixLegend.ItemsSource = segments;
+            PieTotalText.Text = "100%";
+        }
+
+        private string GetPiePathData(double cx, double cy, double radius, double startAngle, double sweepAngle)
+        {
+            if (sweepAngle >= 360) sweepAngle = 359.99;
+
+            double startRad = Math.PI * startAngle / 180.0;
+            double endRad = Math.PI * (startAngle + sweepAngle) / 180.0;
+
+            double x1 = cx + radius * Math.Cos(startRad);
+            double y1 = cy + radius * Math.Sin(startRad);
+            double x2 = cx + radius * Math.Cos(endRad);
+            double y2 = cy + radius * Math.Sin(endRad);
+
+            int largeArc = sweepAngle > 180 ? 1 : 0;
+
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            return $"M {cx.ToString(culture)},{cy.ToString(culture)} " +
+                   $"L {x1.ToString(culture)},{y1.ToString(culture)} " +
+                   $"A {radius.ToString(culture)},{radius.ToString(culture)} 0 {largeArc} 1 {x2.ToString(culture)},{y2.ToString(culture)} Z";
         }
     }
 }

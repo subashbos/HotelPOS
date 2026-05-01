@@ -79,6 +79,19 @@ namespace HotelPOS.Views
             SearchBox.Focus();
         }
 
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(SearchBox.Text))
+            {
+                AutoPopup.IsOpen = false;
+            }
+            else if (SearchBox.IsFocused)
+            {
+                AutoPopup.IsOpen = true;
+                if (AutoList.Items.Count > 0) AutoList.SelectedIndex = 0;
+            }
+        }
+
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(SearchBox.Text))

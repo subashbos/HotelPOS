@@ -16,32 +16,37 @@
         <!-- Nav button: transparent pill, accented when disabled (= active) -->
         <Style x:Key="NavBtn" TargetType="Button">
             <Setter Property="Background"      Value="Transparent"/>
-            <Setter Property="Foreground"      Value="#BDD5E7"/>
+            <Setter Property="Foreground"      Value="#A0B0C0"/>
             <Setter Property="FontSize"        Value="14"/>
-            <Setter Property="FontWeight"      Value="SemiBold"/>
-            <Setter Property="Padding"         Value="20,12"/>
+            <Setter Property="FontWeight"      Value="Medium"/>
+            <Setter Property="Padding"         Value="16,12"/>
             <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="bd" Background="{TemplateBinding Background}"
-                                CornerRadius="12" Padding="{TemplateBinding Padding}" Margin="0,2">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                                CornerRadius="10" Padding="{TemplateBinding Padding}" Margin="4,2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Rectangle x:Name="ActiveIndicator" Width="3" Height="16" Fill="{DynamicResource SecondaryBrush}" 
+                                           HorizontalAlignment="Left" Visibility="Collapsed" Margin="-12,0,8,0" RadiusX="1.5" RadiusY="1.5"/>
+                                <ContentPresenter Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+                                <Setter TargetName="bd" Property="Background" Value="#252A31"/>
                                 <Setter Property="Foreground"               Value="White"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="bd" Property="Background" Value="#2E353F"/>
                                 <Setter Property="Foreground"               Value="White"/>
-                                <Setter TargetName="bd" Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="{DynamicResource PrimaryColor}" BlurRadius="10" ShadowDepth="0" Opacity="0.4"/>
-                                    </Setter.Value>
-                                </Setter>
+                                <Setter Property="FontWeight"               Value="Bold"/>
+                                <Setter TargetName="ActiveIndicator"        Property="Visibility" Value="Visible"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -79,59 +84,59 @@
 
                 <!-- Navigation List -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Margin="12,0">
+                    <StackPanel Margin="8,0">
                         <Button x:Name="NavDash"     Content="📊  Dashboard"  ToolTip="Dashboard"  Style="{StaticResource NavBtn}" Click="NavDash_Click"    IsEnabled="False" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavBilling"  Content="🖥  Billing POS" ToolTip="Billing POS" Style="{StaticResource NavBtn}" Click="NavBilling_Click" Margin="0,6,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavMenu"     Content="📋  Items"       ToolTip="Items"       Style="{StaticResource NavBtn}" Click="NavMenu_Click"    Margin="0,6,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavCats"     Content="🏷  Categories"  ToolTip="Categories"  Style="{StaticResource NavBtn}" Click="NavCats_Click"    Margin="0,6,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavLedger"   Content="📒  Ledger"      ToolTip="Ledger"      Style="{StaticResource NavBtn}" Click="NavLedger_Click"  Margin="0,6,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavJournal"  Content="📓  Journal"     ToolTip="Journal"     Style="{StaticResource NavBtn}" Click="NavJournal_Click" Margin="0,6,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavSettings" Content="⚙  Settings"    ToolTip="Settings"    Style="{StaticResource NavBtn}" Click="NavSettings_Click" Margin="0,6,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavAudit"    Content="🛡  Audit"       ToolTip="Audit"       Style="{StaticResource NavBtn}" Click="NavAudit_Click"    Margin="0,6,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavShift"    Content="💵  Shift"       ToolTip="Shift"       Style="{StaticResource NavBtn}" Click="NavShift_Click"    Margin="0,6,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavBilling"  Content="🖥  Billing POS" ToolTip="Billing POS" Style="{StaticResource NavBtn}" Click="NavBilling_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavMenu"     Content="📋  Items"       ToolTip="Items"       Style="{StaticResource NavBtn}" Click="NavMenu_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavCats"     Content="🏷  Categories"  ToolTip="Categories"  Style="{StaticResource NavBtn}" Click="NavCats_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavLedger"   Content="📒  Ledger"      ToolTip="Ledger"      Style="{StaticResource NavBtn}" Click="NavLedger_Click"  Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavJournal"  Content="📓  Journal"     ToolTip="Journal"     Style="{StaticResource NavBtn}" Click="NavJournal_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavSettings" Content="⚙  Settings"    ToolTip="Settings"    Style="{StaticResource NavBtn}" Click="NavSettings_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavAudit"    Content="🛡  Audit"       ToolTip="Audit"       Style="{StaticResource NavBtn}" Click="NavAudit_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavShift"    Content="💵  Shift"       ToolTip="Shift"       Style="{StaticResource NavBtn}" Click="NavShift_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
                     </StackPanel>
                 </ScrollViewer>
 
                 <!-- Bottom User Info -->
-                <Border Grid.Row="2" Background="#121418" Padding="15,20" BorderBrush="#2E343D" BorderThickness="0,1,0,0">
+                <Border Grid.Row="2" Background="#15191E" Padding="12,16" BorderBrush="#2E343D" BorderThickness="0,1,0,0">
                     <StackPanel>
-                        <Grid x:Name="UserInfoGrid" Margin="0,0,0,20">
+                        <Grid x:Name="UserInfoGrid" Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <StackPanel>
+                            <StackPanel Margin="8,0,0,0" VerticalAlignment="Center">
                                 <TextBlock x:Name="UserNameText" Text="Admin" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
                                 <TextBlock x:Name="UserRoleText" Text="Administrator" Foreground="#7FA8C4" FontSize="11" Margin="0,2,0,0"/>
                             </StackPanel>
                             <Button Grid.Column="1" Click="ThemeToggle_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" VerticalAlignment="Center" ToolTip="Toggle Theme">
-                                <TextBlock Text="🌓" FontSize="18"/>
+                                <TextBlock Text="🌓" FontSize="18" Foreground="#A0B0C0"/>
                             </Button>
                         </Grid>
 
                         <Button Click="Logout_Click" Cursor="Hand" ToolTip="Logout" BorderThickness="0" Background="Transparent" HorizontalAlignment="Stretch">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border x:Name="bd" Background="#BF2E1E" CornerRadius="12" Padding="12">
-                                        <Grid>
-                                            <StackPanel x:Name="LogoutFull" Orientation="Horizontal" HorizontalAlignment="Center">
-                                                <Viewbox Width="16" Height="16" Margin="0,0,10,0">
-                                                    <Canvas Width="24" Height="24">
-                                                        <Path Fill="White" Data="M12 2C11.45 2 11 2.45 11 3V13C11 13.55 11.45 14 12 14C12.55 14 13 13.55 13 13V3C13 2.45 12.55 2 12 2ZM7.1 4.1C6.71 3.71 6.08 3.72 5.71 4.12C3.44 6.53 2.53 9.92 3.55 13.26C4.73 17.13 8.31 19.83 12.37 19.99C17.37 20.2 21.56 16.14 21.56 11.16C21.56 8.02 19.96 5.25 17.53 3.64C17.07 3.34 16.46 3.44 16.12 3.88C15.78 4.32 15.87 4.94 16.33 5.24C18.22 6.48 19.44 8.64 19.44 11.09C19.44 14.84 16.53 17.93 12.79 18C8.97 18.07 5.82 14.92 5.82 11.09C5.82 8.64 7.03 6.48 8.91 5.24C9.36 4.95 9.48 4.36 9.14 3.92C8.81 3.48 8.11 3.42 7.1 4.1Z"/>
-                                                    </Canvas>
-                                                </Viewbox>
-                                                <TextBlock x:Name="LogoutText" Text="Sign Out" Foreground="White" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                                            </StackPanel>
-                                            <TextBlock x:Name="LogoutIconOnly" Text="⏻" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Visibility="Collapsed"/>
-                                        </Grid>
+                                    <Border x:Name="bd" Background="#D32F2F" CornerRadius="10" Padding="12,10">
+                                        <StackPanel x:Name="LogoutContainer" Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Path x:Name="LogoutIcon" Width="16" Height="16" Fill="White" Stretch="Uniform"
+                                                  Data="M12 2C11.45 2 11 2.45 11 3V13C11 13.55 11.45 14 12 14C12.55 14 13 13.55 13 13V3C13 2.45 12.55 2 12 2ZM7.1 4.1C6.71 3.71 6.08 3.72 5.71 4.12C3.44 6.53 2.53 9.92 3.55 13.26C4.73 17.13 8.31 19.83 12.37 19.99C17.37 20.2 21.56 16.14 21.56 11.16C21.56 8.02 19.96 5.25 17.53 3.64C17.07 3.34 16.46 3.44 16.12 3.88C15.78 4.32 15.87 4.94 16.33 5.24C18.22 6.48 19.44 8.64 19.44 11.09C19.44 14.84 16.53 17.93 12.79 18C8.97 18.07 5.82 14.92 5.82 11.09C5.82 8.64 7.03 6.48 8.91 5.24C9.36 4.95 9.48 4.36 9.14 3.92C8.81 3.48 8.11 3.42 7.1 4.1Z"/>
+                                            <TextBlock x:Name="LogoutText" Text="Logout" Foreground="White" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                                        </StackPanel>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="bd" Property="Background" Value="#E53E2E"/>
+                                            <Setter TargetName="bd" Property="Background" Value="#F44336"/>
+                                            <Setter TargetName="bd" Property="Effect">
+                                                <Setter.Value>
+                                                    <DropShadowEffect Color="#F44336" BlurRadius="12" ShadowDepth="0" Opacity="0.3"/>
+                                                </Setter.Value>
+                                            </Setter>
                                         </Trigger>
                                         <DataTrigger Binding="{Binding Width, ElementName=SidebarColumn}" Value="70">
                                             <Setter TargetName="LogoutText" Property="Visibility" Value="Collapsed"/>
-                                            <Setter TargetName="LogoutFull" Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter TargetName="LogoutIcon" Property="Margin" Value="0"/>
+                                            <Setter TargetName="bd" Property="Padding" Value="0,12"/>
                                         </DataTrigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>

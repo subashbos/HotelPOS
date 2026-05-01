@@ -141,61 +141,33 @@
                               Style="{StaticResource PremiumGrid}">
 
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="16,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="ITEM NAME" Binding="{Binding Name}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="16,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="FontWeight"        Value="SemiBold"/>
-                                        <Setter Property="TextWrapping"      Value="Wrap"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category.Name}" Width="120">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="16,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTemplateColumn Header="STOCK" Width="100">
+                            <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            <DataGridTextColumn Header="ITEM NAME" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category.Name}" Width="120"/>
+                            <DataGridTemplateColumn Header="STOCK" Width="100" HeaderStyle="{StaticResource CenterHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0">
-                                            <TextBlock Text="{Binding StockQuantity}" FontWeight="Bold">
-                                                <TextBlock.Foreground>
-                                                    <MultiBinding Converter="{StaticResource StockToColorMultiConverter}">
-                                                        <Binding Path="StockQuantity"/>
-                                                        <Binding Path="TrackInventory"/>
-                                                    </MultiBinding>
-                                                </TextBlock.Foreground>
-                                            </TextBlock>
-                                        </StackPanel>
+                                        <TextBlock Text="{Binding StockQuantity}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Foreground>
+                                                <MultiBinding Converter="{StaticResource StockToColorMultiConverter}">
+                                                    <Binding Path="StockQuantity"/>
+                                                    <Binding Path="TrackInventory"/>
+                                                </MultiBinding>
+                                            </TextBlock.Foreground>
+                                        </TextBlock>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="PRICE" Width="130">
+                            <DataGridTemplateColumn Header="PRICE" Width="130" HeaderStyle="{StaticResource RightHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border Padding="12,5" HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="16" Background="{DynamicResource SecondaryBrush}">
-                                            <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}"
-                                                       FontWeight="Bold" FontSize="13" Foreground="White"/>
+                                        <Border Padding="12,5" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="16" Background="{DynamicResource SecondaryBrush}" Margin="0,0,14,0">
+                                            <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" FontSize="13" Foreground="White"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="TAX" Width="90">
+                            <DataGridTemplateColumn Header="TAX" Width="90" HeaderStyle="{StaticResource CenterHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding TaxPercentage, StringFormat={}{0}%}" 
@@ -204,16 +176,13 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="ACTIONS" Width="130">
+                            <DataGridTemplateColumn Header="ACTIONS" Width="130" HeaderStyle="{StaticResource CenterHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                            <Button Content="✎" Click="Edit_Click" Tag="{Binding}"
-                                                    Background="Transparent" Foreground="{DynamicResource PrimaryBrush}" 
-                                                    BorderThickness="0" FontSize="16" Padding="8" Cursor="Hand" ToolTip="Edit Item"/>
-                                            <Button Content="🗑" Click="Delete_Click" Tag="{Binding Id}"
-                                                    Background="Transparent" Foreground="{DynamicResource DangerBrush}" 
-                                                    BorderThickness="0" FontSize="16" Padding="8" Cursor="Hand" ToolTip="Delete Item"/>
+                                            <Button Style="{StaticResource ActionBtn}" Content="✎" Click="Edit_Click" Tag="{Binding}" ToolTip="Edit Item"/>
+                                            <Button Style="{StaticResource ActionBtn}" Content="🗑" Click="Delete_Click" Tag="{Binding Id}" 
+                                                    Foreground="{DynamicResource DangerBrush}" ToolTip="Delete Item" Margin="6,0,0,0"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

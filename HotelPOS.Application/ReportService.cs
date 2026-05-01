@@ -49,12 +49,15 @@ namespace HotelPOS.Application
                 })
                 .OrderBy(t => t.TableNumber)
                 .ToList();
+            for (int i = 0; i < byTable.Count; i++) byTable[i].SNo = i + 1;
 
             // Recent orders (latest 50) — convert UTC → local time for display
             var recent = orders
+                .OrderByDescending(o => o.CreatedAt)
                 .Take(50)
-                .Select(o => new RecentOrderRowDto
+                .Select((o, idx) => new RecentOrderRowDto
                 {
+                    SNo = idx + 1,
                     OrderId = o.Id,
                     TableNumber = o.TableNumber,
                     CreatedAt = o.CreatedAt.ToLocalTime(),
@@ -83,6 +86,7 @@ namespace HotelPOS.Application
                 })
                 .OrderByDescending(c => c.Revenue)
                 .ToList();
+            for (int i = 0; i < categorySales.Count; i++) categorySales[i].SNo = i + 1;
 
             // Sales by payment mode
             var paymentModeSales = orders
@@ -99,6 +103,7 @@ namespace HotelPOS.Application
                 })
                 .OrderByDescending(p => p.Revenue)
                 .ToList();
+            for (int i = 0; i < paymentModeSales.Count; i++) paymentModeSales[i].SNo = i + 1;
 
             return new SalesReportDto
             {
@@ -123,7 +128,7 @@ namespace HotelPOS.Application
             if (to.HasValue)
                 orders = orders.Where(o => o.CreatedAt <= to.Value.ToUniversalTime()).ToList();
 
-            return orders
+            var result = orders
                 .SelectMany(o => o.Items)
                 .GroupBy(i => i.ItemName)
                 .Select(g => new ItemReportRowDto
@@ -135,6 +140,9 @@ namespace HotelPOS.Application
                 })
                 .OrderByDescending(x => x.TotalRevenue)
                 .ToList();
+
+            for (int i = 0; i < result.Count; i++) result[i].SNo = i + 1;
+            return result;
         }
 
         public async Task<List<GstReportRowDto>> GetGstReportAsync(DateTime from, DateTime to)
@@ -147,7 +155,7 @@ namespace HotelPOS.Application
                             o.CreatedAt.ToLocalTime().Date <= to.Date)
                 .ToList();
 
-            return filtered
+            var result = filtered
                 .GroupBy(o => o.CreatedAt.ToLocalTime().Date)
                 .Select(g => new GstReportRowDto
                 {
@@ -159,6 +167,9 @@ namespace HotelPOS.Application
                 })
                 .OrderBy(r => r.Date)
                 .ToList();
+
+            for (int i = 0; i < result.Count; i++) result[i].SNo = i + 1;
+            return result;
         }
 
         public async Task<List<MonthlySalesChartDto>> GetMonthlyChartDataAsync()

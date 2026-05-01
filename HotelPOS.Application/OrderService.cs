@@ -40,35 +40,22 @@ namespace HotelPOS.Application
             var fy = GetFiscalYear(now.ToLocalTime());
             var inv = await _repo.GetNextInvoiceNumberAsync(fy);
 
-            var subtotal = orderItems.Sum(x => x.Total);
-            var gst = Math.Round(orderItems.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
-            
-            // Assume Intrastate default for Hotel POS (CGST = 50%, SGST = 50%)
-            var cgst = Math.Round(gst / 2m, 2);
-            var sgst = gst - cgst; // to avoid rounding mismatch
-            var igst = 0m;
-
-            var total = Math.Max(0, subtotal + gst - discount);
-
             var order = new Order
             {
                 InvoiceNumber = inv,
                 FiscalYear = fy,
                 CreatedAt = now,
                 TableNumber = tableNumber,
-                Items = orderItems,
-                Subtotal = subtotal,
-                GstAmount = gst,
-                CgstAmount = cgst,
-                SgstAmount = sgst,
-                IgstAmount = igst,
-                DiscountAmount = discount,
-                TotalAmount = total,
-                PaymentMode = paymentMode,
-                CustomerName = customerName,
-                CustomerPhone = customerPhone,
-                CustomerGstin = customerGstin
+                Items = orderItems
             };
+
+            CalculateTotals(order, orderItems);
+            order.DiscountAmount = discount;
+            order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - discount);
+            order.PaymentMode = paymentMode;
+            order.CustomerName = customerName;
+            order.CustomerPhone = customerPhone;
+            order.CustomerGstin = customerGstin;
 
             var orderId = await _repo.AddAsync(order);
 
@@ -78,8 +65,19 @@ namespace HotelPOS.Application
                 await _itemService.DeductStockAsync(item.ItemId, item.Quantity);
             }
 
-            await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {total:N2}, Table: {tableNumber}"));
+            await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {tableNumber}"));
             return orderId;
+        }
+
+        private void CalculateTotals(Order order, List<OrderItem> items)
+        {
+            order.Subtotal = items.Sum(x => x.Total);
+            order.GstAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
+            
+            // Assume Intrastate default for Hotel POS (CGST = 50%, SGST = 50%)
+            order.CgstAmount = Math.Round(order.GstAmount / 2m, 2);
+            order.SgstAmount = order.GstAmount - order.CgstAmount;
+            order.IgstAmount = 0m;
         }
 
         private string GetFiscalYear(DateTime date)
@@ -107,10 +105,10 @@ namespace HotelPOS.Application
             var oldMap = oldOrder.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
             var newMap = order.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
 
-            // Return all old stock first (or we can diff, but this is safer for complex changes)
+            // Return all old stock first
             foreach (var kvp in oldMap)
             {
-                await _itemService.DeductStockAsync(kvp.Key, -kvp.Value); // Deduct negative = return
+                await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
             }
 
             // Deduct all new stock
@@ -121,14 +119,7 @@ namespace HotelPOS.Application
 
             var oldTotal = oldOrder.TotalAmount;
 
-            // Recalculate totals
-            order.Subtotal = order.Items.Sum(x => x.Total);
-            order.GstAmount = Math.Round(order.Items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
-            
-            order.CgstAmount = Math.Round(order.GstAmount / 2m, 2);
-            order.SgstAmount = order.GstAmount - order.CgstAmount;
-            order.IgstAmount = 0m;
-
+            CalculateTotals(order, order.Items);
             order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
     
             await _repo.UpdateAsync(order);

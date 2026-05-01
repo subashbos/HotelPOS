@@ -287,25 +287,25 @@ namespace HotelPOS.ViewModels
                 var settings = await _settingService.GetSettingsAsync();
 
                 // Execute on UI thread for printing
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                if (System.Windows.Application.Current != null)
                 {
-                    var doc = ReceiptGenerator.CreateKOT(heldOrder.TableNumber, heldOrder.Items, settings.ReceiptFormat == "Thermal");
-                    
-                    var dialog = new System.Windows.Controls.PrintDialog();
-                    if (!string.IsNullOrEmpty(settings.DefaultPrinter))
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        try
+                        var doc = ReceiptGenerator.CreateKOT(heldOrder.TableNumber, heldOrder.Items, settings.ReceiptFormat == "Thermal");
+                        
+                        var dialog = new System.Windows.Controls.PrintDialog();
+                        if (!string.IsNullOrEmpty(settings.DefaultPrinter))
                         {
-                            dialog.PrintQueue = new System.Printing.PrintServer().GetPrintQueue(settings.DefaultPrinter);
+                            try
+                            {
+                                dialog.PrintQueue = new System.Printing.PrintServer().GetPrintQueue(settings.DefaultPrinter);
+                            }
+                            catch { /* Fallback to default if printer not found */ }
                         }
-                        catch { /* Fallback to default if printer not found */ }
-                    }
-                    
-                    // We don't preview KOTs, we just send them straight to the printer.
-                    // If no default printer is set or it's invalid, it might pop up the dialog if we call ShowDialog.
-                    // Let's just try to print document directly. If they haven't configured a printer, it goes to default.
-                    dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "KOT " + heldOrder.TableNumber);
-                });
+                        
+                        dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "KOT " + heldOrder.TableNumber);
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -449,28 +449,31 @@ namespace HotelPOS.ViewModels
                 if (order == null) return;
 
                 // Execute on UI thread for printing
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                if (System.Windows.Application.Current != null)
                 {
-                    var doc = ReceiptGenerator.CreateReceipt(order, settings.ReceiptFormat == "Thermal", settings);
-                    if (settings.ShowPrintPreview)
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        var preview = new PrintPreviewWindow(order, settings);
-                        preview.ShowDialog();
-                    }
-                    else
-                    {
-                        var dialog = new System.Windows.Controls.PrintDialog();
-                        if (!string.IsNullOrEmpty(settings.DefaultPrinter))
+                        var doc = ReceiptGenerator.CreateReceipt(order, settings.ReceiptFormat == "Thermal", settings);
+                        if (settings.ShowPrintPreview)
                         {
-                            try
-                            {
-                                dialog.PrintQueue = new System.Printing.PrintServer().GetPrintQueue(settings.DefaultPrinter);
-                            }
-                            catch { /* Fallback to default if printer not found */ }
+                            var preview = new PrintPreviewWindow(order, settings);
+                            preview.ShowDialog();
                         }
-                        dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "Receipt " + order.Id);
-                    }
-                });
+                        else
+                        {
+                            var dialog = new System.Windows.Controls.PrintDialog();
+                            if (!string.IsNullOrEmpty(settings.DefaultPrinter))
+                            {
+                                try
+                                {
+                                    dialog.PrintQueue = new System.Printing.PrintServer().GetPrintQueue(settings.DefaultPrinter);
+                                }
+                                catch { /* Fallback to default if printer not found */ }
+                            }
+                            dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "Receipt " + order.Id);
+                        }
+                    });
+                }
             }
             catch (Exception ex)
             {

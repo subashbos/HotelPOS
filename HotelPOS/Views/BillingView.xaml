@@ -144,6 +144,7 @@
                             <Border BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="2" CornerRadius="8">
                                 <TextBox x:Name="SearchBox"
                                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                         TextChanged="SearchBox_TextChanged"
                                          Padding="12,10" FontSize="15"
                                          BorderThickness="0"
                                          Background="{DynamicResource SurfaceBrush}"
@@ -172,6 +173,8 @@
                                     <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="4" Opacity="0.2"/>
                                 </Border.Effect>
                                 <ListBox x:Name="AutoList"
+                                         ItemsSource="{Binding Items}"
+                                         SelectedValuePath="Id"
                                          MaxHeight="350"
                                          BorderThickness="0"
                                          FontSize="14"
@@ -410,15 +413,7 @@
                               RowHeight="38"
                               CellEditEnding="CartGrid_CellEditEnding">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="44">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="14,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="44" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                             <DataGridTextColumn Header="ITEM" Binding="{Binding ItemName}" Width="*" IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -430,52 +425,14 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" Width="70">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                                        <Setter Property="HorizontalAlignment" Value="Center"/>
-                                        <Setter Property="VerticalAlignment"   Value="Center"/>
-                                        <Setter Property="FontWeight"          Value="Bold"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="TAX %" Binding="{Binding TaxPercentage, StringFormat={}{0:N2}%}" Width="90" IsReadOnly="True">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="14,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground"        Value="#E67E22"/>
-                                        <Setter Property="FontWeight"        Value="SemiBold"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="TAX AMT" Binding="{Binding TaxAmount, StringFormat=Rs.{0:N2}}" Width="110" IsReadOnly="True">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding"           Value="14,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground"        Value="#A65E00"/>
-                                        <Setter Property="FontWeight"        Value="SemiBold"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="PRICE" Binding="{Binding Price, StringFormat=Rs.{0:N2}}" Width="110">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding" Value="14,0"/>
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTemplateColumn Header="TOTAL" Width="120" IsReadOnly="True">
+                            <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" Width="70" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            <DataGridTextColumn Header="TAX %" Binding="{Binding TaxPercentage, StringFormat={}{0:N2}%}" Width="90" IsReadOnly="True" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                            <DataGridTextColumn Header="TAX AMT" Binding="{Binding TaxAmount, StringFormat=Rs.{0:N2}}" Width="110" IsReadOnly="True" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                            <DataGridTextColumn Header="PRICE" Binding="{Binding Price, StringFormat=Rs.{0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                            <DataGridTemplateColumn Header="TOTAL" Width="120" IsReadOnly="True" HeaderStyle="{StaticResource RightHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border Padding="10,4" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
-                                            <TextBlock Text="{Binding Total, StringFormat=Rs.{0:N2}}"
-                                                       FontWeight="Bold" FontSize="13"
-                                                       Foreground="{DynamicResource TextPrimary}"/>
-                                        </Border>
+                                        <TextBlock Text="{Binding Total, StringFormat=Rs.{0:N2}}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
