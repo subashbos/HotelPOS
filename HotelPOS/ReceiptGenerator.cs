@@ -11,23 +11,28 @@ namespace HotelPOS
         {
             var doc = new FlowDocument
             {
-                PagePadding = isThermal ? new Thickness(10, 10, 10, 20) : new Thickness(50),
-                ColumnWidth = isThermal ? 280 : 700,
+                PagePadding = isThermal ? new Thickness(8, 10, 8, 20) : new Thickness(50),
+                ColumnWidth = isThermal ? 275 : 700,
                 FontFamily = new FontFamily("Segoe UI"),
                 Background = Brushes.White,
                 Foreground = Brushes.Black,
                 TextAlignment = TextAlignment.Left
             };
 
-            if (isThermal) doc.MaxPageWidth = 300;
+            if (isThermal) doc.MaxPageWidth = 285;
 
-            int titleSz = isThermal ? 18 : 26;
-            int headSz = isThermal ? 14 : 18;
-            int textSz = isThermal ? 12 : 14;
-            int smallSz = isThermal ? 10 : 12;
+            int titleSz = isThermal ? 15 : 26;
+            int headSz = isThermal ? 13 : 18;
+            int textSz = isThermal ? 11 : 14;
+            int smallSz = isThermal ? 9 : 12;
 
             // ── Hotel Header ──────────────────────────────────────────────────
-            var hdr = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 0, 0, 6) };
+            var hdr = new Paragraph { 
+                TextAlignment = TextAlignment.Center, 
+                Margin = new Thickness(0, 0, 0, 6),
+                // Ensure wrapping for long hotel names
+                LineHeight = isThermal ? 1.2 : 1.4
+            };
             hdr.Inlines.Add(new Run(settings.HotelName.ToUpper() + "\n") { FontSize = titleSz, FontWeight = FontWeights.Bold });
             hdr.Inlines.Add(new Run(settings.HotelAddress + "\n") { FontSize = smallSz });
             if (settings.ShowPhoneOnReceipt && !string.IsNullOrWhiteSpace(settings.HotelPhone))
@@ -68,9 +73,9 @@ namespace HotelPOS
             {
                 // S.No | Item Name | GST% | Tax | Qty | Total
                 table.Columns.Add(new TableColumn { Width = new GridLength(0.5, GridUnitType.Star) }); // S.No
-                table.Columns.Add(new TableColumn { Width = new GridLength(3.6, GridUnitType.Star) }); // Name
-                table.Columns.Add(new TableColumn { Width = new GridLength(0.6, GridUnitType.Star) }); // Qty
-                table.Columns.Add(new TableColumn { Width = new GridLength(1.3, GridUnitType.Star) }); // Total
+                table.Columns.Add(new TableColumn { Width = new GridLength(3.2, GridUnitType.Star) }); // Name
+                table.Columns.Add(new TableColumn { Width = new GridLength(0.8, GridUnitType.Star) }); // Qty
+                table.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) }); // Total
             }
             else
             {
@@ -121,8 +126,8 @@ namespace HotelPOS
             decimal grandTotal = order.TotalAmount;
 
             var totals = new Table { Margin = new Thickness(0, 6, 0, 0) };
-            totals.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
-            totals.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) });
+            totals.Columns.Add(new TableColumn { Width = new GridLength(1.1, GridUnitType.Star) });
+            totals.Columns.Add(new TableColumn { Width = new GridLength(0.9, GridUnitType.Star) });
             var tg = new TableRowGroup();
             totals.RowGroups.Add(tg);
 
@@ -159,7 +164,7 @@ namespace HotelPOS
                 grandTotal = rounded;
             }
             AddTotalsRow(tg, "Grand Total:", grandTotal.ToString("N2"), true, headSz);
-            AddTotalsRow(tg, "Payment:", order.PaymentMode, false, smallSz);
+            AddTotalsRow(tg, "Payment Mode:", order.PaymentMode, false, smallSz);
             doc.Blocks.Add(totals);
 
             // ── Footer ────────────────────────────────────────────────────────
@@ -186,7 +191,7 @@ namespace HotelPOS
             row.Cells.Add(new TableCell(new Paragraph(new Run(label))
             { TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 2, 8, 2) }));
             row.Cells.Add(new TableCell(new Paragraph(new Run(value))
-            { TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 2, 0, 2) }));
+            { TextAlignment = TextAlignment.Right, Margin = new Thickness(0, 2, 5, 2) }));
             group.Rows.Add(row);
         }
 

@@ -44,9 +44,9 @@ namespace HotelPOS.Tests
             FlowDocument document = ReceiptGenerator.CreateReceipt(order, true, DefaultSettings);
 
             Assert.NotNull(document);
-            Assert.Equal(300, document.MaxPageWidth);
-            Assert.Equal(280, document.ColumnWidth);
-            Assert.Equal(new Thickness(10, 10, 10, 20), document.PagePadding);
+            Assert.Equal(285, document.MaxPageWidth);
+            Assert.Equal(275, document.ColumnWidth);
+            Assert.Equal(new Thickness(8, 10, 8, 20), document.PagePadding);
         }
 
         [Fact]

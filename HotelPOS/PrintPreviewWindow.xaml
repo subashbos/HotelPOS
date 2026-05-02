@@ -6,7 +6,8 @@
         MinHeight="600" MinWidth="480"
         WindowStartupLocation="CenterOwner"
         Background="#F3F5F9"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        PreviewKeyDown="Window_PreviewKeyDown">
 
     <Window.Resources>
         <SolidColorBrush x:Key="HeaderBrush"  Color="#173F5F"/>

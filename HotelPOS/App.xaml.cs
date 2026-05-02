@@ -7,8 +7,10 @@ using HotelPOS.Persistence;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -81,7 +83,11 @@ namespace HotelPOS
             // ── Database ──────────────────────────────────────────────────────
             // Single Scoped registration — one DbContext per DI scope (= one session)
             services.AddDbContext<HotelDbContext>(options =>
-                options.UseSqlServer(connectionString));
+            {
+                options.UseSqlServer(connectionString);
+                // Suppress pending model changes warning during runtime migration
+                options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+            });
 
             // ── Services ──────────────────────────────────────────────────────
             services.AddSingleton<IUserContext, UserContext>();
@@ -146,8 +152,94 @@ namespace HotelPOS
 
             ServiceProvider = services.BuildServiceProvider();
 
+            // ── Database Initialization ──────────────────────────────────────
+            InitializeDatabase();
+
             // Show the first login screen in its own scope
             ShowLoginWindow();
+        }
+
+        private void InitializeDatabase()
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
+                try
+                {
+                    Log.Information("Synchronizing database schema and migration history...");
+
+                    // 1. Ensure the Migrations History table exists
+                    context.Database.ExecuteSqlRaw(@"
+                        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '__EFMigrationsHistory')
+                        BEGIN
+                            CREATE TABLE [__EFMigrationsHistory] (
+                                [MigrationId] nvarchar(150) NOT NULL,
+                                [ProductVersion] nvarchar(32) NOT NULL,
+                                CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+                            );
+                        END");
+
+                    // 2. If 'Orders' table exists, baseline the history to prevent 'Already Exists' errors
+                    // We check if the InitialCreate migration is already in history
+                    var historyCount = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId = '20260414123141_InitialCreate'").AsEnumerable().FirstOrDefault();
+                    
+                    if (historyCount == 0)
+                    {
+                        // Check if the Orders table actually exists on disk
+                        var ordersExist = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM sys.tables WHERE name = 'Orders'").AsEnumerable().FirstOrDefault() > 0;
+                        
+                        if (ordersExist)
+                        {
+                            Log.Warning("Existing database detected without migration history. Basclining migrations...");
+                            
+                            var migrationsToBaseline = new[]
+                            {
+                                "20260414123141_InitialCreate",
+                                "20260415161324_AddItemsTable",
+                                "20260416134035_Phase2Update",
+                                "20260416140401_Phase4AuthUpdate",
+                                "20260416163055_AddSystemSettingsAndUserFlags",
+                                "20260416165520_AddRoundOffSetting",
+                                "20260417050418_AddBarcodeToItem",
+                                "20260417053353_AddItemTaxPercentage",
+                                "20260417151659_UpdateOrderFields",
+                                "20260417161731_AddTaxPercentageToOrderItem",
+                                "20260421150135_AddItemCategory",
+                                "20260421151201_AddCategoryEntity",
+                                "20260423070248_RemoveBarcodeFromItem",
+                                "20260423073320_SoftDeleteAndAuditing",
+                                "20260425164423_AddPerformanceIndexes",
+                                "20260425170344_AddInventoryTracking",
+                                "20260427074939_AddDiscountAndPayment",
+                                "20260427082624_AddCashSessions",
+                                "20260427103814_AddGstAndCustomerFields",
+                                "20260427163516_RestoreBarcode",
+                                "20260427170535_AddMustChangePassword",
+                                "20260501140601_SyncModel"
+                            };
+
+                            foreach (var mId in migrationsToBaseline)
+                            {
+                                context.Database.ExecuteSqlRaw("IF NOT EXISTS (SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId = {0}) INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ({0}, '9.0.0')", mId);
+                            }
+                        }
+                    }
+
+                    // 3. Now run Migrate() normally. It will only apply NEW migrations.
+                    context.Database.Migrate();
+                    Log.Information("Database synchronization complete.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Fatal(ex, "Database synchronization failed.");
+                    MessageBox.Show(
+                        $"Failed to synchronize the database:\n{ex.Message}\n\nPlease ensure SQL Server is running.",
+                        "Database Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    Shutdown();
+                }
+            }
         }
 
         /// <summary>

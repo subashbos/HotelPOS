@@ -29,7 +29,29 @@ namespace HotelPOS.Views
 
         private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.F4) _viewModel.SaveOrderCommand.Execute(null);
+            if (e.Key == Key.F4) 
+            {
+                _viewModel.SaveOrderCommand.Execute(null);
+            }
+            else if (e.Key == Key.F3 || (e.Key == Key.F && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control))
+            {
+                SearchBox.Focus();
+                SearchBox.SelectAll();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Enter)
+            {
+                // If focus is not on an input that handles Enter (like SearchBox or AutoList)
+                // and we are not currently editing a cell in the cart grid, then Enter = Checkout
+                if (!SearchBox.IsFocused && !AutoList.IsFocused && !CartGrid.IsKeyboardFocusWithin)
+                {
+                    if (_viewModel.SaveOrderCommand.CanExecute(null))
+                    {
+                        _viewModel.SaveOrderCommand.Execute(null);
+                        e.Handled = true;
+                    }
+                }
+            }
         }
 
         private void SearchBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -41,6 +63,15 @@ namespace HotelPOS.Views
                     AddItemFromAutoComplete(selected);
                     e.Handled = true;
                     return;
+                }
+                else if (string.IsNullOrWhiteSpace(SearchBox.Text))
+                {
+                    // Empty search box + Enter = Checkout/Preview
+                    if (_viewModel.SaveOrderCommand.CanExecute(null))
+                    {
+                        _viewModel.SaveOrderCommand.Execute(null);
+                        e.Handled = true;
+                    }
                 }
             }
 
