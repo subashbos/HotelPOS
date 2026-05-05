@@ -34,6 +34,7 @@ namespace HotelPOS.Views
     {
         private readonly IOrderService _orderService;
         private readonly IReportService _reportService;
+        private bool _isLoading;
 
         // Expose for shell-level export (kept for backward compat)
         public SalesReportDto? LastSalesReport { get; private set; }
@@ -103,6 +104,9 @@ namespace HotelPOS.Views
 
         public async Task LoadAsync()
         {
+            if (_isLoading) return;
+            _isLoading = true;
+
             try
             {
                 var (from, to) = ResolveRange();
@@ -148,6 +152,10 @@ namespace HotelPOS.Views
             {
                 MessageBox.Show($"Dashboard load failed:\n{ex.Message}", "Dashboard Error",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 
@@ -299,11 +307,16 @@ namespace HotelPOS.Views
                 {
                     var order = new HotelPOS.Domain.Order
                     {
-                        Id = row.OrderId,
-                        TableNumber = row.TableNumber,
-                        CreatedAt = row.CreatedAt,
-                        Items = row.Items,
-                        TotalAmount = row.Total
+                        Id             = row.OrderId,
+                        TableNumber    = row.TableNumber,
+                        CreatedAt      = row.CreatedAt,
+                        Items          = row.Items,
+                        TotalAmount    = row.Total,
+                        DiscountAmount = row.DiscountAmount,
+                        PaymentMode    = row.PaymentMode,
+                        CustomerName   = row.CustomerName,
+                        CustomerPhone  = row.CustomerPhone,
+                        CustomerGstin  = row.CustomerGstin
                     };
                     window.StartEditOrder(order);
                 }

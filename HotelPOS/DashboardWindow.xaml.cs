@@ -196,6 +196,17 @@ namespace HotelPOS
             if (MainContentArea.Content is BillingView bv)
             {
                 bv.LoadOrderForEdit(order);
+
+                // One-shot: when the update completes, navigate back to Dashboard and refresh
+                Action? handler = null;
+                handler = () =>
+                {
+                    bv.OrderUpdated -= handler;
+                    NavDash_Click(null!, null!);
+                    if (_cachedDash != null)
+                        _ = _cachedDash.LoadAsync();
+                };
+                bv.OrderUpdated += handler;
             }
         }
 

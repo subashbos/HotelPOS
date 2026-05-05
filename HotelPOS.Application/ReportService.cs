@@ -57,13 +57,18 @@ namespace HotelPOS.Application
                 .Take(50)
                 .Select((o, idx) => new RecentOrderRowDto
                 {
-                    SNo = idx + 1,
-                    OrderId = o.Id,
-                    TableNumber = o.TableNumber,
-                    CreatedAt = o.CreatedAt.ToLocalTime(),
-                    Total = o.TotalAmount,
-                    ItemCount = o.Items.Count,
-                    Items = o.Items ?? new List<HotelPOS.Domain.OrderItem>()
+                    SNo           = idx + 1,
+                    OrderId       = o.Id,
+                    TableNumber   = o.TableNumber,
+                    CreatedAt     = o.CreatedAt.ToLocalTime(),
+                    Total         = o.TotalAmount,
+                    DiscountAmount = o.DiscountAmount,
+                    ItemCount     = o.Items.Count,
+                    PaymentMode   = string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode,
+                    CustomerName  = o.CustomerName,
+                    CustomerPhone = o.CustomerPhone,
+                    CustomerGstin = o.CustomerGstin,
+                    Items         = o.Items ?? new List<HotelPOS.Domain.OrderItem>()
                 })
                 .ToList();
 

@@ -23,9 +23,17 @@ namespace HotelPOS.Views
             {
                 await _viewModel.InitializeAsync();
             };
+
+            // Relay the ViewModel's navigation event outward to the shell
+            _viewModel.OrderUpdated += () => OrderUpdated?.Invoke();
         }
 
-        public void LoadOrderForEdit(Order order) => _viewModel.LoadOrderForEdit(order);
+        public event Action? OrderUpdated;
+
+        public void LoadOrderForEdit(Order order)
+        {
+            _viewModel.LoadOrderForEdit(order);
+        }
 
         private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
         {

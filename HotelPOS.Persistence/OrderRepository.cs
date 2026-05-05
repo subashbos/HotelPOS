@@ -93,13 +93,21 @@ namespace HotelPOS.Persistence
             if (existing == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
     
             // Update main order properties
-            existing.TableNumber = order.TableNumber;
-            existing.Subtotal = order.Subtotal;
-            existing.GstAmount = order.GstAmount;
+            existing.TableNumber   = order.TableNumber;
+            existing.Subtotal      = order.Subtotal;
+            existing.GstAmount     = order.GstAmount;
+            existing.CgstAmount    = order.CgstAmount;
+            existing.SgstAmount    = order.SgstAmount;
+            existing.IgstAmount    = order.IgstAmount;
             existing.DiscountAmount = order.DiscountAmount;
-            existing.TotalAmount = order.TotalAmount;
-            existing.PaymentMode = order.PaymentMode;
-            existing.UpdatedAt = DateTime.UtcNow;
+            existing.TotalAmount   = order.TotalAmount;
+            existing.PaymentMode   = order.PaymentMode;
+            existing.UpdatedAt     = DateTime.UtcNow;
+
+            // Customer fields — previously silently dropped on update
+            existing.CustomerName  = order.CustomerName;
+            existing.CustomerPhone = order.CustomerPhone;
+            existing.CustomerGstin = order.CustomerGstin;
     
             // Replace items (simpler than syncing individual rows)
             _context.OrderItems.RemoveRange(existing.Items);

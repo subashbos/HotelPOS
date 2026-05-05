@@ -32,7 +32,7 @@ namespace HotelPOS.Application
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Category name is required.");
 
             var existing = await _repo.GetByIdAsync(id);
-            if (existing == null) throw new Exception("Category not found");
+            if (existing == null) throw new KeyNotFoundException($"Category #{id} not found.");
 
             existing.Name = name.Trim();
             await _repo.UpdateAsync(existing);

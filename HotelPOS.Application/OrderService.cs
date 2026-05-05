@@ -92,6 +92,8 @@ namespace HotelPOS.Application
     
         public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(int pageNumber, int pageSize, DateTime? from = null, DateTime? to = null, int? tableNumber = null)
             => _repo.GetPagedWithItemsAsync(pageNumber, pageSize, from, to, tableNumber);
+        
+        public Task<Order?> GetOrderAsync(int id) => _repo.GetByIdWithItemsAsync(id);
 
         public async Task UpdateOrderAsync(Order order)
         {

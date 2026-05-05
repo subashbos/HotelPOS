@@ -58,6 +58,12 @@ namespace HotelPOS.ViewModels
         public ObservableCollection<Category> Categories { get; } = new();
         public ObservableCollection<CartRow> Cart { get; } = new();
 
+        /// <summary>
+        /// Raised after a successful order update so the shell can navigate
+        /// back to the dashboard and refresh it.
+        /// </summary>
+        public event Action? OrderUpdated;
+
         private List<Item> _allItems = new();
 
         public BillingViewModel(IItemService itemService, ICartService cartService, 
@@ -412,7 +418,7 @@ namespace HotelPOS.ViewModels
 
                     await _orderService.UpdateOrderAsync(_editingOrder);
                     _notificationService.ShowSuccess($"Order #{_editingOrder.Id} updated successfully");
-                    await PrintOrderAsync(_editingOrder.Id);
+                    // Removed automatic print on update to avoid unwanted print dialogs/popups
                 }
                 else
                 {
@@ -423,6 +429,7 @@ namespace HotelPOS.ViewModels
                     await PrintOrderAsync(orderId);
                 }
                 
+                var wasEditMode = IsEditMode;
                 ClearCart();
                 IsEditMode = false;
                 _editingOrder = null;
@@ -431,6 +438,11 @@ namespace HotelPOS.ViewModels
                 CustomerName = string.Empty;
                 CustomerPhone = string.Empty;
                 CustomerGstin = string.Empty;
+
+                // Fire after state is fully cleared so the dashboard refreshes
+                // with a clean VM — only for updates, not new orders
+                if (wasEditMode)
+                    OrderUpdated?.Invoke();
             }
             catch (Exception ex)
             {
@@ -438,13 +450,12 @@ namespace HotelPOS.ViewModels
             }
         }
 
-        private async Task PrintOrderAsync(int orderId)
+        private async Task PrintOrderAsync(int orderId, Order? preLoadedOrder = null, bool skipPreview = false)
         {
             try
             {
                 var settings = await _settingService.GetSettingsAsync();
-                var orders = await _orderService.GetAllOrdersWithItemsAsync();
-                var order = orders.FirstOrDefault(o => o.Id == orderId);
+                var order = preLoadedOrder ?? await _orderService.GetOrderAsync(orderId);
 
                 if (order == null) return;
 
@@ -454,7 +465,7 @@ namespace HotelPOS.ViewModels
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
                         var doc = ReceiptGenerator.CreateReceipt(order, settings.ReceiptFormat == "Thermal", settings);
-                        if (settings.ShowPrintPreview)
+                        if (settings.ShowPrintPreview && !skipPreview)
                         {
                             var preview = new PrintPreviewWindow(order, settings);
                             preview.ShowDialog();

@@ -26,7 +26,7 @@ namespace HotelPOS.Application
         {
             if (string.IsNullOrWhiteSpace(username))
                 return (false, "Username cannot be empty.");
-            if (password.Length < MinimumPasswordLength)
+            if (string.IsNullOrEmpty(password) || password.Length < MinimumPasswordLength)
                 return (false, $"Password must be at least {MinimumPasswordLength} characters.");
             if (role != "Admin" && role != "Cashier")
                 return (false, "Role must be Admin or Cashier.");
