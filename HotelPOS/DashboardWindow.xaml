@@ -10,7 +10,8 @@
         WindowState="Maximized"
         Background="{DynamicResource AppBackground}"
         Loaded="Window_Loaded"
-        Closing="Window_Closing">
+        Closing="Window_Closing"
+        PreviewKeyDown="Window_PreviewKeyDown">
 
     <Window.Resources>
         <!-- Nav button: transparent pill, accented when disabled (= active) -->

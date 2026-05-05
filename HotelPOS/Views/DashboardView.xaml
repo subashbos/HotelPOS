@@ -376,7 +376,7 @@
                                                     <DataTemplate>
                                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                                             <Button Style="{StaticResource ActionBtn}" Content="✎" ToolTip="Edit" Click="EditOrder_Click" Tag="{Binding}"/>
-                                                            <Button Style="{StaticResource ActionBtn}" Content="🗑" ToolTip="Delete" Margin="6,0,0,0" Foreground="{DynamicResource DangerBrush}" Click="DeleteOrder_Click" Tag="{Binding OrderId}"/>
+                                                            <Button Style="{StaticResource ActionBtn}" Content="🖨" ToolTip="Print Preview" Margin="6,0,0,0" Foreground="{DynamicResource AccentBrush}" Click="PrintOrder_Click" Tag="{Binding}"/>
                                                         </StackPanel>
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>

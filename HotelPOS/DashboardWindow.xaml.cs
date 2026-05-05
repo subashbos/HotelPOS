@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -228,6 +229,30 @@ namespace HotelPOS
                 // Close() fires → Closed event → scope.Dispose() + ShowLoginWindow()
             }
             else e.Cancel = true;
+        }
+
+        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // Global shortcuts for Billing POS when it's active
+            if (MainContentArea.Content is BillingView bv)
+            {
+                if (e.Key == Key.F1 || e.Key == Key.F3)
+                {
+                    if (!bv.IsKeyboardFocusWithin)
+                    {
+                        bv.FocusSearch();
+                        e.Handled = true;
+                    }
+                }
+                else if (e.Key == Key.F4)
+                {
+                    if (!bv.IsKeyboardFocusWithin)
+                    {
+                        bv.TriggerCheckout();
+                        e.Handled = true;
+                    }
+                }
+            }
         }
     }
 }

@@ -165,7 +165,7 @@ namespace HotelPOS
                 grandTotal = rounded;
             }
             AddTotalsRow(tg, "Grand Total:", grandTotal.ToString("N2"), true, headSz);
-            string pmText = order.PaymentMode;
+            string pmText = order.PaymentMode ?? "Cash";
             if (pmText.Contains("UPI", StringComparison.OrdinalIgnoreCase)) pmText = "UPI";
             
             AddTotalsRow(tg, "Payment Mode:", pmText, false, smallSz);

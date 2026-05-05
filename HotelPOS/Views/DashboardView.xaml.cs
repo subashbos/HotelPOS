@@ -34,6 +34,7 @@ namespace HotelPOS.Views
     {
         private readonly IOrderService _orderService;
         private readonly IReportService _reportService;
+        private readonly ISettingService _settingService;
         private bool _isLoading;
 
         // Expose for shell-level export (kept for backward compat)
@@ -43,11 +44,12 @@ namespace HotelPOS.Views
 
         private readonly string[] _pieColors = { "#4facfe", "#00f2fe", "#f093fb", "#f5576c", "#48c6ef", "#6B8DD6", "#8E37D7", "#3B2667", "#BC78EC" };
 
-        public DashboardView(IOrderService orderService, IReportService reportService)
+        public DashboardView(IOrderService orderService, IReportService reportService, ISettingService settingService)
         {
             InitializeComponent();
             _orderService = orderService;
             _reportService = reportService;
+            _settingService = settingService;
 
             // Wire pagination
             TablePager.PageChanged += page => TableGrid.ItemsSource = page;
@@ -319,6 +321,38 @@ namespace HotelPOS.Views
                         CustomerGstin  = row.CustomerGstin
                     };
                     window.StartEditOrder(order);
+                }
+            }
+        }
+
+        private async void PrintOrder_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button b && b.Tag is RecentOrderRowDto row)
+            {
+                try
+                {
+                    var settings = await _settingService.GetSettingsAsync();
+                    var order = new HotelPOS.Domain.Order
+                    {
+                        Id = row.OrderId,
+                        TableNumber = row.TableNumber,
+                        CreatedAt = row.CreatedAt,
+                        Items = row.Items,
+                        TotalAmount = row.Total,
+                        DiscountAmount = row.DiscountAmount,
+                        PaymentMode = row.PaymentMode,
+                        CustomerName = row.CustomerName,
+                        CustomerPhone = row.CustomerPhone,
+                        CustomerGstin = row.CustomerGstin
+                    };
+
+                    var preview = new PrintPreviewWindow(order, settings);
+                    preview.Owner = Window.GetWindow(this);
+                    preview.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Could not open print preview:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

@@ -65,7 +65,7 @@
                 <Border Grid.Column="1" Background="{DynamicResource SecondaryBrush}" Padding="18,12" CornerRadius="8">
                     <StackPanel>
                         <TextBlock Text="Keyboard Shortcuts" Foreground="White" FontWeight="SemiBold" FontSize="13"/>
-                        <TextBlock Text="F4: Checkout  •  Esc: Close popup  •  ↓: Navigate autocomplete" Margin="0,4,0,0" Foreground="#BDD5E7" FontSize="12"/>
+                        <TextBlock Text="F1: Search  •  F4: Checkout  •  Esc: Close popup" Margin="0,4,0,0" Foreground="#BDD5E7" FontSize="12"/>
                     </StackPanel>
                 </Border>
             </Grid>

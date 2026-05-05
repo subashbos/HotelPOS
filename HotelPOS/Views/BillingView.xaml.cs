@@ -35,17 +35,39 @@ namespace HotelPOS.Views
             _viewModel.LoadOrderForEdit(order);
         }
 
+        public void FocusSearch()
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                SearchBox.Focus();
+                Keyboard.Focus(SearchBox);
+                SearchBox.SelectAll();
+            }), System.Windows.Threading.DispatcherPriority.Input);
+        }
+
+        public void TriggerCheckout()
+        {
+            if (_viewModel.SaveOrderCommand.CanExecute(null))
+            {
+                _viewModel.SaveOrderCommand.Execute(null);
+            }
+        }
+
         private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.F4) 
             {
                 _viewModel.SaveOrderCommand.Execute(null);
             }
-            else if (e.Key == Key.F3 || (e.Key == Key.F && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control))
+            else if (e.Key == Key.F1 || e.Key == Key.F3 || (e.Key == Key.F && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control))
             {
-                SearchBox.Focus();
-                SearchBox.SelectAll();
                 e.Handled = true;
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SearchBox.Focus();
+                    Keyboard.Focus(SearchBox);
+                    SearchBox.SelectAll();
+                }), System.Windows.Threading.DispatcherPriority.Input);
             }
             else if (e.Key == Key.Enter)
             {
