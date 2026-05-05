@@ -339,22 +339,41 @@ namespace HotelPOS.ViewModels
 
         private void UpdateCart()
         {
-            Cart.Clear();
             var items = _cartService.GetItems(TableNumber);
+            
+            // 1. Remove rows that are no longer in the cart
+            var toRemove = Cart.Where(row => !items.Any(i => i.ItemId == row.ItemId)).ToList();
+            foreach (var row in toRemove) Cart.Remove(row);
+
             int sno = 1;
             foreach (var item in items)
             {
-                Cart.Add(new CartRow
+                var existing = Cart.FirstOrDefault(r => r.ItemId == item.ItemId);
+                if (existing != null)
                 {
-                    SNo = sno++,
-                    ItemId = item.ItemId,
-                    ItemName = item.ItemName,
-                    Quantity = item.Quantity,
-                    Price = item.Price,
-                    TaxPercentage = item.TaxPercentage,
-                    TaxAmount = Math.Round(item.Price * item.Quantity * (item.TaxPercentage / 100m), 2),
-                    Total = item.Total
-                });
+                    // Update existing row - properties will notify UI
+                    existing.SNo = sno++;
+                    existing.Quantity = item.Quantity;
+                    existing.Price = item.Price;
+                    existing.TaxPercentage = item.TaxPercentage;
+                    existing.TaxAmount = Math.Round(item.Price * item.Quantity * (item.TaxPercentage / 100m), 2);
+                    existing.Total = item.Total;
+                }
+                else
+                {
+                    // Add new row
+                    Cart.Add(new CartRow
+                    {
+                        SNo = sno++,
+                        ItemId = item.ItemId,
+                        ItemName = item.ItemName,
+                        Quantity = item.Quantity,
+                        Price = item.Price,
+                        TaxPercentage = item.TaxPercentage,
+                        TaxAmount = Math.Round(item.Price * item.Quantity * (item.TaxPercentage / 100m), 2),
+                        Total = item.Total
+                    });
+                }
             }
 
             Subtotal = _cartService.GetSubtotal(TableNumber);
