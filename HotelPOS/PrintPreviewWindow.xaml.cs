@@ -70,7 +70,7 @@ namespace HotelPOS
         {
             if (e.Key == System.Windows.Input.Key.Enter)
             {
-                Print_Click(null, null);
+                Print_Click(this, new RoutedEventArgs());
                 e.Handled = true;
             }
             else if (e.Key == System.Windows.Input.Key.Escape)

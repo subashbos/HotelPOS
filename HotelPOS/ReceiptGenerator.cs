@@ -11,7 +11,7 @@ namespace HotelPOS
         {
             var doc = new FlowDocument
             {
-                PagePadding = isThermal ? new Thickness(8, 10, 8, 20) : new Thickness(50),
+                PagePadding = isThermal ? new Thickness(8, 2, 8, 20) : new Thickness(50),
                 ColumnWidth = isThermal ? 275 : 700,
                 FontFamily = new FontFamily("Segoe UI"),
                 Background = Brushes.White,
@@ -29,9 +29,9 @@ namespace HotelPOS
             // ── Hotel Header ──────────────────────────────────────────────────
             var hdr = new Paragraph { 
                 TextAlignment = TextAlignment.Center, 
-                Margin = new Thickness(0, 0, 0, 6),
+                Margin = new Thickness(0, 0, 0, 2),
                 // Ensure wrapping for long hotel names
-                LineHeight = isThermal ? 1.2 : 1.4
+                LineHeight = isThermal ? 1.0 : 1.4
             };
             hdr.Inlines.Add(new Run(settings.HotelName.ToUpper() + "\n") { FontSize = titleSz, FontWeight = FontWeights.Bold });
             hdr.Inlines.Add(new Run(settings.HotelAddress + "\n") { FontSize = smallSz });
@@ -42,7 +42,7 @@ namespace HotelPOS
 
             hdr.Inlines.Add(new Run(new string('-', isThermal ? 38 : 86) + "\n") { FontSize = smallSz });
             hdr.Inlines.Add(new Run($"Date  : {order.CreatedAt.ToLocalTime():dd-MMM-yyyy  hh:mm tt}\n") { FontSize = smallSz });
-            hdr.Inlines.Add(new Run($"Receipt #: {order.Id}  |  Table: {order.TableNumber}\n") { FontSize = smallSz });
+            hdr.Inlines.Add(new Run($"Receipt #: {order.Id}\n") { FontSize = smallSz });
 
             // B2B Customer Details
             bool hasCustomer = !string.IsNullOrWhiteSpace(order.CustomerName) || 
@@ -71,11 +71,12 @@ namespace HotelPOS
 
             if (isThermal)
             {
-                // S.No | Item Name | GST% | Tax | Qty | Total
-                table.Columns.Add(new TableColumn { Width = new GridLength(0.5, GridUnitType.Star) }); // S.No
+                // S.No | Item Name | Rate | Qty | Total
+                table.Columns.Add(new TableColumn { Width = new GridLength(0.3, GridUnitType.Star) }); // S.No
                 table.Columns.Add(new TableColumn { Width = new GridLength(3.2, GridUnitType.Star) }); // Name
-                table.Columns.Add(new TableColumn { Width = new GridLength(0.8, GridUnitType.Star) }); // Qty
-                table.Columns.Add(new TableColumn { Width = new GridLength(1.5, GridUnitType.Star) }); // Total
+                table.Columns.Add(new TableColumn { Width = new GridLength(1.0, GridUnitType.Star) }); // Rate
+                table.Columns.Add(new TableColumn { Width = new GridLength(0.9, GridUnitType.Star) }); // Qty
+                table.Columns.Add(new TableColumn { Width = new GridLength(1.3, GridUnitType.Star) }); // Total
             }
             else
             {
@@ -95,7 +96,7 @@ namespace HotelPOS
             headerRow.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(230, 230, 230));
             headerRow.Cells.Add(MakeCell("#", TextAlignment.Left));
             headerRow.Cells.Add(MakeCell("ITEM", TextAlignment.Left));
-            if (!isThermal) headerRow.Cells.Add(MakeCell("PRICE", TextAlignment.Right));
+            headerRow.Cells.Add(MakeCell("RATE", TextAlignment.Right));
             headerRow.Cells.Add(MakeCell("QTY", TextAlignment.Center));
             headerRow.Cells.Add(MakeCell("TOTAL", TextAlignment.Right));
             rowGroup.Rows.Add(headerRow);
@@ -107,9 +108,9 @@ namespace HotelPOS
                 var tr = new TableRow { FontSize = textSz };
                 tr.Cells.Add(MakeCell(sNo.ToString(), TextAlignment.Left));
                 tr.Cells.Add(MakeCell(item.ItemName, TextAlignment.Left));
-                if (!isThermal) tr.Cells.Add(MakeCell(item.Price.ToString("N2"), TextAlignment.Right));
+                tr.Cells.Add(MakeCell(item.Price.ToString("0.#"), TextAlignment.Right));
                 tr.Cells.Add(MakeCell(item.Quantity.ToString(), TextAlignment.Center));
-                tr.Cells.Add(MakeCell(item.Total.ToString("N2"), TextAlignment.Right));
+                tr.Cells.Add(MakeCell(item.Total.ToString("0.#"), TextAlignment.Right));
                 rowGroup.Rows.Add(tr);
                 sNo++;
             }
@@ -164,7 +165,10 @@ namespace HotelPOS
                 grandTotal = rounded;
             }
             AddTotalsRow(tg, "Grand Total:", grandTotal.ToString("N2"), true, headSz);
-            AddTotalsRow(tg, "Payment Mode:", order.PaymentMode, false, smallSz);
+            string pmText = order.PaymentMode;
+            if (pmText.Contains("UPI", StringComparison.OrdinalIgnoreCase)) pmText = "UPI";
+            
+            AddTotalsRow(tg, "Payment Mode:", pmText, false, smallSz);
             doc.Blocks.Add(totals);
 
             // ── Footer ────────────────────────────────────────────────────────
