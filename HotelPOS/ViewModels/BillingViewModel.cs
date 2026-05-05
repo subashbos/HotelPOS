@@ -58,6 +58,35 @@ namespace HotelPOS.ViewModels
         public ObservableCollection<Category> Categories { get; } = new();
         public ObservableCollection<CartRow> Cart { get; } = new();
 
+        [ObservableProperty]
+        private CartRow? _selectedCartRow;
+
+        private int _selectedQty;
+        public int SelectedQty
+        {
+            get => _selectedQty;
+            set
+            {
+                if (SetProperty(ref _selectedQty, value))
+                {
+                    if (SelectedCartRow != null)
+                    {
+                        _cartService.SetQuantity(TableNumber, SelectedCartRow.ItemId, value);
+                        UpdateCart();
+                    }
+                }
+            }
+        }
+
+        partial void OnSelectedCartRowChanged(CartRow? value)
+        {
+            if (value != null)
+                _selectedQty = value.Quantity;
+            else
+                _selectedQty = 0;
+            OnPropertyChanged(nameof(SelectedQty));
+        }
+
         /// <summary>
         /// Raised after a successful order update so the shell can navigate
         /// back to the dashboard and refresh it.
@@ -259,6 +288,15 @@ namespace HotelPOS.ViewModels
         }
 
         [RelayCommand]
+        private void UpdateRow(CartRow row)
+        {
+            if (row == null) return;
+            _cartService.SetQuantity(TableNumber, row.ItemId, row.Quantity);
+            _cartService.UpdatePrice(TableNumber, row.ItemId, row.Price);
+            UpdateCart();
+        }
+
+        [RelayCommand]
         private void ClearCart()
         {
             _cartService.Clear(TableNumber);
@@ -345,14 +383,11 @@ namespace HotelPOS.ViewModels
             var toRemove = Cart.Where(row => !items.Any(i => i.ItemId == row.ItemId)).ToList();
             foreach (var row in toRemove) Cart.Remove(row);
 
-            int sno = 1;
             foreach (var item in items)
             {
                 var existing = Cart.FirstOrDefault(r => r.ItemId == item.ItemId);
                 if (existing != null)
                 {
-                    // Update existing row - properties will notify UI
-                    existing.SNo = sno++;
                     existing.Quantity = item.Quantity;
                     existing.Price = item.Price;
                     existing.TaxPercentage = item.TaxPercentage;
@@ -361,10 +396,8 @@ namespace HotelPOS.ViewModels
                 }
                 else
                 {
-                    // Add new row
                     Cart.Add(new CartRow
                     {
-                        SNo = sno++,
                         ItemId = item.ItemId,
                         ItemName = item.ItemName,
                         Quantity = item.Quantity,
@@ -374,6 +407,13 @@ namespace HotelPOS.ViewModels
                         Total = item.Total
                     });
                 }
+            }
+
+            // Update serial numbers sequentially
+            int sno = 1;
+            foreach (var row in Cart)
+            {
+                row.SNo = sno++;
             }
 
             Subtotal = _cartService.GetSubtotal(TableNumber);

@@ -675,7 +675,8 @@ namespace HotelPOS.Tests
                 }
             };
 
-            repoMock.Setup(r => r.GetAllWithItemsAsync()).ReturnsAsync(orders);
+            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+                .ReturnsAsync((orders, orders.Count));
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
@@ -713,7 +714,8 @@ namespace HotelPOS.Tests
                 }
             };
 
-            repoMock.Setup(r => r.GetAllWithItemsAsync()).ReturnsAsync(orders);
+            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+                .ReturnsAsync((orders, orders.Count));
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
@@ -749,7 +751,8 @@ namespace HotelPOS.Tests
                 }
             };
 
-            repoMock.Setup(r => r.GetAllWithItemsAsync()).ReturnsAsync(orders);
+            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+                .ReturnsAsync((orders, orders.Count));
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 

@@ -359,7 +359,7 @@
                                     <Grid Margin="0,0,0,12">
                                         <TextBlock Text="Recent Orders" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     </Grid>
-                                    <DataGrid x:Name="RecentGrid" Height="240" Style="{StaticResource PremiumGrid}">
+                                    <DataGrid x:Name="RecentGrid" MinHeight="240" MaxHeight="450" Style="{StaticResource PremiumGrid}">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                             <DataGridTextColumn Header="TIME" Binding="{Binding CreatedAt, StringFormat=hh:mm tt}" Width="80" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
@@ -396,7 +396,7 @@
                                     <Grid Margin="0,0,0,12">
                                         <TextBlock Text="Date-wise Summary" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     </Grid>
-                                    <DataGrid x:Name="DateGrid" Height="300" Style="{StaticResource PremiumGrid}">
+                                    <DataGrid x:Name="DateGrid" MinHeight="300" MaxHeight="500" Style="{StaticResource PremiumGrid}">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                             <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM yyyy}" Width="140"/>

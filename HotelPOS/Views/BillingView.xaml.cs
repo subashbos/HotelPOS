@@ -214,5 +214,15 @@ namespace HotelPOS.Views
                 AddItemFromAutoComplete(item);
             }
         }
+        private void GridTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox tb && tb.DataContext is CartRow row)
+            {
+                if (_viewModel.UpdateRowCommand.CanExecute(row))
+                {
+                    _viewModel.UpdateRowCommand.Execute(row);
+                }
+            }
+        }
     }
 }
