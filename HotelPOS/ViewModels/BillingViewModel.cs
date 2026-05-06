@@ -57,6 +57,13 @@ namespace HotelPOS.ViewModels
         public ObservableCollection<Item> Items { get; } = new();
         public ObservableCollection<Category> Categories { get; } = new();
         public ObservableCollection<CartRow> Cart { get; } = new();
+        public ObservableCollection<int> ActiveTabs { get; } = new();
+
+        [ObservableProperty]
+        private bool _isTransferMode;
+
+        [ObservableProperty]
+        private bool _isCompositionScheme;
 
         [ObservableProperty]
         private CartRow? _selectedCartRow;
@@ -131,18 +138,55 @@ namespace HotelPOS.ViewModels
         private bool _isTableLayoutOpen;
 
         [RelayCommand]
-        private void OpenTableLayout()
+        private void OpenTableLayout(object? parameter)
         {
-            RefreshTables();
-            IsTableLayoutOpen = true;
+            bool open = true;
+            if (parameter is bool b) open = b;
+            else if (parameter is string s && bool.TryParse(s, out bool b2)) open = b2;
+
+            if (open) RefreshTables();
+            IsTableLayoutOpen = open;
+            
+            // If we are just opening the layout normally (not via Move Items), 
+            // ensure transfer mode is off.
+            if (open && !IsTransferMode) { } 
         }
 
         [RelayCommand]
         private void SelectTable(int tableNumber)
         {
-            TableNumber = tableNumber;
+            if (IsTransferMode)
+            {
+                _cartService.TransferTable(TableNumber, tableNumber);
+                IsTransferMode = false;
+                StatusMessage = $"Table {TableNumber} items moved to Table {tableNumber}";
+                TableNumber = tableNumber;
+            }
+            else
+            {
+                TableNumber = tableNumber;
+            }
+            
             IsTableLayoutOpen = false;
             UpdateCart();
+        }
+
+        [RelayCommand]
+        private void ToggleTransferMode()
+        {
+            if (Cart.Count == 0) return;
+            IsTransferMode = !IsTransferMode;
+            
+            if (IsTransferMode)
+            {
+                StatusMessage = "MOVE MODE: Select target table from the Table menu";
+                OpenTableLayout(true);
+            }
+            else
+            {
+                StatusMessage = "Ready";
+                IsTableLayoutOpen = false;
+            }
         }
 
         private void RefreshTables()
@@ -172,6 +216,9 @@ namespace HotelPOS.ViewModels
                 Categories.Clear();
                 Categories.Add(new Category { Id = 0, Name = "All" });
                 foreach (var cat in cats) Categories.Add(cat);
+
+                var settings = await _settingService.GetSettingsAsync();
+                IsCompositionScheme = settings.IsCompositionScheme;
 
                 ApplyFilter();
                 UpdateCart();
@@ -265,7 +312,6 @@ namespace HotelPOS.ViewModels
 
             _cartService.AddItem(TableNumber, item);
             UpdateCart();
-            _notificationService.ShowInfo($"Added {item.Name}");
         }
 
         [RelayCommand]
@@ -284,7 +330,6 @@ namespace HotelPOS.ViewModels
             if (row == null) return;
             _cartService.RemoveItem(TableNumber, row.ItemId);
             UpdateCart();
-            _notificationService.ShowInfo($"Removed {row.ItemName}");
         }
 
         [RelayCommand]
@@ -301,7 +346,6 @@ namespace HotelPOS.ViewModels
         {
             _cartService.Clear(TableNumber);
             UpdateCart();
-            _notificationService.ShowInfo("Cart cleared");
         }
 
         [RelayCommand]
@@ -409,16 +453,48 @@ namespace HotelPOS.ViewModels
                 }
             }
 
-            // Update serial numbers sequentially
-            int sno = 1;
-            foreach (var row in Cart)
+            // Sort the collection to match the service's order (alphabetical by name)
+            // This ensures S.No 1, 2, 3 always follows a consistent visual order.
+            var sortedList = Cart.OrderBy(r => r.ItemName).ToList();
+            
+            // If the order changed, we need to re-arrange the ObservableCollection
+            for (int i = 0; i < sortedList.Count; i++)
             {
-                row.SNo = sno++;
+                var row = sortedList[i];
+                int oldIndex = Cart.IndexOf(row);
+                if (oldIndex != i)
+                {
+                    Cart.Move(oldIndex, i);
+                }
+                row.SNo = i + 1;
             }
 
             Subtotal = _cartService.GetSubtotal(TableNumber);
-            GstAmount = _cartService.GetGstAmount(TableNumber);
+            GstAmount = IsCompositionScheme ? 0 : _cartService.GetGstAmount(TableNumber);
             TotalAmount = Math.Max(0, Subtotal + GstAmount - DiscountAmount);
+
+            // Sync Active Tabs
+            var currentActive = _cartService.GetActiveTables() ?? new List<int>();
+            
+            // Add missing
+            foreach (var t in currentActive)
+                if (!ActiveTabs.Contains(t)) ActiveTabs.Add(t);
+            
+            // Remove inactive (except current if has items)
+            var toRemoveTabs = ActiveTabs.Where(t => !currentActive.Contains(t) && t != TableNumber).ToList();
+            foreach (var t in toRemoveTabs) ActiveTabs.Remove(t);
+            
+            // Ensure current is in tabs if it has items
+            if (Cart.Count > 0 && !ActiveTabs.Contains(TableNumber))
+                ActiveTabs.Add(TableNumber);
+
+            // Sort tabs
+            var sorted = ActiveTabs.OrderBy(t => t).ToList();
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                int oldIndex = ActiveTabs.IndexOf(sorted[i]);
+                if (oldIndex != i) ActiveTabs.Move(oldIndex, i);
+            }
         }
 
         partial void OnDiscountAmountChanged(decimal value) => UpdateCart();

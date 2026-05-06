@@ -25,6 +25,7 @@ namespace HotelPOS.Tests
         public BillingViewModelTests()
         {
             _cartService.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
+            _settingService.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting());
             _vm = new BillingViewModel(
                 _itemService.Object,
                 _cartService.Object,
@@ -68,7 +69,7 @@ namespace HotelPOS.Tests
 
             // Assert
             _cartService.Verify(s => s.AddItem(It.IsAny<int>(), item), Times.Once);
-            _notificationService.Verify(n => n.ShowInfo(It.Is<string>(s => s.Contains("Pizza"))), Times.Once);
+            _notificationService.Verify(n => n.ShowInfo(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -104,6 +105,52 @@ namespace HotelPOS.Tests
             // Assert
             _notificationService.Verify(n => n.ShowInfo(It.Is<string>(s => s.Contains("empty"))), Times.Once);
             _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<List<OrderItem>>(), It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ToggleTransferMode_OpensPopup_WhenCartNotEmpty()
+        {
+            // Arrange
+            var items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1 } };
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(items);
+            _cartService.Setup(s => s.GetActiveTables()).Returns(new List<int>());
+            _itemService.Setup(s => s.GetItemsAsync()).ReturnsAsync(new List<Item>());
+            _categoryService.Setup(s => s.GetCategoriesAsync()).ReturnsAsync(new List<Category>());
+            _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession());
+
+            // Act
+            await _vm.InitializeAsync();
+            _vm.ToggleTransferModeCommand.Execute(null);
+
+            // Assert
+            Assert.True(_vm.IsTransferMode);
+            Assert.True(_vm.IsTableLayoutOpen);
+            Assert.Equal("MOVE MODE: Select target table from the Table menu", _vm.StatusMessage);
+        }
+
+        [Fact]
+        public async Task SelectTable_DuringTransfer_CallsTransfer_And_ResetsPopup()
+        {
+            // Arrange
+            var items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1 } };
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(items);
+            _cartService.Setup(s => s.GetActiveTables()).Returns(new List<int> { 1 });
+            _itemService.Setup(s => s.GetItemsAsync()).ReturnsAsync(new List<Item>());
+            _categoryService.Setup(s => s.GetCategoriesAsync()).ReturnsAsync(new List<Category>());
+            _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession());
+            
+            _vm.TableNumber = 1;
+            await _vm.InitializeAsync();
+            _vm.ToggleTransferModeCommand.Execute(null); // Now IsTransferMode = true, IsTableLayoutOpen = true
+
+            // Act
+            _vm.SelectTableCommand.Execute(5);
+
+            // Assert
+            _cartService.Verify(s => s.TransferTable(1, 5), Times.Once);
+            Assert.False(_vm.IsTransferMode);
+            Assert.False(_vm.IsTableLayoutOpen);
+            Assert.Equal(5, _vm.TableNumber);
         }
     }
 }

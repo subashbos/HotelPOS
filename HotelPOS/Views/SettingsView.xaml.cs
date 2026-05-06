@@ -70,6 +70,7 @@ namespace HotelPOS.Views
             ShowPhoneCheck.IsChecked = _current.ShowPhoneOnReceipt;
             ShowFooterCheck.IsChecked = _current.ShowThankYouFooter;
             RoundOffCheck.IsChecked = _current.EnableRoundOff;
+            CompositionCheck.IsChecked = _current.IsCompositionScheme;
         }
 
         // ── Save Hotel Profile ────────────────────────────────────────────────
@@ -99,6 +100,7 @@ namespace HotelPOS.Views
             _current.ShowPhoneOnReceipt = ShowPhoneCheck.IsChecked == true;
             _current.ShowThankYouFooter = ShowFooterCheck.IsChecked == true;
             _current.EnableRoundOff = RoundOffCheck.IsChecked == true;
+            _current.IsCompositionScheme = CompositionCheck.IsChecked == true;
             await Save();
         }
 

@@ -21,7 +21,7 @@ namespace HotelPOS.Application.Interface
         void HoldOrder(int tableNumber, string holdName);
         List<HeldOrder> GetHeldOrders();
         void ResumeHeldOrder(Guid heldOrderId, int targetTableNumber);
-
+        void TransferTable(int sourceTableNumber, int targetTableNumber);
         List<int> GetActiveTables();
     }
 

@@ -32,5 +32,8 @@ namespace HotelPOS.Domain
         // ── Billing Options ───────────────────────────────────────────────────
         /// <summary>When true, grand total is rounded to the nearest rupee; round-off ± shown on bill.</summary>
         public bool EnableRoundOff { get; set; } = false;
+
+        /// <summary>When true, follows Indian GST Composition Scheme (5% turnover tax, no collection from customer, Bill of Supply title).</summary>
+        public bool IsCompositionScheme { get; set; } = false;
     }
 }

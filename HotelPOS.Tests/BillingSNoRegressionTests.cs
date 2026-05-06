@@ -100,7 +100,7 @@ namespace HotelPOS.Tests
             };
             _cartServiceMock.Setup(c => c.GetItems(1)).Returns(remainingItems);
             
-            viewModel.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(viewModel, null);
+            viewModel.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(viewModel, null);
 
             // Assert
             Assert.Equal(2, viewModel.Cart.Count);
@@ -132,7 +132,7 @@ namespace HotelPOS.Tests
 
             // Act
             items[0].Quantity = 5;
-            viewModel.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(viewModel, null);
+            viewModel.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(viewModel, null);
 
             // Assert
             Assert.Equal(2, viewModel.Cart.Count);

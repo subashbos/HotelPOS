@@ -89,7 +89,7 @@ namespace HotelPOS.Tests
                 var table = doc.Blocks.OfType<Table>().FirstOrDefault();
                 
                 // Qty is index 3
-                var qtyColumn = table.Columns[3];
+                var qtyColumn = table!.Columns[3];
                 Assert.Equal(0.9, qtyColumn.Width.Value);
             });
             

@@ -37,7 +37,7 @@ namespace HotelPOS.Tests
             mockCartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem> { cartItem });
 
             // Act - Initial Load
-            vm.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(vm, null);
+            vm.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(vm, null);
             var firstRef = vm.Cart[0];
 
             // Update Quantity in mock
@@ -45,7 +45,7 @@ namespace HotelPOS.Tests
             cartItem.Total = 20;
 
             // Act - Update
-            vm.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(vm, null);
+            vm.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(vm, null);
             var secondRef = vm.Cart[0];
 
             // Assert
