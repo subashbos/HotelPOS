@@ -137,7 +137,34 @@ namespace HotelPOS.Views
             AutoPopup.IsOpen = false;
             SearchBox.Text = string.Empty;
             _viewModel.AddToCartCommand.Execute(item);
-            SearchBox.Focus();
+            
+            // Focus the quantity field of the added item
+            FocusQuantityOfItem(item.Id);
+        }
+
+        private void FocusQuantityOfItem(int itemId)
+        {
+            // Wait for VM to update collection and UI to render
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var rowData = _viewModel.Cart.FirstOrDefault(r => r.ItemId == itemId);
+                if (rowData == null) return;
+
+                CartGrid.ScrollIntoView(rowData);
+                CartGrid.UpdateLayout();
+
+                // Find the TextBox in the QTY column (Index 2)
+                var cell = GetCell(CartGrid, rowData, 2);
+                if (cell != null)
+                {
+                    var textBox = FindVisualChild<TextBox>(cell);
+                    if (textBox != null)
+                    {
+                        textBox.Focus();
+                        textBox.SelectAll();
+                    }
+                }
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -223,6 +250,72 @@ namespace HotelPOS.Views
                     _viewModel.UpdateRowCommand.Execute(row);
                 }
             }
+        }
+
+        private void GridTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox tb) tb.SelectAll();
+        }
+
+        private void QtyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                // Move focus back to search
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SearchBox.Focus();
+                    SearchBox.SelectAll();
+                }), System.Windows.Threading.DispatcherPriority.Input);
+            }
+        }
+
+        private void PriceTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SearchBox.Focus();
+                    SearchBox.SelectAll();
+                }), System.Windows.Threading.DispatcherPriority.Input);
+            }
+        }
+
+        // Helper methods for focus management
+        private DataGridCell? GetCell(DataGrid grid, object item, int column)
+        {
+            var row = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+            if (row == null)
+            {
+                grid.ScrollIntoView(item);
+                grid.UpdateLayout();
+                row = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
+            }
+
+            if (row != null)
+            {
+                var presenter = FindVisualChild<System.Windows.Controls.Primitives.DataGridCellsPresenter>(row);
+                if (presenter != null)
+                {
+                    return presenter.ItemContainerGenerator.ContainerFromIndex(column) as DataGridCell;
+                }
+            }
+            return null;
+        }
+
+        private T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(obj, i);
+                if (child != null && child is T t) return t;
+                var childOfChild = FindVisualChild<T>(child!);
+                if (childOfChild != null) return childOfChild;
+            }
+            return null;
         }
     }
 }

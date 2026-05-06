@@ -438,6 +438,8 @@
                                     <DataTemplate>
                                         <TextBox Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" 
                                                  LostFocus="GridTextBox_LostFocus"
+                                                 PreviewKeyDown="QtyTextBox_PreviewKeyDown"
+                                                 GotFocus="GridTextBox_GotFocus"
                                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                                                  BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"
                                                  Padding="2" FontSize="12" FontWeight="SemiBold"
@@ -451,6 +453,8 @@
                                     <DataTemplate>
                                         <TextBox Text="{Binding Price, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" 
                                                  LostFocus="GridTextBox_LostFocus"
+                                                 PreviewKeyDown="PriceTextBox_PreviewKeyDown"
+                                                 GotFocus="GridTextBox_GotFocus"
                                                  HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
                                                  BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"
                                                  Padding="2,2,8,2" FontSize="12"
