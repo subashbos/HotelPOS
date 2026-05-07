@@ -28,6 +28,10 @@ namespace HotelPOS.Persistence
 
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.IsDeleted);
+ 
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => new { o.FiscalYear, o.InvoiceNumber })
+                .IsUnique();
 
             modelBuilder.Entity<AuditLog>()
                 .HasIndex(a => a.Timestamp);

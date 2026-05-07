@@ -8,7 +8,7 @@ namespace HotelPOS.Infrastructure
 {
     public interface IBackupService
     {
-        Task CreateBackupAsync();
+        Task CreateBackupAsync(string? customPath = null);
     }
 
     public class BackupService : IBackupService
@@ -20,7 +20,7 @@ namespace HotelPOS.Infrastructure
             _scopeFactory = scopeFactory;
         }
 
-        public async Task CreateBackupAsync()
+        public async Task CreateBackupAsync(string? customPath = null)
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
@@ -28,7 +28,7 @@ namespace HotelPOS.Infrastructure
             if (!db.Database.IsRelational()) return;
 
             var conn = db.Database.GetDbConnection();
-            var backupDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+            var backupDir = customPath ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
             if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
 
             if (db.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")

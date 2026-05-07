@@ -387,7 +387,7 @@ namespace HotelPOS.ViewModels
                         {
                             try
                             {
-                                dialog.PrintQueue = new System.Printing.PrintServer().GetPrintQueue(settings.DefaultPrinter);
+                                dialog.PrintQueue = new System.Printing.LocalPrintServer().GetPrintQueue(settings.DefaultPrinter);
                             }
                             catch { /* Fallback to default if printer not found */ }
                         }
@@ -627,7 +627,7 @@ namespace HotelPOS.ViewModels
                             {
                                 try
                                 {
-                                    dialog.PrintQueue = new System.Printing.PrintServer().GetPrintQueue(settings.DefaultPrinter);
+                                    dialog.PrintQueue = new System.Printing.LocalPrintServer().GetPrintQueue(settings.DefaultPrinter);
                                 }
                                 catch { /* Fallback to default if printer not found */ }
                             }

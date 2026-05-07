@@ -53,17 +53,21 @@ namespace HotelPOS.Tests
             var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             var service = new BackupService(scopeFactory);
-            var backupDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+            var tempPath = Path.Combine(Path.GetTempPath(), "HotelPOS_Tests_" + Guid.NewGuid());
+            
+            try
+            {
+                // Act
+                await service.CreateBackupAsync(tempPath);
 
-            if (Directory.Exists(backupDir)) Directory.Delete(backupDir, true);
-
-            // Act
-            await service.CreateBackupAsync();
-
-            // Assert
-            Assert.True(Directory.Exists(backupDir));
-
-            connection.Close();
+                // Assert
+                Assert.True(Directory.Exists(tempPath));
+            }
+            finally
+            {
+                if (Directory.Exists(tempPath)) Directory.Delete(tempPath, true);
+                connection.Close();
+            }
         }
     }
 }

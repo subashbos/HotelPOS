@@ -15,5 +15,10 @@ namespace HotelPOS.Domain.Interface
         Task UpdateAsync(Order order);
         Task<Order?> GetByIdWithItemsAsync(int id);
         Task DeleteAsync(int id);
+
+        // ── Transactions ──────────────────────────────────────────────────────
+        Task BeginTransactionAsync();
+        Task CommitTransactionAsync();
+        Task RollbackTransactionAsync();
     }
 }

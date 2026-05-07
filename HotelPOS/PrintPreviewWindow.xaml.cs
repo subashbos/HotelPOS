@@ -52,7 +52,29 @@ namespace HotelPOS
             if (DocViewer.Document is not FlowDocument document) return;
 
             PrintDialog printDialog = new PrintDialog();
-            if (printDialog.ShowDialog() == true)
+            bool shouldPrint = false;
+
+            // If a default printer is set in settings, try to use it directly
+            if (!string.IsNullOrEmpty(_settings.DefaultPrinter))
+            {
+                try
+                {
+                    printDialog.PrintQueue = new System.Printing.LocalPrintServer().GetPrintQueue(_settings.DefaultPrinter);
+                    shouldPrint = true;
+                }
+                catch
+                {
+                    // Fallback to dialog if printer not found
+                    shouldPrint = printDialog.ShowDialog() == true;
+                }
+            }
+            else
+            {
+                // No default printer, show dialog
+                shouldPrint = printDialog.ShowDialog() == true;
+            }
+
+            if (shouldPrint)
             {
                 // To print a FlowDocument native to the printer's printable area bounds:
                 IDocumentPaginatorSource idpSource = document;

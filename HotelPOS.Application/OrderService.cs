@@ -24,6 +24,16 @@ namespace HotelPOS.Application
             if (items == null || items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.", nameof(items));
 
+            if (tableNumber <= 0)
+                throw new ArgumentException("Invalid table number.", nameof(tableNumber));
+
+            if (discount < 0)
+                throw new ArgumentException("Discount cannot be negative.", nameof(discount));
+
+            var allowedModes = new[] { "Cash", "Card", "UPI" };
+            if (!allowedModes.Contains(paymentMode))
+                throw new ArgumentException($"Invalid payment mode. Allowed: {string.Join(", ", allowedModes)}", nameof(paymentMode));
+
             var orderItems = items
                 .Select(x => new OrderItem
                 {
@@ -57,16 +67,26 @@ namespace HotelPOS.Application
             order.CustomerPhone = customerPhone;
             order.CustomerGstin = customerGstin;
 
-            var orderId = await _repo.AddAsync(order);
-
-            // Deduct Stock
-            foreach (var item in orderItems)
+            await _repo.BeginTransactionAsync();
+            try
             {
-                await _itemService.DeductStockAsync(item.ItemId, item.Quantity);
-            }
+                var orderId = await _repo.AddAsync(order);
 
-            await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {tableNumber}"));
-            return orderId;
+                // Deduct Stock
+                foreach (var item in orderItems)
+                {
+                    await _itemService.DeductStockAsync(item.ItemId, item.Quantity);
+                }
+
+                await _repo.CommitTransactionAsync();
+                await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {tableNumber}"));
+                return orderId;
+            }
+            catch
+            {
+                await _repo.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         private void CalculateTotals(Order order, List<OrderItem> items)
@@ -103,29 +123,39 @@ namespace HotelPOS.Application
             var oldOrder = await _repo.GetByIdWithItemsAsync(order.Id);
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
 
-            // Stock Reconciliation
-            var oldMap = oldOrder.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
-            var newMap = order.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
-
-            // Return all old stock first
-            foreach (var kvp in oldMap)
+            await _repo.BeginTransactionAsync();
+            try
             {
-                await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
-            }
+                // Stock Reconciliation
+                var oldMap = oldOrder.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
+                var newMap = order.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
 
-            // Deduct all new stock
-            foreach (var kvp in newMap)
+                // Return all old stock first (using negative to indicate return)
+                foreach (var kvp in oldMap)
+                {
+                    await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
+                }
+
+                // Deduct all new stock
+                foreach (var kvp in newMap)
+                {
+                    await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
+                }
+
+                var oldTotal = oldOrder.TotalAmount;
+
+                CalculateTotals(order, order.Items);
+                order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
+
+                await _repo.UpdateAsync(order);
+                await _repo.CommitTransactionAsync();
+                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
+            }
+            catch
             {
-                await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
+                await _repo.RollbackTransactionAsync();
+                throw;
             }
-
-            var oldTotal = oldOrder.TotalAmount;
-
-            CalculateTotals(order, order.Items);
-            order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
-
-            await _repo.UpdateAsync(order);
-            await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
         }
         public async Task DeleteOrderAsync(int orderId)
         {

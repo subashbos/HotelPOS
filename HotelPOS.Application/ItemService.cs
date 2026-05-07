@@ -54,6 +54,7 @@ namespace HotelPOS.Application
 
         public async Task UpdateItemAsync(int id, CreateItemDto dto)
         {
+            ValidateDto(dto);
             var item = await _itemRepository.GetByIdAsync(id);
             if (item == null) throw new KeyNotFoundException("Item not found");
 
@@ -74,6 +75,11 @@ namespace HotelPOS.Application
             var item = await _itemRepository.GetByIdAsync(itemId);
             if (item != null && item.TrackInventory)
             {
+                if (quantity > 0 && item.StockQuantity < quantity)
+                {
+                    throw new InvalidOperationException($"Insufficient stock for item: {item.Name}. Required: {quantity}, Available: {item.StockQuantity}");
+                }
+
                 item.StockQuantity -= quantity;
                 await _itemRepository.UpdateAsync(item);
             }
