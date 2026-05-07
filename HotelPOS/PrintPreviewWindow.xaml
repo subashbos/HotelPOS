@@ -8,7 +8,8 @@
         Background="#F3F5F9"
         Loaded="Window_Loaded"
         WindowState="Maximized"
-        PreviewKeyDown="Window_PreviewKeyDown">
+        PreviewKeyDown="Window_PreviewKeyDown"
+        Icon="/Resources/app_icon.png">
 
     <Window.Resources>
         <SolidColorBrush x:Key="HeaderBrush"  Color="#173F5F"/>
@@ -83,6 +84,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="/Resources/app_icon.png" Width="24" Height="24" Margin="0,0,12,0" RenderOptions.BitmapScalingMode="HighQuality"/>
                     <TextBlock Text="Receipt Preview" FontSize="18" FontWeight="Bold" Foreground="#1A2533" VerticalAlignment="Center"/>
                 </StackPanel>
 

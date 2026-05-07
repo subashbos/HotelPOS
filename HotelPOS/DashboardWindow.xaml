@@ -11,7 +11,10 @@
         Background="{DynamicResource AppBackground}"
         Loaded="Window_Loaded"
         Closing="Window_Closing"
-        PreviewKeyDown="Window_PreviewKeyDown">
+        PreviewKeyDown="Window_PreviewKeyDown"
+        Icon="/Resources/app_icon.png">
+    
+    <!-- Branding: Integrated professional icon for title bar and taskbar -->
 
     <Window.Resources>
         <!-- Nav button: transparent pill, accented when disabled (= active) -->
@@ -77,9 +80,9 @@
                         <TextBlock Text="≡" FontSize="28" Foreground="White" FontWeight="Bold"/>
                     </Button>
                     
-                    <StackPanel x:Name="SidebarLogoArea" Margin="24,20,24,0">
-                        <TextBlock Text="🏨 Hotel POS" FontSize="22" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Text="Unified Workspace" FontSize="11" Foreground="#7FA8C4" Margin="0,4,0,0"/>
+                    <StackPanel x:Name="SidebarLogoArea" Margin="24,20,24,0" Orientation="Horizontal">
+                        <Image Source="/Resources/app_icon.png" Width="32" Height="32" Margin="0,0,12,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <TextBlock Text="Hotel POS" FontSize="22" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
 

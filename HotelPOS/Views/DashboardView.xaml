@@ -383,6 +383,23 @@
                                             </DataGridTemplateColumn>
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <!-- Summary Footer for Recent Orders -->
+                                    <Border Background="{DynamicResource AppBackground}" Padding="12,8" CornerRadius="8" Margin="0,10,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="PAGE SUBTOTAL:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="RecentPageSubtotalText" Text="Rs. 0.00" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <TextBlock Text="RANGE TOTAL:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="RecentRangeTotalText" Text="Rs. 0.00" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
                                     <ctrl:PaginationControl x:Name="RecentPager" Margin="0,12,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -412,6 +429,23 @@
                                             </DataGridTemplateColumn>
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <!-- Summary Footer for Date-wise Summary -->
+                                    <Border Background="{DynamicResource AppBackground}" Padding="12,8" CornerRadius="8" Margin="0,10,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="PAGE SUBTOTAL (NET):" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="DatePageSubtotalText" Text="Rs. 0.00" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <TextBlock Text="RANGE TOTAL (NET):" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="DateRangeTotalText" Text="Rs. 0.00" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
                                     <ctrl:PaginationControl x:Name="DatePager" Margin="0,12,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -440,7 +474,24 @@
                                         </DataGridTemplateColumn>
                                     </DataGrid.Columns>
                                 </DataGrid>
-                                <ctrl:PaginationControl x:Name="TablePager" Margin="0,12,0,0"/>
+                                    <!-- Summary Footer for Table Revenue -->
+                                    <Border Background="{DynamicResource AppBackground}" Padding="12,8" CornerRadius="8" Margin="0,10,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="PAGE SUBTOTAL:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="TablePageSubtotalText" Text="Rs. 0.00" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <TextBlock Text="TOTAL:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="TableRangeTotalText" Text="Rs. 0.00" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <ctrl:PaginationControl x:Name="TablePager" Margin="0,12,0,0"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -477,7 +528,24 @@
                                         </DataGridTemplateColumn>
                                     </DataGrid.Columns>
                                 </DataGrid>
-                                <ctrl:PaginationControl x:Name="ItemPager" Margin="0,12,0,0"/>
+                                    <!-- Summary Footer for Item Report -->
+                                    <Border Background="{DynamicResource AppBackground}" Padding="12,8" CornerRadius="8" Margin="0,10,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="PAGE REVENUE:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="ItemPageSubtotalText" Text="Rs. 0.00" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                <TextBlock Text="TOTAL REVENUE:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="ItemRangeTotalText" Text="Rs. 0.00" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <ctrl:PaginationControl x:Name="ItemPager" Margin="0,12,0,0"/>
                             </StackPanel>
                         </Border>
 

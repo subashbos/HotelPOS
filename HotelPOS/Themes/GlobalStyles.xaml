@@ -233,4 +233,10 @@
         </Setter>
     </Style>
 
+    <!-- ── Global Window Style ── -->
+    <!-- Sets the default application icon and branding for all windows in the project -->
+    <Style TargetType="Window">
+        <Setter Property="Icon" Value="/Resources/app_icon.png"/>
+    </Style>
+
 </ResourceDictionary>

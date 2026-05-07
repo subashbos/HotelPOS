@@ -2,6 +2,11 @@ using ClosedXML.Excel;
 using HotelPOS.Application;
 using HotelPOS.Application.Interface;
 using Microsoft.Win32;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -51,11 +56,31 @@ namespace HotelPOS.Views
             _reportService = reportService;
             _settingService = settingService;
 
-            // Wire pagination
-            TablePager.PageChanged += page => TableGrid.ItemsSource = page;
-            RecentPager.PageChanged += page => RecentGrid.ItemsSource = page;
-            ItemPager.PageChanged += page => ItemGrid.ItemsSource = page;
-            DatePager.PageChanged += page => DateGrid.ItemsSource = page;
+            // Wire pagination and calculate subtotals on page change
+            TablePager.PageChanged += page =>
+            {
+                TableGrid.ItemsSource = page;
+                var list = page?.Cast<TableSalesRowDto>() ?? Enumerable.Empty<TableSalesRowDto>();
+                TablePageSubtotalText.Text = $"Rs. {list.Sum(x => x.TotalRevenue):N2}";
+            };
+            RecentPager.PageChanged += page =>
+            {
+                RecentGrid.ItemsSource = page;
+                var list = page?.Cast<RecentOrderRowDto>() ?? Enumerable.Empty<RecentOrderRowDto>();
+                RecentPageSubtotalText.Text = $"Rs. {list.Sum(x => x.Total):N2}";
+            };
+            ItemPager.PageChanged += page =>
+            {
+                ItemGrid.ItemsSource = page;
+                var list = page?.Cast<ItemReportRowDto>() ?? Enumerable.Empty<ItemReportRowDto>();
+                ItemPageSubtotalText.Text = $"Rs. {list.Sum(x => x.TotalRevenue):N2}";
+            };
+            DatePager.PageChanged += page =>
+            {
+                DateGrid.ItemsSource = page;
+                var list = page?.Cast<DailyRow>() ?? Enumerable.Empty<DailyRow>();
+                DatePageSubtotalText.Text = $"Rs. {list.Sum(x => x.NetIncome):N2}";
+            };
 
             Loaded += async (s, e) => await LoadAsync();
         }
@@ -130,6 +155,11 @@ namespace HotelPOS.Views
                 ItemPager.SetSource(items);
                 PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
 
+                // Update Range Totals for the entire filtered period
+                TableRangeTotalText.Text = $"Rs. {sales.SalesByTable.Sum(x => x.TotalRevenue):N2}";
+                RecentRangeTotalText.Text = $"Rs. {sales.RecentOrders.Sum(x => x.Total):N2}";
+                ItemRangeTotalText.Text = $"Rs. {items.Sum(x => x.TotalRevenue):N2}";
+
                 // Pie Chart Logic
                 RenderPieChart(sales.SalesByCategory);
 
@@ -183,6 +213,8 @@ namespace HotelPOS.Views
                         g.Sum(o => o.Subtotal)))
                     .ToList();
 
+                // Calculate total net income for the date-wise range
+                DateRangeTotalText.Text = $"Rs. {LastDailyReport.Sum(x => x.NetIncome):N2}";
                 DatePager.SetSource(LastDailyReport);
             }
             catch { /* silently skip if orders aren't loaded */ }

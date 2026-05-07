@@ -6,7 +6,8 @@
         MinHeight="650" MinWidth="500"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource AppBackground}"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        Icon="/Resources/app_icon.png">
 
     <Window.Resources>
         <Style TargetType="Button">
@@ -59,11 +60,14 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="Menu Item Management"
-                               FontSize="24" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="Update your menu catalog details."
-                               Margin="0,4,0,0" FontSize="13" Foreground="#BDD5E7"/>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/Resources/app_icon.png" Width="32" Height="32" Margin="0,0,16,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Menu Item Management"
+                                   FontSize="24" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="Update your menu catalog details."
+                                   Margin="0,4,0,0" FontSize="13" Foreground="#BDD5E7"/>
+                    </StackPanel>
                 </StackPanel>
                 <Button Grid.Column="1" Content="✕" Click="Close_Click" 
                         Background="Transparent" Foreground="White" FontSize="20" FontWeight="Normal" 

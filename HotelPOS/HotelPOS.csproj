@@ -8,6 +8,11 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <!-- Application Branding: Include the icon resource for UI windows -->
+  <ItemGroup>
+    <Resource Include="Resources\app_icon.png" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Configuration: reads appsettings.json for connection strings -->
     <PackageReference Include="ClosedXML" Version="0.105.0" />

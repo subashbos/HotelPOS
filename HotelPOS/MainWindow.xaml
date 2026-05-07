@@ -12,7 +12,8 @@
         MinWidth="1180"
         Background="#F3F5F9"
         PreviewKeyDown="Window_PreviewKeyDown"
-        Closing="Window_Closing">
+        Closing="Window_Closing"
+        Icon="/Resources/app_icon.png">
     <Window.Resources>
         <SolidColorBrush x:Key="HeaderBrush" Color="#173F5F"/>
         <SolidColorBrush x:Key="AccentBrush" Color="#00A896"/>
@@ -55,15 +56,18 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel>
-                    <TextBlock Text="Hotel POS Billing"
-                               FontSize="28"
-                               FontWeight="Bold"
-                               Foreground="White"/>
-                    <TextBlock Text="Fast hotel billing with GST and keyboard shortcuts for quick counter operations."
-                               Margin="0,8,0,0"
-                               FontSize="15"
-                               Foreground="#DDE7F0"/>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/Resources/app_icon.png" Width="48" Height="48" Margin="0,0,20,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Hotel POS Billing"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                        <TextBlock Text="Fast hotel billing with GST and keyboard shortcuts for quick counter operations."
+                                   Margin="0,8,0,0"
+                                   FontSize="15"
+                                   Foreground="#DDE7F0"/>
+                    </StackPanel>
                 </StackPanel>
 
                 <Border Grid.Column="1" Background="#204E74" Padding="18,12">
