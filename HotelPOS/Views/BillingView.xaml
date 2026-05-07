@@ -505,6 +505,30 @@
 
                         <Border Margin="0,6,0,0" Padding="10,8" CornerRadius="8" Background="{DynamicResource AppBackground}">
                             <StackPanel>
+                                <!-- Customer Details (GST Compliance) -->
+                                <Expander Header="Customer Details" IsExpanded="False" Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,0,0,8" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+                                    <Grid Margin="0,8,0,4">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="Name:" VerticalAlignment="Center" FontSize="10" Margin="0,0,8,6" Foreground="{DynamicResource TextMuted}"/>
+                                        <TextBox Grid.Column="1" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" Padding="4,2" FontSize="11" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}"/>
+
+                                        <TextBlock Grid.Row="1" Text="Phone:" VerticalAlignment="Center" FontSize="10" Margin="0,0,8,6" Foreground="{DynamicResource TextMuted}"/>
+                                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CustomerPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" Padding="4,2" FontSize="11" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}"/>
+
+                                        <TextBlock Grid.Row="2" Text="GSTIN:" VerticalAlignment="Center" FontSize="10" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}"/>
+                                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CustomerGstin, UpdateSourceTrigger=PropertyChanged}" Padding="4,2" FontSize="11" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}"/>
+                                    </Grid>
+                                </Expander>
+
                                 <Grid Margin="0,0,0,4">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <StackPanel Margin="0,0,8,0" Orientation="Horizontal">

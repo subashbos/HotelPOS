@@ -498,7 +498,20 @@ namespace HotelPOS.ViewModels
             }
         }
 
-        partial void OnDiscountAmountChanged(decimal value) => UpdateCart();
+        partial void OnDiscountAmountChanged(decimal value)
+        {
+            if (value < 0)
+            {
+                DiscountAmount = 0;
+                _notificationService.ShowWarning("Discount cannot be negative.");
+            }
+            else if (value > Subtotal)
+            {
+                DiscountAmount = Subtotal;
+                _notificationService.ShowWarning("Discount cannot exceed the subtotal.");
+            }
+            UpdateCart();
+        }
 
         [ObservableProperty]
         private bool _isEditMode;
