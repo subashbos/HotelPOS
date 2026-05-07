@@ -290,7 +290,7 @@ namespace HotelPOS.Application
                 }
 
                 var held = _heldOrders.ToList().Select(h => h.TableNumber);
-                
+
                 return active.Union(held).Distinct().OrderBy(x => x).ToList();
             }
         }

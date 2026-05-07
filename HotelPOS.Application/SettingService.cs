@@ -29,18 +29,18 @@ namespace HotelPOS.Application
             var existing = await _repository.GetByIdAsync(1);
             if (existing != null)
             {
-                existing.HotelName        = settings.HotelName;
-                existing.HotelAddress     = settings.HotelAddress;
-                existing.HotelPhone       = settings.HotelPhone;
-                existing.HotelGst         = settings.HotelGst;
-                existing.DefaultPrinter   = settings.DefaultPrinter;
+                existing.HotelName = settings.HotelName;
+                existing.HotelAddress = settings.HotelAddress;
+                existing.HotelPhone = settings.HotelPhone;
+                existing.HotelGst = settings.HotelGst;
+                existing.DefaultPrinter = settings.DefaultPrinter;
                 existing.ShowPrintPreview = settings.ShowPrintPreview;
-                existing.ReceiptFormat    = settings.ReceiptFormat;
+                existing.ReceiptFormat = settings.ReceiptFormat;
 
                 // Receipt display flags — previously silently dropped
-                existing.ShowGstBreakdown   = settings.ShowGstBreakdown;
-                existing.ShowItemsOnBill    = settings.ShowItemsOnBill;
-                existing.ShowDiscountLine   = settings.ShowDiscountLine;
+                existing.ShowGstBreakdown = settings.ShowGstBreakdown;
+                existing.ShowItemsOnBill = settings.ShowItemsOnBill;
+                existing.ShowDiscountLine = settings.ShowDiscountLine;
                 existing.ShowPhoneOnReceipt = settings.ShowPhoneOnReceipt;
                 existing.ShowThankYouFooter = settings.ShowThankYouFooter;
 

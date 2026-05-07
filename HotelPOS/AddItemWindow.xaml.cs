@@ -42,7 +42,7 @@ namespace HotelPOS
                 }
             }
             catch (Exception ex) { ShowStatus(ex.Message, true); }
-            
+
             ItemNameBox.Focus();
         }
 

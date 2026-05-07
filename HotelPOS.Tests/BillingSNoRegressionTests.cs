@@ -3,8 +3,6 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.ViewModels;
 using Moq;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -56,7 +54,7 @@ namespace HotelPOS.Tests
                 _cashServiceMock.Object);
 
             // Act - Select table to trigger UpdateCart
-            viewModel.SelectTableCommand.Execute(1); 
+            viewModel.SelectTableCommand.Execute(1);
 
             // Assert
             Assert.Equal(2, viewModel.Cart.Count);
@@ -74,7 +72,7 @@ namespace HotelPOS.Tests
                 new OrderItem { ItemId = 2, ItemName = "Item B" },
                 new OrderItem { ItemId = 3, ItemName = "Item C" }
             };
-            
+
             var viewModel = new BillingViewModel(
                 _itemServiceMock.Object,
                 _cartServiceMock.Object,
@@ -99,7 +97,7 @@ namespace HotelPOS.Tests
                 new OrderItem { ItemId = 3, ItemName = "Item C" }
             };
             _cartServiceMock.Setup(c => c.GetItems(1)).Returns(remainingItems);
-            
+
             viewModel.GetType().GetMethod("UpdateCart", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.Invoke(viewModel, null);
 
             // Assert
@@ -197,7 +195,7 @@ namespace HotelPOS.Tests
             // Act - Simulate user changing Qty to 20 and Price to 150 in the grid
             row.Quantity = 20;
             row.Price = 150;
-            
+
             // Re-setup mock for the refresh call in UpdateRow
             _cartServiceMock.Setup(c => c.GetItems(1)).Returns(new List<OrderItem> {
                 new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 20, Price = 150, Total = 3000 }

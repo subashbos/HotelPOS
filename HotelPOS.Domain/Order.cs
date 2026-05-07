@@ -34,7 +34,7 @@ namespace HotelPOS.Domain
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }
         public string? CustomerGstin { get; set; }
-        
+
         // Auditing & Soft Delete
         public bool IsDeleted { get; set; }
         public DateTime? DeletedAt { get; set; }

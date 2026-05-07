@@ -2,13 +2,11 @@ using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Views;
-using System;
+using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-
-using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelPOS
 {
@@ -154,7 +152,7 @@ namespace HotelPOS
                 SidebarColumn.Width = new GridLength(70);
                 SidebarLogoArea.Visibility = Visibility.Collapsed;
                 UserInfoGrid.Visibility = Visibility.Collapsed;
-                
+
                 // Hide text in nav buttons (keep only emojis/icons)
                 foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
                 {

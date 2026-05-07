@@ -1,11 +1,8 @@
-using HotelPOS.ViewModels;
 using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
+using HotelPOS.ViewModels;
 using Moq;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -50,7 +47,7 @@ namespace HotelPOS.Tests
 
             _itemService.Setup(s => s.GetItemsAsync()).ReturnsAsync(items);
             _categoryService.Setup(s => s.GetCategoriesAsync()).ReturnsAsync(new List<Category>());
-            
+
             var vm = CreateViewModel();
             await vm.InitializeAsync();
 

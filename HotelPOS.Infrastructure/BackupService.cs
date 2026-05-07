@@ -1,8 +1,8 @@
-using System.IO;
+using HotelPOS.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using HotelPOS.Persistence;
+using System.IO;
 
 namespace HotelPOS.Infrastructure
 {
@@ -53,7 +53,7 @@ namespace HotelPOS.Infrastructure
 
             using var source = new SqliteConnection(conn.ConnectionString);
             using var destination = new SqliteConnection($"Data Source={destPath}");
-            
+
             await source.OpenAsync();
             await destination.OpenAsync();
             source.BackupDatabase(destination);
@@ -63,7 +63,7 @@ namespace HotelPOS.Infrastructure
         {
             var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
             var destPath = Path.Combine(backupDir, fileName);
-            
+
             var sql = $"BACKUP DATABASE [{conn.Database}] TO DISK = '{destPath}' WITH FORMAT, NAME = 'Full Backup of HotelPOS'";
             await db.Database.ExecuteSqlRawAsync(sql);
         }

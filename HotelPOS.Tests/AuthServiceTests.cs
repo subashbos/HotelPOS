@@ -66,7 +66,7 @@ namespace HotelPOS.Tests
             {
                 await _service.AuthenticateAsync(username, "wrong");
             }
-            
+
             _userRepoMock.Verify(r => r.GetUserByUsernameAsync(username), Times.Exactly(2));
         }
     }

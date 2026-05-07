@@ -3,9 +3,6 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.ViewModels;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -33,7 +30,7 @@ namespace HotelPOS.Tests
             // Arrange
             var session = new CashSession { Id = 1, Status = "Open" };
             var history = new List<CashSession> { session };
-            
+
             _mockCashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(session);
             _mockCashService.Setup(s => s.GetSessionHistoryAsync(It.IsAny<int>())).ReturnsAsync(history);
             _mockCashService.Setup(s => s.GetTotalSalesForCurrentSessionAsync()).ReturnsAsync(200m);

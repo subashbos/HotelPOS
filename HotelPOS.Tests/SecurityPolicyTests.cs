@@ -22,13 +22,13 @@ namespace HotelPOS.Tests
         public async Task AuthenticateAsync_ReturnsUserWithMustChangePasswordFlag()
         {
             var (hash, salt) = _authService.HashPassword("password123");
-            var user = new User 
-            { 
-                Username = "testuser", 
-                PasswordHash = hash, 
-                Salt = salt, 
+            var user = new User
+            {
+                Username = "testuser",
+                PasswordHash = hash,
+                Salt = salt,
                 IsActive = true,
-                MustChangePassword = true 
+                MustChangePassword = true
             };
 
             _userRepo.Setup(r => r.GetUserByUsernameAsync("testuser")).ReturnsAsync(user);

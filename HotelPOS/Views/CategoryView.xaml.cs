@@ -75,7 +75,7 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is int id)
             {
-                if (MessageBox.Show("Delete this category? Items linked to it will lose their category.", "Confirm Delete", 
+                if (MessageBox.Show("Delete this category? Items linked to it will lose their category.", "Confirm Delete",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
                     await _categoryService.DeleteCategoryAsync(id);

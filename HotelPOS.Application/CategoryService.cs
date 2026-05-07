@@ -21,7 +21,7 @@ namespace HotelPOS.Application
         public async Task<int> AddCategoryAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Category name is required.");
-            
+
             var category = new Category { Name = name.Trim() };
             return await _repo.AddAsync(category);
         }

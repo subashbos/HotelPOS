@@ -1,6 +1,4 @@
 using HotelPOS.Domain;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace HotelPOS.Application.Interface
 {

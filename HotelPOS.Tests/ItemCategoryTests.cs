@@ -1,7 +1,6 @@
 using HotelPOS.Application;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
-using HotelPOS.Application.Interface;
 using Moq;
 using Xunit;
 
@@ -15,12 +14,12 @@ namespace HotelPOS.Tests
             // Arrange
             var mockRepo = new Mock<IItemRepository>();
             var service = new ItemService(mockRepo.Object);
-            var dto = new CreateItemDto 
-            { 
-                Name = "Test Item", 
-                Price = 100, 
-                CategoryId = 5, 
-                TaxPercentage = 5 
+            var dto = new CreateItemDto
+            {
+                Name = "Test Item",
+                Price = 100,
+                CategoryId = 5,
+                TaxPercentage = 5
             };
 
             // Act

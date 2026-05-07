@@ -1,12 +1,7 @@
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -63,7 +58,7 @@ namespace HotelPOS.Tests
             // Setup mock to simulate repository filtering
             _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
                 .ReturnsAsync((orders.Where(o => o.CreatedAt >= today).ToList(), 1));
-            
+
             _itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             _categoryRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
@@ -81,13 +76,13 @@ namespace HotelPOS.Tests
             // Arrange
             var cat1 = new Category { Id = 1, Name = "Food" };
             var item1 = new Item { Id = 10, CategoryId = 1 };
-            
+
             var orders = new List<Order>
             {
-                new Order { 
-                    Id = 1, 
-                    TotalAmount = 100, 
-                    Items = new List<OrderItem> { new OrderItem { ItemId = 10, Total = 100 } } 
+                new Order {
+                    Id = 1,
+                    TotalAmount = 100,
+                    Items = new List<OrderItem> { new OrderItem { ItemId = 10, Total = 100 } }
                 }
             };
 
@@ -112,7 +107,7 @@ namespace HotelPOS.Tests
             // Arrange
             // Order 1: 11 PM UTC (which is next day in many timezones, e.g. IST +5:30)
             // Order 2: 1 AM UTC same day
-            var date1 = new DateTime(2026, 5, 1, 23, 0, 0, DateTimeKind.Utc); 
+            var date1 = new DateTime(2026, 5, 1, 23, 0, 0, DateTimeKind.Utc);
             var date2 = new DateTime(2026, 5, 1, 1, 0, 0, DateTimeKind.Utc);
 
             var orders = new List<Order>

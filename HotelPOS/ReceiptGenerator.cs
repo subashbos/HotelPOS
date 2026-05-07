@@ -27,8 +27,9 @@ namespace HotelPOS
             int smallSz = isThermal ? 9 : 12;
 
             // ── Hotel Header ──────────────────────────────────────────────────
-            var hdr = new Paragraph { 
-                TextAlignment = TextAlignment.Center, 
+            var hdr = new Paragraph
+            {
+                TextAlignment = TextAlignment.Center,
                 Margin = new Thickness(0, 0, 0, 2),
                 // Ensure wrapping for long hotel names
                 LineHeight = isThermal ? 1.0 : 1.4
@@ -43,13 +44,13 @@ namespace HotelPOS
             hdr.Inlines.Add(new Run(new string('-', isThermal ? 38 : 86) + "\n") { FontSize = smallSz });
             hdr.Inlines.Add(new Run($"Date  : {order.CreatedAt.ToLocalTime():dd-MMM-yyyy  hh:mm tt}\n") { FontSize = smallSz });
             hdr.Inlines.Add(new Run($"Receipt #: {order.Id}\n") { FontSize = smallSz });
-            
+
             string receiptTitle = settings.IsCompositionScheme ? "BILL OF SUPPLY" : "TAX INVOICE";
             hdr.Inlines.Add(new Run(receiptTitle + "\n") { FontSize = headSz, FontWeight = FontWeights.Bold });
 
             // B2B Customer Details
-            bool hasCustomer = !string.IsNullOrWhiteSpace(order.CustomerName) || 
-                               !string.IsNullOrWhiteSpace(order.CustomerPhone) || 
+            bool hasCustomer = !string.IsNullOrWhiteSpace(order.CustomerName) ||
+                               !string.IsNullOrWhiteSpace(order.CustomerPhone) ||
                                !string.IsNullOrWhiteSpace(order.CustomerGstin);
             if (hasCustomer)
             {
@@ -138,7 +139,7 @@ namespace HotelPOS
             if (settings.ShowGstBreakdown && !settings.IsCompositionScheme)
             {
                 AddTotalsRow(tg, "Subtotal:", subtotal.ToString("N2"), false, textSz);
-                
+
                 var taxGroups = items
                     .GroupBy(i => i.TaxPercentage)
                     .OrderBy(g => g.Key);
@@ -146,7 +147,7 @@ namespace HotelPOS
                 foreach (var group in taxGroups)
                 {
                     if (group.Key == 0) continue;
-                    
+
                     decimal groupSubtotal = group.Sum(i => i.Price * i.Quantity);
                     decimal groupTax = groupSubtotal * (group.Key / 100m);
                     decimal halfTax = groupTax / 2;
@@ -170,7 +171,7 @@ namespace HotelPOS
             AddTotalsRow(tg, "Grand Total:", grandTotal.ToString("N2"), true, headSz);
             string pmText = order.PaymentMode ?? "Cash";
             if (pmText.Contains("UPI", StringComparison.OrdinalIgnoreCase)) pmText = "UPI";
-            
+
             AddTotalsRow(tg, "Payment Mode:", pmText, false, smallSz);
             doc.Blocks.Add(totals);
 
@@ -225,7 +226,7 @@ namespace HotelPOS
             hdr.Inlines.Add(new Run("K.O.T\n") { FontSize = titleSz, FontWeight = FontWeights.Bold });
             hdr.Inlines.Add(new Run($"(Kitchen Order Ticket)\n") { FontSize = smallSz });
             hdr.Inlines.Add(new Run(new string('-', isThermal ? 30 : 60) + "\n") { FontSize = smallSz });
-            
+
             hdr.Inlines.Add(new Run($"Table : {tableNumber}\n") { FontSize = textSz, FontWeight = FontWeights.Bold });
             hdr.Inlines.Add(new Run($"Time  : {DateTime.Now:dd-MMM-yyyy hh:mm tt}\n") { FontSize = smallSz });
             hdr.Inlines.Add(new Run(new string('-', isThermal ? 30 : 60) + "\n") { FontSize = smallSz });

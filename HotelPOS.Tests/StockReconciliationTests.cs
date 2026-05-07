@@ -55,10 +55,10 @@ public class StockReconciliationTests
         // Assert
         // 1. Should return old stock (Deduct with negative quantity)
         _mockItemService.Verify(s => s.DeductStockAsync(itemId, -oldQty), Times.Once);
-        
+
         // 2. Should deduct new stock
         _mockItemService.Verify(s => s.DeductStockAsync(itemId, newQty), Times.Once);
-        
+
         // 3. Should update the order in repo
         _mockOrderRepo.Verify(r => r.UpdateAsync(updatedOrder), Times.Once);
     }

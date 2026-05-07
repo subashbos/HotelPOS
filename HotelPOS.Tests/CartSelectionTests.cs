@@ -1,11 +1,9 @@
-using HotelPOS.ViewModels;
 using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain;
+using HotelPOS.ViewModels;
 using Moq;
 using Xunit;
-using System.Collections.Generic;
-using HotelPOS.Domain;
-using System.Linq;
 
 namespace HotelPOS.Tests
 {
@@ -25,9 +23,9 @@ namespace HotelPOS.Tests
 
             mockCartService.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
             var vm = new BillingViewModel(
-                mockItemService.Object, 
-                mockCartService.Object, 
-                mockOrderService.Object, 
+                mockItemService.Object,
+                mockCartService.Object,
+                mockOrderService.Object,
                 mockSettingService.Object,
                 mockCatService.Object,
                 mockNotifyService.Object,

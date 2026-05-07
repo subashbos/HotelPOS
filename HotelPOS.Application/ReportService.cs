@@ -53,18 +53,18 @@ namespace HotelPOS.Application
                 .Take(50)
                 .Select((o, idx) => new RecentOrderRowDto
                 {
-                    SNo           = idx + 1,
-                    OrderId       = o.Id,
-                    TableNumber   = o.TableNumber,
-                    CreatedAt     = o.CreatedAt.ToLocalTime(),
-                    Total         = o.TotalAmount,
+                    SNo = idx + 1,
+                    OrderId = o.Id,
+                    TableNumber = o.TableNumber,
+                    CreatedAt = o.CreatedAt.ToLocalTime(),
+                    Total = o.TotalAmount,
                     DiscountAmount = o.DiscountAmount,
-                    ItemCount     = o.Items.Count,
-                    PaymentMode   = string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode,
-                    CustomerName  = o.CustomerName,
+                    ItemCount = o.Items.Count,
+                    PaymentMode = string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode,
+                    CustomerName = o.CustomerName,
                     CustomerPhone = o.CustomerPhone,
                     CustomerGstin = o.CustomerGstin,
-                    Items         = o.Items ?? new List<HotelPOS.Domain.OrderItem>()
+                    Items = o.Items ?? new List<HotelPOS.Domain.OrderItem>()
                 })
                 .ToList();
 
@@ -74,7 +74,8 @@ namespace HotelPOS.Application
             var categorySales = orders
                 .SelectMany(o => o.Items)
                 .GroupBy(i => allItems.FirstOrDefault(it => it.Id == i.ItemId)?.CategoryId)
-                .Select(g => {
+                .Select(g =>
+                {
                     var cat = allCats.FirstOrDefault(c => c.Id == g.Key);
                     var rev = g.Sum(i => i.Total);
                     return new CategorySalesRowDto
@@ -90,7 +91,8 @@ namespace HotelPOS.Application
 
             var paymentModeSales = orders
                 .GroupBy(o => string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode)
-                .Select(g => {
+                .Select(g =>
+                {
                     var rev = g.Sum(o => o.TotalAmount);
                     return new PaymentModeSalesRowDto
                     {

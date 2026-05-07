@@ -4,7 +4,6 @@ using HotelPOS.Domain;
 using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
-using HotelPOS;
 
 namespace HotelPOS.Views
 {
@@ -64,7 +63,7 @@ namespace HotelPOS.Views
 
                 // Get count by requesting a minimal page
                 var (_, total) = await _orderService.GetPagedOrdersAsync(1, 1, from, to, tbl);
-                
+
                 JournalPager.SetExternalSource(total);
                 RowCountText.Text = $"{total} transaction{(total == 1 ? "" : "s")}";
             }
@@ -114,7 +113,7 @@ namespace HotelPOS.Views
 
         private void ShowError(string msg, Exception ex)
         {
-             MessageBox.Show($"{msg}:\n{ex.Message}", "Journal Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"{msg}:\n{ex.Message}", "Journal Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         // ── Toolbar events ────────────────────────────────────────────────────

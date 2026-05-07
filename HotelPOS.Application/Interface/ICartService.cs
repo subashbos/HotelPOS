@@ -16,7 +16,7 @@ namespace HotelPOS.Application.Interface
         decimal GetGrandTotal(int tableNumber);
         void LoadItems(int tableNumber, List<OrderItem> items);
         void UpdatePrice(int tableNumber, int itemId, decimal newPrice);
-        
+
         // Hold Support
         void HoldOrder(int tableNumber, string holdName);
         List<HeldOrder> GetHeldOrders();

@@ -1,7 +1,7 @@
 using HotelPOS.Application.Interface;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
 using HotelPOS.Domain.Events;
+using HotelPOS.Domain.Interface;
 using MediatR;
 
 namespace HotelPOS.Application
@@ -73,7 +73,7 @@ namespace HotelPOS.Application
         {
             order.Subtotal = items.Sum(x => x.Total);
             order.GstAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
-            
+
             // Assume Intrastate default for Hotel POS (CGST = 50%, SGST = 50%)
             order.CgstAmount = Math.Round(order.GstAmount / 2m, 2);
             order.SgstAmount = order.GstAmount - order.CgstAmount;
@@ -89,17 +89,17 @@ namespace HotelPOS.Application
 
         public Task<List<Order>> GetAllOrdersWithItemsAsync()
             => _repo.GetAllWithItemsAsync();
-    
+
         public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(int pageNumber, int pageSize, DateTime? from = null, DateTime? to = null, int? tableNumber = null)
             => _repo.GetPagedWithItemsAsync(pageNumber, pageSize, from, to, tableNumber);
-        
+
         public Task<Order?> GetOrderAsync(int id) => _repo.GetByIdWithItemsAsync(id);
 
         public async Task UpdateOrderAsync(Order order)
         {
             if (order.Items == null || order.Items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.");
-    
+
             var oldOrder = await _repo.GetByIdWithItemsAsync(order.Id);
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
 
@@ -123,7 +123,7 @@ namespace HotelPOS.Application
 
             CalculateTotals(order, order.Items);
             order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
-    
+
             await _repo.UpdateAsync(order);
             await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
         }
@@ -136,7 +136,7 @@ namespace HotelPOS.Application
                 {
                     await _itemService.DeductStockAsync(item.ItemId, -item.Quantity);
                 }
-                
+
                 await _repo.DeleteAsync(orderId);
                 await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
             }

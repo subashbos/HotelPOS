@@ -1,8 +1,6 @@
 using HotelPOS.Application;
 using HotelPOS.Domain;
 using Xunit;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace HotelPOS.Tests
 {
@@ -92,10 +90,10 @@ namespace HotelPOS.Tests
             var service = new CartService();
             service.AddItem(1, new Item { Id = 101, Name = "A", Price = 10 });
             service.AddItem(3, new Item { Id = 102, Name = "B", Price = 20 });
-            
+
             // Hold table 3
             service.HoldOrder(3, "Guest A");
-            
+
             // Add items to table 5
             service.AddItem(5, new Item { Id = 103, Name = "C", Price = 30 });
 

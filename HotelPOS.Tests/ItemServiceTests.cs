@@ -60,8 +60,8 @@ namespace HotelPOS.Tests
         {
             // Arrange
             var existing = new List<Item> { new Item { Name = "Pizza" } };
-            var dtos = new List<CreateItemDto> 
-            { 
+            var dtos = new List<CreateItemDto>
+            {
                 new CreateItemDto { Name = "Pizza", Price = 200 }, // Skip
                 new CreateItemDto { Name = "Pasta", Price = 150 }  // Add
             };

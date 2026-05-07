@@ -83,36 +83,36 @@ namespace HotelPOS.Persistence
             var items = await query.ToListAsync();
             return (items, total);
         }
-    
+
         public async Task UpdateAsync(Order order)
         {
             var existing = await _context.Orders
                 .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == order.Id);
-    
+
             if (existing == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
-    
+
             // Update main order properties
-            existing.TableNumber   = order.TableNumber;
-            existing.Subtotal      = order.Subtotal;
-            existing.GstAmount     = order.GstAmount;
-            existing.CgstAmount    = order.CgstAmount;
-            existing.SgstAmount    = order.SgstAmount;
-            existing.IgstAmount    = order.IgstAmount;
+            existing.TableNumber = order.TableNumber;
+            existing.Subtotal = order.Subtotal;
+            existing.GstAmount = order.GstAmount;
+            existing.CgstAmount = order.CgstAmount;
+            existing.SgstAmount = order.SgstAmount;
+            existing.IgstAmount = order.IgstAmount;
             existing.DiscountAmount = order.DiscountAmount;
-            existing.TotalAmount   = order.TotalAmount;
-            existing.PaymentMode   = order.PaymentMode;
-            existing.UpdatedAt     = DateTime.UtcNow;
+            existing.TotalAmount = order.TotalAmount;
+            existing.PaymentMode = order.PaymentMode;
+            existing.UpdatedAt = DateTime.UtcNow;
 
             // Customer fields — previously silently dropped on update
-            existing.CustomerName  = order.CustomerName;
+            existing.CustomerName = order.CustomerName;
             existing.CustomerPhone = order.CustomerPhone;
             existing.CustomerGstin = order.CustomerGstin;
-    
+
             // Replace items (simpler than syncing individual rows)
             _context.OrderItems.RemoveRange(existing.Items);
             existing.Items = order.Items;
-    
+
             await _context.SaveChangesAsync();
         }
         public async Task<Order?> GetByIdWithItemsAsync(int id)

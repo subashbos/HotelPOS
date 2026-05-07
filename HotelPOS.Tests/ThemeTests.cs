@@ -1,9 +1,5 @@
 using HotelPOS.Infrastructure;
-using HotelPOS.Application.Interface;
-using System.Windows;
 using Xunit;
-using System;
-using System.Linq;
 
 namespace HotelPOS.Tests
 {

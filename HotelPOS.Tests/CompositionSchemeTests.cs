@@ -3,11 +3,8 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.ViewModels;
 using Moq;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
 using System.Windows.Documents;
+using Xunit;
 
 namespace HotelPOS.Tests
 {
@@ -59,15 +56,15 @@ namespace HotelPOS.Tests
             var thread = new System.Threading.Thread(() =>
             {
                 // Arrange
-                var order = new Order 
-                { 
+                var order = new Order
+                {
                     Id = 123,
                     Items = new List<OrderItem> { new OrderItem { ItemName = "Burger", Price = 100, Quantity = 1, Total = 100, TaxPercentage = 5 } },
                     TotalAmount = 100
                 };
-                var settings = new SystemSetting 
-                { 
-                    IsCompositionScheme = true, 
+                var settings = new SystemSetting
+                {
+                    IsCompositionScheme = true,
                     ShowGstBreakdown = true // Even if breakdown is enabled in settings, it should be hidden in composition mode
                 };
 
@@ -95,17 +92,17 @@ namespace HotelPOS.Tests
             var thread = new System.Threading.Thread(() =>
             {
                 // Arrange
-                var order = new Order 
-                { 
+                var order = new Order
+                {
                     Id = 123,
                     Items = new List<OrderItem> { new OrderItem { ItemName = "Burger", Price = 100, Quantity = 1, Total = 100, TaxPercentage = 5 } },
                     GstAmount = 5,
                     TotalAmount = 105
                 };
-                var settings = new SystemSetting 
-                { 
-                    IsCompositionScheme = false, 
-                    ShowGstBreakdown = true 
+                var settings = new SystemSetting
+                {
+                    IsCompositionScheme = false,
+                    ShowGstBreakdown = true
                 };
 
                 // Act

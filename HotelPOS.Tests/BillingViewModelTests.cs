@@ -3,9 +3,6 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.ViewModels;
 using Moq;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -19,7 +16,7 @@ namespace HotelPOS.Tests
         private readonly Mock<ICategoryService> _categoryService = new();
         private readonly Mock<INotificationService> _notificationService = new();
         private readonly Mock<ICashService> _cashService = new();
-        
+
         private readonly BillingViewModel _vm;
 
         public BillingViewModelTests()
@@ -42,7 +39,7 @@ namespace HotelPOS.Tests
             // Arrange
             var items = new List<Item> { new Item { Id = 1, Name = "Burger" } };
             var categories = new List<Category> { new Category { Id = 1, Name = "Fast Food" } };
-            
+
             _itemService.Setup(s => s.GetItemsAsync()).ReturnsAsync(items);
             _categoryService.Setup(s => s.GetCategoriesAsync()).ReturnsAsync(categories);
             _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession());
@@ -76,14 +73,14 @@ namespace HotelPOS.Tests
         public async Task ApplyFilter_Filters_By_SearchText()
         {
             // Arrange
-            var items = new List<Item> { 
+            var items = new List<Item> {
                 new Item { Id = 1, Name = "Apple" },
                 new Item { Id = 2, Name = "Banana" }
             };
-            
+
             _itemService.Setup(s => s.GetItemsAsync()).ReturnsAsync(items);
             _categoryService.Setup(s => s.GetCategoriesAsync()).ReturnsAsync(new List<Category>());
-            
+
             // Act
             await _vm.InitializeAsync();
             _vm.SearchText = "app"; // This triggers OnSearchTextChanged -> ApplyFilter
@@ -138,7 +135,7 @@ namespace HotelPOS.Tests
             _itemService.Setup(s => s.GetItemsAsync()).ReturnsAsync(new List<Item>());
             _categoryService.Setup(s => s.GetCategoriesAsync()).ReturnsAsync(new List<Category>());
             _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession());
-            
+
             _vm.TableNumber = 1;
             await _vm.InitializeAsync();
             _vm.ToggleTransferModeCommand.Execute(null); // Now IsTransferMode = true, IsTableLayoutOpen = true

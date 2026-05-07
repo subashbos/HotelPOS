@@ -3,10 +3,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.ViewModels;
 using Moq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
-using HotelPOS.Application;
 
 namespace HotelPOS.Tests
 {

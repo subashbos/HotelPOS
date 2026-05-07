@@ -4,9 +4,6 @@ using HotelPOS.Domain;
 using HotelPOS.ViewModels;
 using Moq;
 using Xunit;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HotelPOS.Tests
 {
@@ -27,7 +24,7 @@ namespace HotelPOS.Tests
             _cartService.Setup(x => x.GetSubtotal(It.IsAny<int>())).Returns(0m);
             _cartService.Setup(x => x.GetGstAmount(It.IsAny<int>())).Returns(0m);
             _cartService.Setup(x => x.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
-            
+
             return new BillingViewModel(
                 _itemService.Object,
                 _cartService.Object,
@@ -60,14 +57,14 @@ namespace HotelPOS.Tests
             // Arrange
             var vm = CreateViewModel();
             vm.TableNumber = 1;
-            
+
             // Mock items in cart to allow transfer mode
             _cartService.Setup(x => x.GetItems(1)).Returns(new List<OrderItem> { new OrderItem { ItemId = 101, ItemName = "Test" } });
-            
+
             // Force Cart to populate
             vm.TableNumber = 2; // trigger change
             vm.TableNumber = 1; // trigger change back to 1
-            
+
             Assert.NotEmpty(vm.Cart);
 
             vm.ToggleTransferModeCommand.Execute(null);

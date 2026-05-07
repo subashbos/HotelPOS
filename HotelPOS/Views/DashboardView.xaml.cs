@@ -309,16 +309,16 @@ namespace HotelPOS.Views
                 {
                     var order = new HotelPOS.Domain.Order
                     {
-                        Id             = row.OrderId,
-                        TableNumber    = row.TableNumber,
-                        CreatedAt      = row.CreatedAt,
-                        Items          = row.Items,
-                        TotalAmount    = row.Total,
+                        Id = row.OrderId,
+                        TableNumber = row.TableNumber,
+                        CreatedAt = row.CreatedAt,
+                        Items = row.Items,
+                        TotalAmount = row.Total,
                         DiscountAmount = row.DiscountAmount,
-                        PaymentMode    = row.PaymentMode,
-                        CustomerName   = row.CustomerName,
-                        CustomerPhone  = row.CustomerPhone,
-                        CustomerGstin  = row.CustomerGstin
+                        PaymentMode = row.PaymentMode,
+                        CustomerName = row.CustomerName,
+                        CustomerPhone = row.CustomerPhone,
+                        CustomerGstin = row.CustomerGstin
                     };
                     window.StartEditOrder(order);
                 }

@@ -102,11 +102,11 @@ namespace HotelPOS.Application
                 if (existingNames.Contains(dto.Name.Trim().ToLowerInvariant()))
                 { skipped++; continue; }
 
-                await _itemRepository.AddAsync(new Item 
-                { 
-                    Name = dto.Name.Trim(), 
-                    Price = dto.Price, 
-                    TaxPercentage = dto.TaxPercentage, 
+                await _itemRepository.AddAsync(new Item
+                {
+                    Name = dto.Name.Trim(),
+                    Price = dto.Price,
+                    TaxPercentage = dto.TaxPercentage,
                     CategoryId = dto.CategoryId,
                     Barcode = dto.Barcode
                 });

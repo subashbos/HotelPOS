@@ -1,4 +1,3 @@
-using System;
 using HotelPOS.Application.Interfaces;
 
 namespace HotelPOS.Infrastructure

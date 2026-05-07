@@ -37,7 +37,7 @@ namespace HotelPOS.ViewModels
 
         [ObservableProperty]
         private string _statusMessage = "Ready";
-        
+
         [ObservableProperty]
         private decimal _discountAmount;
 
@@ -102,7 +102,7 @@ namespace HotelPOS.ViewModels
 
         private List<Item> _allItems = new();
 
-        public BillingViewModel(IItemService itemService, ICartService cartService, 
+        public BillingViewModel(IItemService itemService, ICartService cartService,
                                 IOrderService orderService, ISettingService settingService,
                                 ICategoryService categoryService, INotificationService notificationService,
                                 ICashService cashService)
@@ -114,13 +114,13 @@ namespace HotelPOS.ViewModels
             _categoryService = categoryService;
             _notificationService = notificationService;
             _cashService = cashService;
-            
+
             LoadHeldOrders();
         }
 
         [ObservableProperty]
         private ObservableCollection<HeldOrder> _heldOrders = new();
-        
+
         [ObservableProperty]
         private bool _isHeldOrdersPopupOpen;
 
@@ -146,10 +146,11 @@ namespace HotelPOS.ViewModels
 
             if (open) RefreshTables();
             IsTableLayoutOpen = open;
-            
+
             // If we are just opening the layout normally (not via Move Items), 
             // ensure transfer mode is off.
-            if (open && !IsTransferMode) { } 
+            // CLEANUP: Removed empty if block; ensured transfer mode is explicitly disabled if just opening layout normally.
+            if (open && !IsTransferMode) IsTransferMode = false;
         }
 
         [RelayCommand]
@@ -166,7 +167,7 @@ namespace HotelPOS.ViewModels
             {
                 TableNumber = tableNumber;
             }
-            
+
             IsTableLayoutOpen = false;
             UpdateCart();
         }
@@ -176,7 +177,7 @@ namespace HotelPOS.ViewModels
         {
             if (Cart.Count == 0) return;
             IsTransferMode = !IsTransferMode;
-            
+
             if (IsTransferMode)
             {
                 StatusMessage = "MOVE MODE: Select target table from the Table menu";
@@ -243,7 +244,7 @@ namespace HotelPOS.ViewModels
                 filtered = filtered.Where(i => i.CategoryId == SelectedCategoryId);
 
             if (!string.IsNullOrWhiteSpace(SearchText))
-                filtered = filtered.Where(i => i.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) || 
+                filtered = filtered.Where(i => i.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                                       (!string.IsNullOrEmpty(i.Barcode) && i.Barcode.Contains(SearchText, StringComparison.OrdinalIgnoreCase)));
 
             Items.Clear();
@@ -251,7 +252,7 @@ namespace HotelPOS.ViewModels
         }
 
         partial void OnSearchTextChanged(string value) => ApplyFilter();
-        
+
         [RelayCommand]
         private void FilterByCategory(int categoryId)
         {
@@ -273,7 +274,7 @@ namespace HotelPOS.ViewModels
                 {
                     var cartItems = _cartService.GetItems(TableNumber);
                     var inCart = cartItems.FirstOrDefault(x => x.ItemId == item.Id)?.Quantity ?? 0;
-                    
+
                     if (inCart + delta > item.StockQuantity)
                     {
                         StatusMessage = $"⚠ Out of stock: {item.Name} (Avail: {item.StockQuantity})";
@@ -302,7 +303,7 @@ namespace HotelPOS.ViewModels
             {
                 var cartItems = _cartService.GetItems(TableNumber);
                 var inCart = cartItems.FirstOrDefault(x => x.ItemId == item.Id)?.Quantity ?? 0;
-                
+
                 if (inCart + 1 > item.StockQuantity)
                 {
                     StatusMessage = $"⚠ Out of stock: {item.Name} (Avail: {item.StockQuantity})";
@@ -352,12 +353,12 @@ namespace HotelPOS.ViewModels
         private async Task HoldOrder()
         {
             if (Cart.Count == 0) return;
-            
+
             _cartService.HoldOrder(TableNumber, $"Table {TableNumber} - {DateTime.Now:hh:mm tt}");
-            
+
             // Get the newly held order to print KOT
             var newlyHeld = _cartService.GetHeldOrders().OrderByDescending(h => h.HeldAt).FirstOrDefault();
-            
+
             LoadHeldOrders();
             UpdateCart();
             _notificationService.ShowSuccess("Order moved to Hold / Sent to Kitchen");
@@ -380,7 +381,7 @@ namespace HotelPOS.ViewModels
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
                         var doc = ReceiptGenerator.CreateKOT(heldOrder.TableNumber, heldOrder.Items, settings.ReceiptFormat == "Thermal");
-                        
+
                         var dialog = new System.Windows.Controls.PrintDialog();
                         if (!string.IsNullOrEmpty(settings.DefaultPrinter))
                         {
@@ -390,7 +391,7 @@ namespace HotelPOS.ViewModels
                             }
                             catch { /* Fallback to default if printer not found */ }
                         }
-                        
+
                         dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "KOT " + heldOrder.TableNumber);
                     });
                 }
@@ -422,7 +423,7 @@ namespace HotelPOS.ViewModels
         private void UpdateCart()
         {
             var items = _cartService.GetItems(TableNumber);
-            
+
             // 1. Remove rows that are no longer in the cart
             var toRemove = Cart.Where(row => !items.Any(i => i.ItemId == row.ItemId)).ToList();
             foreach (var row in toRemove) Cart.Remove(row);
@@ -456,7 +457,7 @@ namespace HotelPOS.ViewModels
             // Sort the collection to match the service's order (alphabetical by name)
             // This ensures S.No 1, 2, 3 always follows a consistent visual order.
             var sortedList = Cart.OrderBy(r => r.ItemName).ToList();
-            
+
             // If the order changed, we need to re-arrange the ObservableCollection
             for (int i = 0; i < sortedList.Count; i++)
             {
@@ -475,15 +476,15 @@ namespace HotelPOS.ViewModels
 
             // Sync Active Tabs
             var currentActive = _cartService.GetActiveTables() ?? new List<int>();
-            
+
             // Add missing
             foreach (var t in currentActive)
                 if (!ActiveTabs.Contains(t)) ActiveTabs.Add(t);
-            
+
             // Remove inactive (except current if has items)
             var toRemoveTabs = ActiveTabs.Where(t => !currentActive.Contains(t) && t != TableNumber).ToList();
             foreach (var t in toRemoveTabs) ActiveTabs.Remove(t);
-            
+
             // Ensure current is in tabs if it has items
             if (Cart.Count > 0 && !ActiveTabs.Contains(TableNumber))
                 ActiveTabs.Add(TableNumber);
@@ -563,16 +564,17 @@ namespace HotelPOS.ViewModels
                     // Trigger Print
                     await PrintOrderAsync(orderId);
                 }
-                
+
                 var wasEditMode = IsEditMode;
                 ClearCart();
                 IsEditMode = false;
                 _editingOrder = null;
                 DiscountAmount = 0;
                 PaymentMode = "Cash";
-                CustomerName = string.Empty;
-                CustomerPhone = string.Empty;
-                CustomerGstin = string.Empty;
+                // CLEANUP: Reset customer details to null to align with property definitions and save memory
+                CustomerName = null;
+                CustomerPhone = null;
+                CustomerGstin = null;
 
                 // Fire after state is fully cleared so the dashboard refreshes
                 // with a clean VM — only for updates, not new orders

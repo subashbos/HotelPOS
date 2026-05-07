@@ -6,17 +6,13 @@ using HotelPOS.Infrastructure;
 using HotelPOS.Persistence;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MediatR;
-using System.Windows;
 using Serilog;
+using System.Windows;
 
 namespace HotelPOS
 {
@@ -111,7 +107,7 @@ namespace HotelPOS
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<ICashService, CashService>();
             services.AddScoped<ICategoryService, CategoryService>();
-            
+
             services.AddSingleton<ICartService, CartService>();
             services.AddSingleton<INotificationService, NotificationService>();
             services.AddSingleton<IThemeService, ThemeService>();
@@ -135,20 +131,12 @@ namespace HotelPOS
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
 
             // ── Windows & Views ──────────────────────────────────────────────
+            // CLEANUP: Redundant individual view registrations were removed here as they are 
+            // already registered in the "ViewModels & Views" section above.
             services.AddScoped<LoginWindow>();
             services.AddScoped<DashboardWindow>();
             services.AddTransient<AddItemWindow>();
             services.AddTransient<MainWindow>();
-
-            // Register individual views used by DashboardWindow caching
-            services.AddTransient<DashboardView>();
-            services.AddTransient<BillingView>();
-            services.AddTransient<ItemView>();
-            services.AddTransient<CategoryView>();
-            services.AddTransient<LedgerView>();
-            services.AddTransient<JournalView>();
-            services.AddTransient<SettingsView>();
-            services.AddTransient<AuditView>();
 
             ServiceProvider = services.BuildServiceProvider();
 
@@ -182,16 +170,16 @@ namespace HotelPOS
                     // 2. If 'Orders' table exists, baseline the history to prevent 'Already Exists' errors
                     // We check if the InitialCreate migration is already in history
                     var historyCount = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId = '20260414123141_InitialCreate'").AsEnumerable().FirstOrDefault();
-                    
+
                     if (historyCount == 0)
                     {
                         // Check if the Orders table actually exists on disk
                         var ordersExist = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM sys.tables WHERE name = 'Orders'").AsEnumerable().FirstOrDefault() > 0;
-                        
+
                         if (ordersExist)
                         {
                             Log.Warning("Existing database detected without migration history. Basclining migrations...");
-                            
+
                             var migrationsToBaseline = new[]
                             {
                                 "20260414123141_InitialCreate",

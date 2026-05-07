@@ -3,10 +3,10 @@ using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
+using HotelPOS.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using HotelPOS.Persistence;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -32,16 +32,16 @@ namespace HotelPOS.Tests
             var order = new Order
             {
                 InvoiceNumber = "INV/2526/0001",
-                FiscalYear    = "2025-26",
-                TableNumber   = 1,
-                CreatedAt     = DateTime.UtcNow,
-                Subtotal      = 100m,
-                GstAmount     = 5m,
-                CgstAmount    = 2.5m,
-                SgstAmount    = 2.5m,
-                IgstAmount    = 0m,
-                TotalAmount   = 105m,
-                PaymentMode   = "Cash",
+                FiscalYear = "2025-26",
+                TableNumber = 1,
+                CreatedAt = DateTime.UtcNow,
+                Subtotal = 100m,
+                GstAmount = 5m,
+                CgstAmount = 2.5m,
+                SgstAmount = 2.5m,
+                IgstAmount = 0m,
+                TotalAmount = 105m,
+                PaymentMode = "Cash",
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, TaxPercentage = 5, Total = 100 }
@@ -56,10 +56,10 @@ namespace HotelPOS.Tests
             // Create a fully-disconnected order (as BillingViewModel does)
             var o = new Order
             {
-                Id          = id,
+                Id = id,
                 TableNumber = 1,
                 PaymentMode = "Cash",
-                Items       = new List<OrderItem>
+                Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, TaxPercentage = 5, Total = 100 }
                 }
@@ -74,7 +74,7 @@ namespace HotelPOS.Tests
             var id = await SeedOrderAsync();
             var update = BuildUpdate(id, o =>
             {
-                o.CustomerName  = "Ravi Kumar";
+                o.CustomerName = "Ravi Kumar";
                 o.CustomerPhone = "9876543210";
                 o.CustomerGstin = "27AABCU9603R1ZX";
             });
@@ -84,8 +84,8 @@ namespace HotelPOS.Tests
 
             using var ctx2 = NewCtx();
             var saved = await ctx2.Orders.FindAsync(id);
-            Assert.Equal("Ravi Kumar",       saved!.CustomerName);
-            Assert.Equal("9876543210",       saved.CustomerPhone);
+            Assert.Equal("Ravi Kumar", saved!.CustomerName);
+            Assert.Equal("9876543210", saved.CustomerPhone);
             Assert.Equal("27AABCU9603R1ZX", saved.CustomerGstin);
         }
 
@@ -95,7 +95,7 @@ namespace HotelPOS.Tests
             var id = await SeedOrderAsync();
             var update = BuildUpdate(id, o =>
             {
-                o.GstAmount  = 18m;
+                o.GstAmount = 18m;
                 o.CgstAmount = 9m;
                 o.SgstAmount = 9m;
                 o.IgstAmount = 0m;
@@ -107,9 +107,9 @@ namespace HotelPOS.Tests
 
             using var ctx2 = NewCtx();
             var saved = await ctx2.Orders.FindAsync(id);
-            Assert.Equal(9m,  saved!.CgstAmount);
-            Assert.Equal(9m,  saved.SgstAmount);
-            Assert.Equal(0m,  saved.IgstAmount);
+            Assert.Equal(9m, saved!.CgstAmount);
+            Assert.Equal(9m, saved.SgstAmount);
+            Assert.Equal(0m, saved.IgstAmount);
             Assert.Equal(18m, saved.GstAmount);
         }
 
@@ -120,8 +120,8 @@ namespace HotelPOS.Tests
             var update = BuildUpdate(id, o =>
             {
                 o.DiscountAmount = 20m;
-                o.PaymentMode   = "UPI";
-                o.TotalAmount   = 85m;
+                o.PaymentMode = "UPI";
+                o.TotalAmount = 85m;
             });
 
             using var ctx = NewCtx();
@@ -129,9 +129,9 @@ namespace HotelPOS.Tests
 
             using var ctx2 = NewCtx();
             var saved = await ctx2.Orders.FindAsync(id);
-            Assert.Equal(20m,  saved!.DiscountAmount);
+            Assert.Equal(20m, saved!.DiscountAmount);
             Assert.Equal("UPI", saved.PaymentMode);
-            Assert.Equal(85m,  saved.TotalAmount);
+            Assert.Equal(85m, saved.TotalAmount);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace HotelPOS.Tests
                     new OrderItem { ItemId = 2, ItemName = "Pizza", Quantity = 2, Price = 150, TaxPercentage = 5, Total = 300 },
                     new OrderItem { ItemId = 3, ItemName = "Cola",  Quantity = 1, Price = 40,  TaxPercentage = 0, Total = 40  }
                 };
-                o.Subtotal    = 340m;
+                o.Subtotal = 340m;
                 o.TotalAmount = 355m;
             });
 
@@ -183,7 +183,7 @@ namespace HotelPOS.Tests
             using var ctx = NewCtx();
             var ghost = new Order
             {
-                Id    = 9999,
+                Id = 9999,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "X", Quantity = 1, Price = 10, Total = 10 }
@@ -217,16 +217,16 @@ namespace HotelPOS.Tests
 
             var updated = new SystemSetting
             {
-                HotelName         = "New Hotel",
-                HotelAddress      = "123 Main St",
-                HotelPhone        = "044-12345",
-                HotelGst          = "GST999",
-                DefaultPrinter    = "PDF Printer",
-                ShowPrintPreview  = true,
-                ReceiptFormat     = "A4",
-                ShowGstBreakdown  = true,
-                ShowItemsOnBill   = false,
-                ShowDiscountLine  = true,
+                HotelName = "New Hotel",
+                HotelAddress = "123 Main St",
+                HotelPhone = "044-12345",
+                HotelGst = "GST999",
+                DefaultPrinter = "PDF Printer",
+                ShowPrintPreview = true,
+                ReceiptFormat = "A4",
+                ShowGstBreakdown = true,
+                ShowItemsOnBill = false,
+                ShowDiscountLine = true,
                 ShowPhoneOnReceipt = false,
                 ShowThankYouFooter = true
             };
@@ -235,9 +235,9 @@ namespace HotelPOS.Tests
 
             // Verify all fields were mapped to existing before UpdateAsync was called
             _repoMock.Verify(r => r.UpdateAsync(It.Is<SystemSetting>(s =>
-                s.ShowGstBreakdown   == true  &&
-                s.ShowItemsOnBill    == false &&
-                s.ShowDiscountLine   == true  &&
+                s.ShowGstBreakdown == true &&
+                s.ShowItemsOnBill == false &&
+                s.ShowDiscountLine == true &&
                 s.ShowPhoneOnReceipt == false &&
                 s.ShowThankYouFooter == true
             )), Times.Once);
@@ -251,18 +251,18 @@ namespace HotelPOS.Tests
 
             await _service.SaveSettingsAsync(new SystemSetting
             {
-                HotelName     = "Grand Palace",
-                HotelAddress  = "Park Road",
-                HotelPhone    = "080-9999",
-                HotelGst      = "GSTIN123",
+                HotelName = "Grand Palace",
+                HotelAddress = "Park Road",
+                HotelPhone = "080-9999",
+                HotelGst = "GSTIN123",
                 DefaultPrinter = "Thermal Printer",
                 ShowPrintPreview = false,
                 ReceiptFormat = "Thermal"
             });
 
             _repoMock.Verify(r => r.UpdateAsync(It.Is<SystemSetting>(s =>
-                s.HotelName      == "Grand Palace" &&
-                s.ReceiptFormat  == "Thermal"      &&
+                s.HotelName == "Grand Palace" &&
+                s.ReceiptFormat == "Thermal" &&
                 s.DefaultPrinter == "Thermal Printer"
             )), Times.Once);
         }
@@ -516,13 +516,13 @@ namespace HotelPOS.Tests
             var original = new Order
             {
                 InvoiceNumber = "INV/2526/0001",
-                FiscalYear    = "2025-26",
-                TableNumber   = 1,
-                CreatedAt     = DateTime.UtcNow,
-                Subtotal      = 100,
-                GstAmount     = 5,
-                TotalAmount   = 105,
-                PaymentMode   = "Cash",
+                FiscalYear = "2025-26",
+                TableNumber = 1,
+                CreatedAt = DateTime.UtcNow,
+                Subtotal = 100,
+                GstAmount = 5,
+                TotalAmount = 105,
+                PaymentMode = "Cash",
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, TaxPercentage = 5, Total = 100 }
@@ -534,13 +534,13 @@ namespace HotelPOS.Tests
             // Edit order with customer details
             var updated = new Order
             {
-                Id             = original.Id,
-                TableNumber    = 2,
+                Id = original.Id,
+                TableNumber = 2,
                 DiscountAmount = 10,
-                PaymentMode    = "Card",
-                CustomerName   = "Priya Sharma",
-                CustomerPhone  = "9123456789",
-                CustomerGstin  = "GSTIN_CORP",
+                PaymentMode = "Card",
+                CustomerName = "Priya Sharma",
+                CustomerPhone = "9123456789",
+                CustomerGstin = "GSTIN_CORP",
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 2, Price = 100, TaxPercentage = 5, Total = 200 }
@@ -550,13 +550,13 @@ namespace HotelPOS.Tests
             await _orderService.UpdateOrderAsync(updated);
 
             var saved = await _ctx.Orders.Include(o => o.Items).FirstAsync(o => o.Id == original.Id);
-            Assert.Equal("Priya Sharma",  saved.CustomerName);
-            Assert.Equal("9123456789",    saved.CustomerPhone);
-            Assert.Equal("GSTIN_CORP",    saved.CustomerGstin);
-            Assert.Equal("Card",          saved.PaymentMode);
-            Assert.Equal(2,               saved.TableNumber);
+            Assert.Equal("Priya Sharma", saved.CustomerName);
+            Assert.Equal("9123456789", saved.CustomerPhone);
+            Assert.Equal("GSTIN_CORP", saved.CustomerGstin);
+            Assert.Equal("Card", saved.PaymentMode);
+            Assert.Equal(2, saved.TableNumber);
             Assert.Single(saved.Items);
-            Assert.Equal(2,               saved.Items[0].Quantity);
+            Assert.Equal(2, saved.Items[0].Quantity);
         }
 
         [Fact]
@@ -565,10 +565,13 @@ namespace HotelPOS.Tests
             var original = new Order
             {
                 InvoiceNumber = "INV/2526/0002",
-                FiscalYear    = "2025-26",
-                TableNumber   = 1,
-                CreatedAt     = DateTime.UtcNow,
-                Subtotal      = 100, GstAmount = 5, TotalAmount = 105, PaymentMode = "Cash",
+                FiscalYear = "2025-26",
+                TableNumber = 1,
+                CreatedAt = DateTime.UtcNow,
+                Subtotal = 100,
+                GstAmount = 5,
+                TotalAmount = 105,
+                PaymentMode = "Cash",
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Tea", Quantity = 1, Price = 100, TaxPercentage = 5, Total = 100 }
@@ -579,7 +582,7 @@ namespace HotelPOS.Tests
 
             var updated = new Order
             {
-                Id          = original.Id,
+                Id = original.Id,
                 PaymentMode = "Cash",
                 Items = new List<OrderItem>
                 {
@@ -592,10 +595,10 @@ namespace HotelPOS.Tests
             var saved = await _ctx.Orders.FindAsync(original.Id);
             // Subtotal = 300, GST = 12% of 300 = 36, Total = 336
             Assert.Equal(300m, saved!.Subtotal);
-            Assert.Equal(36m,  saved.GstAmount);
+            Assert.Equal(36m, saved.GstAmount);
             Assert.Equal(336m, saved.TotalAmount);
-            Assert.Equal(18m,  saved.CgstAmount);
-            Assert.Equal(18m,  saved.SgstAmount);
+            Assert.Equal(18m, saved.CgstAmount);
+            Assert.Equal(18m, saved.SgstAmount);
         }
     }
 
@@ -630,13 +633,13 @@ namespace HotelPOS.Tests
         {
             var dto = new RecentOrderRowDto
             {
-                CustomerName  = "Priya",
+                CustomerName = "Priya",
                 CustomerPhone = "9876543210",
                 CustomerGstin = "GSTIN123"
             };
-            Assert.Equal("Priya",       dto.CustomerName);
-            Assert.Equal("9876543210",  dto.CustomerPhone);
-            Assert.Equal("GSTIN123",    dto.CustomerGstin);
+            Assert.Equal("Priya", dto.CustomerName);
+            Assert.Equal("9876543210", dto.CustomerPhone);
+            Assert.Equal("GSTIN123", dto.CustomerGstin);
         }
 
         [Fact]
@@ -651,9 +654,9 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task ReportService_RecentOrders_MapsPaymentMode()
         {
-            var repoMock     = new Mock<IOrderRepository>();
+            var repoMock = new Mock<IOrderRepository>();
             var itemRepoMock = new Mock<IItemRepository>();
-            var catRepoMock  = new Mock<ICategoryRepository>();
+            var catRepoMock = new Mock<ICategoryRepository>();
 
             var orders = new List<Order>
             {
@@ -681,24 +684,24 @@ namespace HotelPOS.Tests
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
             var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object);
-            var report  = await service.GetSalesReportAsync();
+            var report = await service.GetSalesReportAsync();
 
             Assert.Single(report.RecentOrders);
             var row = report.RecentOrders[0];
 
-            Assert.Equal("Card",       row.PaymentMode);
-            Assert.Equal(25m,          row.DiscountAmount);
-            Assert.Equal("Ravi",       row.CustomerName);
+            Assert.Equal("Card", row.PaymentMode);
+            Assert.Equal(25m, row.DiscountAmount);
+            Assert.Equal("Ravi", row.CustomerName);
             Assert.Equal("9123456789", row.CustomerPhone);
-            Assert.Equal("GST_CORP",   row.CustomerGstin);
+            Assert.Equal("GST_CORP", row.CustomerGstin);
         }
 
         [Fact]
         public async Task ReportService_RecentOrders_NullPaymentMode_DefaultsToCash()
         {
-            var repoMock     = new Mock<IOrderRepository>();
+            var repoMock = new Mock<IOrderRepository>();
             var itemRepoMock = new Mock<IItemRepository>();
-            var catRepoMock  = new Mock<ICategoryRepository>();
+            var catRepoMock = new Mock<ICategoryRepository>();
 
             var orders = new List<Order>
             {
@@ -720,7 +723,7 @@ namespace HotelPOS.Tests
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
             var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object);
-            var report  = await service.GetSalesReportAsync();
+            var report = await service.GetSalesReportAsync();
 
             // Null PaymentMode should default to "Cash"
             Assert.Equal("Cash", report.RecentOrders[0].PaymentMode);
@@ -729,9 +732,9 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task ReportService_RecentOrders_MapsAllCustomerFields()
         {
-            var repoMock     = new Mock<IOrderRepository>();
+            var repoMock = new Mock<IOrderRepository>();
             var itemRepoMock = new Mock<IItemRepository>();
-            var catRepoMock  = new Mock<ICategoryRepository>();
+            var catRepoMock = new Mock<ICategoryRepository>();
 
             var orders = new List<Order>
             {
@@ -757,14 +760,14 @@ namespace HotelPOS.Tests
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
             var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object);
-            var report  = await service.GetSalesReportAsync();
+            var report = await service.GetSalesReportAsync();
 
             var row = report.RecentOrders[0];
-            Assert.Equal("UPI",        row.PaymentMode);
-            Assert.Equal(10m,          row.DiscountAmount);
-            Assert.Equal("Ananya",     row.CustomerName);
+            Assert.Equal("UPI", row.PaymentMode);
+            Assert.Equal(10m, row.DiscountAmount);
+            Assert.Equal("Ananya", row.CustomerName);
             Assert.Equal("9000000001", row.CustomerPhone);
-            Assert.Equal("GSTIN_A",    row.CustomerGstin);
+            Assert.Equal("GSTIN_A", row.CustomerGstin);
         }
 
         // ── BillingViewModel.LoadOrderForEdit uses all fields correctly ───────
@@ -772,13 +775,13 @@ namespace HotelPOS.Tests
         [Fact]
         public void LoadOrderForEdit_PaymentMode_IsPrePopulated()
         {
-            var cartSvc  = new Mock<ICartService>();
+            var cartSvc = new Mock<ICartService>();
             var orderSvc = new Mock<IOrderService>();
-            var itemSvc  = new Mock<IItemService>();
-            var settSvc  = new Mock<ISettingService>();
-            var catSvc   = new Mock<ICategoryService>();
+            var itemSvc = new Mock<IItemService>();
+            var settSvc = new Mock<ISettingService>();
+            var catSvc = new Mock<ICategoryService>();
             var notifSvc = new Mock<INotificationService>();
-            var cashSvc  = new Mock<ICashService>();
+            var cashSvc = new Mock<ICashService>();
 
             cartSvc.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
             cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
@@ -790,13 +793,13 @@ namespace HotelPOS.Tests
             // This is what DashboardView.EditOrder_Click now builds:
             var order = new Order
             {
-                Id             = 42,
-                TableNumber    = 5,
-                PaymentMode    = "UPI",
+                Id = 42,
+                TableNumber = 5,
+                PaymentMode = "UPI",
                 DiscountAmount = 30m,
-                CustomerName   = "Ravi Kumar",
-                CustomerPhone  = "9876543210",
-                CustomerGstin  = "GSTIN_TEST",
+                CustomerName = "Ravi Kumar",
+                CustomerPhone = "9876543210",
+                CustomerGstin = "GSTIN_TEST",
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Biryani", Quantity = 2, Price = 150, Total = 300 }
@@ -805,25 +808,25 @@ namespace HotelPOS.Tests
 
             vm.LoadOrderForEdit(order);
 
-            Assert.Equal("UPI",         vm.PaymentMode);
-            Assert.Equal(30m,           vm.DiscountAmount);
-            Assert.Equal("Ravi Kumar",  vm.CustomerName);
-            Assert.Equal("9876543210",  vm.CustomerPhone);
-            Assert.Equal("GSTIN_TEST",  vm.CustomerGstin);
-            Assert.Equal(5,             vm.TableNumber);
+            Assert.Equal("UPI", vm.PaymentMode);
+            Assert.Equal(30m, vm.DiscountAmount);
+            Assert.Equal("Ravi Kumar", vm.CustomerName);
+            Assert.Equal("9876543210", vm.CustomerPhone);
+            Assert.Equal("GSTIN_TEST", vm.CustomerGstin);
+            Assert.Equal(5, vm.TableNumber);
             Assert.True(vm.IsEditMode);
         }
 
         [Fact]
         public void LoadOrderForEdit_NullCustomerFields_DoNotCrash()
         {
-            var cartSvc  = new Mock<ICartService>();
+            var cartSvc = new Mock<ICartService>();
             var orderSvc = new Mock<IOrderService>();
-            var itemSvc  = new Mock<IItemService>();
-            var settSvc  = new Mock<ISettingService>();
-            var catSvc   = new Mock<ICategoryService>();
+            var itemSvc = new Mock<IItemService>();
+            var settSvc = new Mock<ISettingService>();
+            var catSvc = new Mock<ICategoryService>();
             var notifSvc = new Mock<INotificationService>();
-            var cashSvc  = new Mock<ICashService>();
+            var cashSvc = new Mock<ICashService>();
 
             cartSvc.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
             cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
@@ -834,10 +837,12 @@ namespace HotelPOS.Tests
 
             var order = new Order
             {
-                Id          = 10,
+                Id = 10,
                 TableNumber = 1,
                 PaymentMode = "Cash",
-                CustomerName = null, CustomerPhone = null, CustomerGstin = null,
+                CustomerName = null,
+                CustomerPhone = null,
+                CustomerGstin = null,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Tea", Quantity = 1, Price = 30, Total = 30 }
@@ -857,7 +862,6 @@ namespace HotelPOS.Tests
 // ─────────────────────────────────────────────────────────────────────────────
 namespace HotelPOS.Tests
 {
-    using HotelPOS.Application;
     using HotelPOS.Application.Interface;
     using HotelPOS.Application.Interfaces;
     using HotelPOS.Domain;
@@ -872,18 +876,18 @@ namespace HotelPOS.Tests
     public class PostUpdateNavigationTests
     {
         private (HotelPOS.ViewModels.BillingViewModel vm,
-                 Mock<IOrderService>                  orderSvc,
-                 Mock<ICartService>                   cartSvc,
-                 Mock<INotificationService>           notifSvc)
+                 Mock<IOrderService> orderSvc,
+                 Mock<ICartService> cartSvc,
+                 Mock<INotificationService> notifSvc)
             BuildVm()
         {
-            var cartSvc  = new Mock<ICartService>();
+            var cartSvc = new Mock<ICartService>();
             var orderSvc = new Mock<IOrderService>();
-            var itemSvc  = new Mock<IItemService>();
-            var settSvc  = new Mock<ISettingService>();
-            var catSvc   = new Mock<ICategoryService>();
+            var itemSvc = new Mock<IItemService>();
+            var settSvc = new Mock<ISettingService>();
+            var catSvc = new Mock<ICategoryService>();
             var notifSvc = new Mock<INotificationService>();
-            var cashSvc  = new Mock<ICashService>();
+            var cashSvc = new Mock<ICashService>();
 
             cartSvc.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
             cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>
@@ -905,7 +909,7 @@ namespace HotelPOS.Tests
 
         private Order MakeOrder(int id = 10) => new Order
         {
-            Id          = id,
+            Id = id,
             TableNumber = 3,
             PaymentMode = "Card",
             Items = new List<OrderItem>
@@ -995,13 +999,13 @@ namespace HotelPOS.Tests
             vm.LoadOrderForEdit(MakeOrder());
             vm.DiscountAmount = 75m;
 
-            bool editModeWhenFired    = true;   // set to false proves cleanup ran before event
+            bool editModeWhenFired = true;   // set to false proves cleanup ran before event
             decimal discountWhenFired = 999m;
 
             vm.OrderUpdated += () =>
             {
-                editModeWhenFired  = vm.IsEditMode;
-                discountWhenFired  = vm.DiscountAmount;
+                editModeWhenFired = vm.IsEditMode;
+                discountWhenFired = vm.DiscountAmount;
             };
 
             await vm.SaveOrderCommand.ExecuteAsync(null);
@@ -1084,10 +1088,10 @@ namespace HotelPOS.Tests
             // Verifies that the update flow (which now skips preview) completes 
             // successfully even when the global system setting has Preview=True.
             var (vm, _, _, _) = BuildVm();
-            
+
             // Note: SystemSetting.ShowPrintPreview defaults to True, 
             // so our standard BuildVm() already tests this path.
-            
+
             vm.LoadOrderForEdit(MakeOrder(id: 99));
 
             bool fired = false;

@@ -25,7 +25,7 @@ namespace HotelPOS.Persistence
             // Indexes for Performance
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.CreatedAt);
-            
+
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.IsDeleted);
 

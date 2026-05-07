@@ -1,11 +1,9 @@
-using HotelPOS.Application.Interface;
-using HotelPOS.Domain;
+using HotelPOS.Domain; // Domain entities for binding
+using HotelPOS.ViewModels; // Main ViewModels for DataContext
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using HotelPOS.ViewModels;
-using HotelPOS;
 
 namespace HotelPOS.Views
 {
@@ -55,7 +53,7 @@ namespace HotelPOS.Views
 
         private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.F4) 
+            if (e.Key == Key.F4)
             {
                 _viewModel.SaveOrderCommand.Execute(null);
             }
@@ -137,7 +135,7 @@ namespace HotelPOS.Views
             AutoPopup.IsOpen = false;
             SearchBox.Text = string.Empty;
             _viewModel.AddToCartCommand.Execute(item);
-            
+
             // Focus the quantity field of the added item
             FocusQuantityOfItem(item.Id);
         }

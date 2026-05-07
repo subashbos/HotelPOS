@@ -1,9 +1,8 @@
-using System.IO;
 using HotelPOS.Infrastructure;
 using HotelPOS.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
+using System.IO;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -17,12 +16,12 @@ namespace HotelPOS.Tests
             var options = new DbContextOptionsBuilder<HotelDbContext>()
                 .UseInMemoryDatabase(databaseName: "BackupTest_" + Guid.NewGuid())
                 .Options;
-            
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddScoped(_ => new HotelDbContext(options));
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-            
+
             var service = new BackupService(scopeFactory);
 
             // Act & Assert
@@ -42,19 +41,20 @@ namespace HotelPOS.Tests
             var options = new DbContextOptionsBuilder<HotelDbContext>()
                 .UseSqlite(connection)
                 .Options;
-            
+
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddScoped(_ => {
+            serviceCollection.AddScoped(_ =>
+            {
                 var context = new HotelDbContext(options);
                 context.Database.EnsureCreated();
                 return context;
             });
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-            
+
             var service = new BackupService(scopeFactory);
             var backupDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
-            
+
             if (Directory.Exists(backupDir)) Directory.Delete(backupDir, true);
 
             // Act
@@ -62,7 +62,7 @@ namespace HotelPOS.Tests
 
             // Assert
             Assert.True(Directory.Exists(backupDir));
-            
+
             connection.Close();
         }
     }

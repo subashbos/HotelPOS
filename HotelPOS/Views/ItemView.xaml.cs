@@ -2,11 +2,11 @@ using ClosedXML.Excel;
 using HotelPOS.Application;
 using HotelPOS.Application.Interface;
 using HotelPOS.Domain;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelPOS.Views
 {
@@ -49,7 +49,7 @@ namespace HotelPOS.Views
             var q = SearchBox.Text.Trim();
             _filtered = string.IsNullOrWhiteSpace(q)
                 ? _allItems.OrderBy(i => i.Name).ToList()
-                : _allItems.Where(i => i.Name.Contains(q, StringComparison.OrdinalIgnoreCase) || 
+                : _allItems.Where(i => i.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
                                       (i.Category?.Name != null && i.Category.Name.Contains(q, StringComparison.OrdinalIgnoreCase)))
                            .OrderBy(i => i.Name).ToList();
 
@@ -77,7 +77,7 @@ namespace HotelPOS.Views
             popup.Owner = Window.GetWindow(this);
             popup.ItemSaved += () => _ = LoadDataAsync();
             popup.ShowDialog();
-            
+
             _ = LoadDataAsync();
         }
 
@@ -91,7 +91,7 @@ namespace HotelPOS.Views
                 popup.LoadItemForEdit(item);
                 popup.ItemSaved += () => _ = LoadDataAsync();
                 popup.ShowDialog();
-                
+
                 _ = LoadDataAsync();
             }
         }
