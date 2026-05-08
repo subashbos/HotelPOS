@@ -310,7 +310,7 @@ namespace HotelPOS.Tests
         public async Task AddUserAsync_NullPassword_ReturnsErrorGracefully()
         {
             // Before fix: NullReferenceException. After fix: returns clean error.
-            var (success, error) = await _service.AddUserAsync("user1", null!, "Cashier");
+            var (success, error) = await _service.AddUserAsync("user1", null!, "Cashier", 2);
             Assert.False(success);
             Assert.False(string.IsNullOrEmpty(error));
         }
@@ -318,7 +318,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddUserAsync_EmptyPassword_ReturnsError()
         {
-            var (success, error) = await _service.AddUserAsync("user1", "", "Cashier");
+            var (success, error) = await _service.AddUserAsync("user1", "", "Cashier", 2);
             Assert.False(success);
             Assert.Contains("10", error); // mentions min length
         }
@@ -326,7 +326,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddUserAsync_ShortPassword_ReturnsError()
         {
-            var (success, error) = await _service.AddUserAsync("user1", "short", "Admin");
+            var (success, error) = await _service.AddUserAsync("user1", "short", "Admin", 1);
             Assert.False(success);
             Assert.Contains("10", error);
         }
@@ -336,7 +336,7 @@ namespace HotelPOS.Tests
         {
             _repoMock.Setup(r => r.GetUserByUsernameAsync("newuser")).ReturnsAsync((User?)null);
 
-            var (success, error) = await _service.AddUserAsync("newuser", "StrongPass123!", "Admin");
+            var (success, error) = await _service.AddUserAsync("newuser", "StrongPass123!", "Admin", 1);
 
             Assert.True(success);
             Assert.Equal(string.Empty, error);
@@ -347,18 +347,12 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddUserAsync_EmptyUsername_ReturnsError()
         {
-            var (success, error) = await _service.AddUserAsync("   ", "StrongPass123!", "Admin");
+            var (success, error) = await _service.AddUserAsync("   ", "StrongPass123!", "Admin", 1);
             Assert.False(success);
             Assert.Contains("empty", error, StringComparison.OrdinalIgnoreCase);
         }
 
-        [Fact]
-        public async Task AddUserAsync_InvalidRole_ReturnsError()
-        {
-            var (success, error) = await _service.AddUserAsync("user1", "StrongPass123!", "Manager");
-            Assert.False(success);
-            Assert.Contains("Role", error, StringComparison.OrdinalIgnoreCase);
-        }
+        // InvalidRole test removed as role check is now dynamic/DB-driven
 
         [Fact]
         public async Task AddUserAsync_DuplicateUsername_ReturnsError()
@@ -366,7 +360,7 @@ namespace HotelPOS.Tests
             _repoMock.Setup(r => r.GetUserByUsernameAsync("existing"))
                      .ReturnsAsync(new User { Username = "existing" });
 
-            var (success, error) = await _service.AddUserAsync("existing", "StrongPass123!", "Admin");
+            var (success, error) = await _service.AddUserAsync("existing", "StrongPass123!", "Admin", 1);
 
             Assert.False(success);
             Assert.Contains("existing", error);

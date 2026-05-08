@@ -27,6 +27,11 @@ namespace HotelPOS.Domain
         [MaxLength(50)]
         public string Role { get; set; } = "Cashier";
 
+        public int? RoleId { get; set; }
+        
+        [ForeignKey("RoleId")]
+        public Role? RoleDetails { get; set; }
+
         /// <summary>Allows admins to disable a user account without deleting it.</summary>
         public bool IsActive { get; set; } = true;
 

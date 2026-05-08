@@ -44,6 +44,10 @@ namespace HotelPOS.Application
                 existing.ShowPhoneOnReceipt = settings.ShowPhoneOnReceipt;
                 existing.ShowThankYouFooter = settings.ShowThankYouFooter;
 
+                // Billing options
+                existing.EnableRoundOff = settings.EnableRoundOff;
+                existing.IsCompositionScheme = settings.IsCompositionScheme;
+
                 await _repository.UpdateAsync(existing);
             }
             else

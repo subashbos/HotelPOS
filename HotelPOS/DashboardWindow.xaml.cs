@@ -25,6 +25,7 @@ namespace HotelPOS
         private TableView? _cachedTables;
         private AuditView? _cachedAudit;
         private SessionView? _cachedShift;
+        private RolesView? _cachedRoles;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
 
@@ -47,22 +48,49 @@ namespace HotelPOS
             {
                 UserNameText.Text = AppSession.CurrentUser.Username;
                 UserRoleText.Text = AppSession.CurrentUser.Role;
+                ApplyPermissions();
             }
 
-            if (AppSession.IsManager)
-                NavDash_Click(null!, null!);
-            else
+            // Default to first available module
+            if (NavDash.Visibility == Visibility.Visible) NavDash_Click(null!, null!);
+            else if (NavBilling.Visibility == Visibility.Visible) NavBilling_Click(null!, null!);
+        }
+
+        private void ApplyPermissions()
+        {
+            var user = AppSession.CurrentUser;
+            if (user == null) return;
+
+            // If user has no RoleDetails (old users), default to full access if Admin
+            var permissions = user.RoleDetails?.Permissions;
+
+            // Helper to set visibility
+            void SetVisibility(Expander module, Button btn, string moduleName)
             {
-                // Cashiers: hide admin-only modules
-                NavDash.Visibility = Visibility.Collapsed;
-                NavMenu.Visibility = Visibility.Collapsed;
-                NavLedger.Visibility = Visibility.Collapsed;
-                NavJournal.Visibility = Visibility.Collapsed;
-                NavSettings.Visibility = Visibility.Collapsed;
-                NavCats.Visibility = Visibility.Collapsed;
-                NavTables.Visibility = Visibility.Collapsed;
-                NavBilling_Click(null!, null!);
+                bool canAccess = permissions?.FirstOrDefault(p => p.ModuleName == moduleName)?.CanAccess
+                                ?? (user.Role == "Admin"); // Fallback for admin if no DB record
+
+                btn.Visibility = canAccess ? Visibility.Visible : Visibility.Collapsed;
+
+                // Update parent expander visibility: hide if all children are hidden
+                if (module.Content is StackPanel sp)
+                {
+                    bool anyVisible = sp.Children.OfType<Button>().Any(b => b.Visibility == Visibility.Visible);
+                    module.Visibility = anyVisible ? Visibility.Visible : Visibility.Collapsed;
+                }
             }
+
+            SetVisibility(ModuleStats, NavDash, "Dashboard");
+            SetVisibility(ModuleOps, NavBilling, "Billing");
+            SetVisibility(ModuleInv, NavMenu, "Items");
+            SetVisibility(ModuleInv, NavCats, "Categories");
+            SetVisibility(ModuleInv, NavTables, "Tables");
+            SetVisibility(ModuleStats, NavLedger, "Ledger");
+            SetVisibility(ModuleStats, NavJournal, "Journal");
+            SetVisibility(ModuleAdmin, NavSettings, "Settings");
+            SetVisibility(ModuleAdmin, NavAudit, "Audit");
+            SetVisibility(ModuleOps, NavShift, "Shift");
+            SetVisibility(ModuleAdmin, NavRoles, "Roles");
         }
 
         // ── Navigation ────────────────────────────────────────────────────────
@@ -137,9 +165,16 @@ namespace HotelPOS
             SetActive(NavShift);
         }
 
+        private void NavRoles_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedRoles ??= _serviceProvider.GetRequiredService<RolesView>();
+            MainContentArea.Content = _cachedRoles;
+            SetActive(NavRoles);
+        }
+
         private void SetActive(Button active)
         {
-            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
+            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles })
                 btn.IsEnabled = btn != active;
 
             // Update Header Title
@@ -155,7 +190,7 @@ namespace HotelPOS
                 UserInfoGrid.Visibility = Visibility.Collapsed;
 
                 // Hide text in nav buttons (keep only emojis/icons)
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
+                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles })
                 {
                     btn.Content = btn.Content.ToString()?.Split(' ').FirstOrDefault() ?? "";
                     btn.Padding = new Thickness(0, 12, 0, 12);
@@ -177,10 +212,11 @@ namespace HotelPOS
                 NavLedger.Content = "📒  Ledger";
                 NavJournal.Content = "📓  Journal";
                 NavSettings.Content = "⚙  Settings";
+                NavRoles.Content = "👥  Roles";
                 NavAudit.Content = "🛡  Audit";
                 NavShift.Content = "💵  Shift";
 
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
+                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles })
                 {
                     btn.Padding = new Thickness(20, 12, 20, 12);
                     btn.HorizontalContentAlignment = HorizontalAlignment.Left;

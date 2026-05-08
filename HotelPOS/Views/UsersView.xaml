@@ -163,10 +163,7 @@
 
                     <TextBlock Text="ROLE" Style="{StaticResource Label}"/>
                     <ComboBox x:Name="NewRoleCombo" Padding="10,8" FontSize="14" Margin="0,0,0,24"
-                              Background="{DynamicResource AppBackground}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderBrush}">
-                        <ComboBoxItem Content="Cashier" IsSelected="True"/>
-                        <ComboBoxItem Content="Admin"/>
-                    </ComboBox>
+                              Background="{DynamicResource AppBackground}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderBrush}"/>
 
                     <Button Content="➕  Create User" Style="{StaticResource PrimaryBtn}" Click="AddUser_Click" HorizontalAlignment="Stretch"/>
 

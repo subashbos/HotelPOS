@@ -11,26 +11,28 @@ namespace HotelPOS.Views
     {
         private readonly ISettingService _settingService;
         private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
         private readonly INotificationService _notificationService;
         private readonly UsersView _usersView;
         private SystemSetting? _current;
 
-        public SettingsView(ISettingService settingService, IUserService userService, INotificationService notificationService)
+        public SettingsView(ISettingService settingService, IUserService userService, IRoleService roleService, INotificationService notificationService)
         {
             InitializeComponent();
             _settingService = settingService;
             _userService = userService;
+            _roleService = roleService;
             _notificationService = notificationService;
 
             // Embed UsersView into the Users tab
-            _usersView = new UsersView(_userService);
+            _usersView = new UsersView(_userService, _roleService);
             UsersHost.Content = _usersView;
 
             Loaded += async (s, e) =>
             {
                 LoadPrinters();
                 await LoadSettingsAsync();
-                await _usersView.RefreshAsync();
+                await _usersView.InitializeAsync();
             };
         }
 

@@ -16,6 +16,8 @@ namespace HotelPOS.Persistence
         public async Task<User?> GetUserByUsernameAsync(string username)
         {
             return await _context.Users
+                .Include(u => u.RoleDetails)
+                .ThenInclude(r => r!.Permissions)
                 .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
         }
 

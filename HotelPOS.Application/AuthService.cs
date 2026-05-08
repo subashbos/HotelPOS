@@ -32,6 +32,9 @@ namespace HotelPOS.Application
 
         public async Task<User?> AuthenticateAsync(string username, string password)
         {
+            if (string.IsNullOrWhiteSpace(username))
+                return null;
+
             var normalizedUsername = username.Trim();
             if (IsLockedOut(normalizedUsername))
             {

@@ -97,6 +97,7 @@ namespace HotelPOS
             services.AddScoped<IAuditRepository, AuditRepository>();
             services.AddScoped<ICashRepository, CashRepository>();
             services.AddScoped<ITableRepository, TableRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
 
             // ── Services (Scoped) ─────────────────────────────────────────────
             services.AddScoped<IOrderService, OrderService>();
@@ -109,6 +110,7 @@ namespace HotelPOS
             services.AddScoped<ICashService, CashService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ITableService, TableService>();
+            services.AddScoped<IRoleService, RoleService>();
 
             services.AddSingleton<ICartService, CartService>();
             services.AddSingleton<INotificationService, NotificationService>();
@@ -130,6 +132,7 @@ namespace HotelPOS
             services.AddTransient<AuditView>();
             services.AddTransient<BillingView>();
             services.AddTransient<TableView>();
+            services.AddTransient<RolesView>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
 

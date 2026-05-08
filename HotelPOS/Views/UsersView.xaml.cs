@@ -9,15 +9,32 @@ namespace HotelPOS.Views
     public partial class UsersView : UserControl
     {
         private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
         private static readonly SolidColorBrush SuccessBg = new(Color.FromRgb(0xD4, 0xED, 0xDA));
         private static readonly SolidColorBrush SuccessFg = new(Color.FromRgb(0x15, 0x57, 0x24));
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
         private static readonly SolidColorBrush ErrorFg = new(Color.FromRgb(0x72, 0x1C, 0x24));
 
-        public UsersView(IUserService userService)
+        public UsersView(IUserService userService, IRoleService roleService)
         {
             InitializeComponent();
             _userService = userService;
+            _roleService = roleService;
+        }
+
+        public async Task InitializeAsync()
+        {
+            await RefreshAsync();
+            await LoadRolesAsync();
+        }
+
+        private async Task LoadRolesAsync()
+        {
+            var roles = await _roleService.GetAllRolesAsync();
+            NewRoleCombo.ItemsSource = roles;
+            NewRoleCombo.DisplayMemberPath = "Name";
+            NewRoleCombo.SelectedValuePath = "Id";
+            if (roles.Any()) NewRoleCombo.SelectedIndex = 0;
         }
 
         public async Task RefreshAsync()
@@ -82,9 +99,15 @@ namespace HotelPOS.Views
         {
             var username = NewUsernameBox.Text.Trim();
             var password = NewPasswordBox.Password;
-            var role = (NewRoleCombo.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Cashier";
+            var selectedRole = NewRoleCombo.SelectedItem as Role;
 
-            var (ok, err) = await _userService.AddUserAsync(username, password, role);
+            if (selectedRole == null)
+            {
+                ShowFeedback("Please select a role.", false);
+                return;
+            }
+
+            var (ok, err) = await _userService.AddUserAsync(username, password, selectedRole.Name, selectedRole.Id);
             if (ok)
             {
                 NewUsernameBox.Clear();

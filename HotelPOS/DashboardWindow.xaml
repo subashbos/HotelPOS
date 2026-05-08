@@ -17,26 +17,30 @@
     <!-- Branding: Integrated professional icon for title bar and taskbar -->
 
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        
+        <!-- Nav button: transparent pill, accented when disabled (= active) -->
         <!-- Nav button: transparent pill, accented when disabled (= active) -->
         <Style x:Key="NavBtn" TargetType="Button">
             <Setter Property="Background"      Value="Transparent"/>
             <Setter Property="Foreground"      Value="#A0B0C0"/>
             <Setter Property="FontSize"        Value="14"/>
             <Setter Property="FontWeight"      Value="Medium"/>
-            <Setter Property="Padding"         Value="16,12"/>
+            <Setter Property="Padding"         Value="16,10"/>
             <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="bd" Background="{TemplateBinding Background}"
-                                CornerRadius="10" Padding="{TemplateBinding Padding}" Margin="4,2">
+                                CornerRadius="8" Padding="{TemplateBinding Padding}" Margin="8,1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Rectangle x:Name="ActiveIndicator" Width="3" Height="16" Fill="{DynamicResource SecondaryBrush}" 
+                                <Rectangle x:Name="ActiveIndicator" Width="3" Height="14" Fill="{DynamicResource SecondaryBrush}" 
                                            HorizontalAlignment="Left" Visibility="Collapsed" Margin="-12,0,8,0" RadiusX="1.5" RadiusY="1.5"/>
                                 <ContentPresenter Grid.Column="1" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
                             </Grid>
@@ -52,6 +56,64 @@
                                 <Setter Property="FontWeight"               Value="Bold"/>
                                 <Setter TargetName="ActiveIndicator"        Property="Visibility" Value="Visible"/>
                             </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Sidebar Expander Style -->
+        <Style x:Key="SidebarExpander" TargetType="Expander">
+            <Setter Property="Foreground" Value="#677A8D"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="IsExpanded" Value="True"/>
+            <Setter Property="Margin" Value="0,12,0,4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Expander">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*" x:Name="ContentRow"/>
+                            </Grid.RowDefinitions>
+                            <ToggleButton x:Name="HeaderToggle" Grid.Row="0"
+                                          Content="{TemplateBinding Header}"
+                                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Background="Transparent" BorderThickness="0"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          FontSize="{TemplateBinding FontSize}"
+                                          FontWeight="{TemplateBinding FontWeight}"
+                                          Padding="24,8" HorizontalContentAlignment="Left"
+                                          Cursor="Hand">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="HeaderBorder" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock x:Name="Arrow" Text="▾" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="14" Opacity="0.5"/>
+                                                <ContentPresenter x:Name="HeaderText" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="False">
+                                                <Setter TargetName="Arrow" Property="Text" Value="▸"/>
+                                            </Trigger>
+                                            <!-- Hide header text and arrow when sidebar is collapsed -->
+                                            <DataTrigger Binding="{Binding Width.Value, ElementName=SidebarColumn}" Value="70">
+                                                <Setter TargetName="HeaderBorder" Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ExpandSite" Grid.Row="1"
+                                              Visibility="{TemplateBinding IsExpanded, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Width.Value, ElementName=SidebarColumn}" Value="70">
+                                <Setter Property="IsExpanded" Value="True"/>
+                            </DataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -88,17 +150,39 @@
 
                 <!-- Navigation List -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Margin="8,0">
-                        <Button x:Name="NavDash"     Content="📊  Dashboard"  ToolTip="Dashboard"  Style="{StaticResource NavBtn}" Click="NavDash_Click"    IsEnabled="False" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavBilling"  Content="🖥  Billing POS" ToolTip="Billing POS" Style="{StaticResource NavBtn}" Click="NavBilling_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavMenu"     Content="📋  Items"       ToolTip="Items"       Style="{StaticResource NavBtn}" Click="NavMenu_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavCats"     Content="🏷  Categories"  ToolTip="Categories"  Style="{StaticResource NavBtn}" Click="NavCats_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavTables"    Content="🪑  Tables"      ToolTip="Tables"      Style="{StaticResource NavBtn}" Click="NavTables_Click"   Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavLedger"   Content="📒  Ledger"      ToolTip="Ledger"      Style="{StaticResource NavBtn}" Click="NavLedger_Click"  Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavJournal"  Content="📓  Journal"     ToolTip="Journal"     Style="{StaticResource NavBtn}" Click="NavJournal_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavSettings" Content="⚙  Settings"    ToolTip="Settings"    Style="{StaticResource NavBtn}" Click="NavSettings_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavAudit"    Content="🛡  Audit"       ToolTip="Audit"       Style="{StaticResource NavBtn}" Click="NavAudit_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
-                        <Button x:Name="NavShift"    Content="💵  Shift"       ToolTip="Shift"       Style="{StaticResource NavBtn}" Click="NavShift_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                    <StackPanel Margin="0,0,0,20">
+                        
+                        <Expander x:Name="ModuleOps" Header="OPERATIONS" Style="{StaticResource SidebarExpander}">
+                            <StackPanel>
+                                <Button x:Name="NavBilling"  Content="🖥  Billing POS" ToolTip="Billing POS" Style="{StaticResource NavBtn}" Click="NavBilling_Click"/>
+                                <Button x:Name="NavShift"    Content="💵  Shift"       ToolTip="Shift"       Style="{StaticResource NavBtn}" Click="NavShift_Click"/>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander x:Name="ModuleInv" Header="INVENTORY" Style="{StaticResource SidebarExpander}">
+                            <StackPanel>
+                                <Button x:Name="NavMenu"     Content="📋  Items"       ToolTip="Items"       Style="{StaticResource NavBtn}" Click="NavMenu_Click"/>
+                                <Button x:Name="NavCats"     Content="🏷  Categories"  ToolTip="Categories"  Style="{StaticResource NavBtn}" Click="NavCats_Click"/>
+                                <Button x:Name="NavTables"    Content="🪑  Tables"      ToolTip="Tables"      Style="{StaticResource NavBtn}" Click="NavTables_Click"/>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander x:Name="ModuleStats" Header="ANALYTICS" Style="{StaticResource SidebarExpander}">
+                            <StackPanel>
+                                <Button x:Name="NavDash"     Content="📊  Dashboard"  ToolTip="Dashboard"  Style="{StaticResource NavBtn}" Click="NavDash_Click" IsEnabled="False"/>
+                                <Button x:Name="NavLedger"   Content="📒  Ledger"      ToolTip="Ledger"      Style="{StaticResource NavBtn}" Click="NavLedger_Click"/>
+                                <Button x:Name="NavJournal"  Content="📓  Journal"     ToolTip="Journal"     Style="{StaticResource NavBtn}" Click="NavJournal_Click"/>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander x:Name="ModuleAdmin" Header="ADMINISTRATION" Style="{StaticResource SidebarExpander}">
+                            <StackPanel>
+                                <Button x:Name="NavSettings" Content="⚙  Settings"    ToolTip="Settings"    Style="{StaticResource NavBtn}" Click="NavSettings_Click"/>
+                                <Button x:Name="NavRoles"    Content="👥  Roles"       ToolTip="Roles"       Style="{StaticResource NavBtn}" Click="NavRoles_Click"/>
+                                <Button x:Name="NavAudit"    Content="🛡  Audit"       ToolTip="Audit"       Style="{StaticResource NavBtn}" Click="NavAudit_Click"/>
+                            </StackPanel>
+                        </Expander>
+                        
                     </StackPanel>
                 </ScrollViewer>
 
