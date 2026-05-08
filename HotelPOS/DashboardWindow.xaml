@@ -93,6 +93,7 @@
                         <Button x:Name="NavBilling"  Content="🖥  Billing POS" ToolTip="Billing POS" Style="{StaticResource NavBtn}" Click="NavBilling_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
                         <Button x:Name="NavMenu"     Content="📋  Items"       ToolTip="Items"       Style="{StaticResource NavBtn}" Click="NavMenu_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
                         <Button x:Name="NavCats"     Content="🏷  Categories"  ToolTip="Categories"  Style="{StaticResource NavBtn}" Click="NavCats_Click"    Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
+                        <Button x:Name="NavTables"    Content="🪑  Tables"      ToolTip="Tables"      Style="{StaticResource NavBtn}" Click="NavTables_Click"   Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
                         <Button x:Name="NavLedger"   Content="📒  Ledger"      ToolTip="Ledger"      Style="{StaticResource NavBtn}" Click="NavLedger_Click"  Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
                         <Button x:Name="NavJournal"  Content="📓  Journal"     ToolTip="Journal"     Style="{StaticResource NavBtn}" Click="NavJournal_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
                         <Button x:Name="NavSettings" Content="⚙  Settings"    ToolTip="Settings"    Style="{StaticResource NavBtn}" Click="NavSettings_Click" Margin="0,4,0,0" HorizontalContentAlignment="Left"/>
@@ -186,10 +187,5 @@
             <!-- Content Area -->
             <ContentControl x:Name="MainContentArea" Grid.Row="1" Focusable="False"/>
         </Grid>
-
-        <!-- Notification Panel -->
-        <ctrl:NotificationControl x:Name="NotificationPanel" Grid.Column="1"
-                                   VerticalAlignment="Bottom" HorizontalAlignment="Right"
-                                   Panel.ZIndex="999"/>
     </Grid>
 </Window>

@@ -1,5 +1,6 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using Microsoft.Win32;
 using System.Windows;
@@ -31,13 +32,15 @@ namespace HotelPOS.Views
     public partial class LedgerView : UserControl
     {
         private readonly IOrderService _orderService;
+        private readonly INotificationService _notificationService;
         private List<LedgerRow> _allRows = new();
         private bool _isLoaded = false;
 
-        public LedgerView(IOrderService orderService)
+        public LedgerView(IOrderService orderService, INotificationService notificationService)
         {
             InitializeComponent();
             _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+            _notificationService = notificationService;
             LedgerPager.PageChanged += page => LedgerGrid.ItemsSource = page;
 
             Loaded += async (s, e) =>
@@ -64,7 +67,7 @@ namespace HotelPOS.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Ledger Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Ledger Error: {ex.Message}");
             }
         }
 
@@ -115,7 +118,7 @@ namespace HotelPOS.Views
         {
             if (_allRows.Count == 0)
             {
-                MessageBox.Show("No data to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowInfo("No data to export.");
                 return;
             }
 
@@ -154,13 +157,11 @@ namespace HotelPOS.Views
 
                 ws.Columns().AdjustToContents();
                 wb.SaveAs(dlg.FileName);
-                MessageBox.Show("✅  Ledger exported successfully.", "Export Complete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowSuccess("Ledger exported successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Export error:\n{ex.Message}", "Export Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Export error: {ex.Message}");
             }
         }
     }

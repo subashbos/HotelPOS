@@ -7,10 +7,12 @@ namespace HotelPOS.Application
     public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _repo;
+        private readonly IItemRepository _itemRepo;
 
-        public CategoryService(ICategoryRepository repo)
+        public CategoryService(ICategoryRepository repo, IItemRepository itemRepo)
         {
             _repo = repo;
+            _itemRepo = itemRepo;
         }
 
         public async Task<List<Category>> GetCategoriesAsync()
@@ -22,6 +24,10 @@ namespace HotelPOS.Application
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Category name is required.");
 
+            var existing = await _repo.GetAllAsync() ?? new List<Category>();
+            if (existing.Any(c => c.Name.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"Category '{name}' already exists.");
+
             var category = new Category { Name = name.Trim() };
             return await _repo.AddAsync(category);
         }
@@ -30,6 +36,10 @@ namespace HotelPOS.Application
         {
             if (id <= 0) throw new ArgumentException("Invalid ID");
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Category name is required.");
+
+            var all = await _repo.GetAllAsync() ?? new List<Category>();
+            if (all.Any(c => c.Id != id && c.Name.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"Category '{name}' already exists.");
 
             var existing = await _repo.GetByIdAsync(id);
             if (existing == null) throw new KeyNotFoundException($"Category #{id} not found.");
@@ -40,6 +50,10 @@ namespace HotelPOS.Application
 
         public async Task DeleteCategoryAsync(int id)
         {
+            var items = await _itemRepo.GetAllAsync() ?? new List<Item>();
+            if (items.Any(i => i.CategoryId == id))
+                throw new InvalidOperationException("Cannot delete category because it contains active menu items. Please reassign or delete the items first.");
+
             await _repo.DeleteAsync(id);
         }
     }

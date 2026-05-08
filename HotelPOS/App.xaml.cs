@@ -96,6 +96,7 @@ namespace HotelPOS
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IAuditRepository, AuditRepository>();
             services.AddScoped<ICashRepository, CashRepository>();
+            services.AddScoped<ITableRepository, TableRepository>();
 
             // ── Services (Scoped) ─────────────────────────────────────────────
             services.AddScoped<IOrderService, OrderService>();
@@ -107,6 +108,7 @@ namespace HotelPOS
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<ICashService, CashService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ITableService, TableService>();
 
             services.AddSingleton<ICartService, CartService>();
             services.AddSingleton<INotificationService, NotificationService>();
@@ -127,6 +129,7 @@ namespace HotelPOS
             services.AddTransient<SettingsView>();
             services.AddTransient<AuditView>();
             services.AddTransient<BillingView>();
+            services.AddTransient<TableView>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
 
@@ -165,6 +168,28 @@ namespace HotelPOS
                                 [ProductVersion] nvarchar(32) NOT NULL,
                                 CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
                             );
+                        END");
+
+                    // 1.1 Ensure Tables table exists
+                    context.Database.ExecuteSqlRaw(@"
+                        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Tables')
+                        BEGIN
+                            CREATE TABLE [Tables] (
+                                [Id] int NOT NULL IDENTITY(1,1),
+                                [Number] int NOT NULL DEFAULT 0,
+                                [Name] nvarchar(max) NOT NULL,
+                                [Capacity] int NOT NULL,
+                                [IsActive] bit NOT NULL,
+                                [IsDeleted] bit NOT NULL DEFAULT 0,
+                                CONSTRAINT [PK_Tables] PRIMARY KEY ([Id])
+                            );
+                        END
+                        ELSE
+                        BEGIN
+                            IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tables') AND name = 'Number')
+                            BEGIN
+                                ALTER TABLE [Tables] ADD [Number] int NOT NULL DEFAULT 0;
+                            END
                         END");
 
                     // 2. If 'Orders' table exists, baseline the history to prevent 'Already Exists' errors

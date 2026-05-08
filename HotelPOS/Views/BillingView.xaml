@@ -152,7 +152,7 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </Button.Style>
-                                            <TextBlock Text="{Binding TableNumber}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding TableName}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
                                         </Button>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -165,7 +165,7 @@
                 </Popup>
             </StackPanel>
 
-            <Grid Grid.Row="1" VerticalAlignment="Stretch">
+            <Grid Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.0*"/>
                 <ColumnDefinition Width="16"/>
@@ -399,8 +399,8 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>   <!-- 0: Compact Header -->
-                        <RowDefinition Height="*"/>      <!-- 1: Maximized CartGrid -->
-                        <RowDefinition Height="Auto"/>   <!-- 2: Streamlined Footer -->
+                        <RowDefinition Height="*"/>      <!-- 1: Scrollable CartGrid - fills all available space -->
+                        <RowDefinition Height="Auto" MaxHeight="260"/>   <!-- 2: Footer - capped height -->
                     </Grid.RowDefinitions>
 
                     <!-- ── Header ── -->
@@ -419,9 +419,11 @@
                               SelectedItem="{Binding SelectedCartRow}"
                               AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="False"
                               CanUserSortColumns="False"
-                              RowHeight="38" MinHeight="250"
-                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              RowHeight="38"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible"
                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling"
                               CellEditEnding="CartGrid_CellEditEnding">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="30" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>

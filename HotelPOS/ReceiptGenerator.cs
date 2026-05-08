@@ -71,7 +71,7 @@ namespace HotelPOS
             { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 4, 0, 4) });
 
             // ── Items Table ───────────────────────────────────────────────────
-            var table = new Table { Margin = new Thickness(0, 4, 0, 4) };
+            var table = new System.Windows.Documents.Table { Margin = new Thickness(0, 4, 0, 4) };
 
             if (isThermal)
             {
@@ -130,7 +130,7 @@ namespace HotelPOS
             decimal gstTotal = order.GstAmount;
             decimal grandTotal = order.TotalAmount;
 
-            var totals = new Table { Margin = new Thickness(0, 6, 0, 0) };
+            var totals = new System.Windows.Documents.Table { Margin = new Thickness(0, 6, 0, 0) };
             totals.Columns.Add(new TableColumn { Width = new GridLength(1.1, GridUnitType.Star) });
             totals.Columns.Add(new TableColumn { Width = new GridLength(0.9, GridUnitType.Star) });
             var tg = new TableRowGroup();
@@ -233,7 +233,7 @@ namespace HotelPOS
             doc.Blocks.Add(hdr);
 
             // Items Table
-            var table = new Table { Margin = new Thickness(0, 4, 0, 4) };
+            var table = new System.Windows.Documents.Table { Margin = new Thickness(0, 4, 0, 4) };
             table.Columns.Add(new TableColumn { Width = new GridLength(4, GridUnitType.Star) }); // Name
             table.Columns.Add(new TableColumn { Width = new GridLength(1, GridUnitType.Star) }); // Qty
 

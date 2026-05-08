@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using HotelPOS.Application;
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using Microsoft.Win32;
 using System;
 using System.Collections;
@@ -40,6 +41,7 @@ namespace HotelPOS.Views
         private readonly IOrderService _orderService;
         private readonly IReportService _reportService;
         private readonly ISettingService _settingService;
+        private readonly INotificationService _notificationService;
         private bool _isLoading;
 
         // Expose for shell-level export (kept for backward compat)
@@ -49,12 +51,13 @@ namespace HotelPOS.Views
 
         private readonly string[] _pieColors = { "#4facfe", "#00f2fe", "#f093fb", "#f5576c", "#48c6ef", "#6B8DD6", "#8E37D7", "#3B2667", "#BC78EC" };
 
-        public DashboardView(IOrderService orderService, IReportService reportService, ISettingService settingService)
+        public DashboardView(IOrderService orderService, IReportService reportService, ISettingService settingService, INotificationService notificationService)
         {
             InitializeComponent();
             _orderService = orderService;
             _reportService = reportService;
             _settingService = settingService;
+            _notificationService = notificationService;
 
             // Wire pagination and calculate subtotals on page change
             TablePager.PageChanged += page =>
@@ -102,7 +105,6 @@ namespace HotelPOS.Views
             {
                 TodayFilter.IsChecked = false;
                 WeekFilter.IsChecked = false;
-                AllFilter.IsChecked = false;
             }
             await LoadAsync();
         }
@@ -124,7 +126,7 @@ namespace HotelPOS.Views
                 return (today.AddDays(-offset), null);
             }
 
-            return (null, null);
+            return (DateTime.Today, null);
         }
 
         // ── Data loading ──────────────────────────────────────────────────────
@@ -182,8 +184,7 @@ namespace HotelPOS.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Dashboard load failed:\n{ex.Message}", "Dashboard Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                _notificationService.ShowError($"Dashboard load failed: {ex.Message}");
             }
             finally
             {
@@ -315,13 +316,11 @@ namespace HotelPOS.Views
                 }
 
                 wb.SaveAs(dlg.FileName);
-                MessageBox.Show("✅  Report exported successfully (4 sheets).", "Export Complete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowSuccess("Report exported successfully (4 sheets).");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Export failed:\n{ex.Message}", "Export Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Export failed: {ex.Message}");
             }
         }
 
@@ -384,7 +383,7 @@ namespace HotelPOS.Views
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Could not open print preview:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _notificationService.ShowError($"Could not open print preview: {ex.Message}");
                 }
             }
         }
@@ -403,7 +402,7 @@ namespace HotelPOS.Views
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Delete failed:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _notificationService.ShowError($"Delete failed: {ex.Message}");
                     }
                 }
             }

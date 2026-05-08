@@ -24,7 +24,7 @@ namespace HotelPOS.Tests
 
                 var doc = ReceiptGenerator.CreateReceipt(order, true, settings);
 
-                var table = doc.Blocks.OfType<Table>().FirstOrDefault();
+                var table = doc.Blocks.OfType<System.Windows.Documents.Table>().FirstOrDefault();
                 Assert.NotNull(table);
 
                 // Thermal columns: S.No (0), Item (1), Rate (2), Qty (3), Total (4)
@@ -81,7 +81,7 @@ namespace HotelPOS.Tests
                 var settings = new SystemSetting { HotelName = "Test Hotel" };
 
                 var doc = ReceiptGenerator.CreateReceipt(order, true, settings);
-                var table = doc.Blocks.OfType<Table>().FirstOrDefault();
+                var table = doc.Blocks.OfType<System.Windows.Documents.Table>().FirstOrDefault();
 
                 // Qty is index 3
                 var qtyColumn = table!.Columns[3];

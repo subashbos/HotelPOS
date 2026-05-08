@@ -51,7 +51,8 @@ namespace HotelPOS.Tests
                 _settingServiceMock.Object,
                 _categoryServiceMock.Object,
                 _notificationServiceMock.Object,
-                _cashServiceMock.Object);
+                _cashServiceMock.Object,
+                new Mock<ITableService>().Object);
 
             // Act - Select table to trigger UpdateCart
             viewModel.SelectTableCommand.Execute(1);
@@ -80,7 +81,8 @@ namespace HotelPOS.Tests
                 _settingServiceMock.Object,
                 _categoryServiceMock.Object,
                 _notificationServiceMock.Object,
-                _cashServiceMock.Object);
+                _cashServiceMock.Object,
+                new Mock<ITableService>().Object);
 
             _cartServiceMock.Setup(c => c.GetItems(1)).Returns(initialItems);
             viewModel.SelectTableCommand.Execute(1);
@@ -124,7 +126,8 @@ namespace HotelPOS.Tests
                 _settingServiceMock.Object,
                 _categoryServiceMock.Object,
                 _notificationServiceMock.Object,
-                _cashServiceMock.Object);
+                _cashServiceMock.Object,
+                new Mock<ITableService>().Object);
 
             viewModel.SelectTableCommand.Execute(1);
 
@@ -156,7 +159,8 @@ namespace HotelPOS.Tests
                 _settingServiceMock.Object,
                 _categoryServiceMock.Object,
                 _notificationServiceMock.Object,
-                _cashServiceMock.Object);
+                _cashServiceMock.Object,
+                new Mock<ITableService>().Object);
 
             viewModel.SelectTableCommand.Execute(1);
             viewModel.SelectedCartRow = viewModel.Cart[0];
@@ -187,7 +191,8 @@ namespace HotelPOS.Tests
                 _settingServiceMock.Object,
                 _categoryServiceMock.Object,
                 _notificationServiceMock.Object,
-                _cashServiceMock.Object);
+                _cashServiceMock.Object,
+                new Mock<ITableService>().Object);
 
             viewModel.SelectTableCommand.Execute(1);
             var row = viewModel.Cart[0];

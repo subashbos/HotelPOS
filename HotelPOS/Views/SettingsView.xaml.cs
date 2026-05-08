@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using System.Drawing.Printing;
 using System.Windows;
@@ -10,14 +11,16 @@ namespace HotelPOS.Views
     {
         private readonly ISettingService _settingService;
         private readonly IUserService _userService;
+        private readonly INotificationService _notificationService;
         private readonly UsersView _usersView;
         private SystemSetting? _current;
 
-        public SettingsView(ISettingService settingService, IUserService userService)
+        public SettingsView(ISettingService settingService, IUserService userService, INotificationService notificationService)
         {
             InitializeComponent();
             _settingService = settingService;
             _userService = userService;
+            _notificationService = notificationService;
 
             // Embed UsersView into the Users tab
             _usersView = new UsersView(_userService);
@@ -109,13 +112,11 @@ namespace HotelPOS.Views
             try
             {
                 await _settingService.SaveSettingsAsync(_current!);
-                MessageBox.Show("Settings saved successfully.", "✅  Saved",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowSuccess("Settings saved successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving settings:\n{ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Error saving settings: {ex.Message}");
             }
         }
     }

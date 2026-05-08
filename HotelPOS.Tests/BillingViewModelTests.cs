@@ -16,6 +16,7 @@ namespace HotelPOS.Tests
         private readonly Mock<ICategoryService> _categoryService = new();
         private readonly Mock<INotificationService> _notificationService = new();
         private readonly Mock<ICashService> _cashService = new();
+        private readonly Mock<ITableService> _tableService = new();
 
         private readonly BillingViewModel _vm;
 
@@ -30,7 +31,8 @@ namespace HotelPOS.Tests
                 _settingService.Object,
                 _categoryService.Object,
                 _notificationService.Object,
-                _cashService.Object);
+                _cashService.Object,
+                _tableService.Object);
         }
 
         [Fact]

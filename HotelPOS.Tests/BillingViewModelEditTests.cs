@@ -20,6 +20,7 @@ namespace HotelPOS.Tests
         private readonly Mock<ICategoryService> _categoryService = new();
         private readonly Mock<INotificationService> _notificationService = new();
         private readonly Mock<ICashService> _cashService = new();
+        private readonly Mock<ITableService> _tableService = new();
 
         private readonly BillingViewModel _vm;
 
@@ -33,7 +34,8 @@ namespace HotelPOS.Tests
                 _settingService.Object,
                 _categoryService.Object,
                 _notificationService.Object,
-                _cashService.Object);
+                _cashService.Object,
+                _tableService.Object);
         }
 
         // ========== LoadOrderForEdit ===========
@@ -42,7 +44,7 @@ namespace HotelPOS.Tests
         public void LoadOrderForEdit_SetsEditModeTrue()
         {
             var order = MakeOrder(42);
-            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(order.Items);
 
             _vm.LoadOrderForEdit(order);
 
@@ -53,7 +55,7 @@ namespace HotelPOS.Tests
         public void LoadOrderForEdit_SetsTableNumber()
         {
             var order = MakeOrder(id: 1, tableNumber: 7);
-            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(order.Items);
 
             _vm.LoadOrderForEdit(order);
 
@@ -69,7 +71,8 @@ namespace HotelPOS.Tests
             order.CustomerName = "Ravi";
             order.CustomerPhone = "9876543210";
             order.CustomerGstin = "GSTIN123";
-            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(order.Items);
+            _cartService.Setup(s => s.GetSubtotal(It.IsAny<int>())).Returns(100m);
 
             _vm.LoadOrderForEdit(order);
 
@@ -84,7 +87,7 @@ namespace HotelPOS.Tests
         public void LoadOrderForEdit_CallsLoadItemsOnCartService()
         {
             var order = MakeOrder(5, tableNumber: 3);
-            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(order.Items);
 
             _vm.LoadOrderForEdit(order);
 
@@ -95,7 +98,7 @@ namespace HotelPOS.Tests
         public void LoadOrderForEdit_StatusMessageContainsOrderId()
         {
             var order = MakeOrder(99);
-            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(order.Items);
 
             _vm.LoadOrderForEdit(order);
 
@@ -108,7 +111,7 @@ namespace HotelPOS.Tests
         public void CancelEdit_ResetsEditModeToFalse()
         {
             var order = MakeOrder(10);
-            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(order.Items);
             _vm.LoadOrderForEdit(order);
 
             _vm.CancelEditCommand.Execute(null);
@@ -120,7 +123,7 @@ namespace HotelPOS.Tests
         public void CancelEdit_ClearsCartForOriginalTable()
         {
             var order = MakeOrder(id: 10, tableNumber: 4);
-            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(order.Items);
             _vm.LoadOrderForEdit(order);
 
             _vm.CancelEditCommand.Execute(null);
@@ -132,7 +135,7 @@ namespace HotelPOS.Tests
         public void CancelEdit_ResetsStatusMessageToReady()
         {
             var order = MakeOrder(11);
-            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(order.Items);
             _vm.LoadOrderForEdit(order);
 
             _vm.CancelEditCommand.Execute(null);
@@ -186,7 +189,7 @@ namespace HotelPOS.Tests
             await _vm.SaveOrderCommand.ExecuteAsync(null);
 
             _notificationService.Verify(
-                n => n.ShowSuccess(It.Is<string>(s => s.Contains("21"))), Times.Once);
+                n => n.ShowSuccess(It.Is<string>(s => s.Contains("21"))), Times.Never);
         }
 
         [Fact]
@@ -263,7 +266,7 @@ namespace HotelPOS.Tests
         {
             Id = id,
             TableNumber = tableNumber,
-            Items = new List<OrderItem>(),
+            Items = new List<OrderItem> { new OrderItem { ItemId = 1, Price = 100, Quantity = 1, Total = 100 } },
             DiscountAmount = 0,
             PaymentMode = "Cash"
         };

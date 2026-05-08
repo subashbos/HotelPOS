@@ -57,8 +57,7 @@
                         
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
                             <RadioButton x:Name="TodayFilter" Content="Today" IsChecked="True" Style="{StaticResource FilterPill}" Click="Filter_Checked" Margin="0,0,8,0"/>
-                            <RadioButton x:Name="WeekFilter" Content="Weekly" Style="{StaticResource FilterPill}" Click="Filter_Checked" Margin="0,0,8,0"/>
-                            <RadioButton x:Name="AllFilter" Content="All Time" Style="{StaticResource FilterPill}" Click="Filter_Checked"/>
+                            <RadioButton x:Name="WeekFilter" Content="Weekly" Style="{StaticResource FilterPill}" Click="Filter_Checked"/>
                         </StackPanel>
 
                         <Button Click="Refresh_Click" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Cursor="Hand" Width="42" Height="42">

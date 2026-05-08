@@ -17,6 +17,7 @@ namespace HotelPOS.Persistence
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<CashSession> CashSessions { get; set; }
         public DbSet<Expense> Expenses { get; set; }
+        public DbSet<Table> Tables { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

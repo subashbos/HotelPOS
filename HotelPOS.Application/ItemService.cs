@@ -17,6 +17,13 @@ namespace HotelPOS.Application
         {
             ValidateDto(dto);
 
+            var existing = await _itemRepository.GetAllAsync() ?? new List<Item>();
+            if (existing.Any(i => i.Name.Trim().Equals(dto.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"An item with the name '{dto.Name}' already exists.");
+
+            if (!string.IsNullOrWhiteSpace(dto.Barcode) && existing.Any(i => i.Barcode == dto.Barcode))
+                throw new InvalidOperationException($"Barcode '{dto.Barcode}' is already assigned to another item.");
+
             var item = new Item
             {
                 Name = dto.Name.Trim(),
@@ -45,16 +52,27 @@ namespace HotelPOS.Application
 
             if (dto.Price <= 0)
                 throw new ArgumentException("Item price must be greater than zero.", nameof(dto));
+
+            if (dto.TaxPercentage < 0)
+                throw new ArgumentException("Tax percentage cannot be negative.", nameof(dto));
         }
 
         public async Task<List<Item>> GetItemsAsync()
         {
-            return await _itemRepository.GetAllAsync();
+            return await _itemRepository.GetAllAsync() ?? new List<Item>();
         }
 
         public async Task UpdateItemAsync(int id, CreateItemDto dto)
         {
             ValidateDto(dto);
+
+            var existingAll = await _itemRepository.GetAllAsync() ?? new List<Item>();
+            if (existingAll.Any(i => i.Id != id && i.Name.Trim().Equals(dto.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"An item with the name '{dto.Name}' already exists.");
+
+            if (!string.IsNullOrWhiteSpace(dto.Barcode) && existingAll.Any(i => i.Id != id && i.Barcode == dto.Barcode))
+                throw new InvalidOperationException($"Barcode '{dto.Barcode}' is already assigned to another item.");
+
             var item = await _itemRepository.GetByIdAsync(id);
             if (item == null) throw new KeyNotFoundException("Item not found");
 

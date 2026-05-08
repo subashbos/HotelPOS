@@ -22,6 +22,7 @@ namespace HotelPOS
         private LedgerView? _cachedLedger;
         private JournalView? _cachedJournal;
         private CategoryView? _cachedCats;
+        private TableView? _cachedTables;
         private AuditView? _cachedAudit;
         private SessionView? _cachedShift;
         private readonly IThemeService _themeService;
@@ -33,14 +34,6 @@ namespace HotelPOS
             _serviceProvider = serviceProvider;
             _themeService = themeService;
             _notificationService = notificationService;
-
-            _notificationService.NotificationReceived += (e) =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    NotificationPanel.Show(e.Message, e.Type);
-                });
-            };
         }
 
         private void ThemeToggle_Click(object sender, RoutedEventArgs e)
@@ -67,6 +60,7 @@ namespace HotelPOS
                 NavJournal.Visibility = Visibility.Collapsed;
                 NavSettings.Visibility = Visibility.Collapsed;
                 NavCats.Visibility = Visibility.Collapsed;
+                NavTables.Visibility = Visibility.Collapsed;
                 NavBilling_Click(null!, null!);
             }
         }
@@ -99,6 +93,13 @@ namespace HotelPOS
             _cachedCats ??= _serviceProvider.GetRequiredService<CategoryView>();
             MainContentArea.Content = _cachedCats;
             SetActive(NavCats);
+        }
+
+        private void NavTables_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedTables ??= _serviceProvider.GetRequiredService<TableView>();
+            MainContentArea.Content = _cachedTables;
+            SetActive(NavTables);
         }
 
         private void NavLedger_Click(object sender, RoutedEventArgs e)
@@ -138,7 +139,7 @@ namespace HotelPOS
 
         private void SetActive(Button active)
         {
-            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
+            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
                 btn.IsEnabled = btn != active;
 
             // Update Header Title
@@ -154,7 +155,7 @@ namespace HotelPOS
                 UserInfoGrid.Visibility = Visibility.Collapsed;
 
                 // Hide text in nav buttons (keep only emojis/icons)
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
+                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
                 {
                     btn.Content = btn.Content.ToString()?.Split(' ').FirstOrDefault() ?? "";
                     btn.Padding = new Thickness(0, 12, 0, 12);
@@ -172,13 +173,14 @@ namespace HotelPOS
                 NavBilling.Content = "🖥  Billing POS";
                 NavMenu.Content = "📋  Items";
                 NavCats.Content = "🏷  Categories";
+                NavTables.Content = "🪑  Tables";
                 NavLedger.Content = "📒  Ledger";
                 NavJournal.Content = "📓  Journal";
                 NavSettings.Content = "⚙  Settings";
                 NavAudit.Content = "🛡  Audit";
                 NavShift.Content = "💵  Shift";
 
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
+                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift })
                 {
                     btn.Padding = new Thickness(20, 12, 20, 12);
                     btn.HorizontalContentAlignment = HorizontalAlignment.Left;

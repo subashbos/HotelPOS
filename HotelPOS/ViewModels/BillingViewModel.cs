@@ -16,6 +16,7 @@ namespace HotelPOS.ViewModels
         private readonly ICategoryService _categoryService;
         private readonly INotificationService _notificationService;
         private readonly ICashService _cashService;
+        private readonly ITableService _tableService;
 
         [ObservableProperty]
         private string _searchText = string.Empty;
@@ -105,7 +106,7 @@ namespace HotelPOS.ViewModels
         public BillingViewModel(IItemService itemService, ICartService cartService,
                                 IOrderService orderService, ISettingService settingService,
                                 ICategoryService categoryService, INotificationService notificationService,
-                                ICashService cashService)
+                                ICashService cashService, ITableService tableService)
         {
             _itemService = itemService;
             _cartService = cartService;
@@ -114,6 +115,7 @@ namespace HotelPOS.ViewModels
             _categoryService = categoryService;
             _notificationService = notificationService;
             _cashService = cashService;
+            _tableService = tableService;
 
             LoadHeldOrders();
         }
@@ -190,20 +192,44 @@ namespace HotelPOS.ViewModels
             }
         }
 
-        private void RefreshTables()
+        private async void RefreshTables()
         {
-            Tables.Clear();
-            var activeTables = _cartService.GetActiveTables();
-
-            // Assume restaurant has 20 tables for now
-            for (int i = 1; i <= 20; i++)
+            try
             {
-                Tables.Add(new TableStatus
+                var tables = await _tableService.GetTablesAsync();
+                Tables.Clear();
+                var activeTables = _cartService.GetActiveTables();
+
+                if (tables == null || tables.Count == 0)
                 {
-                    TableNumber = i,
-                    IsOccupied = activeTables.Contains(i),
-                    IsCurrent = i == TableNumber
-                });
+                    // Fallback to default 20 tables if none defined yet
+                    for (int i = 1; i <= 20; i++)
+                    {
+                        Tables.Add(new TableStatus
+                        {
+                            TableNumber = i,
+                            IsOccupied = activeTables.Contains(i),
+                            IsCurrent = i == TableNumber
+                        });
+                    }
+                }
+                else
+                {
+                    foreach (var t in tables.Where(x => x.IsActive).OrderBy(x => x.Number))
+                    {
+                        Tables.Add(new TableStatus
+                        {
+                            TableNumber = t.Number,
+                            TableName = t.Name,
+                            IsOccupied = activeTables.Contains(t.Number),
+                            IsCurrent = t.Number == TableNumber
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowError($"Failed to refresh tables: {ex.Message}");
             }
         }
 
@@ -524,6 +550,7 @@ namespace HotelPOS.ViewModels
             IsEditMode = true;
             TableNumber = order.TableNumber;
             _cartService.LoadItems(order.TableNumber, order.Items);
+            UpdateCart(); // Calculate Subtotal before setting DiscountAmount
             DiscountAmount = order.DiscountAmount;
             PaymentMode = order.PaymentMode;
             CustomerName = order.CustomerName;
@@ -566,13 +593,11 @@ namespace HotelPOS.ViewModels
                     _editingOrder.CustomerGstin = CustomerGstin;
 
                     await _orderService.UpdateOrderAsync(_editingOrder);
-                    _notificationService.ShowSuccess($"Order #{_editingOrder.Id} updated successfully");
                     // Removed automatic print on update to avoid unwanted print dialogs/popups
                 }
                 else
                 {
                     int orderId = await _orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, PaymentMode, CustomerName, CustomerPhone, CustomerGstin);
-                    _notificationService.ShowSuccess($"Order #{orderId} saved successfully");
 
                     // Trigger Print
                     await PrintOrderAsync(orderId);
@@ -646,6 +671,7 @@ namespace HotelPOS.ViewModels
     public class TableStatus : ObservableObject
     {
         public int TableNumber { get; set; }
+        public string TableName { get; set; } = string.Empty;
 
         private bool _isOccupied;
         public bool IsOccupied

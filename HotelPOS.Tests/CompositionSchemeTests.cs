@@ -38,7 +38,8 @@ namespace HotelPOS.Tests
                 _settingService.Object,
                 _categoryService.Object,
                 _notificationService.Object,
-                _cashService.Object);
+                _cashService.Object,
+                new Mock<ITableService>().Object);
 
             // Act
             await vm.InitializeAsync(); // This loads settings and calls UpdateCart

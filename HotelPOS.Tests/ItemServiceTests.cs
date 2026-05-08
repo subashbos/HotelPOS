@@ -21,6 +21,7 @@ namespace HotelPOS.Tests
         public async Task AddItemAsync_ValidDto_ShouldAdd()
         {
             // Arrange
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             var dto = new CreateItemDto { Name = "Burger", Price = 100, TaxPercentage = 5 };
 
             // Act
@@ -31,6 +32,30 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task AddItemAsync_DuplicateName_ShouldThrow()
+        {
+            // Arrange
+            var existing = new List<Item> { new Item { Name = "Burger" } };
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(existing);
+            var dto = new CreateItemDto { Name = "Burger ", Price = 150 };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AddItemAsync(dto));
+        }
+
+        [Fact]
+        public async Task AddItemAsync_DuplicateBarcode_ShouldThrow()
+        {
+            // Arrange
+            var existing = new List<Item> { new Item { Name = "Item1", Barcode = "12345" } };
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(existing);
+            var dto = new CreateItemDto { Name = "Item2", Barcode = "12345", Price = 100 };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AddItemAsync(dto));
+        }
+
+        [Fact]
         public async Task AddItemAsync_InvalidPrice_ShouldThrowException()
         {
             // Arrange
@@ -38,6 +63,22 @@ namespace HotelPOS.Tests
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() => _service.AddItemAsync(dto));
+        }
+
+        [Fact]
+        public async Task UpdateItemAsync_DuplicateName_ShouldThrow()
+        {
+            // Arrange
+            var items = new List<Item> 
+            { 
+                new Item { Id = 1, Name = "Pizza" }, 
+                new Item { Id = 2, Name = "Pasta" } 
+            };
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(items);
+            var dto = new CreateItemDto { Name = "Pasta", Price = 200 };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UpdateItemAsync(1, dto));
         }
 
         [Fact]

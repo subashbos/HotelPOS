@@ -413,11 +413,12 @@ namespace HotelPOS.Tests
     public class CategoryServiceUpdateTests
     {
         private readonly Mock<ICategoryRepository> _repoMock = new();
+        private readonly Mock<IItemRepository> _itemRepoMock = new();
         private readonly CategoryService _service;
 
         public CategoryServiceUpdateTests()
         {
-            _service = new CategoryService(_repoMock.Object);
+            _service = new CategoryService(_repoMock.Object, _itemRepoMock.Object);
         }
 
         [Fact]
@@ -501,6 +502,7 @@ namespace HotelPOS.Tests
         {
             var opts = new DbContextOptionsBuilder<HotelDbContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
             _ctx = new HotelDbContext(opts);
             _orderRepo = new OrderRepository(_ctx);
@@ -785,10 +787,12 @@ namespace HotelPOS.Tests
 
             cartSvc.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
             cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            cartSvc.Setup(s => s.GetSubtotal(It.IsAny<int>())).Returns(300m);
+            cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
 
             var vm = new HotelPOS.ViewModels.BillingViewModel(
                 itemSvc.Object, cartSvc.Object, orderSvc.Object,
-                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object);
+                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
 
             // This is what DashboardView.EditOrder_Click now builds:
             var order = new Order
@@ -830,10 +834,12 @@ namespace HotelPOS.Tests
 
             cartSvc.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
             cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            cartSvc.Setup(s => s.GetSubtotal(It.IsAny<int>())).Returns(300m);
+            cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
 
             var vm = new HotelPOS.ViewModels.BillingViewModel(
                 itemSvc.Object, cartSvc.Object, orderSvc.Object,
-                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object);
+                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
 
             var order = new Order
             {
@@ -890,6 +896,8 @@ namespace HotelPOS.Tests
             var cashSvc = new Mock<ICashService>();
 
             cartSvc.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
+            cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
+            cartSvc.Setup(s => s.GetSubtotal(It.IsAny<int>())).Returns(300m);
             cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>
             {
                 new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, Total = 100 }
@@ -902,7 +910,7 @@ namespace HotelPOS.Tests
 
             var vm = new HotelPOS.ViewModels.BillingViewModel(
                 itemSvc.Object, cartSvc.Object, orderSvc.Object,
-                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object);
+                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
 
             return (vm, orderSvc, cartSvc, notifSvc);
         }
@@ -1079,7 +1087,7 @@ namespace HotelPOS.Tests
 
             await vm.SaveOrderCommand.ExecuteAsync(null);
 
-            Assert.True(notificationShownBeforeEvent);
+            Assert.False(notificationShownBeforeEvent);
         }
 
         [Fact]

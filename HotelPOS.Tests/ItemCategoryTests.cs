@@ -34,7 +34,8 @@ namespace HotelPOS.Tests
         {
             // Arrange
             var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object);
+            var itemRepo = new Mock<IItemRepository>();
+            var service = new CategoryService(mockRepo.Object, itemRepo.Object);
 
             // Act
             await service.AddCategoryAsync("New Category");
@@ -48,7 +49,9 @@ namespace HotelPOS.Tests
         {
             // Arrange
             var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object);
+            var itemRepo = new Mock<IItemRepository>();
+            itemRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
+            var service = new CategoryService(mockRepo.Object, itemRepo.Object);
 
             // Act
             await service.DeleteCategoryAsync(10);
