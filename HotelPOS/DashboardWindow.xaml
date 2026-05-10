@@ -170,6 +170,7 @@
                         <Expander x:Name="ModuleStats" Header="ANALYTICS" Style="{StaticResource SidebarExpander}">
                             <StackPanel>
                                 <Button x:Name="NavDash"     Content="📊  Dashboard"  ToolTip="Dashboard"  Style="{StaticResource NavBtn}" Click="NavDash_Click" IsEnabled="False"/>
+                                <Button x:Name="NavSales"    Content="📈  Sales Report" ToolTip="Sales Report" Style="{StaticResource NavBtn}" Click="NavSales_Click"/>
                                 <Button x:Name="NavLedger"   Content="📒  Ledger"      ToolTip="Ledger"      Style="{StaticResource NavBtn}" Click="NavLedger_Click"/>
                                 <Button x:Name="NavJournal"  Content="📓  Journal"     ToolTip="Journal"     Style="{StaticResource NavBtn}" Click="NavJournal_Click"/>
                             </StackPanel>

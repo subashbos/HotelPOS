@@ -55,7 +55,9 @@ namespace HotelPOS.Persistence
                 .ToListAsync();
         }
 
-        public async Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, DateTime? from = null, DateTime? to = null, int? tableNumber = null)
+        public async Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, 
+            DateTime? from = null, DateTime? to = null, int? tableNumber = null,
+            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null)
         {
             var query = _context.Orders
                 .Include(o => o.Items)
@@ -64,6 +66,28 @@ namespace HotelPOS.Persistence
             if (from.HasValue) query = query.Where(o => o.CreatedAt >= from.Value);
             if (to.HasValue) query = query.Where(o => o.CreatedAt <= to.Value);
             if (tableNumber.HasValue) query = query.Where(o => o.TableNumber == tableNumber.Value);
+            
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(o => (o.InvoiceNumber != null && o.InvoiceNumber.Contains(search)) || 
+                                         (o.CustomerName != null && o.CustomerName.Contains(search)) || 
+                                         (o.CustomerPhone != null && o.CustomerPhone.Contains(search)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(paymentMode) && paymentMode != "All")
+            {
+                query = query.Where(o => o.PaymentMode == paymentMode);
+            }
+
+            if (!string.IsNullOrWhiteSpace(orderType) && orderType != "All")
+            {
+                query = query.Where(o => o.OrderType == orderType);
+            }
+
+            if (categoryId.HasValue && categoryId > 0)
+            {
+                query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId.Value)));
+            }
 
             var total = await query.CountAsync();
 
@@ -102,6 +126,7 @@ namespace HotelPOS.Persistence
             existing.DiscountAmount = order.DiscountAmount;
             existing.TotalAmount = order.TotalAmount;
             existing.PaymentMode = order.PaymentMode;
+            existing.OrderType = order.OrderType;
             existing.UpdatedAt = DateTime.UtcNow;
 
             // Customer fields — previously silently dropped on update
@@ -132,7 +157,7 @@ namespace HotelPOS.Persistence
                 await _context.SaveChangesAsync();
             }
         }
-
+ 
         public async Task BeginTransactionAsync() => await _context.Database.BeginTransactionAsync();
         public async Task CommitTransactionAsync() => await _context.Database.CommitTransactionAsync();
         public async Task RollbackTransactionAsync() => await _context.Database.RollbackTransactionAsync();

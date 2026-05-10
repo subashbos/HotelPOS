@@ -35,8 +35,8 @@ namespace HotelPOS.Application
 
             var role = new Role { Name = name.Trim(), Description = description };
 
-            // Default permissions (all false) — includes "Roles" module
-            string[] modules = { "Dashboard", "Billing", "Items", "Categories", "Tables", "Ledger", "Journal", "Settings", "Audit", "Shift", "Roles" };
+            // Default permissions (all false) — includes "Roles" and "SalesReport"
+            string[] modules = { "Dashboard", "Billing", "Items", "Categories", "Tables", "Ledger", "Journal", "Settings", "Audit", "Shift", "Roles", "SalesReport" };
             foreach (var mod in modules)
             {
                 role.Permissions.Add(new RolePermission { ModuleName = mod, CanAccess = false });

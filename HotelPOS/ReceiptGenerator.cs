@@ -227,7 +227,8 @@ namespace HotelPOS
             hdr.Inlines.Add(new Run($"(Kitchen Order Ticket)\n") { FontSize = smallSz });
             hdr.Inlines.Add(new Run(new string('-', isThermal ? 30 : 60) + "\n") { FontSize = smallSz });
 
-            hdr.Inlines.Add(new Run($"Table : {tableNumber}\n") { FontSize = textSz, FontWeight = FontWeights.Bold });
+            string tableDisplay = tableNumber == 0 ? "Takeaway / Online" : tableNumber.ToString();
+            hdr.Inlines.Add(new Run($"Table : {tableDisplay}\n") { FontSize = textSz, FontWeight = FontWeights.Bold });
             hdr.Inlines.Add(new Run($"Time  : {DateTime.Now:dd-MMM-yyyy hh:mm tt}\n") { FontSize = smallSz });
             hdr.Inlines.Add(new Run(new string('-', isThermal ? 30 : 60) + "\n") { FontSize = smallSz });
             doc.Blocks.Add(hdr);

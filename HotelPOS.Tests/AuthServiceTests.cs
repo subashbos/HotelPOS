@@ -69,5 +69,22 @@ namespace HotelPOS.Tests
 
             _userRepoMock.Verify(r => r.GetUserByUsernameAsync(username), Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task AuthenticateAsync_Should_Fail_If_User_Is_Inactive()
+        {
+            // Arrange
+            var username = "inactive_user";
+            var (hash, salt) = _service.HashPassword("password");
+            var user = new User { Username = username, PasswordHash = hash, Salt = salt, IsActive = false };
+
+            _userRepoMock.Setup(r => r.GetUserByUsernameAsync(username)).ReturnsAsync(user);
+
+            // Act
+            var result = await _service.AuthenticateAsync(username, "password");
+
+            // Assert
+            Assert.Null(result); // Should fail even with correct password because IsActive is false
+        }
     }
 }

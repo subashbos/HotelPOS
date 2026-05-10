@@ -27,6 +27,7 @@ namespace HotelPOS.Tests
         public BillingViewModelEditTests()
         {
             _cartService.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
+            _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
             _vm = new BillingViewModel(
                 _itemService.Object,
                 _cartService.Object,

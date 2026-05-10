@@ -78,7 +78,8 @@
             </Grid.RowDefinitions>
 
             <!-- ── TOP: Active Billing Tabs (Tab-Movable) ── -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12"
+                        Visibility="{Binding IsTableVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ItemsControl ItemsSource="{Binding ActiveTabs}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -100,21 +101,18 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- New Tab / Table Selection Button -->
                 <Button x:Name="AddTableButton" Content="+ New Bill" 
                         Command="{Binding OpenTableLayoutCommand}"
                         Style="{StaticResource NavPillStyle}"
                         Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
                         Width="100" Height="36"/>
 
-                <!-- Table Layout Popup -->
                 <Popup IsOpen="{Binding IsTableLayoutOpen}" StaysOpen="False" PlacementTarget="{Binding ElementName=AddTableButton}" Placement="Bottom" HorizontalOffset="-200" AllowsTransparency="True" PopupAnimation="Fade">
                     <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="15" Width="320">
                         <Border.Effect><DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.2"/></Border.Effect>
                         <StackPanel>
                             <TextBlock Text="Select Table" FontWeight="Bold" FontSize="18" Margin="0,0,0,10" Foreground="{DynamicResource TextPrimary}"/>
                             
-                            <!-- Legend -->
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
                                 <Ellipse Width="10" Height="10" Fill="{DynamicResource SuccessBrush}" Margin="0,0,5,0"/><TextBlock Text="Empty" FontSize="11" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
                                 <Ellipse Width="10" Height="10" Fill="{DynamicResource DangerBrush}" Margin="0,0,5,0"/><TextBlock Text="Occupied" FontSize="11" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
@@ -176,39 +174,35 @@
             <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="20">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>   <!-- Title -->
-                        <RowDefinition Height="Auto"/>   <!-- Category Filter -->
-                        <RowDefinition Height="12"/>     <!-- Spacer -->
-                        <RowDefinition Height="Auto"/>   <!-- Search Box -->
-                        <RowDefinition Height="12"/>     <!-- Spacer -->
-                        <RowDefinition Height="*"/>      <!-- Item Cards -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="Menu Items" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBlock Text="Type to search or browse by category" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Grid>
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="Menu Items" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Type to search or browse by category" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,2,0,0"/>
+                    </StackPanel>
 
-                    <Border Grid.Row="1" Margin="0,8,0,0" Padding="0,0,0,8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                    <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" ClipToBounds="True">
+                        <UniformGrid Columns="3">
+                            <Button x:Name="BtnDineIn" Content="🍽 Dine In" Tag="DineIn" Click="OrderTypeBtn_Click" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}" Cursor="Hand"/>
+                            <Button x:Name="BtnTakeaway" Content="🥡 Takeaway" Tag="Takeaway" Click="OrderTypeBtn_Click" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}" Cursor="Hand"/>
+                            <Button x:Name="BtnOnline" Content="🌐 Online" Tag="Online" Click="OrderTypeBtn_Click" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand"/>
+                        </UniformGrid>
+                    </Border>
+
+                    <Border Grid.Row="2" Margin="0,8,0,0" Padding="0,0,0,8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                             <ItemsControl ItemsSource="{Binding Categories}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Button Content="{Binding Name}" 
-                                                Command="{Binding DataContext.FilterByCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding Id}"
-                                                Style="{StaticResource NavPillStyle}">
+                                        <Button Content="{Binding Name}" Command="{Binding DataContext.FilterByCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding Id}" Style="{StaticResource NavPillStyle}">
                                             <Button.IsEnabled>
                                                 <MultiBinding Converter="{StaticResource IdToEnabledConverter}">
                                                     <Binding Path="Id"/>
@@ -222,104 +216,44 @@
                         </ScrollViewer>
                     </Border>
 
-                    <!-- ── Autocomplete Search ── -->
-                    <Grid Grid.Row="3">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                    <Grid Grid.Row="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="2" CornerRadius="8">
+                            <TextBox x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" TextChanged="SearchBox_TextChanged" Padding="12,10" FontSize="15" BorderThickness="0" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" PreviewKeyDown="SearchBox_PreviewKeyDown" GotFocus="SearchBox_GotFocus" LostFocus="SearchBox_LostFocus"/>
+                        </Border>
+                        <Button Grid.Column="1" Content="➕  Add" Margin="10,0,0,0" Click="AddItem_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" Padding="16,10" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Border BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="2" CornerRadius="8">
-                                <TextBox x:Name="SearchBox"
-                                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                         TextChanged="SearchBox_TextChanged"
-                                         Padding="12,10" FontSize="15"
-                                         BorderThickness="0"
-                                         Background="{DynamicResource SurfaceBrush}"
-                                         Foreground="{DynamicResource TextPrimary}"
-                                         PreviewKeyDown="SearchBox_PreviewKeyDown"
-                                         GotFocus="SearchBox_GotFocus"
-                                         LostFocus="SearchBox_LostFocus"/>
-                            </Border>
-                            <Button Grid.Column="1" Content="➕  Add" Margin="10,0,0,0"
-                                    Click="AddItem_Click"
-                                    Background="{DynamicResource PrimaryBrush}"
-                                    Foreground="White" Padding="16,10"
-                                    BorderThickness="0" FontWeight="SemiBold"
-                                    Cursor="Hand"/>
-                        </Grid>
-
-                        <!-- Autocomplete Popup — StaysOpen=True, closed in code -->
-                        <Popup x:Name="AutoPopup" Grid.Row="1"
-                               PlacementTarget="{Binding ElementName=SearchBox}"
-                               Placement="Bottom"
-                               StaysOpen="True"
-                               AllowsTransparency="True">
-                            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="2"
-                                    CornerRadius="0,0,10,10" MinWidth="320">
-                                <Border.Effect>
-                                    <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="4" Opacity="0.2"/>
-                                </Border.Effect>
-                                <ListBox x:Name="AutoList"
-                                         ItemsSource="{Binding Items}"
-                                         SelectedValuePath="Id"
-                                         MaxHeight="350"
-                                         BorderThickness="0"
-                                         FontSize="14"
-                                         Background="Transparent"
-                                         Foreground="{DynamicResource TextPrimary}"
-                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                         ScrollViewer.CanContentScroll="True"
-                                         VirtualizingStackPanel.IsVirtualizing="True"
-                                         VirtualizingStackPanel.VirtualizationMode="Recycling"
-                                         PreviewMouseLeftButtonDown="AutoList_MouseDown"
-                                         KeyDown="AutoList_KeyDown">
+                        <Popup x:Name="AutoPopup" PlacementTarget="{Binding ElementName=SearchBox}" Placement="Bottom" StaysOpen="True" AllowsTransparency="True">
+                            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="2" CornerRadius="0,0,10,10" MinWidth="320">
+                                <Border.Effect><DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="4" Opacity="0.2"/></Border.Effect>
+                                <ListBox x:Name="AutoList" ItemsSource="{Binding Items}" SelectedValuePath="Id" MaxHeight="350" BorderThickness="0" FontSize="14" Background="Transparent" Foreground="{DynamicResource TextPrimary}" ScrollViewer.VerticalScrollBarVisibility="Auto" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" PreviewMouseLeftButtonDown="AutoList_MouseDown" KeyDown="AutoList_KeyDown">
                                     <ListBox.ItemContainerStyle>
                                         <Style TargetType="ListBoxItem">
                                             <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="BorderThickness" Value="0"/>
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="ListBoxItem">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                                Padding="14,10">
-                                                            <ContentPresenter />
-                                                        </Border>
+                                                        <Border Background="{TemplateBinding Background}" Padding="14,10"><ContentPresenter /></Border>
                                                     </ControlTemplate>
                                                 </Setter.Value>
                                             </Setter>
                                             <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                </Trigger>
-                                                <Trigger Property="IsSelected" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                </Trigger>
+                                                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/><Setter Property="Foreground" Value="White"/></Trigger>
+                                                <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/><Setter Property="Foreground" Value="White"/></Trigger>
                                             </Style.Triggers>
                                         </Style>
                                     </ListBox.ItemContainerStyle>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Margin="0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                                    <Border Padding="12,4" Background="{DynamicResource SecondaryBrush}" CornerRadius="16" Margin="8,0,0,0" x:Name="PriceBadge">
-                                                        <TextBlock x:Name="PriceText" Text="{Binding Price, StringFormat=Rs. {0:N2}}" Foreground="White" FontWeight="Bold" FontSize="13"/>
-                                                    </Border>
-                                                    <TextBlock x:Name="TaxText" Text="{Binding TaxPercentage, StringFormat={}({0}% GST)}" Foreground="#E67E22" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <Border Padding="12,4" Background="{DynamicResource SecondaryBrush}" CornerRadius="16" Margin="8,0,0,0"><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Foreground="White" FontWeight="Bold" FontSize="13"/></Border>
+                                                    <TextBlock Text="{Binding TaxPercentage, StringFormat={}({0}% GST)}" Foreground="#E67E22" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                                 </StackPanel>
                                             </Grid>
                                         </DataTemplate>
@@ -329,61 +263,18 @@
                         </Popup>
                     </Grid>
 
-                    <!-- ── Item Card List ── -->
-                    <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer Grid.Row="6" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="ItemCardList" ItemsSource="{Binding Items}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Margin="0,0,0,10" Padding="16,12"
-                                            Background="{DynamicResource AppBackground}"
-                                            BorderBrush="{DynamicResource BorderBrush}"
-                                            BorderThickness="1" CornerRadius="10"
-                                            Cursor="Hand"
-                                            MouseLeftButtonDown="ItemCard_Click">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Style.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
-                                                        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                                    </Trigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
+                                    <Border Margin="0,0,0,10" Padding="16,12" Background="{DynamicResource AppBackground}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Cursor="Hand" MouseLeftButtonDown="ItemCard_Click">
+                                        <Border.Style><Style TargetType="Border"><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/></Trigger></Style.Triggers></Style></Border.Style>
                                         <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
-                                                <TextBlock Text="{Binding Category.Name}" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
-                                            </StackPanel>
-                                            <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" VerticalAlignment="Center" Margin="8,0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
-                                                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}"
-                                                               FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right"/>
-                                                    <TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}"
-                                                               FontSize="10" Foreground="#E67E22" HorizontalAlignment="Right"/>
-                                                </StackPanel>
-                                            </Border>
-                                            <!-- ➕ Add button on every card -->
-                                            <Button Grid.Column="2"
-                                                    Content="＋"
-                                                    Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                    CommandParameter="{Binding}"
-                                                    Width="38" Height="38"
-                                                    Background="{DynamicResource PrimaryBrush}" Foreground="White"
-                                                    BorderThickness="0"
-                                                    FontSize="18" FontWeight="Bold"
-                                                    Cursor="Hand"
-                                                    VerticalAlignment="Center">
-                                                <Button.Resources>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="CornerRadius" Value="10"/>
-                                                    </Style>
-                                                </Button.Resources>
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                            <StackPanel VerticalAlignment="Center"><TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="{Binding Category.Name}" FontSize="11" Foreground="{DynamicResource TextMuted}"/></StackPanel>
+                                            <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" FontSize="10" Foreground="#E67E22"/></StackPanel></Border>
+                                            <Button Grid.Column="2" Content="＋" Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Width="38" Height="38" Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" FontSize="18" FontWeight="Bold">
+                                                <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style></Button.Resources>
                                             </Button>
                                         </Grid>
                                     </Border>
@@ -395,96 +286,58 @@
             </Border>
 
             <!-- ── RIGHT: Cart Panel ── -->
-            <Border Grid.Column="2" VerticalAlignment="Stretch" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="15" Style="{StaticResource PremiumCard}">
+            <Border Grid.Column="2" VerticalAlignment="Stretch" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="15">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>   <!-- 0: Compact Header -->
-                        <RowDefinition Height="*"/>      <!-- 1: Scrollable CartGrid - fills all available space -->
-                        <RowDefinition Height="Auto" MaxHeight="260"/>   <!-- 2: Footer - capped height -->
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto" MaxHeight="300"/>
                     </Grid.RowDefinitions>
 
-                    <!-- ── Header ── -->
                     <Grid Grid.Row="0" Margin="0,0,0,8">
-                        <TextBlock Text="Current Bill" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                        <Button Content="Move Items" Command="{Binding ToggleTransferModeCommand}"
-                                HorizontalAlignment="Right" VerticalAlignment="Center"
-                                Style="{StaticResource NavPillStyle}"
-                                Visibility="{Binding Cart.Count, Converter={StaticResource BoolToVisibilityConverter}}"
-                                Background="{DynamicResource SecondaryBrush}" Foreground="White" BorderThickness="0" Padding="10,4"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Current Bill" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                        <Button Content="Move Items" Command="{Binding ToggleTransferModeCommand}" HorizontalAlignment="Right" Style="{StaticResource NavPillStyle}" Visibility="{Binding IsTableVisible, Converter={StaticResource BoolToVisibilityConverter}}" Background="{DynamicResource SecondaryBrush}" Foreground="White" BorderThickness="0" Padding="10,4"/>
                     </Grid>
 
-                    <!-- ── DataGrid ── -->
-                    <DataGrid x:Name="CartGrid" Grid.Row="1" VerticalAlignment="Stretch"
-                              ItemsSource="{Binding Cart}" Style="{StaticResource PremiumGrid}"
-                              SelectedItem="{Binding SelectedCartRow}"
-                              AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="False"
-                              CanUserSortColumns="False"
-                              RowHeight="38"
-                              ScrollViewer.VerticalScrollBarVisibility="Visible"
-                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                              VirtualizingStackPanel.IsVirtualizing="True"
-                              VirtualizingStackPanel.VirtualizationMode="Recycling"
+                    <DataGrid x:Name="CartGrid" Grid.Row="1" ItemsSource="{Binding Cart}" SelectedItem="{Binding SelectedCartRow}" 
+                              Style="{StaticResource PremiumGrid}" RowHeight="38"
                               CellEditEnding="CartGrid_CellEditEnding">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="30" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                            <DataGridTextColumn Header="ITEM" Binding="{Binding ItemName}" Width="2.5*" IsReadOnly="True">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Padding" Value="10,0"/><Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="FontWeight" Value="SemiBold"/><Setter Property="FontSize" Value="12.5"/><Setter Property="TextWrapping" Value="Wrap"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="35" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            <DataGridTextColumn Header="ITEM" Binding="{Binding ItemName}" Width="2.5*" IsReadOnly="True" HeaderStyle="{StaticResource BaseColumnHeader}"/>
                             <DataGridTemplateColumn Header="QTY" Width="60" HeaderStyle="{StaticResource CenterHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBox Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" 
-                                                 LostFocus="GridTextBox_LostFocus"
-                                                 PreviewKeyDown="QtyTextBox_PreviewKeyDown"
-                                                 GotFocus="GridTextBox_GotFocus"
-                                                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                                                 BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"
-                                                 Padding="2" FontSize="12" FontWeight="SemiBold"
-                                                 Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}"/>
-                                    </DataTemplate>
+                                    <DataTemplate><TextBox Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" LostFocus="GridTextBox_LostFocus" PreviewKeyDown="QtyTextBox_PreviewKeyDown" GotFocus="GridTextBox_GotFocus" HorizontalContentAlignment="Center" BorderThickness="1" Padding="2"/></DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="TAX %" Binding="{Binding TaxPercentage, StringFormat={}{0:0.#}%}" Width="55" IsReadOnly="True" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                            <DataGridTemplateColumn Header="PRICE" Width="90" HeaderStyle="{StaticResource RightHeader}">
+                            <DataGridTextColumn Header="TAX %" Binding="{Binding TaxPercentage, StringFormat={}{0:0.#}%}" Width="65" IsReadOnly="True" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            <DataGridTemplateColumn Header="PRICE" Width="95" HeaderStyle="{StaticResource RightHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBox Text="{Binding Price, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" 
-                                                 LostFocus="GridTextBox_LostFocus"
-                                                 PreviewKeyDown="PriceTextBox_PreviewKeyDown"
-                                                 GotFocus="GridTextBox_GotFocus"
-                                                 HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
-                                                 BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"
-                                                 Padding="2,2,8,2" FontSize="12"
-                                                 Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}"/>
-                                    </DataTemplate>
+                                    <DataTemplate><TextBox Text="{Binding Price, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" LostFocus="GridTextBox_LostFocus" PreviewKeyDown="PriceTextBox_PreviewKeyDown" GotFocus="GridTextBox_GotFocus" HorizontalContentAlignment="Right" BorderThickness="1" Padding="2,2,8,2"/></DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="TOTAL" Width="100" IsReadOnly="True" HeaderStyle="{StaticResource RightHeader}">
+                            <DataGridTemplateColumn Header="TOTAL" Width="110" IsReadOnly="True" HeaderStyle="{StaticResource RightHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate><TextBlock Text="{Binding Total, StringFormat=Rs.{0:N2}}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/></DataTemplate>
+                                    <DataTemplate><TextBlock Text="{Binding Total, StringFormat=Rs.{0:N2}}" FontWeight="Bold" Style="{StaticResource RightCell}"/></DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <!-- ── Footer ── -->
                     <StackPanel Grid.Row="2">
                         <UniformGrid Columns="4" Margin="0,8,0,0">
-                            <Button Content="＋" Command="{Binding AddToCartCommand}" CommandParameter="{Binding SelectedCartRow}" Style="{StaticResource TouchButton}" Padding="4" FontSize="14" Margin="0,0,2,0"/>
-                            <Button Content="－" Command="{Binding DecreaseQuantityCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="4" FontSize="14" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Margin="0,0,2,0"/>
-                            <Button Content="🗑 Rem" Command="{Binding RemoveFromCartCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource DangerBrush}" Foreground="White" Padding="4" FontSize="10" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Margin="0,0,2,0"/>
-                            <Button Content="✖ Clr" Command="{Binding ClearCartCommand}" Background="#E74C3C" Foreground="White" Padding="4" FontSize="10" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand"/>
+                            <Button Content="＋" Command="{Binding AddToCartCommand}" CommandParameter="{Binding SelectedCartRow}" Padding="4" FontSize="14" Margin="0,0,2,0"/>
+                            <Button Content="－" Command="{Binding DecreaseQuantityCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="4" FontSize="14" Margin="0,0,2,0"/>
+                            <Button Content="🗑 Rem" Command="{Binding RemoveFromCartCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource DangerBrush}" Foreground="White" Padding="4" FontSize="10" Margin="0,0,2,0"/>
+                            <Button Content="✖ Clr" Command="{Binding ClearCartCommand}" Background="#E74C3C" Foreground="White" Padding="4" FontSize="10"/>
                         </UniformGrid>
                         
                         <Grid Margin="0,6,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Button Content="🍽 Kitchen" Command="{Binding HoldOrderCommand}" Background="#F39C12" Foreground="White" Padding="8,4" FontSize="11" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" Margin="0,0,4,0"/>
-                            <Button Grid.Column="1" Content="{Binding HeldOrders.Count, StringFormat='Held ({0})'}" Command="{Binding ToggleHeldOrdersCommand}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="8,4" FontSize="11" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand"/>
+                            <Button Content="🍽 Kitchen" Command="{Binding HoldOrderCommand}" Background="#F39C12" Foreground="White" Padding="4" FontSize="11" Margin="0,0,4,0"/>
+                            <Button Grid.Column="1" Content="{Binding HeldOrders.Count, StringFormat='Held ({0})'}" Command="{Binding ToggleHeldOrdersCommand}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="4" FontSize="11"/>
                         </Grid>
 
                         <Popup IsOpen="{Binding IsHeldOrdersPopupOpen}" StaysOpen="False" Placement="Top" HorizontalOffset="-100">
@@ -500,57 +353,55 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                    <TextBlock Text="No held orders" Visibility="{Binding HeldOrders.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}" HorizontalAlignment="Center" Margin="0,10,0,0" Foreground="{DynamicResource TextMuted}"/>
                                 </StackPanel>
                             </Border>
                         </Popup>
 
                         <Border Margin="0,6,0,0" Padding="10,8" CornerRadius="8" Background="{DynamicResource AppBackground}">
                             <StackPanel>
-                                <!-- Customer Details (GST Compliance) -->
-                                <Expander Header="Customer Details" IsExpanded="False" Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,0,0,8" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource BorderBrush}">
+                                <Expander Header="Customer Details" IsExpanded="False" FontSize="11" Margin="0,0,0,8">
                                     <Grid Margin="0,8,0,4">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <TextBlock Text="Name:" VerticalAlignment="Center" FontSize="10" Margin="0,0,8,6" Foreground="{DynamicResource TextMuted}"/>
-                                        <TextBox Grid.Column="1" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" Padding="4,2" FontSize="11" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}"/>
-
-                                        <TextBlock Grid.Row="1" Text="Phone:" VerticalAlignment="Center" FontSize="10" Margin="0,0,8,6" Foreground="{DynamicResource TextMuted}"/>
-                                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CustomerPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" Padding="4,2" FontSize="11" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}"/>
-
-                                        <TextBlock Grid.Row="2" Text="GSTIN:" VerticalAlignment="Center" FontSize="10" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}"/>
-                                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CustomerGstin, UpdateSourceTrigger=PropertyChanged}" Padding="4,2" FontSize="11" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}"/>
+                                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                                        <TextBlock Text="Name:" FontSize="10" Margin="0,0,8,6"/><TextBox Grid.Column="1" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" Padding="4,2"/>
+                                        <TextBlock Grid.Row="1" Text="Phone:" FontSize="10" Margin="0,0,8,6"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CustomerPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" Padding="4,2"/>
+                                        <TextBlock Grid.Row="2" Text="GSTIN:" FontSize="10" Margin="0,0,8,0"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CustomerGstin, UpdateSourceTrigger=PropertyChanged}" Padding="4,2"/>
                                     </Grid>
                                 </Expander>
 
-                                <Grid Margin="0,0,0,4">
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                    <StackPanel Margin="0,0,8,0" Orientation="Horizontal">
-                                        <TextBlock Text="PAY:" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                        <ComboBox SelectedValue="{Binding PaymentMode}" SelectedValuePath="Content" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" Padding="4,2" FontSize="11" Width="80"><ComboBoxItem Content="Cash"/><ComboBoxItem Content="Card"/><ComboBoxItem Content="UPI"/></ComboBox>
+                                <Grid Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
+                                        <TextBlock Text="PAY" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <ComboBox x:Name="PaymentModeCombo" SelectedValue="{Binding PaymentMode}" SelectedValuePath="Content" Width="120" Height="40" VerticalContentAlignment="Center">
+                                            <ComboBoxItem Content="Cash"/>
+                                            <ComboBoxItem Content="Card"/>
+                                            <ComboBoxItem Content="UPI"/>
+                                        </ComboBox>
                                     </StackPanel>
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <TextBlock Text="DISC:" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,4,0"/>
-                                        <TextBox Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" Padding="4,2" FontSize="11" Width="60"/>
+
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="DISC" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBox x:Name="DiscountBox" Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" Width="100" Height="40" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" PreviewKeyDown="DiscountBox_PreviewKeyDown"/>
                                     </StackPanel>
                                 </Grid>
-                                <Grid Margin="0,0,0,4">
-                                    <TextBlock Text="Total Amount" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
-                                    <TextBlock HorizontalAlignment="Right" Text="{Binding TotalAmount, StringFormat=Rs. {0:N2}}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+
+                                <Grid Margin="0,0,0,6">
+                                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,6,0,0">
+                                        <Grid><TextBlock Text="Total Amount" FontSize="12" FontWeight="SemiBold"/><TextBlock HorizontalAlignment="Right" Text="{Binding TotalAmount, StringFormat=Rs. {0:N2}}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/></Grid>
+                                    </Border>
                                 </Grid>
-                                <Button x:Name="CheckoutButton" Command="{Binding SaveOrderCommand}" Padding="6" Background="{DynamicResource PrimaryBrush}" Foreground="White" FontSize="13" FontWeight="Bold" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Stretch">
+
+                                <Button x:Name="CheckoutButton" Command="{Binding SaveOrderCommand}" Padding="6" Background="{DynamicResource PrimaryBrush}" Foreground="White" FontSize="13" FontWeight="Bold">
                                     <Button.Style><Style TargetType="Button"><Setter Property="Content" Value="🖨  Checkout (F4)"/><Style.Triggers><DataTrigger Binding="{Binding IsEditMode}" Value="True"><Setter Property="Content" Value="💾  Update (F4)"/></DataTrigger></Style.Triggers></Style></Button.Style>
                                 </Button>
-                                <Button x:Name="CancelEditButton" Content="✖ Cancel" Command="{Binding CancelEditCommand}" Margin="0,4,0,0" Padding="8" Background="{DynamicResource DangerBrush}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Visibility="Collapsed">
-                                    <Button.Style><Style TargetType="Button"><Style.Triggers><DataTrigger Binding="{Binding IsEditMode}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Button.Style>
+                                <Button x:Name="CancelEditButton" Content="✖ Cancel Update" Command="{Binding CancelEditCommand}" Margin="0,4,0,0" Padding="8" Background="{DynamicResource DangerBrush}" Foreground="White" FontWeight="Bold">
+                                    <Button.Style><Style TargetType="Button"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsEditMode}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Button.Style>
                                 </Button>
                             </StackPanel>
                         </Border>

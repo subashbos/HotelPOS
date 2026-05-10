@@ -19,13 +19,10 @@ namespace HotelPOS.Application
             _itemService = itemService;
         }
 
-        public async Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null)
+        public async Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn")
         {
             if (items == null || items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.", nameof(items));
-
-            if (tableNumber <= 0)
-                throw new ArgumentException("Invalid table number.", nameof(tableNumber));
 
             if (discount < 0)
                 throw new ArgumentException("Discount cannot be negative.", nameof(discount));
@@ -34,15 +31,33 @@ namespace HotelPOS.Application
             if (!allowedModes.Contains(paymentMode))
                 throw new ArgumentException($"Invalid payment mode. Allowed: {string.Join(", ", allowedModes)}", nameof(paymentMode));
 
+            var allowedTypes = new[] { "DineIn", "Takeaway", "Online" };
+            if (!allowedTypes.Contains(orderType))
+                throw new ArgumentException($"Invalid order type. Allowed: {string.Join(", ", allowedTypes)}", nameof(orderType));
+
+            // DineIn requires a real table; Takeaway/Online use virtual table 0
+            bool requiresTable = orderType == "DineIn";
+            if (requiresTable && tableNumber <= 0)
+                throw new ArgumentException("Invalid table number.", nameof(tableNumber));
+
+            // For Takeaway/Online, normalise to 0 regardless of what was passed
+            int effectiveTableNumber = requiresTable ? tableNumber : 0;
+
             var orderItems = items
-                .Select(x => new OrderItem
+                .Select(x =>
                 {
-                    ItemId = x.ItemId,
-                    ItemName = x.ItemName,
-                    Quantity = x.Quantity,
-                    Price = x.Price,
-                    TaxPercentage = x.TaxPercentage,
-                    Total = x.Total
+                    if (x.Price < 0) throw new ArgumentException($"Item '{x.ItemName}' cannot have a negative price.");
+                    if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
+
+                    return new OrderItem
+                    {
+                        ItemId = x.ItemId,
+                        ItemName = x.ItemName,
+                        Quantity = x.Quantity,
+                        Price = x.Price,
+                        TaxPercentage = x.TaxPercentage,
+                        Total = x.Total
+                    };
                 })
                 .ToList();
 
@@ -55,7 +70,7 @@ namespace HotelPOS.Application
                 InvoiceNumber = inv,
                 FiscalYear = fy,
                 CreatedAt = now,
-                TableNumber = tableNumber,
+                TableNumber = effectiveTableNumber,
                 Items = orderItems
             };
 
@@ -63,6 +78,7 @@ namespace HotelPOS.Application
             order.DiscountAmount = discount;
             order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - discount);
             order.PaymentMode = paymentMode;
+            order.OrderType = orderType;
             order.CustomerName = customerName;
             order.CustomerPhone = customerPhone;
             order.CustomerGstin = customerGstin;
@@ -79,7 +95,7 @@ namespace HotelPOS.Application
                 }
 
                 await _repo.CommitTransactionAsync();
-                await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {tableNumber}"));
+                await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {effectiveTableNumber}, Type: {orderType}"));
                 return orderId;
             }
             catch
@@ -110,8 +126,10 @@ namespace HotelPOS.Application
         public Task<List<Order>> GetAllOrdersWithItemsAsync()
             => _repo.GetAllWithItemsAsync();
 
-        public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(int pageNumber, int pageSize, DateTime? from = null, DateTime? to = null, int? tableNumber = null)
-            => _repo.GetPagedWithItemsAsync(pageNumber, pageSize, from, to, tableNumber);
+        public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(int pageNumber, int pageSize, 
+            DateTime? from = null, DateTime? to = null, int? tableNumber = null,
+            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null)
+            => _repo.GetPagedWithItemsAsync(pageNumber, pageSize, from, to, tableNumber, search, paymentMode, orderType, categoryId);
 
         public Task<Order?> GetOrderAsync(int id) => _repo.GetByIdWithItemsAsync(id);
 
@@ -122,6 +140,10 @@ namespace HotelPOS.Application
 
             var oldOrder = await _repo.GetByIdWithItemsAsync(order.Id);
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
+
+            // Normalise table number: Takeaway/Online always store 0
+            if (order.OrderType == "Takeaway" || order.OrderType == "Online")
+                order.TableNumber = 0;
 
             await _repo.BeginTransactionAsync();
             try

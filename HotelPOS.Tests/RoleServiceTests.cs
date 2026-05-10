@@ -39,8 +39,8 @@ namespace HotelPOS.Tests
             _roleRepoMock.Verify(r => r.AddRoleAsync(It.IsAny<Role>()), Times.Once);
             Assert.NotNull(capturedRole);
             Assert.Equal(roleName, capturedRole.Name);
-            // Verify all 11 modules are present (including 'Roles')
-            Assert.Equal(11, capturedRole.Permissions.Count);
+            // Verify all 12 modules are present (including 'Roles' and 'SalesReport')
+            Assert.Equal(12, capturedRole.Permissions.Count);
             Assert.All(capturedRole.Permissions, p => Assert.False(p.CanAccess));
         }
 
@@ -86,6 +86,46 @@ namespace HotelPOS.Tests
             // Assert
             Assert.Equal(2, result.Count);
             Assert.Equal("Admin", result[0].Name);
+        }
+
+        [Fact]
+        public async Task AddRoleAsync_ShouldThrowException_IfNameIsEmpty()
+        {
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<System.ArgumentException>(() => _service.AddRoleAsync("  ", "Desc"));
+            Assert.Contains("Role name cannot be empty.", ex.Message);
+            _roleRepoMock.Verify(r => r.AddRoleAsync(It.IsAny<Role>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetRoleByIdAsync_ShouldReturnRole_FromRepository()
+        {
+            // Arrange
+            int roleId = 1;
+            var expectedRole = new Role { Id = roleId, Name = "Admin" };
+            _roleRepoMock.Setup(r => r.GetRoleByIdAsync(roleId)).ReturnsAsync(expectedRole);
+
+            // Act
+            var result = await _service.GetRoleByIdAsync(roleId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(roleId, result.Id);
+            Assert.Equal("Admin", result.Name);
+            _roleRepoMock.Verify(r => r.GetRoleByIdAsync(roleId), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteRoleAsync_ShouldCallRepository_Delete()
+        {
+            // Arrange
+            int roleId = 5;
+
+            // Act
+            await _service.DeleteRoleAsync(roleId);
+
+            // Assert
+            _roleRepoMock.Verify(r => r.DeleteRoleAsync(roleId), Times.Once);
         }
     }
 }

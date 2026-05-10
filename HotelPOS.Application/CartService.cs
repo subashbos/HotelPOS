@@ -132,7 +132,7 @@ namespace HotelPOS.Application
         {
             lock (_lock)
             {
-                return GetOrCreateCart(tableNumber).Sum(x => x.Total);
+                return GetOrCreateCart(tableNumber).Sum(CalculateLineTotal);
             }
         }
 
@@ -175,7 +175,7 @@ namespace HotelPOS.Application
                         Quantity = item.Quantity,
                         Price = item.Price,
                         TaxPercentage = item.TaxPercentage,
-                        Total = item.Total
+                        Total = CalculateLineTotal(item)
                     });
                 }
             }
@@ -293,6 +293,11 @@ namespace HotelPOS.Application
 
                 return active.Union(held).Distinct().OrderBy(x => x).ToList();
             }
+        }
+
+        private static decimal CalculateLineTotal(OrderItem item)
+        {
+            return item.Price * item.Quantity;
         }
     }
 

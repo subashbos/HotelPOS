@@ -39,5 +39,8 @@ namespace HotelPOS.Domain
         public bool IsDeleted { get; set; }
         public DateTime? DeletedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+
+        /// <summary>DineIn | Takeaway | Online</summary>
+        public string OrderType { get; set; } = "DineIn";
     }
 }

@@ -66,12 +66,7 @@ namespace HotelPOS.Views
                 var list = page?.Cast<TableSalesRowDto>() ?? Enumerable.Empty<TableSalesRowDto>();
                 TablePageSubtotalText.Text = $"Rs. {list.Sum(x => x.TotalRevenue):N2}";
             };
-            RecentPager.PageChanged += page =>
-            {
-                RecentGrid.ItemsSource = page;
-                var list = page?.Cast<RecentOrderRowDto>() ?? Enumerable.Empty<RecentOrderRowDto>();
-                RecentPageSubtotalText.Text = $"Rs. {list.Sum(x => x.Total):N2}";
-            };
+
             ItemPager.PageChanged += page =>
             {
                 ItemGrid.ItemsSource = page;
@@ -153,13 +148,13 @@ namespace HotelPOS.Views
                 TopItemText.Text = sales.MostPopularItem ?? "—";
 
                 TablePager.SetSource(sales.SalesByTable);
-                RecentPager.SetSource(sales.RecentOrders);
+
                 ItemPager.SetSource(items);
                 PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
 
                 // Update Range Totals for the entire filtered period
                 TableRangeTotalText.Text = $"Rs. {sales.SalesByTable.Sum(x => x.TotalRevenue):N2}";
-                RecentRangeTotalText.Text = $"Rs. {sales.RecentOrders.Sum(x => x.Total):N2}";
+
                 ItemRangeTotalText.Text = $"Rs. {items.Sum(x => x.TotalRevenue):N2}";
 
                 // Pie Chart Logic
@@ -347,6 +342,7 @@ namespace HotelPOS.Views
                         TotalAmount = row.Total,
                         DiscountAmount = row.DiscountAmount,
                         PaymentMode = row.PaymentMode,
+                        OrderType = row.OrderType,
                         CustomerName = row.CustomerName,
                         CustomerPhone = row.CustomerPhone,
                         CustomerGstin = row.CustomerGstin
@@ -372,6 +368,7 @@ namespace HotelPOS.Views
                         TotalAmount = row.Total,
                         DiscountAmount = row.DiscountAmount,
                         PaymentMode = row.PaymentMode,
+                        OrderType = row.OrderType,
                         CustomerName = row.CustomerName,
                         CustomerPhone = row.CustomerPhone,
                         CustomerGstin = row.CustomerGstin

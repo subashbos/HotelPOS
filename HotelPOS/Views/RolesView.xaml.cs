@@ -35,7 +35,15 @@ namespace HotelPOS.Views
             if (_selectedRole != null)
             {
                 EditingRoleTitle.Text = $"Permissions: {_selectedRole.Name}";
-                PermissionsList.ItemsSource = _selectedRole.Permissions.OrderBy(p => p.ModuleName).ToList();
+                // Filter out any duplicates from the display, prioritizing 'Allow' (true) if they differ
+                var uniquePermissions = _selectedRole.Permissions
+                    .OrderByDescending(p => p.CanAccess)
+                    .GroupBy(p => p.ModuleName)
+                    .Select(g => g.First())
+                    .OrderBy(p => p.ModuleName)
+                    .ToList();
+
+                PermissionsList.ItemsSource = uniquePermissions;
                 PermissionEditor.Visibility = Visibility.Visible;
             }
             else

@@ -185,6 +185,34 @@ namespace HotelPOS.Tests
             Assert.Equal(100m, _cart.GetSubtotal(T1)); // 60 + 40, not 500+
         }
 
+        [Fact]
+        public void LoadItems_RecalculatesStaleZeroLineTotals()
+        {
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 2, ItemName = "Tea", Quantity = 2, Price = 30m, Total = 0m },
+                new OrderItem { ItemId = 3, ItemName = "Snack", Quantity = 3, Price = 40m, Total = 0m }
+            };
+
+            _cart.LoadItems(T1, items);
+
+            var loaded = _cart.GetItems(T1);
+            Assert.Equal(60m, loaded.Single(i => i.ItemId == 2).Total);
+            Assert.Equal(120m, loaded.Single(i => i.ItemId == 3).Total);
+            Assert.Equal(180m, _cart.GetSubtotal(T1));
+        }
+
+        [Fact]
+        public void GetSubtotal_IgnoresStaleStoredTotal()
+        {
+            _cart.LoadItems(T1, new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Biryani", Quantity = 2, Price = 150m, Total = 0m }
+            });
+
+            Assert.Equal(300m, _cart.GetSubtotal(T1));
+        }
+
         // ========== UpdateQuantity used as edit scenario ===========
 
         [Fact]

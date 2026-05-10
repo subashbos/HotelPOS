@@ -26,6 +26,7 @@ namespace HotelPOS
         private AuditView? _cachedAudit;
         private SessionView? _cachedShift;
         private RolesView? _cachedRoles;
+        private SalesReportView? _cachedSales;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
 
@@ -51,9 +52,11 @@ namespace HotelPOS
                 ApplyPermissions();
             }
 
-            // Default to first available module
+            // Default to first available module based on permissions
             if (NavDash.Visibility == Visibility.Visible) NavDash_Click(null!, null!);
             else if (NavBilling.Visibility == Visibility.Visible) NavBilling_Click(null!, null!);
+            else if (NavShift.Visibility == Visibility.Visible) NavShift_Click(null!, null!);
+            else if (NavSales.Visibility == Visibility.Visible) NavSales_Click(null!, null!);
         }
 
         private void ApplyPermissions()
@@ -61,14 +64,30 @@ namespace HotelPOS
             var user = AppSession.CurrentUser;
             if (user == null) return;
 
-            // If user has no RoleDetails (old users), default to full access if Admin
-            var permissions = user.RoleDetails?.Permissions;
+            // Ensure we have permissions. If RoleDetails is missing, the user might have been loaded
+            // without Includes, so we fallback to role-based defaults for safety.
+            var permissions = user.RoleDetails?.Permissions ?? new List<RolePermission>();
 
             // Helper to set visibility
             void SetVisibility(Expander module, Button btn, string moduleName)
             {
-                bool canAccess = permissions?.FirstOrDefault(p => p.ModuleName == moduleName)?.CanAccess
-                                ?? (user.Role == "Admin"); // Fallback for admin if no DB record
+                // Find permission, or fallback to Admin check if not found
+                var perm = permissions.FirstOrDefault(p => p.ModuleName == moduleName);
+                bool canAccess;
+                
+                if (perm != null)
+                {
+                    canAccess = perm.CanAccess;
+                }
+                else
+                {
+                    // Default fallback logic if permission record is missing
+                    canAccess = (user.Role == "Admin");
+                    
+                    // Basic modules accessible to Cashiers by default if record is missing
+                    if (user.Role == "Cashier" && (moduleName == "Billing" || moduleName == "Shift"))
+                        canAccess = true;
+                }
 
                 btn.Visibility = canAccess ? Visibility.Visible : Visibility.Collapsed;
 
@@ -91,6 +110,7 @@ namespace HotelPOS
             SetVisibility(ModuleAdmin, NavAudit, "Audit");
             SetVisibility(ModuleOps, NavShift, "Shift");
             SetVisibility(ModuleAdmin, NavRoles, "Roles");
+            SetVisibility(ModuleStats, NavSales, "SalesReport");
         }
 
         // ── Navigation ────────────────────────────────────────────────────────
@@ -144,6 +164,13 @@ namespace HotelPOS
             SetActive(NavJournal);
         }
 
+        private void NavSales_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedSales ??= _serviceProvider.GetRequiredService<SalesReportView>();
+            MainContentArea.Content = _cachedSales;
+            SetActive(NavSales);
+        }
+
         private void NavSettings_Click(object sender, RoutedEventArgs e)
         {
             _cachedSettings ??= _serviceProvider.GetRequiredService<SettingsView>();
@@ -174,7 +201,7 @@ namespace HotelPOS
 
         private void SetActive(Button active)
         {
-            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles })
+            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales })
                 btn.IsEnabled = btn != active;
 
             // Update Header Title
@@ -190,7 +217,7 @@ namespace HotelPOS
                 UserInfoGrid.Visibility = Visibility.Collapsed;
 
                 // Hide text in nav buttons (keep only emojis/icons)
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles })
+                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales })
                 {
                     btn.Content = btn.Content.ToString()?.Split(' ').FirstOrDefault() ?? "";
                     btn.Padding = new Thickness(0, 12, 0, 12);
@@ -215,8 +242,9 @@ namespace HotelPOS
                 NavRoles.Content = "👥  Roles";
                 NavAudit.Content = "🛡  Audit";
                 NavShift.Content = "💵  Shift";
+                NavSales.Content = "📈  Sales Report";
 
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles })
+                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales })
                 {
                     btn.Padding = new Thickness(20, 12, 20, 12);
                     btn.HorizontalContentAlignment = HorizontalAlignment.Left;
@@ -234,16 +262,25 @@ namespace HotelPOS
             {
                 bv.LoadOrderForEdit(order);
 
-                // One-shot: when the update completes, navigate back to Dashboard and refresh
+                // One-shot: when the update completes, navigate back to Sales Report and refresh
                 Action? handler = null;
                 handler = () =>
                 {
                     bv.OrderUpdated -= handler;
-                    NavDash_Click(null!, null!);
-                    if (_cachedDash != null)
-                        _ = _cachedDash.LoadAsync();
+                    NavSales_Click(null!, null!);
+                    if (_cachedSales != null)
+                        _ = _cachedSales.LoadDataAsync();
                 };
                 bv.OrderUpdated += handler;
+
+                // Handle Cancel
+                Action? cancelHandler = null;
+                cancelHandler = () =>
+                {
+                    bv.OrderEditCancelled -= cancelHandler;
+                    NavSales_Click(null!, null!);
+                };
+                bv.OrderEditCancelled += cancelHandler;
             }
         }
 

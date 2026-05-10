@@ -67,6 +67,7 @@ namespace HotelPOS.Persistence
                 new RolePermission { Id = 9, RoleId = 1, ModuleName = "Audit", CanAccess = true },
                 new RolePermission { Id = 10, RoleId = 1, ModuleName = "Shift", CanAccess = true },
                 new RolePermission { Id = 21, RoleId = 1, ModuleName = "Roles", CanAccess = true },
+                new RolePermission { Id = 23, RoleId = 1, ModuleName = "SalesReport", CanAccess = true },
 
                 // Cashier: Restricted access
                 new RolePermission { Id = 11, RoleId = 2, ModuleName = "Dashboard", CanAccess = false },
@@ -79,7 +80,8 @@ namespace HotelPOS.Persistence
                 new RolePermission { Id = 18, RoleId = 2, ModuleName = "Settings", CanAccess = false },
                 new RolePermission { Id = 19, RoleId = 2, ModuleName = "Audit", CanAccess = false },
                 new RolePermission { Id = 20, RoleId = 2, ModuleName = "Shift", CanAccess = true },
-                new RolePermission { Id = 22, RoleId = 2, ModuleName = "Roles", CanAccess = false }
+                new RolePermission { Id = 22, RoleId = 2, ModuleName = "Roles", CanAccess = false },
+                new RolePermission { Id = 24, RoleId = 2, ModuleName = "SalesReport", CanAccess = false }
             );
 
             // ── User seed (admin / admin) ─────────────────────────────────────

@@ -36,6 +36,8 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private int _tableNumber = 1;
 
+        private int _lastDineInTable = 1; // Remember the last real table for DineIn swaps
+
         [ObservableProperty]
         private string _statusMessage = "Ready";
 
@@ -44,6 +46,9 @@ namespace HotelPOS.ViewModels
 
         [ObservableProperty]
         private string _paymentMode = "Cash";
+
+        [ObservableProperty]
+        private string _orderType = "DineIn";
 
         // Customer Details
         [ObservableProperty]
@@ -60,6 +65,30 @@ namespace HotelPOS.ViewModels
         public ObservableCollection<CartRow> Cart { get; } = new();
         public ObservableCollection<int> ActiveTabs { get; } = new();
 
+        /// <summary>True when the current order type does not require a table (Takeaway or Online).</summary>
+        public bool IsTableless => OrderType == "Takeaway" || OrderType == "Online";
+
+        partial void OnOrderTypeChanged(string value)
+        {
+            if (IsTableless)
+            {
+                if (TableNumber > 0) _lastDineInTable = TableNumber;
+                _tableNumber = 0;
+                OnPropertyChanged(nameof(TableNumber));
+                UpdateCart();
+            }
+            else if (TableNumber == 0)
+            {
+                TableNumber = _lastDineInTable;
+            }
+
+            OnPropertyChanged(nameof(IsTableless));
+            OnPropertyChanged(nameof(IsTableVisible));
+        }
+
+        /// <summary>Drives visibility of the table strip and table-related controls.</summary>
+        public bool IsTableVisible => !IsTableless;
+
         [ObservableProperty]
         private bool _isTransferMode;
 
@@ -75,6 +104,12 @@ namespace HotelPOS.ViewModels
             get => _selectedQty;
             set
             {
+                if (value < 1)
+                {
+                    StatusMessage = "Quantity cannot be less than 1.";
+                    value = 1;
+                }
+
                 if (SetProperty(ref _selectedQty, value))
                 {
                     if (SelectedCartRow != null)
@@ -100,6 +135,7 @@ namespace HotelPOS.ViewModels
         /// back to the dashboard and refresh it.
         /// </summary>
         public event Action? OrderUpdated;
+        public event Action? OrderEditCancelled;
 
         private List<Item> _allItems = new();
 
@@ -142,6 +178,9 @@ namespace HotelPOS.ViewModels
         [RelayCommand]
         private void OpenTableLayout(object? parameter)
         {
+            // Table layout is irrelevant for Takeaway / Online orders
+            if (IsTableless) return;
+
             bool open = true;
             if (parameter is bool b) open = b;
             else if (parameter is string s && bool.TryParse(s, out bool b2)) open = b2;
@@ -149,9 +188,6 @@ namespace HotelPOS.ViewModels
             if (open) RefreshTables();
             IsTableLayoutOpen = open;
 
-            // If we are just opening the layout normally (not via Move Items), 
-            // ensure transfer mode is off.
-            // CLEANUP: Removed empty if block; ensured transfer mode is explicitly disabled if just opening layout normally.
             if (open && !IsTransferMode) IsTransferMode = false;
         }
 
@@ -177,6 +213,8 @@ namespace HotelPOS.ViewModels
         [RelayCommand]
         private void ToggleTransferMode()
         {
+            // Move Items is only meaningful for DineIn
+            if (IsTableless) return;
             if (Cart.Count == 0) return;
             IsTransferMode = !IsTransferMode;
 
@@ -363,6 +401,19 @@ namespace HotelPOS.ViewModels
         private void UpdateRow(CartRow row)
         {
             if (row == null) return;
+
+            if (row.Quantity < 1)
+            {
+                row.Quantity = 1;
+                StatusMessage = "Quantity cannot be less than 1. Use 'Remove' to delete item.";
+            }
+
+            if (row.Price < 0)
+            {
+                row.Price = 0;
+                StatusMessage = "Price cannot be negative.";
+            }
+
             _cartService.SetQuantity(TableNumber, row.ItemId, row.Quantity);
             _cartService.UpdatePrice(TableNumber, row.ItemId, row.Price);
             UpdateCart();
@@ -391,11 +442,20 @@ namespace HotelPOS.ViewModels
 
             if (newlyHeld != null)
             {
-                await PrintKOTAsync(newlyHeld);
+                await PrintKOTAsync(newlyHeld.TableNumber, newlyHeld.Items);
             }
         }
 
-        private async Task PrintKOTAsync(HeldOrder heldOrder)
+        [RelayCommand]
+        private async Task PrintKOTOnly()
+        {
+            if (Cart.Count == 0) return;
+            var items = _cartService.GetItems(TableNumber);
+            await PrintKOTAsync(TableNumber, items);
+            StatusMessage = "KOT Sent to Kitchen";
+        }
+
+        private async Task PrintKOTAsync(int tableNumber, List<OrderItem> items)
         {
             try
             {
@@ -406,7 +466,7 @@ namespace HotelPOS.ViewModels
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        var doc = ReceiptGenerator.CreateKOT(heldOrder.TableNumber, heldOrder.Items, settings.ReceiptFormat == "Thermal");
+                        var doc = ReceiptGenerator.CreateKOT(tableNumber, items, settings.ReceiptFormat == "Thermal");
 
                         var dialog = new System.Windows.Controls.PrintDialog();
                         if (!string.IsNullOrEmpty(settings.DefaultPrinter))
@@ -418,7 +478,7 @@ namespace HotelPOS.ViewModels
                             catch { /* Fallback to default if printer not found */ }
                         }
 
-                        dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "KOT " + heldOrder.TableNumber);
+                        dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "KOT " + tableNumber);
                     });
                 }
             }
@@ -500,27 +560,33 @@ namespace HotelPOS.ViewModels
             GstAmount = IsCompositionScheme ? 0 : _cartService.GetGstAmount(TableNumber);
             TotalAmount = Math.Max(0, Subtotal + GstAmount - DiscountAmount);
 
-            // Sync Active Tabs
-            var currentActive = _cartService.GetActiveTables() ?? new List<int>();
-
-            // Add missing
-            foreach (var t in currentActive)
-                if (!ActiveTabs.Contains(t)) ActiveTabs.Add(t);
-
-            // Remove inactive (except current if has items)
-            var toRemoveTabs = ActiveTabs.Where(t => !currentActive.Contains(t) && t != TableNumber).ToList();
-            foreach (var t in toRemoveTabs) ActiveTabs.Remove(t);
-
-            // Ensure current is in tabs if it has items
-            if (Cart.Count > 0 && !ActiveTabs.Contains(TableNumber))
-                ActiveTabs.Add(TableNumber);
-
-            // Sort tabs
-            var sorted = ActiveTabs.OrderBy(t => t).ToList();
-            for (int i = 0; i < sorted.Count; i++)
+            // Sync Active Tabs — only for DineIn (tableless orders use virtual table 0)
+            if (!IsTableless)
             {
-                int oldIndex = ActiveTabs.IndexOf(sorted[i]);
-                if (oldIndex != i) ActiveTabs.Move(oldIndex, i);
+                var currentActive = _cartService.GetActiveTables() ?? new List<int>();
+                // Exclude virtual table 0 from the tab strip
+                currentActive = currentActive.Where(t => t > 0).ToList();
+
+                foreach (var t in currentActive)
+                    if (!ActiveTabs.Contains(t)) ActiveTabs.Add(t);
+
+                var toRemoveTabs = ActiveTabs.Where(t => !currentActive.Contains(t) && t != TableNumber).ToList();
+                foreach (var t in toRemoveTabs) ActiveTabs.Remove(t);
+
+                if (Cart.Count > 0 && TableNumber > 0 && !ActiveTabs.Contains(TableNumber))
+                    ActiveTabs.Add(TableNumber);
+
+                var sorted = ActiveTabs.OrderBy(t => t).ToList();
+                for (int i = 0; i < sorted.Count; i++)
+                {
+                    int oldIndex = ActiveTabs.IndexOf(sorted[i]);
+                    if (oldIndex != i) ActiveTabs.Move(oldIndex, i);
+                }
+            }
+            else
+            {
+                // Tableless order — clear any stale DineIn tabs that might linger
+                // (don't touch tabs belonging to other DineIn sessions)
             }
         }
 
@@ -548,8 +614,15 @@ namespace HotelPOS.ViewModels
         {
             _editingOrder = order;
             IsEditMode = true;
-            TableNumber = order.TableNumber;
-            _cartService.LoadItems(order.TableNumber, order.Items);
+
+            // Set OrderType first so IsTableless is correct before TableNumber is set
+            OrderType = string.IsNullOrWhiteSpace(order.OrderType) ? "DineIn" : order.OrderType;
+
+            // For tableless orders the stored TableNumber is 0 — keep it as-is
+            // For DineIn, use the stored table number (always > 0)
+            TableNumber = IsTableless ? 0 : order.TableNumber;
+
+            _cartService.LoadItems(TableNumber, order.Items);
             UpdateCart(); // Calculate Subtotal before setting DiscountAmount
             DiscountAmount = order.DiscountAmount;
             PaymentMode = order.PaymentMode;
@@ -563,11 +636,21 @@ namespace HotelPOS.ViewModels
         [RelayCommand]
         private void CancelEdit()
         {
-            if (_editingOrder != null) _cartService.Clear(_editingOrder.TableNumber);
+            if (_editingOrder != null) _cartService.Clear(TableNumber);
             _editingOrder = null;
             IsEditMode = false;
+            OrderType = "DineIn";   // reset to default
             UpdateCart();
             StatusMessage = "Ready";
+            OrderEditCancelled?.Invoke();
+        }
+
+        [RelayCommand]
+        private void ToggleOrderType()
+        {
+            if (OrderType == "DineIn") OrderType = "Takeaway";
+            else if (OrderType == "Takeaway") OrderType = "Online";
+            else OrderType = "DineIn";
         }
 
         [RelayCommand]
@@ -580,6 +663,14 @@ namespace HotelPOS.ViewModels
                 return;
             }
 
+            // LOOPHOLE FIX: Prevent checkout if shift is closed
+            var currentSession = await _cashService.GetCurrentSessionAsync();
+            if (currentSession == null)
+            {
+                _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
+                return;
+            }
+
             try
             {
                 if (IsEditMode && _editingOrder != null)
@@ -588,27 +679,30 @@ namespace HotelPOS.ViewModels
                     _editingOrder.TableNumber = TableNumber;
                     _editingOrder.DiscountAmount = DiscountAmount;
                     _editingOrder.PaymentMode = PaymentMode;
+                    _editingOrder.OrderType = OrderType;
                     _editingOrder.CustomerName = CustomerName;
                     _editingOrder.CustomerPhone = CustomerPhone;
                     _editingOrder.CustomerGstin = CustomerGstin;
 
                     await _orderService.UpdateOrderAsync(_editingOrder);
-                    // Removed automatic print on update to avoid unwanted print dialogs/popups
                 }
                 else
                 {
-                    int orderId = await _orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, PaymentMode, CustomerName, CustomerPhone, CustomerGstin);
+                    int orderId = await _orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, PaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType);
 
                     // Trigger Print
                     await PrintOrderAsync(orderId);
                 }
 
                 var wasEditMode = IsEditMode;
+                // For tableless orders the cart lives at table 0 — clear it explicitly
+                if (IsTableless) _cartService.Clear(0);
                 ClearCart();
                 IsEditMode = false;
                 _editingOrder = null;
                 DiscountAmount = 0;
                 PaymentMode = "Cash";
+                OrderType = "DineIn";
                 // CLEANUP: Reset customer details to null to align with property definitions and save memory
                 CustomerName = null;
                 CustomerPhone = null;

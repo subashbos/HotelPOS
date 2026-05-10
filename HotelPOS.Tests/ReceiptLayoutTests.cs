@@ -92,5 +92,31 @@ namespace HotelPOS.Tests
             thread.Start();
             thread.Join();
         }
+        [Fact]
+        public void CreateKOT_Table0_ShowsTakeawayOnline()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                var items = new List<OrderItem> { new OrderItem { ItemName = "Burger", Quantity = 1 } };
+                
+                // Table 0 (Takeaway)
+                var doc = ReceiptGenerator.CreateKOT(0, items, true);
+
+                var textRange = new TextRange(doc.ContentStart, doc.ContentEnd);
+                var text = textRange.Text;
+
+                Assert.Contains("Table : Takeaway / Online", text);
+                Assert.DoesNotContain("Table : 0", text);
+
+                // Real Table 5
+                var doc2 = ReceiptGenerator.CreateKOT(5, items, true);
+                var text2 = new TextRange(doc2.ContentStart, doc2.ContentEnd).Text;
+                Assert.Contains("Table : 5", text2);
+            });
+
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
     }
 }

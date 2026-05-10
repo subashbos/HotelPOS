@@ -45,12 +45,14 @@ namespace HotelPOS.Application
     {
         public int SNo { get; set; }
         public int OrderId { get; set; }
+        public string? InvoiceNumber { get; set; }
         public int TableNumber { get; set; }
         public DateTime CreatedAt { get; set; }   // stored as local time for display
         public decimal Total { get; set; }
         public decimal DiscountAmount { get; set; }
         public int ItemCount { get; set; }
         public string PaymentMode { get; set; } = "Cash";
+        public string OrderType { get; set; } = "DineIn";
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }
         public string? CustomerGstin { get; set; }

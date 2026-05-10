@@ -17,16 +17,28 @@ namespace HotelPOS.Views
             _viewModel = viewModel;
             DataContext = _viewModel;
 
+
             Loaded += async (s, e) =>
             {
                 await _viewModel.InitializeAsync();
+                SyncOrderTypeButtons(_viewModel.OrderType);
+                FocusSearch();
+            };
+
+            // Keep buttons in sync when OrderType changes from code (e.g. LoadOrderForEdit)
+            _viewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(BillingViewModel.OrderType))
+                    SyncOrderTypeButtons(_viewModel.OrderType);
             };
 
             // Relay the ViewModel's navigation event outward to the shell
             _viewModel.OrderUpdated += () => OrderUpdated?.Invoke();
+            _viewModel.OrderEditCancelled += () => OrderEditCancelled?.Invoke();
         }
 
         public event Action? OrderUpdated;
+        public event Action? OrderEditCancelled;
 
         public void LoadOrderForEdit(Order order)
         {
@@ -69,9 +81,9 @@ namespace HotelPOS.Views
             }
             else if (e.Key == Key.Enter)
             {
-                // If focus is not on an input that handles Enter (like SearchBox or AutoList)
-                // and we are not currently editing a cell in the cart grid, then Enter = Checkout
-                if (!SearchBox.IsFocused && !AutoList.IsFocused && !CartGrid.IsKeyboardFocusWithin)
+                // If focus is on PaymentMode ComboBox, trigger checkout
+                var focused = FocusManager.GetFocusedElement(this);
+                if (focused == PaymentModeCombo || (focused is ComboBoxItem cbi && VisualTreeHelper.GetParent(cbi) != null))
                 {
                     if (_viewModel.SaveOrderCommand.CanExecute(null))
                     {
@@ -86,20 +98,26 @@ namespace HotelPOS.Views
         {
             if (e.Key == Key.Enter)
             {
-                if (AutoPopup.IsOpen && AutoList.SelectedItem is Item selected)
+                if (AutoPopup.IsOpen && AutoList.Items.Count > 0)
                 {
-                    AddItemFromAutoComplete(selected);
-                    e.Handled = true;
-                    return;
-                }
-                else if (string.IsNullOrWhiteSpace(SearchBox.Text))
-                {
-                    // Empty search box + Enter = Checkout/Preview
-                    if (_viewModel.SaveOrderCommand.CanExecute(null))
+                    var selected = AutoList.SelectedItem as Item ?? AutoList.Items[0] as Item;
+                    if (selected != null)
                     {
-                        _viewModel.SaveOrderCommand.Execute(null);
+                        AddItemFromAutoComplete(selected);
                         e.Handled = true;
+                        return;
                     }
+                }
+                
+                if (string.IsNullOrWhiteSpace(SearchBox.Text))
+                {
+                    // Empty search box + Enter = move to payment mode
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        PaymentModeCombo.Focus();
+                        PaymentModeCombo.IsDropDownOpen = true;
+                    }), System.Windows.Threading.DispatcherPriority.Input);
+                    e.Handled = true;
                 }
             }
 
@@ -196,7 +214,10 @@ namespace HotelPOS.Views
         private void ItemCard_Click(object sender, MouseButtonEventArgs e)
         {
             if (sender is Border border && border.DataContext is Item item)
+            {
                 _viewModel.AddToCartCommand.Execute(item);
+                FocusQuantityOfItem(item.Id);
+            }
         }
         private void CartGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
@@ -260,12 +281,8 @@ namespace HotelPOS.Views
             if (e.Key == Key.Enter)
             {
                 e.Handled = true;
-                // Move focus back to search
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    SearchBox.Focus();
-                    SearchBox.SelectAll();
-                }), System.Windows.Threading.DispatcherPriority.Input);
+                // Move focus back to search to allow adding more items
+                FocusSearch();
             }
         }
 
@@ -274,11 +291,16 @@ namespace HotelPOS.Views
             if (e.Key == Key.Enter)
             {
                 e.Handled = true;
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    SearchBox.Focus();
-                    SearchBox.SelectAll();
-                }), System.Windows.Threading.DispatcherPriority.Input);
+                FocusSearch();
+            }
+        }
+
+        private void DiscountBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                TriggerCheckout();
             }
         }
 
@@ -314,6 +336,72 @@ namespace HotelPOS.Views
                 if (childOfChild != null) return childOfChild;
             }
             return null;
+        }
+
+        // ── Order Type toggle ─────────────────────────────────────────────────
+
+        private void OrderTypeBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string orderType)
+            {
+                _viewModel.OrderType = orderType;
+                SyncOrderTypeButtons(orderType);
+            }
+        }
+
+        private void SyncOrderTypeButtons(string orderType)
+        {
+            // Active button: primary colour + white text; inactive: surface colour
+            var activeBackground = (System.Windows.Media.Brush)FindResource("PrimaryBrush");
+            var inactiveBackground = (System.Windows.Media.Brush)FindResource("SurfaceBrush");
+            var activeText = System.Windows.Media.Brushes.White;
+            var inactiveText = (System.Windows.Media.Brush)FindResource("TextPrimary");
+
+            foreach (var btn in new[] { BtnDineIn, BtnTakeaway, BtnOnline })
+            {
+                bool isActive = btn.Tag?.ToString() == orderType;
+                btn.Background = isActive ? activeBackground : inactiveBackground;
+                btn.Foreground = isActive ? activeText : inactiveText;
+                btn.BorderBrush = isActive ? activeBackground : (System.Windows.Media.Brush)FindResource("BorderBrush");
+            }
+        }
+
+        private T? FindChild<T>(DependencyObject parent, string childName) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            T? foundChild = null;
+
+            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is not T childType)
+                {
+                    foundChild = FindChild<T>(child, childName);
+                    if (foundChild != null) break;
+                }
+                else if (!string.IsNullOrEmpty(childName))
+                {
+                    if (child is FrameworkElement frameworkElement && frameworkElement.Name == childName)
+                    {
+                        foundChild = (T)child;
+                        break;
+                    }
+                    else
+                    {
+                        foundChild = FindChild<T>(child, childName);
+                        if (foundChild != null) break;
+                    }
+                }
+                else
+                {
+                    foundChild = (T)child;
+                    break;
+                }
+            }
+
+            return foundChild;
         }
     }
 }

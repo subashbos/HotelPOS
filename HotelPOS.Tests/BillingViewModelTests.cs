@@ -23,7 +23,10 @@ namespace HotelPOS.Tests
         public BillingViewModelTests()
         {
             _cartService.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
             _settingService.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting());
+            _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
+
             _vm = new BillingViewModel(
                 _itemService.Object,
                 _cartService.Object,
@@ -150,6 +153,72 @@ namespace HotelPOS.Tests
             Assert.False(_vm.IsTransferMode);
             Assert.False(_vm.IsTableLayoutOpen);
             Assert.Equal(5, _vm.TableNumber);
+        }
+
+        [Fact]
+        public void DiscountAmount_Cannot_Be_Negative()
+        {
+            // Act
+            _vm.DiscountAmount = -50m;
+
+            // Assert
+            Assert.Equal(0m, _vm.DiscountAmount);
+            _notificationService.Verify(n => n.ShowWarning(It.Is<string>(s => s.Contains("negative"))), Times.Once);
+        }
+
+        [Fact]
+        public void DiscountAmount_Cannot_Exceed_Subtotal()
+        {
+            // Arrange
+            _cartService.Setup(s => s.GetSubtotal(2)).Returns(100m);
+            _vm.TableNumber = 2; // Trigger UpdateCart to set subtotal
+
+            // Act
+            _vm.DiscountAmount = 150m;
+
+            // Assert
+            Assert.Equal(100m, _vm.DiscountAmount);
+            _notificationService.Verify(n => n.ShowWarning(It.Is<string>(s => s.Contains("exceed"))), Times.Once);
+        }
+
+        [Fact]
+        public async Task AdjustQuantity_Checks_Stock_Before_Adding()
+        {
+            // Arrange
+            var item = new Item { Id = 1, Name = "Burger", StockQuantity = 5, TrackInventory = true };
+            _itemService.Setup(s => s.GetItemsAsync()).ReturnsAsync(new List<Item> { item });
+            
+            var row = new CartRow { ItemId = 1, Quantity = 5 };
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 5 } });
+
+            await _vm.InitializeAsync();
+
+            // Act
+            // Attempt to add 1 more when stock is already 5/5
+            _vm.AdjustQuantityCommand.Execute(new object[] { row, 1 });
+
+            // Assert
+            _cartService.Verify(s => s.AddItem(It.IsAny<int>(), 1, 1), Times.Never);
+            Assert.Contains("Out of stock", _vm.StatusMessage);
+        }
+
+        [Fact]
+        public async Task HoldOrder_Clears_Cart_And_Adds_To_HeldOrders()
+        {
+            // Arrange
+            var items = new List<CartRow> { new CartRow { ItemId = 1, Quantity = 1, ItemName = "Burger" } };
+            _vm.Cart.Add(items[0]);
+            
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1 } });
+            _cartService.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder> { new HeldOrder { TableNumber = 1 } });
+
+            // Act
+            await _vm.HoldOrderCommand.ExecuteAsync(null);
+
+            // Assert
+            _cartService.Verify(s => s.HoldOrder(It.IsAny<int>(), It.IsAny<string>()), Times.Once);
+            _notificationService.Verify(n => n.ShowSuccess(It.IsAny<string>()), Times.Once);
+            Assert.Single(_vm.HeldOrders);
         }
     }
 }

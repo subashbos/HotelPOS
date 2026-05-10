@@ -67,13 +67,21 @@ namespace HotelPOS.Persistence
             var existing = await _context.RolePermissions.Where(p => p.RoleId == roleId).ToListAsync();
             _context.RolePermissions.RemoveRange(existing);
             
-            foreach(var p in permissions)
+            // Ensure we only save distinct modules to prevent duplicates in the DB
+            // Prioritize 'true' permissions if duplicates exist
+            var distinctPermissions = permissions
+                .OrderByDescending(p => p.CanAccess)
+                .GroupBy(p => p.ModuleName)
+                .Select(g => g.First())
+                .ToList();
+
+            foreach(var p in distinctPermissions)
             {
                 p.RoleId = roleId;
                 p.Id = 0; // Ensure new identity
             }
             
-            _context.RolePermissions.AddRange(permissions);
+            _context.RolePermissions.AddRange(distinctPermissions);
             await _context.SaveChangesAsync();
         }
     }

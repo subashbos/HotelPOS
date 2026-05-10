@@ -901,6 +901,7 @@ namespace HotelPOS.Tests
             settSvc.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting());
             orderSvc.Setup(s => s.GetAllOrdersWithItemsAsync()).ReturnsAsync(new List<Order>());
             orderSvc.Setup(s => s.UpdateOrderAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
+            cashSvc.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
 
             var vm = new HotelPOS.ViewModels.BillingViewModel(
                 itemSvc.Object, cartSvc.Object, orderSvc.Object,
