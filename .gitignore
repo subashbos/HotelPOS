@@ -395,3 +395,23 @@ backups/
 [Tt]mp/
 .DS_Store
 Thumbs.db
+
+# ==========================================
+# Angular & Node.js
+# ==========================================
+node_modules/
+.angular/
+dist/
+build/
+out-tsc/
+bazel-out/
+/npm-debug.log
+/yarn-error.log
+/package-lock.json
+/yarn.lock
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.log
