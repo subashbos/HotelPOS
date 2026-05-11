@@ -1,12 +1,13 @@
 using ClosedXML.Excel;
 using HotelPOS.Application;
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelPOS.Views
 {
@@ -14,6 +15,7 @@ namespace HotelPOS.Views
     {
         private readonly IItemService _itemService;
         private readonly ICategoryService _categoryService;
+        private readonly INotificationService _notificationService;
         private List<Item> _allItems = new();
         private List<Item> _filtered = new();
 
@@ -22,11 +24,12 @@ namespace HotelPOS.Views
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
         private static readonly SolidColorBrush ErrorFg = new(Color.FromRgb(0x72, 0x1C, 0x24));
 
-        public ItemView(IItemService itemService, ICategoryService categoryService)
+        public ItemView(IItemService itemService, ICategoryService categoryService, INotificationService notificationService)
         {
             InitializeComponent();
             _itemService = itemService;
             _categoryService = categoryService;
+            _notificationService = notificationService;
             ItemPager.PageChanged += page => ItemGrid.ItemsSource = page;
             Loaded += async (s, e) => await LoadDataAsync();
         }
@@ -49,7 +52,7 @@ namespace HotelPOS.Views
             var q = SearchBox.Text.Trim();
             _filtered = string.IsNullOrWhiteSpace(q)
                 ? _allItems.OrderBy(i => i.Name).ToList()
-                : _allItems.Where(i => i.Name.Contains(q, StringComparison.OrdinalIgnoreCase) || 
+                : _allItems.Where(i => i.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
                                       (i.Category?.Name != null && i.Category.Name.Contains(q, StringComparison.OrdinalIgnoreCase)))
                            .OrderBy(i => i.Name).ToList();
 
@@ -77,7 +80,7 @@ namespace HotelPOS.Views
             popup.Owner = Window.GetWindow(this);
             popup.ItemSaved += () => _ = LoadDataAsync();
             popup.ShowDialog();
-            
+
             _ = LoadDataAsync();
         }
 
@@ -91,7 +94,7 @@ namespace HotelPOS.Views
                 popup.LoadItemForEdit(item);
                 popup.ItemSaved += () => _ = LoadDataAsync();
                 popup.ShowDialog();
-                
+
                 _ = LoadDataAsync();
             }
         }
@@ -127,8 +130,7 @@ namespace HotelPOS.Views
                 var preview = ReadExcel(dlg.FileName);
                 if (preview.Count == 0)
                 {
-                    MessageBox.Show("No valid rows found. Ensure the file has 'Name' and 'Price' columns.",
-                        "Nothing to Import", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _notificationService.ShowInfo("No valid rows found. Ensure the file has 'Name' and 'Price' columns.");
                     return;
                 }
 
@@ -241,10 +243,10 @@ namespace HotelPOS.Views
 
         private void ShowStatus(string message, bool success)
         {
-            // Status bar is now removed or we can use a Toast or MessageBox
-            // For now, let's just use MessageBox if it's an error
-            if (!success)
-                MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            if (success)
+                _notificationService.ShowSuccess(message);
+            else
+                _notificationService.ShowError(message);
         }
     }
 }

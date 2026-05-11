@@ -132,7 +132,7 @@ namespace HotelPOS.Application
         {
             lock (_lock)
             {
-                return GetOrCreateCart(tableNumber).Sum(x => x.Total);
+                return GetOrCreateCart(tableNumber).Sum(CalculateLineTotal);
             }
         }
 
@@ -175,7 +175,7 @@ namespace HotelPOS.Application
                         Quantity = item.Quantity,
                         Price = item.Price,
                         TaxPercentage = item.TaxPercentage,
-                        Total = item.Total
+                        Total = CalculateLineTotal(item)
                     });
                 }
             }
@@ -239,19 +239,65 @@ namespace HotelPOS.Application
             }
         }
 
+        public void TransferTable(int sourceTableNumber, int targetTableNumber)
+        {
+            if (sourceTableNumber == targetTableNumber) return;
+
+            lock (_lock)
+            {
+                var sourceItems = GetItems(sourceTableNumber);
+                if (sourceItems.Count == 0) return;
+
+                var targetItems = GetOrCreateCart(targetTableNumber);
+
+                foreach (var item in sourceItems)
+                {
+                    var existing = targetItems.FirstOrDefault(x => x.ItemId == item.ItemId);
+                    if (existing != null)
+                    {
+                        existing.Quantity += item.Quantity;
+                        existing.Total = existing.Price * existing.Quantity;
+                    }
+                    else
+                    {
+                        targetItems.Add(new OrderItem
+                        {
+                            ItemId = item.ItemId,
+                            ItemName = item.ItemName,
+                            Quantity = item.Quantity,
+                            Price = item.Price,
+                            TaxPercentage = item.TaxPercentage,
+                            Total = item.Total
+                        });
+                    }
+                }
+
+                Clear(sourceTableNumber);
+            }
+        }
+
         public List<int> GetActiveTables()
         {
             lock (_lock)
             {
-                var active = _tableCarts
-                    .Where(kv => kv.Value.Count > 0)
-                    .Select(kv => kv.Key)
-                    .ToList();
+                var active = new List<int>();
+                foreach (var tableNumber in _tableCarts.Keys)
+                {
+                    if (_tableCarts.TryGetValue(tableNumber, out var items) && items.Count > 0)
+                    {
+                        active.Add(tableNumber);
+                    }
+                }
 
                 var held = _heldOrders.ToList().Select(h => h.TableNumber);
-                
-                return active.Union(held).Distinct().ToList();
+
+                return active.Union(held).Distinct().OrderBy(x => x).ToList();
             }
+        }
+
+        private static decimal CalculateLineTotal(OrderItem item)
+        {
+            return item.Price * item.Quantity;
         }
     }
 

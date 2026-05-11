@@ -2,8 +2,6 @@ using HotelPOS.Application;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
 using Moq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -16,7 +14,7 @@ namespace HotelPOS.Tests
             // Simple smoke test to ensure main services can be instantiated and respond
             var mockItemRepo = new Mock<IItemRepository>();
             mockItemRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
-            
+
             var service = new ItemService(mockItemRepo.Object);
             var items = await service.GetItemsAsync();
 
@@ -30,7 +28,7 @@ namespace HotelPOS.Tests
             // correctly sets visibility based on roles (simulated here)
             bool isManager = true;
             var visibility = isManager ? "Visible" : "Collapsed";
-            
+
             Assert.Equal("Visible", visibility);
         }
     }

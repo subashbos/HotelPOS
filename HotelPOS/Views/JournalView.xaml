@@ -132,10 +132,9 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,10,0">
-                                        <Button Content="🖨 Reprint" Click="PrintReceipt_Click" Tag="{Binding Id}" Style="{StaticResource TouchButton}"
-                                                Padding="10,2" FontSize="11" Margin="0,0,6,0" Background="{DynamicResource SecondaryBrush}"/>
-                                        <Button Content="✏ Edit" Click="EditOrder_Click" Tag="{Binding}" Style="{StaticResource TouchButton}"
-                                                Padding="10,2" FontSize="11" Background="{DynamicResource PrimaryBrush}"/>
+                                        <Button Style="{StaticResource ActionBtn}" Content="🖨" ToolTip="Reprint Receipt" Click="PrintReceipt_Click" Tag="{Binding Id}"
+                                                Foreground="{DynamicResource SecondaryBrush}" Margin="0,0,6,0"/>
+                                        <Button Style="{StaticResource ActionBtn}" Content="✏" ToolTip="Edit Order" Click="EditOrder_Click" Tag="{Binding}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

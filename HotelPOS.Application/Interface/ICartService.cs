@@ -16,12 +16,12 @@ namespace HotelPOS.Application.Interface
         decimal GetGrandTotal(int tableNumber);
         void LoadItems(int tableNumber, List<OrderItem> items);
         void UpdatePrice(int tableNumber, int itemId, decimal newPrice);
-        
+
         // Hold Support
         void HoldOrder(int tableNumber, string holdName);
         List<HeldOrder> GetHeldOrders();
         void ResumeHeldOrder(Guid heldOrderId, int targetTableNumber);
-
+        void TransferTable(int sourceTableNumber, int targetTableNumber);
         List<int> GetActiveTables();
     }
 

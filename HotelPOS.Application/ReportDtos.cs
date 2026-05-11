@@ -16,6 +16,7 @@ namespace HotelPOS.Application
 
     public class PaymentModeSalesRowDto
     {
+        public int SNo { get; set; }
         public string PaymentMode { get; set; } = "Unknown";
         public decimal Revenue { get; set; }
         public int OrderCount { get; set; }
@@ -24,6 +25,7 @@ namespace HotelPOS.Application
 
     public class CategorySalesRowDto
     {
+        public int SNo { get; set; }
         public string CategoryName { get; set; } = "Unknown";
         public decimal Revenue { get; set; }
         public double Percentage { get; set; }
@@ -32,6 +34,7 @@ namespace HotelPOS.Application
     /// <summary>One row in the "Sales by Table" grid.</summary>
     public class TableSalesRowDto
     {
+        public int SNo { get; set; }
         public int TableNumber { get; set; }
         public int OrderCount { get; set; }
         public decimal TotalRevenue { get; set; }
@@ -40,17 +43,26 @@ namespace HotelPOS.Application
     /// <summary>One row in the "Recent Orders" grid.</summary>
     public class RecentOrderRowDto
     {
+        public int SNo { get; set; }
         public int OrderId { get; set; }
+        public string? InvoiceNumber { get; set; }
         public int TableNumber { get; set; }
         public DateTime CreatedAt { get; set; }   // stored as local time for display
         public decimal Total { get; set; }
+        public decimal DiscountAmount { get; set; }
         public int ItemCount { get; set; }
+        public string PaymentMode { get; set; } = "Cash";
+        public string OrderType { get; set; } = "DineIn";
+        public string? CustomerName { get; set; }
+        public string? CustomerPhone { get; set; }
+        public string? CustomerGstin { get; set; }
         public List<HotelPOS.Domain.OrderItem> Items { get; set; } = new();
     }
 
     /// <summary>One row in the "Item Report" grid.</summary>
     public class ItemReportRowDto
     {
+        public int SNo { get; set; }
         public string ItemName { get; set; } = string.Empty;
         public int TotalQtySold { get; set; }
         public decimal TotalRevenue { get; set; }
@@ -60,6 +72,7 @@ namespace HotelPOS.Application
     /// <summary>One row in the GST report.</summary>
     public class GstReportRowDto
     {
+        public int SNo { get; set; }
         public DateTime Date { get; set; }
         public int OrderCount { get; set; }
         public decimal GrossRevenue { get; set; }

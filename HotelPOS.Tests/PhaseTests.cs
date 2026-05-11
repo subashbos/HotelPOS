@@ -3,9 +3,6 @@ using HotelPOS.Application.Interface;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -22,9 +19,9 @@ namespace HotelPOS.Tests
 
             await service.OpenSessionAsync(1500.50m, "admin");
 
-            mockRepo.Verify(r => r.AddAsync(It.Is<CashSession>(s => 
-                s.OpeningBalance == 1500.50m && 
-                s.OpenedBy == "admin" && 
+            mockRepo.Verify(r => r.AddAsync(It.Is<CashSession>(s =>
+                s.OpeningBalance == 1500.50m &&
+                s.OpenedBy == "admin" &&
                 s.Status == "Open")), Times.Once);
         }
 
@@ -40,9 +37,9 @@ namespace HotelPOS.Tests
 
             await service.CloseSessionAsync(1500m, "Perfect match", "admin");
 
-            mockRepo.Verify(r => r.UpdateAsync(It.Is<CashSession>(s => 
-                s.Status == "Closed" && 
-                s.ClosingBalance == 1500m && 
+            mockRepo.Verify(r => r.UpdateAsync(It.Is<CashSession>(s =>
+                s.Status == "Closed" &&
+                s.ClosingBalance == 1500m &&
                 s.ActualCash == 1500m)), Times.Once);
         }
 
@@ -74,7 +71,7 @@ namespace HotelPOS.Tests
             var cart = new CartService();
             var item = new Item { Id = 1, Name = "Coffee", Price = 50 };
             cart.AddItem(1, item); // Table 1
-            
+
             cart.HoldOrder(1, "Test Hold"); // Guid is generated inside
             var held = cart.GetHeldOrders()[0];
 
@@ -100,18 +97,18 @@ namespace HotelPOS.Tests
             var mockItemService = new Mock<IItemService>();
             var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object);
 
-            var items = new List<OrderItem> 
-            { 
-                new OrderItem { ItemId = 1, ItemName = "Item 1", Quantity = 1, Price = 100, Total = 100 } 
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Item 1", Quantity = 1, Price = 100, Total = 100 }
             };
-            
+
             mockRepo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
 
             await service.SaveOrderAsync(items, 1, discount: 10m, paymentMode: "UPI");
 
-            mockRepo.Verify(r => r.AddAsync(It.Is<Order>(o => 
-                o.DiscountAmount == 10m && 
-                o.PaymentMode == "UPI" && 
+            mockRepo.Verify(r => r.AddAsync(It.Is<Order>(o =>
+                o.DiscountAmount == 10m &&
+                o.PaymentMode == "UPI" &&
                 o.TotalAmount == 90m)), Times.Once); // 100 - 10 + 0 Tax
         }
 
@@ -128,13 +125,13 @@ namespace HotelPOS.Tests
             var mockItemService = new Mock<IItemService>();
             var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object);
 
-            var oldOrder = new Order 
-            { 
-                Id = 1, 
-                Items = new List<OrderItem> 
-                { 
+            var oldOrder = new Order
+            {
+                Id = 1,
+                Items = new List<OrderItem>
+                {
                     new OrderItem { ItemId = 10, Quantity = 2 } // Deducted 2 originally
-                } 
+                }
             };
 
             var newOrder = new Order
@@ -147,7 +144,7 @@ namespace HotelPOS.Tests
             };
 
             mockRepo.Setup(r => r.GetByIdWithItemsAsync(1)).ReturnsAsync(oldOrder);
-            
+
             // Act
             await service.UpdateOrderAsync(newOrder);
 

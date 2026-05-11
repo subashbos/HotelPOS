@@ -1,10 +1,6 @@
 using HotelPOS.Domain;
-using HotelPOS.Views;
 using HotelPOS.ViewModels;
-using HotelPOS.Application.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using HotelPOS.Views;
 using Xunit;
 
 namespace HotelPOS.Tests

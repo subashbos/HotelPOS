@@ -1,7 +1,6 @@
 using HotelPOS.Application;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
-using HotelPOS.Application.Interface;
 using Moq;
 using Xunit;
 
@@ -15,12 +14,12 @@ namespace HotelPOS.Tests
             // Arrange
             var mockRepo = new Mock<IItemRepository>();
             var service = new ItemService(mockRepo.Object);
-            var dto = new CreateItemDto 
-            { 
-                Name = "Test Item", 
-                Price = 100, 
-                CategoryId = 5, 
-                TaxPercentage = 5 
+            var dto = new CreateItemDto
+            {
+                Name = "Test Item",
+                Price = 100,
+                CategoryId = 5,
+                TaxPercentage = 5
             };
 
             // Act
@@ -35,7 +34,8 @@ namespace HotelPOS.Tests
         {
             // Arrange
             var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object);
+            var itemRepo = new Mock<IItemRepository>();
+            var service = new CategoryService(mockRepo.Object, itemRepo.Object);
 
             // Act
             await service.AddCategoryAsync("New Category");
@@ -49,7 +49,9 @@ namespace HotelPOS.Tests
         {
             // Arrange
             var mockRepo = new Mock<ICategoryRepository>();
-            var service = new CategoryService(mockRepo.Object);
+            var itemRepo = new Mock<IItemRepository>();
+            itemRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
+            var service = new CategoryService(mockRepo.Object, itemRepo.Object);
 
             // Act
             await service.DeleteCategoryAsync(10);

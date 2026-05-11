@@ -1,13 +1,19 @@
 using ClosedXML.Excel;
 using HotelPOS.Application;
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using Microsoft.Win32;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
 namespace HotelPOS.Views
 {
-    public record DailyRow(DateTime Date, int OrderCount, decimal GrossRevenue, decimal GstAmount, decimal NetIncome);
+    public record DailyRow(int SNo, DateTime Date, int OrderCount, decimal GrossRevenue, decimal GstAmount, decimal NetIncome);
 
     /// <summary>ViewModel for the simple bar chart.</summary>
     public class ChartBar
@@ -19,27 +25,60 @@ namespace HotelPOS.Views
         public string ToolTipText => $"{MonthName}: Rs. {Revenue:N0}";
     }
 
+    /// <summary>ViewModel for a pie chart segment.</summary>
+    public class PieSegment
+    {
+        public string CategoryName { get; set; } = string.Empty;
+        public decimal Revenue { get; set; }
+        public double Percentage { get; set; }
+        public string PathData { get; set; } = string.Empty;
+        public System.Windows.Media.Brush FillColor { get; set; } = System.Windows.Media.Brushes.Gray;
+        public string ToolTipText => $"{CategoryName}: {Percentage:N1}% (Rs. {Revenue:N0})";
+    }
+
     public partial class DashboardView : UserControl
     {
         private readonly IOrderService _orderService;
         private readonly IReportService _reportService;
+        private readonly ISettingService _settingService;
+        private readonly INotificationService _notificationService;
+        private bool _isLoading;
 
         // Expose for shell-level export (kept for backward compat)
         public SalesReportDto? LastSalesReport { get; private set; }
         public List<ItemReportRowDto>? LastItemReport { get; private set; }
         public List<DailyRow>? LastDailyReport { get; private set; }
 
-        public DashboardView(IOrderService orderService, IReportService reportService)
+        private readonly string[] _pieColors = { "#4facfe", "#00f2fe", "#f093fb", "#f5576c", "#48c6ef", "#6B8DD6", "#8E37D7", "#3B2667", "#BC78EC" };
+
+        public DashboardView(IOrderService orderService, IReportService reportService, ISettingService settingService, INotificationService notificationService)
         {
             InitializeComponent();
             _orderService = orderService;
             _reportService = reportService;
+            _settingService = settingService;
+            _notificationService = notificationService;
 
-            // Wire pagination
-            TablePager.PageChanged += page => TableGrid.ItemsSource = page;
-            RecentPager.PageChanged += page => RecentGrid.ItemsSource = page;
-            ItemPager.PageChanged += page => ItemGrid.ItemsSource = page;
-            DatePager.PageChanged += page => DateGrid.ItemsSource = page;
+            // Wire pagination and calculate subtotals on page change
+            TablePager.PageChanged += page =>
+            {
+                TableGrid.ItemsSource = page;
+                var list = page?.Cast<TableSalesRowDto>() ?? Enumerable.Empty<TableSalesRowDto>();
+                TablePageSubtotalText.Text = $"Rs. {list.Sum(x => x.TotalRevenue):N2}";
+            };
+
+            ItemPager.PageChanged += page =>
+            {
+                ItemGrid.ItemsSource = page;
+                var list = page?.Cast<ItemReportRowDto>() ?? Enumerable.Empty<ItemReportRowDto>();
+                ItemPageSubtotalText.Text = $"Rs. {list.Sum(x => x.TotalRevenue):N2}";
+            };
+            DatePager.PageChanged += page =>
+            {
+                DateGrid.ItemsSource = page;
+                var list = page?.Cast<DailyRow>() ?? Enumerable.Empty<DailyRow>();
+                DatePageSubtotalText.Text = $"Rs. {list.Sum(x => x.NetIncome):N2}";
+            };
 
             Loaded += async (s, e) => await LoadAsync();
         }
@@ -61,7 +100,6 @@ namespace HotelPOS.Views
             {
                 TodayFilter.IsChecked = false;
                 WeekFilter.IsChecked = false;
-                AllFilter.IsChecked = false;
             }
             await LoadAsync();
         }
@@ -83,13 +121,16 @@ namespace HotelPOS.Views
                 return (today.AddDays(-offset), null);
             }
 
-            return (null, null);
+            return (DateTime.Today, null);
         }
 
         // ── Data loading ──────────────────────────────────────────────────────
 
         public async Task LoadAsync()
         {
+            if (_isLoading) return;
+            _isLoading = true;
+
             try
             {
                 var (from, to) = ResolveRange();
@@ -107,10 +148,17 @@ namespace HotelPOS.Views
                 TopItemText.Text = sales.MostPopularItem ?? "—";
 
                 TablePager.SetSource(sales.SalesByTable);
-                RecentPager.SetSource(sales.RecentOrders);
-                SalesMixChart.ItemsSource = sales.SalesByCategory;
+
                 ItemPager.SetSource(items);
                 PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
+
+                // Update Range Totals for the entire filtered period
+                TableRangeTotalText.Text = $"Rs. {sales.SalesByTable.Sum(x => x.TotalRevenue):N2}";
+
+                ItemRangeTotalText.Text = $"Rs. {items.Sum(x => x.TotalRevenue):N2}";
+
+                // Pie Chart Logic
+                RenderPieChart(sales.SalesByCategory);
 
                 // Chart
                 var chartData = await _reportService.GetMonthlyChartDataAsync();
@@ -131,8 +179,11 @@ namespace HotelPOS.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Dashboard load failed:\n{ex.Message}", "Dashboard Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                _notificationService.ShowError($"Dashboard load failed: {ex.Message}");
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 
@@ -149,7 +200,8 @@ namespace HotelPOS.Views
                 LastDailyReport = filtered
                     .GroupBy(o => o.CreatedAt.ToLocalTime().Date)
                     .OrderBy(g => g.Key)
-                    .Select(g => new DailyRow(
+                    .Select((g, idx) => new DailyRow(
+                        idx + 1,
                         g.Key,
                         g.Count(),
                         g.Sum(o => o.TotalAmount),
@@ -157,6 +209,8 @@ namespace HotelPOS.Views
                         g.Sum(o => o.Subtotal)))
                     .ToList();
 
+                // Calculate total net income for the date-wise range
+                DateRangeTotalText.Text = $"Rs. {LastDailyReport.Sum(x => x.NetIncome):N2}";
                 DatePager.SetSource(LastDailyReport);
             }
             catch { /* silently skip if orders aren't loaded */ }
@@ -257,13 +311,11 @@ namespace HotelPOS.Views
                 }
 
                 wb.SaveAs(dlg.FileName);
-                MessageBox.Show("✅  Report exported successfully (4 sheets).", "Export Complete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowSuccess("Report exported successfully (4 sheets).");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Export failed:\n{ex.Message}", "Export Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Export failed: {ex.Message}");
             }
         }
 
@@ -287,9 +339,48 @@ namespace HotelPOS.Views
                         TableNumber = row.TableNumber,
                         CreatedAt = row.CreatedAt,
                         Items = row.Items,
-                        TotalAmount = row.Total
+                        TotalAmount = row.Total,
+                        DiscountAmount = row.DiscountAmount,
+                        PaymentMode = row.PaymentMode,
+                        OrderType = row.OrderType,
+                        CustomerName = row.CustomerName,
+                        CustomerPhone = row.CustomerPhone,
+                        CustomerGstin = row.CustomerGstin
                     };
                     window.StartEditOrder(order);
+                }
+            }
+        }
+
+        private async void PrintOrder_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button b && b.Tag is RecentOrderRowDto row)
+            {
+                try
+                {
+                    var settings = await _settingService.GetSettingsAsync();
+                    var order = new HotelPOS.Domain.Order
+                    {
+                        Id = row.OrderId,
+                        TableNumber = row.TableNumber,
+                        CreatedAt = row.CreatedAt,
+                        Items = row.Items,
+                        TotalAmount = row.Total,
+                        DiscountAmount = row.DiscountAmount,
+                        PaymentMode = row.PaymentMode,
+                        OrderType = row.OrderType,
+                        CustomerName = row.CustomerName,
+                        CustomerPhone = row.CustomerPhone,
+                        CustomerGstin = row.CustomerGstin
+                    };
+
+                    var preview = new PrintPreviewWindow(order, settings);
+                    preview.Owner = Window.GetWindow(this);
+                    preview.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Could not open print preview: {ex.Message}");
                 }
             }
         }
@@ -308,10 +399,72 @@ namespace HotelPOS.Views
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Delete failed:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _notificationService.ShowError($"Delete failed: {ex.Message}");
                     }
                 }
             }
+        }
+
+        private void RenderPieChart(List<CategorySalesRowDto> categories)
+        {
+            if (categories == null || categories.Count == 0)
+            {
+                PieItemsControl.ItemsSource = null;
+                SalesMixLegend.ItemsSource = null;
+                PieTotalText.Text = "0%";
+                return;
+            }
+
+            double total = (double)categories.Sum(c => c.Revenue);
+            if (total == 0) total = 1;
+
+            double currentAngle = -90; // Start at top
+            var segments = new List<PieSegment>();
+            int colorIdx = 0;
+
+            foreach (var cat in categories.OrderByDescending(c => c.Revenue))
+            {
+                double percentage = (double)cat.Revenue / total;
+                double sweepAngle = percentage * 360;
+
+                if (sweepAngle > 0)
+                {
+                    segments.Add(new PieSegment
+                    {
+                        CategoryName = cat.CategoryName,
+                        Revenue = cat.Revenue,
+                        Percentage = percentage * 100,
+                        FillColor = (System.Windows.Media.Brush?)new System.Windows.Media.BrushConverter().ConvertFrom(_pieColors[colorIdx % _pieColors.Length]) ?? System.Windows.Media.Brushes.Gray,
+                        PathData = GetPiePathData(90, 90, 90, currentAngle, sweepAngle)
+                    });
+                }
+                currentAngle += sweepAngle;
+                colorIdx++;
+            }
+
+            PieItemsControl.ItemsSource = segments;
+            SalesMixLegend.ItemsSource = segments;
+            PieTotalText.Text = "100%";
+        }
+
+        private string GetPiePathData(double cx, double cy, double radius, double startAngle, double sweepAngle)
+        {
+            if (sweepAngle >= 360) sweepAngle = 359.99;
+
+            double startRad = Math.PI * startAngle / 180.0;
+            double endRad = Math.PI * (startAngle + sweepAngle) / 180.0;
+
+            double x1 = cx + radius * Math.Cos(startRad);
+            double y1 = cy + radius * Math.Sin(startRad);
+            double x2 = cx + radius * Math.Cos(endRad);
+            double y2 = cy + radius * Math.Sin(endRad);
+
+            int largeArc = sweepAngle > 180 ? 1 : 0;
+
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            return $"M {cx.ToString(culture)},{cy.ToString(culture)} " +
+                   $"L {x1.ToString(culture)},{y1.ToString(culture)} " +
+                   $"A {radius.ToString(culture)},{radius.ToString(culture)} 0 {largeArc} 1 {x2.ToString(culture)},{y2.ToString(culture)} Z";
         }
     }
 }

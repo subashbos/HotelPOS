@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using System.Drawing.Printing;
 using System.Windows;
@@ -10,24 +11,28 @@ namespace HotelPOS.Views
     {
         private readonly ISettingService _settingService;
         private readonly IUserService _userService;
+        private readonly IRoleService _roleService;
+        private readonly INotificationService _notificationService;
         private readonly UsersView _usersView;
         private SystemSetting? _current;
 
-        public SettingsView(ISettingService settingService, IUserService userService)
+        public SettingsView(ISettingService settingService, IUserService userService, IRoleService roleService, INotificationService notificationService)
         {
             InitializeComponent();
             _settingService = settingService;
             _userService = userService;
+            _roleService = roleService;
+            _notificationService = notificationService;
 
             // Embed UsersView into the Users tab
-            _usersView = new UsersView(_userService);
+            _usersView = new UsersView(_userService, _roleService);
             UsersHost.Content = _usersView;
 
             Loaded += async (s, e) =>
             {
                 LoadPrinters();
                 await LoadSettingsAsync();
-                await _usersView.RefreshAsync();
+                await _usersView.InitializeAsync();
             };
         }
 
@@ -70,6 +75,7 @@ namespace HotelPOS.Views
             ShowPhoneCheck.IsChecked = _current.ShowPhoneOnReceipt;
             ShowFooterCheck.IsChecked = _current.ShowThankYouFooter;
             RoundOffCheck.IsChecked = _current.EnableRoundOff;
+            CompositionCheck.IsChecked = _current.IsCompositionScheme;
         }
 
         // ── Save Hotel Profile ────────────────────────────────────────────────
@@ -99,6 +105,7 @@ namespace HotelPOS.Views
             _current.ShowPhoneOnReceipt = ShowPhoneCheck.IsChecked == true;
             _current.ShowThankYouFooter = ShowFooterCheck.IsChecked == true;
             _current.EnableRoundOff = RoundOffCheck.IsChecked == true;
+            _current.IsCompositionScheme = CompositionCheck.IsChecked == true;
             await Save();
         }
 
@@ -107,13 +114,11 @@ namespace HotelPOS.Views
             try
             {
                 await _settingService.SaveSettingsAsync(_current!);
-                MessageBox.Show("Settings saved successfully.", "✅  Saved",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowSuccess("Settings saved successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving settings:\n{ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Error saving settings: {ex.Message}");
             }
         }
     }

@@ -1,10 +1,10 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
-using HotelPOS;
 
 namespace HotelPOS.Views
 {
@@ -27,15 +27,17 @@ namespace HotelPOS.Views
         private readonly IOrderService _orderService;
         private readonly ISettingService _settingService;
         private readonly IReportService _reportService;
+        private readonly INotificationService _notificationService;
         private List<JournalRow> _allRows = new();
         private bool _isLoaded = false;   // prevents premature LoadAsync calls
 
-        public JournalView(IOrderService orderService, ISettingService settingService, IReportService reportService)
+        public JournalView(IOrderService orderService, ISettingService settingService, IReportService reportService, INotificationService notificationService)
         {
             InitializeComponent();
             _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
             _settingService = settingService ?? throw new ArgumentNullException(nameof(settingService));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
+            _notificationService = notificationService;
 
             // Wire pager for server-side pagination
             JournalPager.ExternalPageRequested += async (page, size) => await LoadPagedAsync(page, size);
@@ -64,7 +66,7 @@ namespace HotelPOS.Views
 
                 // Get count by requesting a minimal page
                 var (_, total) = await _orderService.GetPagedOrdersAsync(1, 1, from, to, tbl);
-                
+
                 JournalPager.SetExternalSource(total);
                 RowCountText.Text = $"{total} transaction{(total == 1 ? "" : "s")}";
             }
@@ -114,7 +116,7 @@ namespace HotelPOS.Views
 
         private void ShowError(string msg, Exception ex)
         {
-             MessageBox.Show($"{msg}:\n{ex.Message}", "Journal Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            _notificationService.ShowError($"{msg}: {ex.Message}");
         }
 
         // ── Toolbar events ────────────────────────────────────────────────────
@@ -135,7 +137,7 @@ namespace HotelPOS.Views
         {
             if (_allRows.Count == 0)
             {
-                MessageBox.Show("No data to export.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowInfo("No data to export.");
                 return;
             }
 
@@ -173,13 +175,11 @@ namespace HotelPOS.Views
 
                 ws.Columns().AdjustToContents();
                 wb.SaveAs(dlg.FileName);
-                MessageBox.Show("✅  Journal exported successfully.", "Export Complete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowSuccess("Journal exported successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Export error:\n{ex.Message}", "Export Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Export error: {ex.Message}");
             }
         }
         private async void ExportGst_Click(object sender, RoutedEventArgs e)
@@ -222,13 +222,11 @@ namespace HotelPOS.Views
 
                 ws.Columns().AdjustToContents();
                 wb.SaveAs(dlg.FileName);
-                MessageBox.Show("✅  GST Report exported successfully.", "Export Complete",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                _notificationService.ShowSuccess("GST Report exported successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Export error:\n{ex.Message}", "Export Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Export error: {ex.Message}");
             }
         }
 
@@ -261,7 +259,7 @@ namespace HotelPOS.Views
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to print receipt:\n{ex.Message}", "Print Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        _notificationService.ShowError($"Failed to print receipt: {ex.Message}");
                 }
             }
         }
@@ -303,7 +301,7 @@ namespace HotelPOS.Views
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Delete failed:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            _notificationService.ShowError($"Delete failed: {ex.Message}");
                     }
                 }
             }

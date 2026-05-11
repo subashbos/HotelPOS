@@ -37,6 +37,17 @@ namespace HotelPOS.Application
                 existing.ShowPrintPreview = settings.ShowPrintPreview;
                 existing.ReceiptFormat = settings.ReceiptFormat;
 
+                // Receipt display flags — previously silently dropped
+                existing.ShowGstBreakdown = settings.ShowGstBreakdown;
+                existing.ShowItemsOnBill = settings.ShowItemsOnBill;
+                existing.ShowDiscountLine = settings.ShowDiscountLine;
+                existing.ShowPhoneOnReceipt = settings.ShowPhoneOnReceipt;
+                existing.ShowThankYouFooter = settings.ShowThankYouFooter;
+
+                // Billing options
+                existing.EnableRoundOff = settings.EnableRoundOff;
+                existing.IsCompositionScheme = settings.IsCompositionScheme;
+
                 await _repository.UpdateAsync(existing);
             }
             else

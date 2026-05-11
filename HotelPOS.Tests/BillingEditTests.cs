@@ -2,10 +2,9 @@ using HotelPOS.Application;
 using HotelPOS.Application.Interface;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
+using MediatR;
 using Moq;
 using Xunit;
-
-using MediatR;
 
 namespace HotelPOS.Tests
 {
@@ -19,7 +18,7 @@ namespace HotelPOS.Tests
             var mockMediator = new Mock<IMediator>();
             var mockItemService = new Mock<IItemService>();
             var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object);
-            
+
             var order = new Order
             {
                 Id = 1,
@@ -66,7 +65,7 @@ namespace HotelPOS.Tests
             // Arrange
             var cartService = new CartService();
             cartService.AddItem(1, new Item { Id = 1, Name = "Old", Price = 10 });
-            
+
             var newItems = new List<OrderItem>
             {
                 new OrderItem { ItemId = 2, ItemName = "New", Quantity = 1, Price = 20, TaxPercentage = 0, Total = 20 }

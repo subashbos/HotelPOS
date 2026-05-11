@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Input;
@@ -9,14 +10,16 @@ namespace HotelPOS
     {
         private readonly IAuthService _authService;
         private readonly IUserService _userService;
+        private readonly INotificationService _notificationService;
         private IServiceScope? _sessionScope;
 
         // DI resolves this constructor via the login scope created in App.ShowLoginWindow()
-        public LoginWindow(IAuthService authService, IUserService userService)
+        public LoginWindow(IAuthService authService, IUserService userService, INotificationService notificationService)
         {
             InitializeComponent();
             _authService = authService;
             _userService = userService;
+            _notificationService = notificationService;
             Loaded += (s, e) => UsernameBox.Focus();
         }
 
@@ -55,10 +58,10 @@ namespace HotelPOS
                             var (ok, err) = await _userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
                             if (!ok)
                             {
-                                MessageBox.Show($"Failed to update password: {err}", "Security Policy", MessageBoxButton.OK, MessageBoxImage.Error);
+                                _notificationService.ShowError($"Failed to update password: {err}");
                                 return;
                             }
-                            MessageBox.Show("Password updated successfully. You can now log in with your new password.", "Security Policy", MessageBoxButton.OK, MessageBoxImage.Information);
+                            _notificationService.ShowSuccess("Password updated successfully. You can now log in with your new password.");
                             PasswordBox.Clear();
                             return;
                         }

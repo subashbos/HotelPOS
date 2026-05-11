@@ -42,11 +42,11 @@ namespace HotelPOS.Tests
         public async Task SaveOrder_CallsRepoWithCorrectFiscalYear()
         {
             var items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1, Price = 100 } };
-            
+
             // We can't easily mock DateTime.Now inside the service unless we use a provider, 
             // but the service currently uses DateTime.UtcNow.ToLocalTime().
             // For testing purposes, we verify the logic of GetFiscalYear directly.
-            
+
             _orderRepo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>()))
                 .ReturnsAsync("INV/2024-25/0001");
 

@@ -1,5 +1,3 @@
-using HotelPOS.Domain;
-
 namespace HotelPOS.Domain.Interface
 {
     public interface IAuditRepository

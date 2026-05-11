@@ -1,7 +1,7 @@
 using HotelPOS.Application.Interface;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
 using HotelPOS.Domain.Events;
+using HotelPOS.Domain.Interface;
 using MediatR;
 
 namespace HotelPOS.Application
@@ -19,20 +19,45 @@ namespace HotelPOS.Application
             _itemService = itemService;
         }
 
-        public async Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null)
+        public async Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn")
         {
             if (items == null || items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.", nameof(items));
 
+            if (discount < 0)
+                throw new ArgumentException("Discount cannot be negative.", nameof(discount));
+
+            var allowedModes = new[] { "Cash", "Card", "UPI" };
+            if (!allowedModes.Contains(paymentMode))
+                throw new ArgumentException($"Invalid payment mode. Allowed: {string.Join(", ", allowedModes)}", nameof(paymentMode));
+
+            var allowedTypes = new[] { "DineIn", "Takeaway", "Online" };
+            if (!allowedTypes.Contains(orderType))
+                throw new ArgumentException($"Invalid order type. Allowed: {string.Join(", ", allowedTypes)}", nameof(orderType));
+
+            // DineIn requires a real table; Takeaway/Online use virtual table 0
+            bool requiresTable = orderType == "DineIn";
+            if (requiresTable && tableNumber <= 0)
+                throw new ArgumentException("Invalid table number.", nameof(tableNumber));
+
+            // For Takeaway/Online, normalise to 0 regardless of what was passed
+            int effectiveTableNumber = requiresTable ? tableNumber : 0;
+
             var orderItems = items
-                .Select(x => new OrderItem
+                .Select(x =>
                 {
-                    ItemId = x.ItemId,
-                    ItemName = x.ItemName,
-                    Quantity = x.Quantity,
-                    Price = x.Price,
-                    TaxPercentage = x.TaxPercentage,
-                    Total = x.Total
+                    if (x.Price < 0) throw new ArgumentException($"Item '{x.ItemName}' cannot have a negative price.");
+                    if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
+
+                    return new OrderItem
+                    {
+                        ItemId = x.ItemId,
+                        ItemName = x.ItemName,
+                        Quantity = x.Quantity,
+                        Price = x.Price,
+                        TaxPercentage = x.TaxPercentage,
+                        Total = x.Total
+                    };
                 })
                 .ToList();
 
@@ -40,46 +65,55 @@ namespace HotelPOS.Application
             var fy = GetFiscalYear(now.ToLocalTime());
             var inv = await _repo.GetNextInvoiceNumberAsync(fy);
 
-            var subtotal = orderItems.Sum(x => x.Total);
-            var gst = Math.Round(orderItems.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
-            
-            // Assume Intrastate default for Hotel POS (CGST = 50%, SGST = 50%)
-            var cgst = Math.Round(gst / 2m, 2);
-            var sgst = gst - cgst; // to avoid rounding mismatch
-            var igst = 0m;
-
-            var total = Math.Max(0, subtotal + gst - discount);
-
             var order = new Order
             {
                 InvoiceNumber = inv,
                 FiscalYear = fy,
                 CreatedAt = now,
-                TableNumber = tableNumber,
-                Items = orderItems,
-                Subtotal = subtotal,
-                GstAmount = gst,
-                CgstAmount = cgst,
-                SgstAmount = sgst,
-                IgstAmount = igst,
-                DiscountAmount = discount,
-                TotalAmount = total,
-                PaymentMode = paymentMode,
-                CustomerName = customerName,
-                CustomerPhone = customerPhone,
-                CustomerGstin = customerGstin
+                TableNumber = effectiveTableNumber,
+                Items = orderItems
             };
 
-            var orderId = await _repo.AddAsync(order);
+            CalculateTotals(order, orderItems);
+            order.DiscountAmount = discount;
+            order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - discount);
+            order.PaymentMode = paymentMode;
+            order.OrderType = orderType;
+            order.CustomerName = customerName;
+            order.CustomerPhone = customerPhone;
+            order.CustomerGstin = customerGstin;
 
-            // Deduct Stock
-            foreach (var item in orderItems)
+            await _repo.BeginTransactionAsync();
+            try
             {
-                await _itemService.DeductStockAsync(item.ItemId, item.Quantity);
-            }
+                var orderId = await _repo.AddAsync(order);
 
-            await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {total:N2}, Table: {tableNumber}"));
-            return orderId;
+                // Deduct Stock
+                foreach (var item in orderItems)
+                {
+                    await _itemService.DeductStockAsync(item.ItemId, item.Quantity);
+                }
+
+                await _repo.CommitTransactionAsync();
+                await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {effectiveTableNumber}, Type: {orderType}"));
+                return orderId;
+            }
+            catch
+            {
+                await _repo.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        private void CalculateTotals(Order order, List<OrderItem> items)
+        {
+            order.Subtotal = items.Sum(x => x.Total);
+            order.GstAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
+
+            // Assume Intrastate default for Hotel POS (CGST = 50%, SGST = 50%)
+            order.CgstAmount = Math.Round(order.GstAmount / 2m, 2);
+            order.SgstAmount = order.GstAmount - order.CgstAmount;
+            order.IgstAmount = 0m;
         }
 
         private string GetFiscalYear(DateTime date)
@@ -91,48 +125,59 @@ namespace HotelPOS.Application
 
         public Task<List<Order>> GetAllOrdersWithItemsAsync()
             => _repo.GetAllWithItemsAsync();
-    
-        public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(int pageNumber, int pageSize, DateTime? from = null, DateTime? to = null, int? tableNumber = null)
-            => _repo.GetPagedWithItemsAsync(pageNumber, pageSize, from, to, tableNumber);
+
+        public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(int pageNumber, int pageSize, 
+            DateTime? from = null, DateTime? to = null, int? tableNumber = null,
+            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null)
+            => _repo.GetPagedWithItemsAsync(pageNumber, pageSize, from, to, tableNumber, search, paymentMode, orderType, categoryId);
+
+        public Task<Order?> GetOrderAsync(int id) => _repo.GetByIdWithItemsAsync(id);
 
         public async Task UpdateOrderAsync(Order order)
         {
             if (order.Items == null || order.Items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.");
-    
+
             var oldOrder = await _repo.GetByIdWithItemsAsync(order.Id);
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
 
-            // Stock Reconciliation
-            var oldMap = oldOrder.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
-            var newMap = order.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
+            // Normalise table number: Takeaway/Online always store 0
+            if (order.OrderType == "Takeaway" || order.OrderType == "Online")
+                order.TableNumber = 0;
 
-            // Return all old stock first (or we can diff, but this is safer for complex changes)
-            foreach (var kvp in oldMap)
+            await _repo.BeginTransactionAsync();
+            try
             {
-                await _itemService.DeductStockAsync(kvp.Key, -kvp.Value); // Deduct negative = return
-            }
+                // Stock Reconciliation
+                var oldMap = oldOrder.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
+                var newMap = order.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
 
-            // Deduct all new stock
-            foreach (var kvp in newMap)
+                // Return all old stock first (using negative to indicate return)
+                foreach (var kvp in oldMap)
+                {
+                    await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
+                }
+
+                // Deduct all new stock
+                foreach (var kvp in newMap)
+                {
+                    await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
+                }
+
+                var oldTotal = oldOrder.TotalAmount;
+
+                CalculateTotals(order, order.Items);
+                order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
+
+                await _repo.UpdateAsync(order);
+                await _repo.CommitTransactionAsync();
+                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
+            }
+            catch
             {
-                await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
+                await _repo.RollbackTransactionAsync();
+                throw;
             }
-
-            var oldTotal = oldOrder.TotalAmount;
-
-            // Recalculate totals
-            order.Subtotal = order.Items.Sum(x => x.Total);
-            order.GstAmount = Math.Round(order.Items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
-            
-            order.CgstAmount = Math.Round(order.GstAmount / 2m, 2);
-            order.SgstAmount = order.GstAmount - order.CgstAmount;
-            order.IgstAmount = 0m;
-
-            order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
-    
-            await _repo.UpdateAsync(order);
-            await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
         }
         public async Task DeleteOrderAsync(int orderId)
         {
@@ -143,7 +188,7 @@ namespace HotelPOS.Application
                 {
                     await _itemService.DeductStockAsync(item.ItemId, -item.Quantity);
                 }
-                
+
                 await _repo.DeleteAsync(orderId);
                 await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
             }

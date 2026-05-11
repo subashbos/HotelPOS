@@ -1,9 +1,6 @@
 using HotelPOS.Application.Interface;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace HotelPOS.Application
 {
@@ -46,7 +43,7 @@ namespace HotelPOS.Application
                 throw new InvalidOperationException("No active session to close.");
 
             var sales = await GetTotalSalesForCurrentSessionAsync();
-            
+
             session.ClosedAt = DateTime.UtcNow;
             session.ClosedBy = username;
             session.ClosingBalance = session.OpeningBalance + sales;

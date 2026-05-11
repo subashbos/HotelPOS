@@ -9,11 +9,18 @@ namespace HotelPOS.Domain.Interface
         /// <summary>Returns all orders with their line items eager-loaded.</summary>
         Task<List<Order>> GetAllWithItemsAsync();
 
-        /// <summary>Returns a paged list of orders with optional date and table filtering.</summary>
-        Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, DateTime? from = null, DateTime? to = null, int? tableNumber = null);
+        /// <summary>Returns a paged list of orders with advanced filtering.</summary>
+        Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, 
+            DateTime? from = null, DateTime? to = null, int? tableNumber = null, 
+            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null);
 
         Task UpdateAsync(Order order);
         Task<Order?> GetByIdWithItemsAsync(int id);
         Task DeleteAsync(int id);
+
+        // ── Transactions ──────────────────────────────────────────────────────
+        Task BeginTransactionAsync();
+        Task CommitTransactionAsync();
+        Task RollbackTransactionAsync();
     }
 }

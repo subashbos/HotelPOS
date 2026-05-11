@@ -1,3 +1,6 @@
+using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
 namespace HotelPOS.Views
@@ -18,7 +21,8 @@ namespace HotelPOS.Views
         {
             if (PwdBox.Password.Length < MinimumPasswordLength)
             {
-                MessageBox.Show($"Password must be at least {MinimumPasswordLength} characters.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                var ns = ((App)System.Windows.Application.Current).ServiceProvider.GetRequiredService<INotificationService>();
+                ns.ShowError($"Password must be at least {MinimumPasswordLength} characters.");
                 return;
             }
             NewPassword = PwdBox.Password;

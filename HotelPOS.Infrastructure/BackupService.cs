@@ -1,14 +1,14 @@
-using System.IO;
+using HotelPOS.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using HotelPOS.Persistence;
+using System.IO;
 
 namespace HotelPOS.Infrastructure
 {
     public interface IBackupService
     {
-        Task CreateBackupAsync();
+        Task CreateBackupAsync(string? customPath = null);
     }
 
     public class BackupService : IBackupService
@@ -20,7 +20,7 @@ namespace HotelPOS.Infrastructure
             _scopeFactory = scopeFactory;
         }
 
-        public async Task CreateBackupAsync()
+        public async Task CreateBackupAsync(string? customPath = null)
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
@@ -28,45 +28,59 @@ namespace HotelPOS.Infrastructure
             if (!db.Database.IsRelational()) return;
 
             var conn = db.Database.GetDbConnection();
-            var backupDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+            var backupDir = customPath ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
             if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
 
             if (db.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
             {
-                var dbPath = conn.DataSource;
-                if (string.IsNullOrEmpty(dbPath) || !File.Exists(dbPath)) return;
-
-                var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.db";
-                var destPath = Path.Combine(backupDir, fileName);
-
-                using (var source = new SqliteConnection(conn.ConnectionString))
-                using (var destination = new SqliteConnection($"Data Source={destPath}"))
-                {
-                    await source.OpenAsync();
-                    await destination.OpenAsync();
-                    source.BackupDatabase(destination);
-                }
+                await PerformSqliteBackup(conn, backupDir);
             }
             else if (db.Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer")
             {
-                var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
-                var destPath = Path.Combine(backupDir, fileName);
-                
-                // SQL Server requires an absolute path for backup. 
-                var sql = $"BACKUP DATABASE [{conn.Database}] TO DISK = '{destPath}' WITH FORMAT, MEDIANAME = 'HotelPOSBackup', NAME = 'Full Backup of HotelPOS'";
-                
-                await db.Database.ExecuteSqlRawAsync(sql);
+                await PerformSqlServerBackup(db, conn, backupDir);
             }
 
-            // Cleanup old backups (keep last 7 days)
-            if (Directory.Exists(backupDir))
-            {
-                var oldFiles = Directory.GetFiles(backupDir, "*.*")
-                    .Select(f => new FileInfo(f))
-                    .Where(fi => fi.CreationTime < DateTime.Now.AddDays(-7))
-                    .ToList();
+            CleanupOldBackups(backupDir);
+        }
 
-                foreach (var f in oldFiles) f.Delete();
+        private async Task PerformSqliteBackup(System.Data.Common.DbConnection conn, string backupDir)
+        {
+            var dbPath = conn.DataSource;
+            if (string.IsNullOrEmpty(dbPath) || !File.Exists(dbPath)) return;
+
+            var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.db";
+            var destPath = Path.Combine(backupDir, fileName);
+
+            using var source = new SqliteConnection(conn.ConnectionString);
+            using var destination = new SqliteConnection($"Data Source={destPath}");
+
+            await source.OpenAsync();
+            await destination.OpenAsync();
+            source.BackupDatabase(destination);
+        }
+
+        private async Task PerformSqlServerBackup(HotelDbContext db, System.Data.Common.DbConnection conn, string backupDir)
+        {
+            var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
+            var destPath = Path.Combine(backupDir, fileName);
+
+            var sql = $"BACKUP DATABASE [{conn.Database}] TO DISK = '{destPath}' WITH FORMAT, NAME = 'Full Backup of HotelPOS'";
+            await db.Database.ExecuteSqlRawAsync(sql);
+        }
+
+        private void CleanupOldBackups(string backupDir)
+        {
+            if (!Directory.Exists(backupDir)) return;
+
+            var cutoff = DateTime.Now.AddDays(-7);
+            var oldFiles = Directory.GetFiles(backupDir, "*.*")
+                .Select(f => new FileInfo(f))
+                .Where(fi => fi.CreationTime < cutoff)
+                .ToList();
+
+            foreach (var f in oldFiles)
+            {
+                try { f.Delete(); } catch { /* Ignore cleanup errors */ }
             }
         }
     }

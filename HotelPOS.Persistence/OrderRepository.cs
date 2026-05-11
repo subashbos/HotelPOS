@@ -55,7 +55,9 @@ namespace HotelPOS.Persistence
                 .ToListAsync();
         }
 
-        public async Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, DateTime? from = null, DateTime? to = null, int? tableNumber = null)
+        public async Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, 
+            DateTime? from = null, DateTime? to = null, int? tableNumber = null,
+            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null)
         {
             var query = _context.Orders
                 .Include(o => o.Items)
@@ -64,6 +66,28 @@ namespace HotelPOS.Persistence
             if (from.HasValue) query = query.Where(o => o.CreatedAt >= from.Value);
             if (to.HasValue) query = query.Where(o => o.CreatedAt <= to.Value);
             if (tableNumber.HasValue) query = query.Where(o => o.TableNumber == tableNumber.Value);
+            
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(o => (o.InvoiceNumber != null && o.InvoiceNumber.Contains(search)) || 
+                                         (o.CustomerName != null && o.CustomerName.Contains(search)) || 
+                                         (o.CustomerPhone != null && o.CustomerPhone.Contains(search)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(paymentMode) && paymentMode != "All")
+            {
+                query = query.Where(o => o.PaymentMode == paymentMode);
+            }
+
+            if (!string.IsNullOrWhiteSpace(orderType) && orderType != "All")
+            {
+                query = query.Where(o => o.OrderType == orderType);
+            }
+
+            if (categoryId.HasValue && categoryId > 0)
+            {
+                query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId.Value)));
+            }
 
             var total = await query.CountAsync();
 
@@ -83,28 +107,37 @@ namespace HotelPOS.Persistence
             var items = await query.ToListAsync();
             return (items, total);
         }
-    
+
         public async Task UpdateAsync(Order order)
         {
             var existing = await _context.Orders
                 .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == order.Id);
-    
+
             if (existing == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
-    
+
             // Update main order properties
             existing.TableNumber = order.TableNumber;
             existing.Subtotal = order.Subtotal;
             existing.GstAmount = order.GstAmount;
+            existing.CgstAmount = order.CgstAmount;
+            existing.SgstAmount = order.SgstAmount;
+            existing.IgstAmount = order.IgstAmount;
             existing.DiscountAmount = order.DiscountAmount;
             existing.TotalAmount = order.TotalAmount;
             existing.PaymentMode = order.PaymentMode;
+            existing.OrderType = order.OrderType;
             existing.UpdatedAt = DateTime.UtcNow;
-    
+
+            // Customer fields — previously silently dropped on update
+            existing.CustomerName = order.CustomerName;
+            existing.CustomerPhone = order.CustomerPhone;
+            existing.CustomerGstin = order.CustomerGstin;
+
             // Replace items (simpler than syncing individual rows)
             _context.OrderItems.RemoveRange(existing.Items);
             existing.Items = order.Items;
-    
+
             await _context.SaveChangesAsync();
         }
         public async Task<Order?> GetByIdWithItemsAsync(int id)
@@ -124,5 +157,9 @@ namespace HotelPOS.Persistence
                 await _context.SaveChangesAsync();
             }
         }
+ 
+        public async Task BeginTransactionAsync() => await _context.Database.BeginTransactionAsync();
+        public async Task CommitTransactionAsync() => await _context.Database.CommitTransactionAsync();
+        public async Task RollbackTransactionAsync() => await _context.Database.RollbackTransactionAsync();
     }
 }

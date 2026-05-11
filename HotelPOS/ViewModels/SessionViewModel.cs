@@ -3,9 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
-using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
 namespace HotelPOS.ViewModels
 {

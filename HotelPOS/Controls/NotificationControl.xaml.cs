@@ -1,10 +1,9 @@
-using System;
+using HotelPOS.Application.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using HotelPOS.Application.Interfaces;
 
 namespace HotelPOS.Controls
 {

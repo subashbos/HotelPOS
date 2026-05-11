@@ -22,14 +22,12 @@ namespace HotelPOS.Application
 
         public Task<List<User>> GetAllUsersAsync() => _userRepository.GetAllAsync();
 
-        public async Task<(bool Success, string Error)> AddUserAsync(string username, string password, string role)
+        public async Task<(bool Success, string Error)> AddUserAsync(string username, string password, string role, int roleId)
         {
             if (string.IsNullOrWhiteSpace(username))
                 return (false, "Username cannot be empty.");
-            if (password.Length < MinimumPasswordLength)
+            if (string.IsNullOrEmpty(password) || password.Length < MinimumPasswordLength)
                 return (false, $"Password must be at least {MinimumPasswordLength} characters.");
-            if (role != "Admin" && role != "Cashier")
-                return (false, "Role must be Admin or Cashier.");
 
             var existing = await _userRepository.GetUserByUsernameAsync(username.Trim());
             if (existing != null)
@@ -42,6 +40,7 @@ namespace HotelPOS.Application
                 PasswordHash = hash,
                 Salt = salt,
                 Role = role,
+                RoleId = roleId,
                 IsActive = true
             };
 
@@ -52,23 +51,27 @@ namespace HotelPOS.Application
         public async Task ToggleActiveAsync(int userId, bool isActive)
         {
             var user = await _userRepository.GetByIdAsync(userId);
-            if (user != null)
-            {
-                user.IsActive = isActive;
-                await _userRepository.UpdateAsync(user);
-            }
+            if (user == null)
+                throw new KeyNotFoundException($"User #{userId} not found.");
+            user.IsActive = isActive;
+            await _userRepository.UpdateAsync(user);
         }
 
         public async Task DeleteUserAsync(int userId, int currentUserId)
         {
             if (userId == currentUserId)
                 throw new InvalidOperationException("You cannot delete your own account.");
+
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new KeyNotFoundException($"User #{userId} not found.");
+
             await _userRepository.DeleteAsync(userId);
         }
 
         public async Task<(bool Success, string Error)> ResetPasswordAsync(int userId, string newPassword)
         {
-            if (newPassword.Length < MinimumPasswordLength)
+            if (string.IsNullOrEmpty(newPassword) || newPassword.Length < MinimumPasswordLength)
                 return (false, $"Password must be at least {MinimumPasswordLength} characters.");
 
             var user = await _userRepository.GetByIdAsync(userId);

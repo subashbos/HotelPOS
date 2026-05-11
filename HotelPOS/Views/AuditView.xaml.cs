@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -7,11 +8,13 @@ namespace HotelPOS.Views
     public partial class AuditView : UserControl
     {
         private readonly IAuditService _auditService;
+        private readonly INotificationService _notificationService;
 
-        public AuditView(IAuditService auditService)
+        public AuditView(IAuditService auditService, INotificationService notificationService)
         {
             InitializeComponent();
             _auditService = auditService;
+            _notificationService = notificationService;
 
             FromDate.SelectedDate = DateTime.Today;
             ToDate.SelectedDate = DateTime.Today;
@@ -37,7 +40,7 @@ namespace HotelPOS.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading audit logs: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _notificationService.ShowError($"Error loading audit logs: {ex.Message}");
             }
         }
     }

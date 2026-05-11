@@ -1,5 +1,3 @@
-using System;
-
 namespace HotelPOS.Application.Interfaces
 {
     public interface INotificationService

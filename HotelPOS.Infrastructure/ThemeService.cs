@@ -1,6 +1,5 @@
-using System.Windows;
-using System.Linq;
 using HotelPOS.Application.Interface;
+using System.Windows;
 
 namespace HotelPOS.Infrastructure
 {
@@ -19,7 +18,7 @@ namespace HotelPOS.Infrastructure
             var app = System.Windows.Application.Current;
             var dicts = app.Resources.MergedDictionaries;
 
-            var themeUri = isDark 
+            var themeUri = isDark
                 ? new Uri("Themes/DarkTheme.xaml", UriKind.Relative)
                 : new Uri("Themes/LightTheme.xaml", UriKind.Relative);
 

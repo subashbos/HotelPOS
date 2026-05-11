@@ -1,7 +1,3 @@
-using HotelPOS.Domain;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace HotelPOS.Domain.Interface
 {
     public interface ICashRepository

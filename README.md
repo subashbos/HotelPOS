@@ -1,94 +1,38 @@
-# 🏨 HotelPOS
+# 🏨 HotelPOS - Advanced Billing & Management System
 
-![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?style=flat-square&logo=dotnet)
-![WPF](https://img.shields.io/badge/WPF-Desktop-0078D7?style=flat-square&logo=windows)
-![EF Core](https://img.shields.io/badge/EF_Core-SQL_Server-32B900?style=flat-square&logo=microsoft-sql-server)
-
-HotelPOS is a robust, Windows desktop point-of-sale application designed specifically for hotel and restaurant billing. Built with WPF and modern .NET 10.0, it features a clean architecture, dependency injection, and a robust SQL Server backend.
-
-## ✨ Features
-
-- **Billing & Order Management**: Comprehensive point-of-sale interface.
-- **Inventory Tracking**: Item management with category support and barcode scanning.
-- **Taxation & Discounts**: GST handling (0%, 5%, 12%, 18%, 28%) and custom discounts.
-- **Reporting & Ledger**: Daily cash sessions, date-wise reports, journal, and ledger views.
-- **Receipt Printing**: Integrated thermal printer receipt generation.
-- **Security & Auditing**: Role-based access control, soft-delete, and full audit logging.
-- **Themes**: Support for Light and Dark modes.
+Welcome to the **HotelPOS** project. This is a professional-grade Point of Sale system built with .NET 10 and WPF, specifically optimized for Indian hospitality businesses.
 
 ---
 
-## 🏗️ Solution Architecture
+## 📚 Project Documentation
 
-The project follows a Clean Architecture approach to separate concerns and maintain testability.
+To help you get started, we have provided comprehensive documentation split into three main areas:
 
-- `HotelPOS.slnx` - Main solution file.
-- `HotelPOS/` *(UI Layer)* - WPF desktop application, ViewModels, and Views.
-- `HotelPOS.Application/` *(Application Layer)* - Business logic, services, and interfaces.
-- `HotelPOS.Domain/` *(Domain Layer)* - Core entities, models, and domain events.
-- `HotelPOS.Persistence/` *(Persistence Layer)* - Entity Framework Core DbContext and repository implementations.
-- `HotelPOS.Infrastructure/` *(Infrastructure Layer)* - Cross-cutting concerns (e.g., Logging, Backups, Notifications).
-- `HotelPOS.Tests/` *(Test Layer)* - Automated unit and integration tests using xUnit and Moq.
+### 1. [User Guide & Features (ProjectDocumentation.md)](file:///d:/HotelPOS/ProjectDocumentation.md)
+*   **For**: Business owners, cashiers, and end-users.
+*   **Contents**: How to create bills, manage tables, configure GST schemes, and use keyboard shortcuts.
 
----
+### 2. [System Design & Architecture (SystemDesign.md)](file:///d:/HotelPOS/SystemDesign.md)
+*   **For**: System architects and technical stakeholders.
+*   **Contents**: Layered architecture (Clean Architecture), core modules (Billing, Printing), and technology stack.
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Windows 10 or Windows 11
-- [.NET 10.0 SDK](https://dotnet.microsoft.com/download) or later
-- SQL Server (LocalDB or full SQL Server)
-- Visual Studio 2022 (recommended)
-
-### Configuration
-
-The main application configuration is located in `HotelPOS/appsettings.json`.
-Before running the application, ensure your connection string is pointing to your local SQL Server instance:
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=HotelPOS;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
-}
-```
-
-### Build & Run via CLI
-
-From the repository root:
-
-```powershell
-# Restore dependencies
-dotnet restore HotelPOS.slnx
-
-# Build the solution
-dotnet build HotelPOS.slnx
-
-# Run the application
-dotnet run --project HotelPOS\HotelPOS.csproj
-```
-
-### Run Tests
-
-Execute the automated test suite to ensure system stability:
-
-```powershell
-dotnet test HotelPOS.Tests\HotelPOS.Tests.csproj
-```
+### 3. [Technical Reference & Implementation (TechnicalReference.md)](file:///d:/HotelPOS/TechnicalReference.md)
+*   **For**: Developers and maintainers.
+*   **Contents**: Deep-dive into `CartService` thread safety, `BillingViewModel` logic, `FlowDocument` generation, and Database schema.
 
 ---
 
-## 📜 Logging & Diagnostics
-
-Application logs are handled by Serilog and are written to rolling files located in the output directory:
-
-- Path: `HotelPOS/bin/<Configuration>/net10.0-windows/logs/`
-- Pattern: `pos-log-YYYYMMDD.txt`
+## 🚀 Quick Start
+1. Open `HotelPOS.slnx` in Visual Studio 2022.
+2. Build the solution in `Release` or `Debug` mode.
+3. Run the **HotelPOS** project.
+4. **Login**: Use standard credentials (or check the Users tab in Settings).
+5. **Billing**: Press `F1` to search for items and `F4` to checkout.
 
 ---
 
-## 📚 Documentation
-
-For deeper technical insights and a history of architectural decisions, please refer to the Knowledge Transfer handbook:
-- 📖 [Knowledge Transfer Document](docs/KNOWLEDGE_TRANSFER.md)
+## 🛠 Tech Stack
+- **UI**: WPF (XAML)
+- **Logic**: .NET 10, MediatR, MVVM
+- **Database**: Entity Framework Core (SQL Server / SQLite)
+- **Compliance**: Indian GST Ready (Tax Invoice / Bill of Supply)

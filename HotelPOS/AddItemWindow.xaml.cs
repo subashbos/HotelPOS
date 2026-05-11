@@ -1,5 +1,6 @@
 using HotelPOS.Application;
 using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,14 +12,16 @@ namespace HotelPOS
     {
         private readonly IItemService _itemService;
         private readonly ICategoryService _categoryService;
+        private readonly INotificationService _notificationService;
         private Item? _editingItem;
         public event Action? ItemSaved;
 
-        public AddItemWindow(IItemService itemService, ICategoryService categoryService)
+        public AddItemWindow(IItemService itemService, ICategoryService categoryService, INotificationService notificationService)
         {
             InitializeComponent();
             _itemService = itemService;
             _categoryService = categoryService;
+            _notificationService = notificationService;
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -42,7 +45,7 @@ namespace HotelPOS
                 }
             }
             catch (Exception ex) { ShowStatus(ex.Message, true); }
-            
+
             ItemNameBox.Focus();
         }
 
@@ -104,14 +107,18 @@ namespace HotelPOS
                 {
                     await _itemService.AddItemAsync(dto);
                     ItemSaved?.Invoke();
-                    if (MessageBox.Show($"✓ '{name}' saved successfully. Add another?", "Success", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                    {
-                        ItemNameBox.Clear(); ItemPriceBox.Clear();
-                        ItemCategoryCombo.SelectedIndex = -1; TaxCombo.SelectedIndex = 0;
-                        ItemNameBox.Focus();
-                        StatusBorder.Visibility = Visibility.Collapsed;
-                    }
-                    else { Close(); }
+                    
+                    _notificationService.ShowSuccess($"'{name}' saved successfully.");
+                    
+                    // Clear for next item
+                    ItemNameBox.Clear(); 
+                    ItemPriceBox.Clear();
+                    BarcodeBox.Clear();
+                    StockQuantityBox.Clear();
+                    ItemCategoryCombo.SelectedIndex = -1; 
+                    TaxCombo.SelectedIndex = 0;
+                    ItemNameBox.Focus();
+                    StatusBorder.Visibility = Visibility.Collapsed;
                 }
                 else
                 {

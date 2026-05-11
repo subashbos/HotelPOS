@@ -1,15 +1,32 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace HotelPOS.ViewModels
 {
     /// <summary>Cart display row with serial number and ItemId for cart operations.</summary>
-    public class CartRow
+    public partial class CartRow : ObservableObject
     {
-        public int SNo { get; set; }
-        public int ItemId { get; set; }
-        public string ItemName { get; set; } = string.Empty;
-        public int Quantity { get; set; }
-        public decimal Price { get; set; }
-        public decimal TaxPercentage { get; set; }
-        public decimal TaxAmount { get; set; }
-        public decimal Total { get; set; }
+        [ObservableProperty]
+        private int _sNo;
+
+        [ObservableProperty]
+        private int _itemId;
+
+        [ObservableProperty]
+        private string _itemName = string.Empty;
+
+        [ObservableProperty]
+        private int _quantity;
+
+        [ObservableProperty]
+        private decimal _price;
+
+        [ObservableProperty]
+        private decimal _taxPercentage;
+
+        [ObservableProperty]
+        private decimal _taxAmount;
+
+        [ObservableProperty]
+        private decimal _total;
     }
 }

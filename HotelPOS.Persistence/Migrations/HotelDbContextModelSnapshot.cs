@@ -122,6 +122,51 @@ namespace HotelPOS.Persistence.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Expense", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentMode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Expenses");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Item", b =>
                 {
                     b.Property<int>("Id")
@@ -199,7 +244,7 @@ namespace HotelPOS.Persistence.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("FiscalYear")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("GstAmount")
                         .HasPrecision(18, 2)
@@ -210,10 +255,14 @@ namespace HotelPOS.Persistence.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("InvoiceNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("OrderType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PaymentMode")
                         .IsRequired()
@@ -242,6 +291,10 @@ namespace HotelPOS.Persistence.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("IsDeleted");
+
+                    b.HasIndex("FiscalYear", "InvoiceNumber")
+                        .IsUnique()
+                        .HasFilter("[FiscalYear] IS NOT NULL AND [InvoiceNumber] IS NOT NULL");
 
                     b.ToTable("Orders");
                 });
@@ -287,6 +340,274 @@ namespace HotelPOS.Persistence.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Full system access",
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Standard POS operations",
+                            Name = "Cashier"
+                        });
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.RolePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanAccess")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanEdit")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModuleName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("RolePermissions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Dashboard",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Billing",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Items",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Categories",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Tables",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Ledger",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Journal",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Settings",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Audit",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Shift",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Roles",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Dashboard",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Billing",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Items",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Categories",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Tables",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Ledger",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Journal",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Settings",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Audit",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Shift",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Roles",
+                            RoleId = 2
+                        });
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.SystemSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -317,6 +638,9 @@ namespace HotelPOS.Persistence.Migrations
                     b.Property<string>("HotelPhone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCompositionScheme")
+                        .HasColumnType("bit");
 
                     b.Property<string>("ReceiptFormat")
                         .IsRequired()
@@ -354,6 +678,7 @@ namespace HotelPOS.Persistence.Migrations
                             HotelGst = "27AAAAA0000A1Z5",
                             HotelName = "New Hotel",
                             HotelPhone = "",
+                            IsCompositionScheme = false,
                             ReceiptFormat = "Thermal",
                             ShowDiscountLine = false,
                             ShowGstBreakdown = true,
@@ -362,6 +687,35 @@ namespace HotelPOS.Persistence.Migrations
                             ShowPrintPreview = true,
                             ShowThankYouFooter = true
                         });
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Table", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tables");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.User", b =>
@@ -388,6 +742,9 @@ namespace HotelPOS.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("RoleId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Salt")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -400,6 +757,8 @@ namespace HotelPOS.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RoleId");
+
                     b.ToTable("Users");
 
                     b.HasData(
@@ -410,9 +769,19 @@ namespace HotelPOS.Persistence.Migrations
                             MustChangePassword = true,
                             PasswordHash = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc=",
                             Role = "Admin",
+                            RoleId = 1,
                             Salt = "cUDnxEUZDYmisbvUU2zu1Q==",
                             Username = "admin"
                         });
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Expense", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Item", b =>
@@ -435,9 +804,32 @@ namespace HotelPOS.Persistence.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.RolePermission", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Role", null)
+                        .WithMany("Permissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.User", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Role", "RoleDetails")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
+
+                    b.Navigation("RoleDetails");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Order", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Role", b =>
+                {
+                    b.Navigation("Permissions");
                 });
 #pragma warning restore 612, 618
         }
