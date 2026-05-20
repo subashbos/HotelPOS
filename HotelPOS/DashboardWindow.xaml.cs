@@ -55,8 +55,17 @@ namespace HotelPOS
         {
             if (AppSession.CurrentUser != null)
             {
-                UserNameText.Text = AppSession.CurrentUser.Username;
-                UserRoleText.Text = AppSession.CurrentUser.Role;
+                var username = AppSession.CurrentUser.Username;
+                var role     = AppSession.CurrentUser.Role;
+
+                UserNameText.Text     = username;
+                UserNameTextExp.Text  = username;
+                UserRoleText.Text     = role;
+
+                // Avatar initial
+                var initial = username.Length > 0 ? username[0].ToString().ToUpper() : "U";
+                UserAvatarText.Text    = initial;
+                UserAvatarTextExp.Text = initial;
 
                 // ── Always refresh permissions from DB on load ────────────────
                 // This ensures any permission changes made since the last login
@@ -115,39 +124,31 @@ namespace HotelPOS
             // without Includes, so we fallback to role-based defaults for safety.
             var permissions = user.RoleDetails?.Permissions ?? new List<RolePermission>();
 
-            // Helper to set visibility
-            void SetVisibility(Expander module, Button btn, string moduleName)
+            // Helper to set visibility — module is now a StackPanel (not Expander)
+            void SetVisibility(StackPanel module, Button btn, string moduleName)
             {
                 // Find permission with case-insensitive matching
                 var perm = permissions.FirstOrDefault(p => string.Equals(p.ModuleName, moduleName, StringComparison.OrdinalIgnoreCase));
                 bool canAccess;
-                
+
                 if (perm != null)
                 {
                     canAccess = perm.CanAccess;
                 }
                 else
                 {
-                    // Default fallback logic if permission record is missing
-                    // Use case-insensitive check for role string as well
-                    bool isAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+                    bool isAdmin   = string.Equals(user.Role, "Admin",   StringComparison.OrdinalIgnoreCase);
                     bool isCashier = string.Equals(user.Role, "Cashier", StringComparison.OrdinalIgnoreCase);
-                    
                     canAccess = isAdmin;
-                    
-                    // Basic modules accessible to Cashiers by default if record is missing
                     if (isCashier && (moduleName == "Billing" || moduleName == "Shift"))
                         canAccess = true;
                 }
 
                 btn.Visibility = canAccess ? Visibility.Visible : Visibility.Collapsed;
 
-                // Update parent expander visibility: hide if all children are hidden
-                if (module.Content is StackPanel sp)
-                {
-                    bool anyVisible = sp.Children.OfType<Button>().Any(b => b.Visibility == Visibility.Visible);
-                    module.Visibility = anyVisible ? Visibility.Visible : Visibility.Collapsed;
-                }
+                // Hide the group StackPanel if none of its buttons are visible
+                bool anyVisible = module.Children.OfType<Button>().Any(b => b.Visibility == Visibility.Visible);
+                module.Visibility = anyVisible ? Visibility.Visible : Visibility.Collapsed;
             }
 
             // Sync with RoleService.cs module list
@@ -264,53 +265,28 @@ namespace HotelPOS
             foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales, NavItemReport })
                 btn.IsEnabled = btn != active;
 
-            // Update Header Title
-            PageTitleText.Text = active.Content.ToString()?.Split(' ').Last() ?? "Dashboard";
+            // Use ToolTip as the page title since button content is now a StackPanel
+            PageTitleText.Text = active.ToolTip?.ToString() ?? "Dashboard";
         }
+
+        // ── Sidebar Toggle ────────────────────────────────────────────────────
 
         private void ToggleSidebar_Click(object sender, RoutedEventArgs e)
         {
-            if (SidebarColumn.Width.Value > 70)
-            {
-                SidebarColumn.Width = new GridLength(70);
-                SidebarLogoArea.Visibility = Visibility.Collapsed;
-                UserInfoGrid.Visibility = Visibility.Collapsed;
+            bool expand = (string?)SidebarBorder.Tag != "expanded";
 
-                // Hide text in nav buttons (keep only emojis/icons)
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales, NavItemReport })
-                {
-                    btn.Content = btn.Content.ToString()?.Split(' ').FirstOrDefault() ?? "";
-                    btn.Padding = new Thickness(0, 12, 0, 12);
-                    btn.HorizontalContentAlignment = HorizontalAlignment.Center;
-                }
-            }
-            else
-            {
-                SidebarColumn.Width = new GridLength(260);
-                SidebarLogoArea.Visibility = Visibility.Visible;
-                UserInfoGrid.Visibility = Visibility.Visible;
+            SidebarBorder.Tag    = expand ? "expanded" : "compact";
+            SidebarColumn.Width  = new GridLength(expand ? 220 : 80);
 
-                // Restore text in nav buttons
-                NavDash.Content = "📊  Dashboard";
-                NavBilling.Content = "🖥  Billing POS";
-                NavMenu.Content = "📋  Items";
-                NavCats.Content = "🏷  Categories";
-                NavTables.Content = "🪑  Tables";
-                NavLedger.Content = "📒  Ledger";
-                NavJournal.Content = "📓  Journal";
-                NavSettings.Content = "⚙  Settings";
-                NavRoles.Content = "👥  Roles";
-                NavAudit.Content = "🛡  Audit";
-                NavShift.Content = "💵  Shift";
-                NavSales.Content = "📈  Sales Report";
-                NavItemReport.Content = "🍲  Item Report";
+            // Logo text
+            SidebarLogoText.Visibility = expand ? Visibility.Visible : Visibility.Collapsed;
 
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales, NavItemReport })
-                {
-                    btn.Padding = new Thickness(20, 12, 20, 12);
-                    btn.HorizontalContentAlignment = HorizontalAlignment.Left;
-                }
-            }
+            // Bottom panels
+            BottomCompact.Visibility  = expand ? Visibility.Collapsed : Visibility.Visible;
+            BottomExpanded.Visibility = expand ? Visibility.Visible   : Visibility.Collapsed;
+
+            // Toggle icon
+            ToggleIcon.Text = expand ? "◀" : "≡";
         }
 
         public void StartEditOrder(Order order)
