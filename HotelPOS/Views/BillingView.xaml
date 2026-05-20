@@ -44,6 +44,8 @@
             </Setter>
         </Style>
         <local:IdToEnabledConverter x:Key="IdToEnabledConverter"/>
+        <local:StockToColorConverter x:Key="StockToColorConverter"/>
+        <local:StockToOpacityConverter x:Key="StockToOpacityConverter"/>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -71,107 +73,108 @@
         </Border>
 
         <!-- ══ MAIN CONTENT ══ -->
-        <Grid Grid.Row="2" VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Active Billing Tabs -->
-                <RowDefinition Height="*"/>    <!-- Main Layout Panels -->
-            </Grid.RowDefinitions>
-
-            <!-- ── TOP: Active Billing Tabs (Tab-Movable) ── -->
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12"
-                        Visibility="{Binding IsTableVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                <ItemsControl ItemsSource="{Binding ActiveTabs}">
-                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Button Content="{Binding}" 
-                                    Command="{Binding DataContext.SelectTableCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}"
-                                    Style="{StaticResource NavPillStyle}"
-                                    Padding="10,0" Margin="0,0,10,0"
-                                    Width="36" Height="36">
-                                <Button.IsEnabled>
-                                    <MultiBinding Converter="{StaticResource IdToEnabledConverter}">
-                                        <Binding Path="."/>
-                                        <Binding Path="DataContext.TableNumber" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
-                                    </MultiBinding>
-                                </Button.IsEnabled>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-                <Button x:Name="AddTableButton" Content="+ New Bill" 
-                        Command="{Binding OpenTableLayoutCommand}"
-                        Style="{StaticResource NavPillStyle}"
-                        Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
-                        Width="100" Height="36"/>
-
-                <Popup IsOpen="{Binding IsTableLayoutOpen}" StaysOpen="False" PlacementTarget="{Binding ElementName=AddTableButton}" Placement="Bottom" HorizontalOffset="-200" AllowsTransparency="True" PopupAnimation="Fade">
-                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="15" Width="320">
-                        <Border.Effect><DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.2"/></Border.Effect>
-                        <StackPanel>
-                            <TextBlock Text="Select Table" FontWeight="Bold" FontSize="18" Margin="0,0,0,10" Foreground="{DynamicResource TextPrimary}"/>
-                            
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
-                                <Ellipse Width="10" Height="10" Fill="{DynamicResource SuccessBrush}" Margin="0,0,5,0"/><TextBlock Text="Empty" FontSize="11" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
-                                <Ellipse Width="10" Height="10" Fill="{DynamicResource DangerBrush}" Margin="0,0,5,0"/><TextBlock Text="Occupied" FontSize="11" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
-                                <Ellipse Width="10" Height="10" Fill="{DynamicResource PrimaryBrush}" Margin="0,0,5,0"/><TextBlock Text="Current" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
-                            </StackPanel>
-                            
-                            <ItemsControl ItemsSource="{Binding Tables}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <UniformGrid Columns="5"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Button Command="{Binding DataContext.SelectTableCommand, ElementName=Root}"
-                                                CommandParameter="{Binding TableNumber}"
-                                                Margin="4" Height="50" Cursor="Hand">
-                                            <Button.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="8"/>
-                                                </Style>
-                                            </Button.Resources>
-                                            <Button.Style>
-                                                <Style TargetType="Button">
-                                                    <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                    <Setter Property="BorderThickness" Value="0"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsOccupied}" Value="True">
-                                                            <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding IsCurrent}" Value="True">
-                                                            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Button.Style>
-                                            <TextBlock Text="{Binding TableName}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        </Button>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            
-                            <Button Content="Close" Command="{Binding OpenTableLayoutCommand}" CommandParameter="False"
-                                    Margin="0,15,0,0" HorizontalAlignment="Right" Style="{StaticResource NavPillStyle}" Background="Transparent"/>
-                        </StackPanel>
-                    </Border>
-                </Popup>
-            </StackPanel>
-
-            <Grid Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                <Grid.ColumnDefinitions>
+        <Grid Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.0*"/>
                 <ColumnDefinition Width="16"/>
                 <ColumnDefinition Width="1.6*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- ── LEFT: Menu Panel ── -->
-            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="20">
+            <!-- ── LEFT COLUMN ── -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Active Billing Tabs (Moved inside left column) -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12"
+                            Visibility="{Binding IsTableVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <ItemsControl ItemsSource="{Binding ActiveTabs}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding}" 
+                                        Command="{Binding DataContext.SelectTableCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource NavPillStyle}"
+                                        Padding="10,0" Margin="0,0,10,0"
+                                        Width="36" Height="36">
+                                    <Button.IsEnabled>
+                                        <MultiBinding Converter="{StaticResource IdToEnabledConverter}">
+                                            <Binding Path="."/>
+                                            <Binding Path="DataContext.TableNumber" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                        </MultiBinding>
+                                    </Button.IsEnabled>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button x:Name="AddTableButton" Content="+ New Bill" 
+                            Command="{Binding OpenTableLayoutCommand}"
+                            Style="{StaticResource NavPillStyle}"
+                            Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
+                            Width="100" Height="36"/>
+
+                    <Popup IsOpen="{Binding IsTableLayoutOpen}" StaysOpen="False" PlacementTarget="{Binding ElementName=AddTableButton}" Placement="Bottom" HorizontalOffset="-200" AllowsTransparency="True" PopupAnimation="Fade">
+                        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="15" Width="320">
+                            <Border.Effect><DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.2"/></Border.Effect>
+                            <StackPanel>
+                                <TextBlock Text="Select Table" FontWeight="Bold" FontSize="18" Margin="0,0,0,10" Foreground="{DynamicResource TextPrimary}"/>
+                                
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource SuccessBrush}" Margin="0,0,5,0"/><TextBlock Text="Empty" FontSize="11" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource DangerBrush}" Margin="0,0,5,0"/><TextBlock Text="Occupied" FontSize="11" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource PrimaryBrush}" Margin="0,0,5,0"/><TextBlock Text="Current" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
+                                </StackPanel>
+                                
+                                <ItemsControl ItemsSource="{Binding Tables}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="5"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Command="{Binding DataContext.SelectTableCommand, ElementName=Root}"
+                                                    CommandParameter="{Binding TableNumber}"
+                                                    Margin="4" Height="50" Cursor="Hand">
+                                                <Button.Resources>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="CornerRadius" Value="8"/>
+                                                    </Style>
+                                                </Button.Resources>
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                                                        <Setter Property="Foreground" Value="White"/>
+                                                        <Setter Property="BorderThickness" Value="0"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsOccupied}" Value="True">
+                                                                <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                                <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <TextBlock Text="{Binding TableName}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                
+                                <Button Content="Close" Command="{Binding OpenTableLayoutCommand}" CommandParameter="False"
+                                        Margin="0,15,0,0" HorizontalAlignment="Right" Style="{StaticResource NavPillStyle}" Background="Transparent"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </StackPanel>
+
+                <!-- Menu Panel -->
+                <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="20">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -254,6 +257,10 @@
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                     <Border Padding="12,4" Background="{DynamicResource SecondaryBrush}" CornerRadius="16" Margin="8,0,0,0"><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Foreground="White" FontWeight="Bold" FontSize="13"/></Border>
                                                     <TextBlock Text="{Binding TaxPercentage, StringFormat={}({0}% GST)}" Foreground="#E67E22" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                    <Border Padding="8,2" Background="{Binding StockQuantity, Converter={StaticResource StockToColorConverter}}" CornerRadius="10" Margin="8,0,0,0" 
+                                                            Visibility="{Binding TrackInventory, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                        <TextBlock Text="{Binding StockQuantity, StringFormat='Stock: {0}'}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                                    </Border>
                                                 </StackPanel>
                                             </Grid>
                                         </DataTemplate>
@@ -267,14 +274,42 @@
                         <ItemsControl x:Name="ItemCardList" ItemsSource="{Binding Items}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Margin="0,0,0,10" Padding="16,12" Background="{DynamicResource AppBackground}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Cursor="Hand" MouseLeftButtonDown="ItemCard_Click">
+                                    <Border Margin="0,0,0,10" Padding="16,12" Background="{DynamicResource AppBackground}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Cursor="Hand" MouseLeftButtonDown="ItemCard_Click"
+                                            Opacity="{Binding StockQuantity, Converter={StaticResource StockToOpacityConverter}}">
                                         <Border.Style><Style TargetType="Border"><Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/></Trigger></Style.Triggers></Style></Border.Style>
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                            <StackPanel VerticalAlignment="Center"><TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"/><TextBlock Text="{Binding Category.Name}" FontSize="11" Foreground="{DynamicResource TextMuted}"/></StackPanel>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"/>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Category.Name}" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
+                                                    <TextBlock Text=" • OUT OF STOCK" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" Margin="8,0,0,0">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                <Style.Triggers>
+                                                                    <MultiDataTrigger>
+                                                                        <MultiDataTrigger.Conditions>
+                                                                            <Condition Binding="{Binding TrackInventory}" Value="True"/>
+                                                                            <Condition Binding="{Binding StockQuantity}" Value="0"/>
+                                                                        </MultiDataTrigger.Conditions>
+                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                    </MultiDataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </StackPanel>
                                             <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" FontSize="10" Foreground="#E67E22"/></StackPanel></Border>
                                             <Button Grid.Column="2" Content="＋" Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Width="38" Height="38" Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" FontSize="18" FontWeight="Bold">
                                                 <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style></Button.Resources>
+                                                <Button.IsEnabled>
+                                                    <MultiBinding Converter="{StaticResource IdToEnabledConverter}" ConverterParameter="StockCheck">
+                                                        <Binding Path="StockQuantity"/>
+                                                        <Binding Path="TrackInventory"/>
+                                                    </MultiBinding>
+                                                </Button.IsEnabled>
                                             </Button>
                                         </Grid>
                                     </Border>
@@ -284,9 +319,10 @@
                     </ScrollViewer>
                 </Grid>
             </Border>
+        </Grid>
 
-            <!-- ── RIGHT: Cart Panel ── -->
-            <Border Grid.Column="2" VerticalAlignment="Stretch" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="15">
+        <!-- ── RIGHT: Cart Panel ── -->
+        <Border Grid.Column="2" VerticalAlignment="Stretch" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14" Padding="15">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -302,20 +338,20 @@
                     </Grid>
 
                     <DataGrid x:Name="CartGrid" Grid.Row="1" ItemsSource="{Binding Cart}" SelectedItem="{Binding SelectedCartRow}" 
-                              Style="{StaticResource PremiumGrid}" RowHeight="38"
+                              Style="{StaticResource PremiumGrid}" RowHeight="34"
                               CellEditEnding="CartGrid_CellEditEnding">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="35" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                             <DataGridTextColumn Header="ITEM" Binding="{Binding ItemName}" Width="2.5*" IsReadOnly="True" HeaderStyle="{StaticResource BaseColumnHeader}"/>
                             <DataGridTemplateColumn Header="QTY" Width="60" HeaderStyle="{StaticResource CenterHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate><TextBox Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" LostFocus="GridTextBox_LostFocus" PreviewKeyDown="QtyTextBox_PreviewKeyDown" GotFocus="GridTextBox_GotFocus" HorizontalContentAlignment="Center" BorderThickness="1" Padding="2"/></DataTemplate>
+                                    <DataTemplate><TextBox Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" LostFocus="GridTextBox_LostFocus" PreviewKeyDown="QtyTextBox_PreviewKeyDown" PreviewTextInput="NumberOnly_PreviewTextInput" DataObject.Pasting="DataObject_OnPasting" GotFocus="GridTextBox_GotFocus" HorizontalContentAlignment="Center" BorderThickness="1" Padding="2"/></DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="TAX %" Binding="{Binding TaxPercentage, StringFormat={}{0:0.#}%}" Width="65" IsReadOnly="True" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                             <DataGridTemplateColumn Header="PRICE" Width="95" HeaderStyle="{StaticResource RightHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate><TextBox Text="{Binding Price, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" LostFocus="GridTextBox_LostFocus" PreviewKeyDown="PriceTextBox_PreviewKeyDown" GotFocus="GridTextBox_GotFocus" HorizontalContentAlignment="Right" BorderThickness="1" Padding="2,2,8,2"/></DataTemplate>
+                                    <DataTemplate><TextBox Text="{Binding Price, UpdateSourceTrigger=LostFocus, StringFormat={}{0:N2}}" LostFocus="GridTextBox_LostFocus" PreviewKeyDown="PriceTextBox_PreviewKeyDown" PreviewTextInput="DecimalOnly_PreviewTextInput" DataObject.Pasting="Decimal_OnPasting" GotFocus="GridTextBox_GotFocus" HorizontalContentAlignment="Right" BorderThickness="1" Padding="2,2,8,2"/></DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="TOTAL" Width="110" IsReadOnly="True" HeaderStyle="{StaticResource RightHeader}">
@@ -327,17 +363,17 @@
                     </DataGrid>
 
                     <StackPanel Grid.Row="2">
-                        <UniformGrid Columns="4" Margin="0,8,0,0">
-                            <Button Content="＋" Command="{Binding AddToCartCommand}" CommandParameter="{Binding SelectedCartRow}" Padding="4" FontSize="14" Margin="0,0,2,0"/>
-                            <Button Content="－" Command="{Binding DecreaseQuantityCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="4" FontSize="14" Margin="0,0,2,0"/>
-                            <Button Content="🗑 Rem" Command="{Binding RemoveFromCartCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource DangerBrush}" Foreground="White" Padding="4" FontSize="10" Margin="0,0,2,0"/>
-                            <Button Content="✖ Clr" Command="{Binding ClearCartCommand}" Background="#E74C3C" Foreground="White" Padding="4" FontSize="10"/>
+                        <UniformGrid Columns="4" Margin="0,4,0,0">
+                            <Button Content="＋" Command="{Binding AddToCartCommand}" CommandParameter="{Binding SelectedCartRow}" Padding="2" FontSize="14" Margin="0,0,2,0"/>
+                            <Button Content="－" Command="{Binding DecreaseQuantityCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="2" FontSize="14" Margin="0,0,2,0"/>
+                            <Button Content="🗑 Rem" Command="{Binding RemoveFromCartCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource DangerBrush}" Foreground="White" Padding="2" FontSize="10" Margin="0,0,2,0"/>
+                            <Button Content="✖ Clr" Command="{Binding ClearCartCommand}" Background="#E74C3C" Foreground="White" Padding="2" FontSize="10"/>
                         </UniformGrid>
                         
-                        <Grid Margin="0,6,0,0">
+                        <Grid Margin="0,4,0,0">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Button Content="🍽 Kitchen" Command="{Binding HoldOrderCommand}" Background="#F39C12" Foreground="White" Padding="4" FontSize="11" Margin="0,0,4,0"/>
-                            <Button Grid.Column="1" Content="{Binding HeldOrders.Count, StringFormat='Held ({0})'}" Command="{Binding ToggleHeldOrdersCommand}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="4" FontSize="11"/>
+                            <Button Content="🍽 Kitchen" Command="{Binding HoldOrderCommand}" Background="#F39C12" Foreground="White" Padding="2" FontSize="11" Margin="0,0,4,0"/>
+                            <Button Grid.Column="1" Content="{Binding HeldOrders.Count, StringFormat='Held ({0})'}" Command="{Binding ToggleHeldOrdersCommand}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="2" FontSize="11"/>
                         </Grid>
 
                         <Popup IsOpen="{Binding IsHeldOrdersPopupOpen}" StaysOpen="False" Placement="Top" HorizontalOffset="-100">
@@ -357,48 +393,122 @@
                             </Border>
                         </Popup>
 
-                        <Border Margin="0,6,0,0" Padding="10,8" CornerRadius="8" Background="{DynamicResource AppBackground}">
+                        <Border Margin="0,4,0,0" Padding="8,6" CornerRadius="8" Background="{DynamicResource AppBackground}">
                             <StackPanel>
-                                <Expander Header="Customer Details" IsExpanded="False" FontSize="11" Margin="0,0,0,8">
-                                    <Grid Margin="0,8,0,4">
+                                <Expander Header="Customer Details" IsExpanded="False" FontSize="10" Margin="0,0,0,6">
+                                    <Grid Margin="0,4,0,4">
                                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                                        <TextBlock Text="Name:" FontSize="10" Margin="0,0,8,6"/><TextBox Grid.Column="1" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" Padding="4,2"/>
-                                        <TextBlock Grid.Row="1" Text="Phone:" FontSize="10" Margin="0,0,8,6"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CustomerPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,6" Padding="4,2"/>
-                                        <TextBlock Grid.Row="2" Text="GSTIN:" FontSize="10" Margin="0,0,8,0"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CustomerGstin, UpdateSourceTrigger=PropertyChanged}" Padding="4,2"/>
+                                        <TextBlock Text="Name:" FontSize="10" Margin="0,0,8,4"/><TextBox Grid.Column="1" Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4" Padding="4,2"/>
+                                        <TextBlock Grid.Row="1" Text="Phone:" FontSize="10" Margin="0,0,8,4"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CustomerPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,4" Padding="4,2" PreviewTextInput="NumberOnly_PreviewTextInput"/>
+                                        <TextBlock Grid.Row="2" Text="GSTIN:" FontSize="10" Margin="0,0,8,0"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CustomerGstin, UpdateSourceTrigger=PropertyChanged}" Padding="4,2" CharacterCasing="Upper"/>
                                     </Grid>
                                 </Expander>
 
-                                <Grid Margin="0,0,0,12">
+                                <!-- PAY + DISC row -->
+                                <Grid Margin="0,0,0,6">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    
                                     <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="PAY" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <ComboBox x:Name="PaymentModeCombo" SelectedValue="{Binding PaymentMode}" SelectedValuePath="Content" Width="120" Height="40" VerticalContentAlignment="Center">
+                                        <TextBlock Text="PAY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <ComboBox x:Name="PaymentModeCombo" SelectedValue="{Binding PaymentMode}" SelectedValuePath="Content" Width="100" Height="32" VerticalContentAlignment="Center" DropDownClosed="PaymentModeCombo_DropDownClosed">
                                             <ComboBoxItem Content="Cash"/>
                                             <ComboBoxItem Content="Card"/>
                                             <ComboBoxItem Content="UPI"/>
                                         </ComboBox>
                                     </StackPanel>
-
                                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="DISC" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBox x:Name="DiscountBox" Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" Width="100" Height="40" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" PreviewKeyDown="DiscountBox_PreviewKeyDown"/>
+                                        <TextBlock Text="DISC" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBox x:Name="DiscountBox" Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" Width="80" Height="32" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" PreviewKeyDown="DiscountBox_PreviewKeyDown" PreviewTextInput="DecimalOnly_PreviewTextInput" DataObject.Pasting="Decimal_OnPasting"/>
                                     </StackPanel>
                                 </Grid>
 
-                                <Grid Margin="0,0,0,6">
-                                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,6,0,0">
-                                        <Grid><TextBlock Text="Total Amount" FontSize="12" FontWeight="SemiBold"/><TextBlock HorizontalAlignment="Right" Text="{Binding TotalAmount, StringFormat=Rs. {0:N2}}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/></Grid>
-                                    </Border>
-                                </Grid>
+                                <!-- Bill Breakdown -->
+                                <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,4,0,4" Margin="0,0,0,4">
+                                    <StackPanel>
+                                        <Grid Margin="0,0,0,3" Visibility="Collapsed">
+                                            <TextBlock Text="Subtotal" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding Subtotal, StringFormat=Rs. {0:N2}}" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,3" Visibility="Collapsed">
+                                            <TextBlock Text="GST" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding GstAmount, StringFormat=Rs. {0:N2}}" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,5" Visibility="Collapsed">
+                                            <TextBlock Text="Discount" FontSize="12" Foreground="#E67E22"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding DiscountAmount, StringFormat=- Rs. {0:N2}}" FontSize="12" Foreground="#E67E22"/>
+                                        </Grid>
+                                        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,5,0,0">
+                                            <Grid>
+                                                <TextBlock Text="TOTAL" FontSize="14" FontWeight="Bold"/>
+                                                <TextBlock HorizontalAlignment="Right" Text="{Binding TotalAmount, StringFormat=Rs. {0:N2}}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                            </Grid>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
 
-                                <Button x:Name="CheckoutButton" Command="{Binding SaveOrderCommand}" Padding="6" Background="{DynamicResource PrimaryBrush}" Foreground="White" FontSize="13" FontWeight="Bold">
-                                    <Button.Style><Style TargetType="Button"><Setter Property="Content" Value="🖨  Checkout (F4)"/><Style.Triggers><DataTrigger Binding="{Binding IsEditMode}" Value="True"><Setter Property="Content" Value="💾  Update (F4)"/></DataTrigger></Style.Triggers></Style></Button.Style>
+                                <Button x:Name="CheckoutButton" Command="{Binding SaveOrderCommand}" Padding="10,12" FontSize="14" FontWeight="Bold" Foreground="White" Margin="0,8,0,0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="#10AC84"/> <!-- Premium Teal/Green -->
+                                            <Setter Property="Content" Value="💳  CHECKOUT (F4)"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <ControlTemplate.Resources>
+                                                            <Storyboard x:Key="CheckoutPulse" RepeatBehavior="Forever">
+                                                                <DoubleAnimation Storyboard.TargetName="bd" Storyboard.TargetProperty="Opacity" From="1.0" To="0.8" Duration="0:0:0.8" AutoReverse="True"/>
+                                                                <DoubleAnimation Storyboard.TargetName="bd" Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.BlurRadius)" From="12" To="28" Duration="0:0:0.8" AutoReverse="True"/>
+                                                            </Storyboard>
+                                                        </ControlTemplate.Resources>
+                                                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                                                            <Border.Effect>
+                                                                <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.15" Color="Black"/>
+                                                            </Border.Effect>
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                <ContentPresenter.Effect>
+                                                                    <DropShadowEffect BlurRadius="2" ShadowDepth="1" Opacity="0.3"/>
+                                                                </ContentPresenter.Effect>
+                                                            </ContentPresenter>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="bd" Property="Background" Value="#1DD1A1"/>
+                                                                <Setter TargetName="bd" Property="Opacity" Value="1"/>
+                                                            </Trigger>
+                                                            <Trigger Property="IsFocused" Value="True">
+                                                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                                                                <Setter TargetName="bd" Property="Effect">
+                                                                    <Setter.Value>
+                                                                        <DropShadowEffect BlurRadius="25" ShadowDepth="0" Opacity="0.8" Color="{DynamicResource SuccessColor}"/>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                                <Trigger.EnterActions>
+                                                                    <BeginStoryboard x:Name="CheckoutPulse_Begin" Storyboard="{StaticResource CheckoutPulse}"/>
+                                                                </Trigger.EnterActions>
+                                                                <Trigger.ExitActions>
+                                                                    <StopStoryboard BeginStoryboardName="CheckoutPulse_Begin"/>
+                                                                </Trigger.ExitActions>
+                                                            </Trigger>
+                                                            <Trigger Property="IsEnabled" Value="False">
+                                                                <Setter TargetName="bd" Property="Background" Value="#BDC3C7"/>
+                                                                <Setter TargetName="bd" Property="Opacity" Value="0.6"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsEditMode}" Value="True">
+                                                    <Setter Property="Content" Value="💾  UPDATE BILL (F4)"/>
+                                                    <Setter Property="Background" Value="{DynamicResource WarningBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
                                 </Button>
                                 <Button x:Name="CancelEditButton" Content="✖ Cancel Update" Command="{Binding CancelEditCommand}" Margin="0,4,0,0" Padding="8" Background="{DynamicResource DangerBrush}" Foreground="White" FontWeight="Bold">
                                     <Button.Style><Style TargetType="Button"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsEditMode}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Button.Style>
@@ -408,7 +518,6 @@
                     </StackPanel>
                 </Grid>
             </Border>
-            </Grid>
         </Grid>
     </Grid>
 </UserControl>

@@ -110,6 +110,27 @@ namespace HotelPOS.ViewModels
                     value = 1;
                 }
 
+                if (SelectedCartRow != null)
+                {
+                    var item = _allItems.FirstOrDefault(i => i.Id == SelectedCartRow.ItemId);
+                    if (item != null && item.TrackInventory && value > item.StockQuantity)
+                    {
+                        StatusMessage = $"⚠ Out of stock: {item.Name} (Avail: {item.StockQuantity})";
+                        value = item.StockQuantity; // Cap at max available
+                        if (value < 1) value = 1; // Minimum 1 even if 0 stock (allow billing if user insists, or handle strictly)
+                        // Actually, if track inventory is ON and stock is 0, we should maybe prevent adding?
+                        // The user said "Eliminate critical business loopholes". So let's be strict.
+                        if (item.StockQuantity <= 0)
+                        {
+                            StatusMessage = $"🚫 CANNOT ADD: {item.Name} is out of stock.";
+                            // Revert to old value or keep at current? 
+                            // If we revert, we need to notify UI.
+                            OnPropertyChanged(nameof(SelectedQty));
+                            return;
+                        }
+                    }
+                }
+
                 if (SetProperty(ref _selectedQty, value))
                 {
                     if (SelectedCartRow != null)
@@ -136,6 +157,8 @@ namespace HotelPOS.ViewModels
         /// </summary>
         public event Action? OrderUpdated;
         public event Action? OrderEditCancelled;
+        public event Action? PrintPreviewClosed;
+        public event Action? CartCleared;
 
         private List<Item> _allItems = new();
 
@@ -232,6 +255,7 @@ namespace HotelPOS.ViewModels
 
         private async void RefreshTables()
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var tables = await _tableService.GetTablesAsync();
@@ -269,12 +293,23 @@ namespace HotelPOS.ViewModels
             {
                 _notificationService.ShowError($"Failed to refresh tables: {ex.Message}");
             }
+            finally
+            {
+                App.DbLock.Release();
+            }
         }
+
+        private bool _isInitialized;
+        private bool _isInitializing;
 
         public async Task InitializeAsync()
         {
+            if (_isInitialized || _isInitializing) return;
+
+            await App.DbLock.WaitAsync();
             try
             {
+                _isInitializing = true;
                 _allItems = await _itemService.GetItemsAsync();
                 var cats = await _categoryService.GetCategoriesAsync();
 
@@ -293,10 +328,16 @@ namespace HotelPOS.ViewModels
                 {
                     _notificationService.ShowWarning("Please open a shift in the 'Shift' tab before starting billing.");
                 }
+                _isInitialized = true;
             }
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Failed to load data: {ex.Message}");
+            }
+            finally
+            {
+                _isInitializing = false;
+                App.DbLock.Release();
             }
         }
 
@@ -398,7 +439,7 @@ namespace HotelPOS.ViewModels
         }
 
         [RelayCommand]
-        private void UpdateRow(CartRow row)
+        public void UpdateRow(CartRow row)
         {
             if (row == null) return;
 
@@ -406,6 +447,15 @@ namespace HotelPOS.ViewModels
             {
                 row.Quantity = 1;
                 StatusMessage = "Quantity cannot be less than 1. Use 'Remove' to delete item.";
+            }
+
+            // LOOPHOLE FIX: Stock check on manual edit
+            var item = _allItems.FirstOrDefault(i => i.Id == row.ItemId);
+            if (item != null && item.TrackInventory && row.Quantity > item.StockQuantity)
+            {
+                StatusMessage = $"⚠ Stock Limit: {item.Name} (Avail: {item.StockQuantity})";
+                row.Quantity = Math.Max(1, item.StockQuantity);
+                _notificationService.ShowWarning($"{item.Name} quantity capped to available stock ({item.StockQuantity})");
             }
 
             if (row.Price < 0)
@@ -422,14 +472,36 @@ namespace HotelPOS.ViewModels
         [RelayCommand]
         private void ClearCart()
         {
+            if (Cart.Count == 0) return;
+
+            // Confirm before wiping the entire bill
+            var result = System.Windows.MessageBox.Show(
+                "Clear all items from the current bill?",
+                "Clear Cart",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (result != System.Windows.MessageBoxResult.Yes) return;
+
             _cartService.Clear(TableNumber);
+            DiscountAmount = 0;   // LOOPHOLE FIX: reset discount when cart is cleared
             UpdateCart();
+            CartCleared?.Invoke();
         }
 
         [RelayCommand]
         private async Task HoldOrder()
         {
             if (Cart.Count == 0) return;
+
+            // LOOPHOLE FIX: Confirm before moving to hold/kitchen
+            var result = System.Windows.MessageBox.Show(
+                "Send this order to Kitchen / Hold?",
+                "Hold Order",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+
+            if (result != System.Windows.MessageBoxResult.Yes) return;
 
             _cartService.HoldOrder(TableNumber, $"Table {TableNumber} - {DateTime.Now:hh:mm tt}");
 
@@ -656,23 +728,31 @@ namespace HotelPOS.ViewModels
         [RelayCommand]
         private async Task SaveOrderAsync()
         {
-            var rawItems = _cartService.GetItems(TableNumber);
-            if (rawItems.Count == 0)
-            {
-                _notificationService.ShowInfo("Cannot save empty order");
-                return;
-            }
-
-            // LOOPHOLE FIX: Prevent checkout if shift is closed
-            var currentSession = await _cashService.GetCurrentSessionAsync();
-            if (currentSession == null)
-            {
-                _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
-                return;
-            }
-
+            await App.DbLock.WaitAsync();
             try
             {
+                var rawItems = _cartService.GetItems(TableNumber);
+                if (rawItems.Count == 0)
+                {
+                    _notificationService.ShowInfo("Cannot save empty order");
+                    return;
+                }
+
+                // LOOPHOLE FIX: Validate PaymentMode
+                if (string.IsNullOrWhiteSpace(PaymentMode))
+                {
+                    _notificationService.ShowError("Please select a payment mode before checkout.");
+                    return;
+                }
+
+                // LOOPHOLE FIX: Prevent checkout if shift is closed
+                var currentSession = await _cashService.GetCurrentSessionAsync();
+                if (currentSession == null)
+                {
+                    _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
+                    return;
+                }
+
                 if (IsEditMode && _editingOrder != null)
                 {
                     _editingOrder.Items = rawItems;
@@ -717,6 +797,10 @@ namespace HotelPOS.ViewModels
             {
                 _notificationService.ShowError($"Save failed: {ex.Message}");
             }
+            finally
+            {
+                App.DbLock.Release();
+            }
         }
 
         private async Task PrintOrderAsync(int orderId, Order? preLoadedOrder = null, bool skipPreview = false)
@@ -738,6 +822,7 @@ namespace HotelPOS.ViewModels
                         {
                             var preview = new PrintPreviewWindow(order, settings);
                             preview.ShowDialog();
+                            PrintPreviewClosed?.Invoke();
                         }
                         else
                         {

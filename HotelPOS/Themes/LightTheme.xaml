@@ -6,6 +6,7 @@
     <Color x:Key="PrimaryColor">#00A896</Color>
     <Color x:Key="SecondaryColor">#3D5A80</Color>
     <Color x:Key="HeaderColor">#173F5F</Color>
+    <Color x:Key="SuccessColor">#27AE60</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="AppBackground" Color="#F3F5F9"/>

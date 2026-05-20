@@ -34,7 +34,11 @@ namespace HotelPOS.Views
             };
 
             Loaded += async (s, e) => {
+                FilterFrom.SelectedDate = DateTime.Today;
+                FilterTo.SelectedDate = DateTime.Today;
                 await LoadCategoriesAsync();
+                // LoadDataAsync is implicitly called by SelectedDateChanged events, 
+                // but we call it explicitly here just in case or if no events fired.
                 await LoadDataAsync();
             };
         }

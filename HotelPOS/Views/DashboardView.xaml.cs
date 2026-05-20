@@ -129,10 +129,11 @@ namespace HotelPOS.Views
         public async Task LoadAsync()
         {
             if (_isLoading) return;
-            _isLoading = true;
-
+            
+            await App.DbLock.WaitAsync();
             try
             {
+                _isLoading = true;
                 var (from, to) = ResolveRange();
 
                 // Sales + Item reports
@@ -184,6 +185,7 @@ namespace HotelPOS.Views
             finally
             {
                 _isLoading = false;
+                App.DbLock.Release();
             }
         }
 

@@ -3,6 +3,7 @@ using ToastNotifications;
 using ToastNotifications.Lifetime;
 using ToastNotifications.Position;
 using ToastNotifications.Messages;
+using System.Linq;
 using System.Windows;
 
 namespace HotelPOS.Infrastructure
@@ -17,8 +18,26 @@ namespace HotelPOS.Infrastructure
             {
                 _notifier = new Notifier(cfg =>
                 {
+                    var parent = System.Windows.Application.Current.MainWindow;
+                    
+                    // Fallback: If MainWindow is null or not yet loaded, find any active window
+                    if (parent == null || !parent.IsLoaded)
+                    {
+                        parent = System.Windows.Application.Current.Windows
+                            .Cast<Window>()
+                            .FirstOrDefault(w => w.IsLoaded);
+                    }
+
+                    if (parent == null)
+                    {
+                        // If still no window, we can't show a toast. 
+                        // We'll throw a slightly more descriptive error or just return a dummy.
+                        // But usually, one window must be open if this is called from UI.
+                        throw new InvalidOperationException("No loaded window found for notification positioning.");
+                    }
+
                     cfg.PositionProvider = new WindowPositionProvider(
-                        parentWindow: System.Windows.Application.Current.MainWindow ?? throw new InvalidOperationException("Main window not found"),
+                        parentWindow: parent,
                         corner: Corner.BottomRight,
                         offsetX: 20,
                         offsetY: 20);

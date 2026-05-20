@@ -7,10 +7,20 @@ namespace HotelPOS
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (parameter?.ToString() == "StockCheck")
+            {
+                if (values.Length < 2) return true;
+                if (values[0] is int stock && values[1] is bool track)
+                {
+                    if (track && stock <= 0) return false;
+                }
+                return true;
+            }
+
             if (values.Length < 2) return true;
             if (values[0] == null || values[1] == null) return true;
 
-            // Enabled if Ids are NOT equal
+            // Enabled if Ids are NOT equal (used for active tab styling/enabling)
             return !values[0].Equals(values[1]);
         }
 

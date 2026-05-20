@@ -90,6 +90,7 @@ namespace HotelPOS
                     };
 
                     dashboard.Show();
+                    System.Windows.Application.Current.MainWindow = dashboard;
                     Close();
                 }
             }

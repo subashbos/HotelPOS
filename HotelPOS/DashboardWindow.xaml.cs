@@ -1,6 +1,7 @@
 using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
+using HotelPOS.Domain.Interface;
 using HotelPOS.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
@@ -29,13 +30,19 @@ namespace HotelPOS
         private SalesReportView? _cachedSales;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
+        private readonly IUserRepository _userRepository;
+        private readonly IRoleService _roleService;
 
-        public DashboardWindow(IServiceProvider serviceProvider, IThemeService themeService, INotificationService notificationService)
+        public DashboardWindow(IServiceProvider serviceProvider, IThemeService themeService,
+            INotificationService notificationService, IUserRepository userRepository,
+            IRoleService roleService)
         {
             InitializeComponent();
             _serviceProvider = serviceProvider;
             _themeService = themeService;
             _notificationService = notificationService;
+            _userRepository = userRepository;
+            _roleService = roleService;
         }
 
         private void ThemeToggle_Click(object sender, RoutedEventArgs e)
@@ -43,12 +50,47 @@ namespace HotelPOS
             _themeService.ToggleTheme();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (AppSession.CurrentUser != null)
             {
                 UserNameText.Text = AppSession.CurrentUser.Username;
                 UserRoleText.Text = AppSession.CurrentUser.Role;
+
+                // ── Always refresh permissions from DB on load ────────────────
+                // This ensures any permission changes made since the last login
+                // (e.g. Admin granting Tables to Cashier mid-session) take effect
+                // immediately without requiring the user to log out and back in.
+                try
+                {
+                    // Step 1: Reload user from DB to get fresh RoleDetails + Permissions
+                    var freshUser = await _userRepository.GetUserByUsernameAsync(
+                        AppSession.CurrentUser.Username);
+
+                    if (freshUser?.RoleDetails != null)
+                    {
+                        // Happy path: user has a linked RoleId with permissions
+                        AppSession.CurrentUser.RoleDetails = freshUser.RoleDetails;
+                    }
+                    else if (!string.IsNullOrEmpty(AppSession.CurrentUser.Role))
+                    {
+                        // Fallback: RoleId is null on the user record — look up role by name
+                        // This handles users created before role linking was enforced.
+                        var roleByName = await _roleService
+                            .GetAllRolesAsync()
+                            .ContinueWith(t => t.Result
+                                .FirstOrDefault(r => string.Equals(r.Name,
+                                    AppSession.CurrentUser.Role,
+                                    StringComparison.OrdinalIgnoreCase)));
+
+                        if (roleByName != null)
+                        {
+                            AppSession.CurrentUser.RoleDetails = roleByName;
+                        }
+                    }
+                }
+                catch { /* Non-critical: fall back to login-time snapshot */ }
+
                 ApplyPermissions();
             }
 
@@ -59,7 +101,11 @@ namespace HotelPOS
             else if (NavSales.Visibility == Visibility.Visible) NavSales_Click(null!, null!);
         }
 
-        private void ApplyPermissions()
+        /// <summary>
+        /// Re-evaluates sidebar visibility against the current session's permissions.
+        /// Called once at login and again whenever the active user's role permissions are updated live.
+        /// </summary>
+        public void ApplyPermissions()
         {
             var user = AppSession.CurrentUser;
             if (user == null) return;
@@ -71,8 +117,8 @@ namespace HotelPOS
             // Helper to set visibility
             void SetVisibility(Expander module, Button btn, string moduleName)
             {
-                // Find permission, or fallback to Admin check if not found
-                var perm = permissions.FirstOrDefault(p => p.ModuleName == moduleName);
+                // Find permission with case-insensitive matching
+                var perm = permissions.FirstOrDefault(p => string.Equals(p.ModuleName, moduleName, StringComparison.OrdinalIgnoreCase));
                 bool canAccess;
                 
                 if (perm != null)
@@ -82,10 +128,14 @@ namespace HotelPOS
                 else
                 {
                     // Default fallback logic if permission record is missing
-                    canAccess = (user.Role == "Admin");
+                    // Use case-insensitive check for role string as well
+                    bool isAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+                    bool isCashier = string.Equals(user.Role, "Cashier", StringComparison.OrdinalIgnoreCase);
+                    
+                    canAccess = isAdmin;
                     
                     // Basic modules accessible to Cashiers by default if record is missing
-                    if (user.Role == "Cashier" && (moduleName == "Billing" || moduleName == "Shift"))
+                    if (isCashier && (moduleName == "Billing" || moduleName == "Shift"))
                         canAccess = true;
                 }
 
@@ -99,6 +149,7 @@ namespace HotelPOS
                 }
             }
 
+            // Sync with RoleService.cs module list
             SetVisibility(ModuleStats, NavDash, "Dashboard");
             SetVisibility(ModuleOps, NavBilling, "Billing");
             SetVisibility(ModuleInv, NavMenu, "Items");

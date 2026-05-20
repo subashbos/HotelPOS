@@ -35,6 +35,8 @@ namespace HotelPOS.Views
             // Relay the ViewModel's navigation event outward to the shell
             _viewModel.OrderUpdated += () => OrderUpdated?.Invoke();
             _viewModel.OrderEditCancelled += () => OrderEditCancelled?.Invoke();
+            _viewModel.PrintPreviewClosed += () => FocusSearch();
+            _viewModel.CartCleared += () => FocusSearch();
         }
 
         public event Action? OrderUpdated;
@@ -85,11 +87,12 @@ namespace HotelPOS.Views
                 var focused = FocusManager.GetFocusedElement(this);
                 if (focused == PaymentModeCombo || (focused is ComboBoxItem cbi && VisualTreeHelper.GetParent(cbi) != null))
                 {
-                    if (_viewModel.SaveOrderCommand.CanExecute(null))
+                    e.Handled = true;
+                    Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        _viewModel.SaveOrderCommand.Execute(null);
-                        e.Handled = true;
-                    }
+                        CheckoutButton.Focus();
+                        Keyboard.Focus(CheckoutButton);
+                    }), System.Windows.Threading.DispatcherPriority.Input);
                 }
             }
         }
@@ -300,7 +303,11 @@ namespace HotelPOS.Views
             if (e.Key == Key.Enter)
             {
                 e.Handled = true;
-                TriggerCheckout();
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    CheckoutButton.Focus();
+                    Keyboard.Focus(CheckoutButton);
+                }), System.Windows.Threading.DispatcherPriority.Input);
             }
         }
 
@@ -402,6 +409,54 @@ namespace HotelPOS.Views
             }
 
             return foundChild;
+        }
+        private void PaymentModeCombo_DropDownClosed(object sender, EventArgs e)
+        {
+            // Use ApplicationIdle priority so WPF finishes all selection/focus
+            // processing before we move focus to the Checkout button.
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                CheckoutButton.IsDefault = true;
+                CheckoutButton.Focus();
+                Keyboard.Focus(CheckoutButton);
+                FocusManager.SetFocusedElement(this, CheckoutButton);
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+
+        // ── Numeric Validation ──────────────────────────────────────────────
+
+        private void NumberOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$");
+        }
+
+        private void DecimalOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            var textBox = sender as TextBox;
+            if (textBox == null) return;
+
+            string proposedText = textBox.Text.Insert(textBox.SelectionStart, e.Text);
+            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(proposedText, @"^\d*\.?\d*$");
+        }
+
+        private void DataObject_OnPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(typeof(string)))
+            {
+                string text = (string)e.DataObject.GetData(typeof(string));
+                if (!System.Text.RegularExpressions.Regex.IsMatch(text, "^[0-9]+$")) e.CancelCommand();
+            }
+            else e.CancelCommand();
+        }
+
+        private void Decimal_OnPasting(object sender, DataObjectPastingEventArgs e)
+        {
+            if (e.DataObject.GetDataPresent(typeof(string)))
+            {
+                string text = (string)e.DataObject.GetData(typeof(string));
+                if (!System.Text.RegularExpressions.Regex.IsMatch(text, @"^\d*\.?\d*$")) e.CancelCommand();
+            }
+            else e.CancelCommand();
         }
     }
 }

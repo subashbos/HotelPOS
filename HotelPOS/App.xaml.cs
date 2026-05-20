@@ -18,6 +18,7 @@ namespace HotelPOS
 {
     public partial class App : System.Windows.Application
     {
+        public static readonly System.Threading.SemaphoreSlim DbLock = new(1, 1);
         public ServiceProvider ServiceProvider { get; private set; } = null!;
 
         protected override void OnStartup(StartupEventArgs e)
@@ -276,6 +277,7 @@ namespace HotelPOS
             var scope = ServiceProvider.CreateScope();
             var login = scope.ServiceProvider.GetRequiredService<LoginWindow>();
             login.Tag = scope;   // store scope on the window so we can dispose it on close
+            System.Windows.Application.Current.MainWindow = login;
 
             login.Closed += (_, __) =>
             {
