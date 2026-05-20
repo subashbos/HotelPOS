@@ -138,7 +138,19 @@
 
                 <!-- Sidebar Toggle & Logo -->
                 <StackPanel Margin="0,16,0,32">
-                    <Button Click="ToggleSidebar_Click" Background="Transparent" BorderThickness="0" HorizontalAlignment="Left" Margin="20,0,0,0" Cursor="Hand" ToolTip="Toggle Sidebar">
+                    <Button Click="ToggleSidebar_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" ToolTip="Toggle Sidebar">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                                <Setter Property="Margin" Value="20,0,0,0"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Width.Value, ElementName=SidebarColumn}" Value="70">
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="Margin" Value="0"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
                         <TextBlock Text="≡" FontSize="28" Foreground="White" FontWeight="Bold"/>
                     </Button>
                     
@@ -171,6 +183,7 @@
                             <StackPanel>
                                 <Button x:Name="NavDash"     Content="📊  Dashboard"  ToolTip="Dashboard"  Style="{StaticResource NavBtn}" Click="NavDash_Click" IsEnabled="False"/>
                                 <Button x:Name="NavSales"    Content="📈  Sales Report" ToolTip="Sales Report" Style="{StaticResource NavBtn}" Click="NavSales_Click"/>
+                                <Button x:Name="NavItemReport" Content="🍲  Item Report" ToolTip="Item Report" Style="{StaticResource NavBtn}" Click="NavItemReport_Click"/>
                                 <Button x:Name="NavLedger"   Content="📒  Ledger"      ToolTip="Ledger"      Style="{StaticResource NavBtn}" Click="NavLedger_Click"/>
                                 <Button x:Name="NavJournal"  Content="📓  Journal"     ToolTip="Journal"     Style="{StaticResource NavBtn}" Click="NavJournal_Click"/>
                             </StackPanel>
@@ -188,7 +201,17 @@
                 </ScrollViewer>
 
                 <!-- Bottom User Info -->
-                <Border Grid.Row="2" Background="#15191E" Padding="12,16" BorderBrush="#2E343D" BorderThickness="0,1,0,0">
+                <Border Grid.Row="2" Background="#15191E" BorderBrush="#2E343D" BorderThickness="0,1,0,0">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Padding" Value="12,16"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Width.Value, ElementName=SidebarColumn}" Value="70">
+                                    <Setter Property="Padding" Value="4,12"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <StackPanel>
                         <Grid x:Name="UserInfoGrid" Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
@@ -223,10 +246,15 @@
                                                 </Setter.Value>
                                             </Setter>
                                         </Trigger>
-                                        <DataTrigger Binding="{Binding Width, ElementName=SidebarColumn}" Value="70">
+                                        <DataTrigger Binding="{Binding Width.Value, ElementName=SidebarColumn}" Value="70">
                                             <Setter TargetName="LogoutText" Property="Visibility" Value="Collapsed"/>
                                             <Setter TargetName="LogoutIcon" Property="Margin" Value="0"/>
-                                            <Setter TargetName="bd" Property="Padding" Value="0,12"/>
+                                            <Setter TargetName="bd" Property="Padding" Value="0"/>
+                                            <Setter TargetName="bd" Property="Margin" Value="0,4"/>
+                                            <Setter TargetName="bd" Property="CornerRadius" Value="19"/>
+                                            <Setter TargetName="bd" Property="Width" Value="38"/>
+                                            <Setter TargetName="bd" Property="Height" Value="38"/>
+                                            <Setter TargetName="bd" Property="HorizontalAlignment" Value="Center"/>
                                         </DataTrigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>

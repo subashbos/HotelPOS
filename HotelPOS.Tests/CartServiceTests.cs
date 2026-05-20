@@ -386,4 +386,22 @@ public class CartServiceTests
         });
         Assert.Null(ex);
     }
+
+    // ========== ClearAll ===========
+    [Fact]
+    public void ClearAll_ClearsAllTablesAndHeldOrders()
+    {
+        _cart.AddItem(Table1, MakeItem(1, "Coffee", 50m));
+        _cart.AddItem(Table2, MakeItem(2, "Tea", 30m));
+        _cart.HoldOrder(Table2, "Held Order");
+
+        Assert.NotEmpty(_cart.GetItems(Table1));
+        Assert.NotEmpty(_cart.GetHeldOrders());
+
+        _cart.ClearAll();
+
+        Assert.Empty(_cart.GetItems(Table1));
+        Assert.Empty(_cart.GetItems(Table2));
+        Assert.Empty(_cart.GetHeldOrders());
+    }
 }

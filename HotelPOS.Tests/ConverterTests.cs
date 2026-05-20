@@ -36,7 +36,7 @@ namespace HotelPOS.Tests
         public void StockToOpacityConverter_ReturnsDim_WhenOut()
         {
             var converter = new StockToOpacityConverter();
-            var result = converter.Convert(0, typeof(double), null, CultureInfo.InvariantCulture);
+            var result = converter.Convert(0, typeof(double), null!, CultureInfo.InvariantCulture);
             Assert.Equal(0.5, (double)result);
         }
 
@@ -44,7 +44,7 @@ namespace HotelPOS.Tests
         public void StockToOpacityConverter_ReturnsFull_WhenAvailable()
         {
             var converter = new StockToOpacityConverter();
-            var result = converter.Convert(5, typeof(double), null, CultureInfo.InvariantCulture);
+            var result = converter.Convert(5, typeof(double), null!, CultureInfo.InvariantCulture);
             Assert.Equal(1.0, (double)result);
         }
     }

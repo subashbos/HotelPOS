@@ -10,6 +10,7 @@ namespace HotelPOS.Application.Interface
         void UpdateQuantity(int tableNumber, int itemId, int change);
         void SetQuantity(int tableNumber, int itemId, int quantity);
         void Clear(int tableNumber);
+        void ClearAll();
         List<OrderItem> GetItems(int tableNumber);
         decimal GetSubtotal(int tableNumber);
         decimal GetGstAmount(int tableNumber);

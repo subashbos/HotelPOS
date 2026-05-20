@@ -299,12 +299,11 @@ namespace HotelPOS.ViewModels
             }
         }
 
-        private bool _isInitialized;
         private bool _isInitializing;
 
         public async Task InitializeAsync()
         {
-            if (_isInitialized || _isInitializing) return;
+            if (_isInitializing) return;
 
             await App.DbLock.WaitAsync();
             try
@@ -328,7 +327,6 @@ namespace HotelPOS.ViewModels
                 {
                     _notificationService.ShowWarning("Please open a shift in the 'Shift' tab before starting billing.");
                 }
-                _isInitialized = true;
             }
             catch (Exception ex)
             {

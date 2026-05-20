@@ -28,6 +28,7 @@ namespace HotelPOS
         private SessionView? _cachedShift;
         private RolesView? _cachedRoles;
         private SalesReportView? _cachedSales;
+        private ItemReportView? _cachedItemReport;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
         private readonly IUserRepository _userRepository;
@@ -162,6 +163,7 @@ namespace HotelPOS
             SetVisibility(ModuleOps, NavShift, "Shift");
             SetVisibility(ModuleAdmin, NavRoles, "Roles");
             SetVisibility(ModuleStats, NavSales, "SalesReport");
+            SetVisibility(ModuleStats, NavItemReport, "SalesReport");
         }
 
         // ── Navigation ────────────────────────────────────────────────────────
@@ -222,6 +224,13 @@ namespace HotelPOS
             SetActive(NavSales);
         }
 
+        private void NavItemReport_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedItemReport ??= _serviceProvider.GetRequiredService<ItemReportView>();
+            MainContentArea.Content = _cachedItemReport;
+            SetActive(NavItemReport);
+        }
+
         private void NavSettings_Click(object sender, RoutedEventArgs e)
         {
             _cachedSettings ??= _serviceProvider.GetRequiredService<SettingsView>();
@@ -252,7 +261,7 @@ namespace HotelPOS
 
         private void SetActive(Button active)
         {
-            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales })
+            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales, NavItemReport })
                 btn.IsEnabled = btn != active;
 
             // Update Header Title
@@ -268,7 +277,7 @@ namespace HotelPOS
                 UserInfoGrid.Visibility = Visibility.Collapsed;
 
                 // Hide text in nav buttons (keep only emojis/icons)
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales })
+                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales, NavItemReport })
                 {
                     btn.Content = btn.Content.ToString()?.Split(' ').FirstOrDefault() ?? "";
                     btn.Padding = new Thickness(0, 12, 0, 12);
@@ -294,8 +303,9 @@ namespace HotelPOS
                 NavAudit.Content = "🛡  Audit";
                 NavShift.Content = "💵  Shift";
                 NavSales.Content = "📈  Sales Report";
+                NavItemReport.Content = "🍲  Item Report";
 
-                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales })
+                foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales, NavItemReport })
                 {
                     btn.Padding = new Thickness(20, 12, 20, 12);
                     btn.HorizontalContentAlignment = HorizontalAlignment.Left;
@@ -339,6 +349,13 @@ namespace HotelPOS
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                var cartService = _serviceProvider.GetRequiredService<ICartService>();
+                cartService.ClearAll();
+            }
+            catch { }
+
             AppSession.Logout();
             Closing -= Window_Closing;  // skip confirm dialog on explicit logout
             Close();                    // → Closed event → scope.Dispose + ShowLoginWindow()
@@ -349,6 +366,13 @@ namespace HotelPOS
             if (MessageBox.Show("Logout and close workspace?", "Exit",
                 MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
+                try
+                {
+                    var cartService = _serviceProvider.GetRequiredService<ICartService>();
+                    cartService.ClearAll();
+                }
+                catch { }
+
                 AppSession.Logout();
                 // Close() fires → Closed event → scope.Dispose() + ShowLoginWindow()
             }
