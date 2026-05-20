@@ -775,12 +775,15 @@ namespace HotelPOS.ViewModels
                 }
 
                 var wasEditMode = IsEditMode;
-                // For tableless orders the cart lives at table 0 — clear it explicitly
-                if (IsTableless) _cartService.Clear(0);
-                ClearCart();
+                
+                // Clear cart automatically without prompting the user
+                _cartService.Clear(TableNumber);
+                DiscountAmount = 0;
+                UpdateCart();
+                CartCleared?.Invoke();
+                
                 IsEditMode = false;
                 _editingOrder = null;
-                DiscountAmount = 0;
                 PaymentMode = "Cash";
                 OrderType = "DineIn";
                 // CLEANUP: Reset customer details to null to align with property definitions and save memory
