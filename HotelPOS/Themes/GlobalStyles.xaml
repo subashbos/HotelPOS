@@ -36,6 +36,11 @@
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
+    <Style x:Key="LeftCell" TargetType="TextBlock">
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="14,0,0,0"/>
+    </Style>
 
     <!-- ── Touch Optimized Button ── -->
     <Style x:Key="TouchButton" TargetType="Button">

@@ -299,12 +299,11 @@ namespace HotelPOS.ViewModels
             }
         }
 
-        private bool _isInitialized;
         private bool _isInitializing;
 
         public async Task InitializeAsync()
         {
-            if (_isInitialized || _isInitializing) return;
+            if (_isInitializing) return;
 
             await App.DbLock.WaitAsync();
             try
@@ -328,7 +327,6 @@ namespace HotelPOS.ViewModels
                 {
                     _notificationService.ShowWarning("Please open a shift in the 'Shift' tab before starting billing.");
                 }
-                _isInitialized = true;
             }
             catch (Exception ex)
             {
@@ -775,12 +773,15 @@ namespace HotelPOS.ViewModels
                 }
 
                 var wasEditMode = IsEditMode;
-                // For tableless orders the cart lives at table 0 — clear it explicitly
-                if (IsTableless) _cartService.Clear(0);
-                ClearCart();
+                
+                // Clear cart automatically without prompting the user
+                _cartService.Clear(TableNumber);
+                DiscountAmount = 0;
+                UpdateCart();
+                CartCleared?.Invoke();
+                
                 IsEditMode = false;
                 _editingOrder = null;
-                DiscountAmount = 0;
                 PaymentMode = "Cash";
                 OrderType = "DineIn";
                 // CLEANUP: Reset customer details to null to align with property definitions and save memory
