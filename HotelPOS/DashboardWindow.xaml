@@ -19,11 +19,16 @@
             Layout switches automatically via DataTrigger on SidebarBorder.Tag.
         -->
         <Style x:Key="NavBtn" TargetType="Button">
+            <!--
+                NavBtn: Content = emoji icon, Tag = full label text.
+                Compact mode  → icon only inside a rounded pill (no text).
+                Expanded mode → icon left + label text right.
+            -->
             <Setter Property="Background"      Value="Transparent"/>
-            <Setter Property="Foreground"      Value="#7A8C9E"/>
+            <Setter Property="Foreground"      Value="#6B7E91"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor"          Value="Hand"/>
-            <Setter Property="Height"          Value="64"/>
+            <Setter Property="Height"          Value="56"/>
             <Setter Property="HorizontalAlignment"        Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment"   Value="Center"/>
@@ -31,27 +36,29 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <!-- Active left-border indicator -->
+                            <!-- Active left-border stripe (visible in expanded mode) -->
                             <Rectangle x:Name="ActiveBar" Width="3" HorizontalAlignment="Left"
-                                       Fill="{DynamicResource PrimaryBrush}" Visibility="Collapsed"/>
+                                       Fill="{DynamicResource PrimaryBrush}" Visibility="Collapsed"
+                                       RadiusX="1.5" RadiusY="1.5"/>
+
                             <Border x:Name="bd" Background="{TemplateBinding Background}">
                                 <Grid>
-                                    <!-- COMPACT layout: icon + small label stacked -->
-                                    <StackPanel x:Name="CompactLayout"
-                                                HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <TextBlock Text="{TemplateBinding Content}"
-                                                   FontSize="20" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{TemplateBinding Tag}"
-                                                   FontSize="9" FontWeight="SemiBold"
-                                                   HorizontalAlignment="Center" Margin="0,4,0,0"
-                                                   Foreground="{TemplateBinding Foreground}"/>
-                                    </StackPanel>
+                                    <!-- COMPACT: pill container with icon only -->
+                                    <Border x:Name="PillBorder" CornerRadius="12" Width="44" Height="44"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                            Background="Transparent">
+                                        <TextBlock x:Name="CompactIcon"
+                                                   Text="{TemplateBinding Content}"
+                                                   FontSize="22"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
 
-                                    <!-- EXPANDED layout: icon + text side-by-side -->
+                                    <!-- EXPANDED: icon left + label text right -->
                                     <StackPanel x:Name="ExpandedLayout" Orientation="Horizontal"
                                                 VerticalAlignment="Center" Margin="18,0" Visibility="Collapsed">
                                         <TextBlock Text="{TemplateBinding Content}"
-                                                   FontSize="20" VerticalAlignment="Center" Width="28"/>
+                                                   FontSize="20" VerticalAlignment="Center" Width="26"/>
                                         <TextBlock Text="{TemplateBinding Tag}"
                                                    FontSize="13" FontWeight="SemiBold"
                                                    VerticalAlignment="Center" Margin="12,0,0,0"
@@ -61,29 +68,47 @@
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
+                            <!-- Hover -->
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#1E2A38"/>
+                                <Setter TargetName="PillBorder" Property="Background" Value="#1E2E40"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
+                            <!-- Active (IsEnabled=False = selected) -->
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="bd" Property="Background" Value="#0D2137"/>
-                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter TargetName="ActiveBar" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="PillBorder" Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                            <GradientStop Color="#006D5B" Offset="0"/>
+                                            <GradientStop Color="#00897B" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="ActiveBar" Property="Visibility" Value="Collapsed"/>
                             </Trigger>
                             <!-- Switch to expanded layout -->
                             <DataTrigger Binding="{Binding Tag, ElementName=SidebarBorder}" Value="expanded">
-                                <Setter TargetName="CompactLayout"  Property="Visibility" Value="Collapsed"/>
+                                <Setter TargetName="PillBorder"     Property="Visibility" Value="Collapsed"/>
                                 <Setter TargetName="ExpandedLayout" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="ActiveBar"      Property="Visibility" Value="Collapsed"/>
                             </DataTrigger>
+                            <!-- Active + expanded: show left bar instead of pill -->
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Tag,   ElementName=SidebarBorder}" Value="expanded"/>
+                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="bd"        Property="Background" Value="#0D2137"/>
+                                <Setter TargetName="ActiveBar" Property="Visibility" Value="Visible"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                            </MultiDataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <!-- Height shrinks slightly in expanded mode (horizontal layout is shorter) -->
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Tag, ElementName=SidebarBorder}" Value="expanded">
-                    <Setter Property="Height" Value="48"/>
-                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                    <Setter Property="Height" Value="46"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -91,7 +116,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="SidebarColumn" Width="80"/>
+            <ColumnDefinition x:Name="SidebarColumn" Width="64"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 

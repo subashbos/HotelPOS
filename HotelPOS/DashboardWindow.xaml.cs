@@ -276,7 +276,7 @@ namespace HotelPOS
             bool expand = (string?)SidebarBorder.Tag != "expanded";
 
             SidebarBorder.Tag    = expand ? "expanded" : "compact";
-            SidebarColumn.Width  = new GridLength(expand ? 220 : 80);
+            SidebarColumn.Width  = new GridLength(expand ? 220 : 64);
 
             // Logo text
             SidebarLogoText.Visibility = expand ? Visibility.Visible : Visibility.Collapsed;
