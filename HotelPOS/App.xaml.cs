@@ -117,6 +117,8 @@ namespace HotelPOS
             services.AddSingleton<INotificationService, NotificationService>();
             services.AddSingleton<IThemeService, ThemeService>();
             services.AddSingleton<IBackupService, BackupService>();
+            services.AddSingleton<IDialogService, Services.DialogService>();
+
 
             // ── ViewModels ────────────────────────────────────────────────────
             services.AddTransient<BillingViewModel>();

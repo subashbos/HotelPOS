@@ -1,0 +1,123 @@
+<Window x:Class="HotelPOS.Views.ConfirmCheckoutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Confirm Checkout"
+        Height="420" Width="460"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppBackground}"
+        BorderThickness="1"
+        BorderBrush="{DynamicResource BorderBrush}"
+        WindowStyle="None"
+        AllowsTransparency="True">
+    
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="ActionButton">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="24,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="8"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="16" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" 
+            Background="{DynamicResource SurfaceBrush}" Margin="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" CornerRadius="15,15,0,0" Padding="24,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="🧾" FontSize="24" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Confirm Checkout" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="Verify order summary before payment completion" FontSize="11" Foreground="#BDD5E7"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Summary Content -->
+            <StackPanel Grid.Row="1" Margin="24,20" VerticalAlignment="Center">
+                <TextBlock Text="Are you sure you want to complete this order?" 
+                           FontSize="14" FontWeight="Medium" Foreground="{DynamicResource TextPrimary}" 
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+                <Border Background="{DynamicResource AppBackground}" CornerRadius="12" Padding="20,16" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Total Items -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Items Quantity" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalItems}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+
+                        <!-- Total Amount -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Base Total Amount" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TotalAmount, StringFormat='₹{0:N2}'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+
+                        <!-- Discount -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Discount Applied" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DiscountAmount, StringFormat='-₹{0:N2}'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}" Margin="0,0,0,8"/>
+
+                        <!-- Payment Mode -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Payment Method" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding PaymentMode}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+
+                        <!-- Separator -->
+                        <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" Margin="0,4,0,8"/>
+
+                        <!-- Final Payable Amount -->
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="FINAL PAYABLE AMOUNT" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" Margin="0,12,0,0"/>
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding FinalPayableAmount, StringFormat='₹{0:N2}'}" FontSize="20" FontWeight="ExtraBold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center" Margin="0,12,0,0"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- Buttons -->
+            <Border Grid.Row="2" Background="{DynamicResource AppBackground}" CornerRadius="0,0,15,15" Padding="24,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Cancel Button -->
+                    <Button Grid.Column="0" Content="✕  Cancel" IsCancel="True"
+                            Style="{StaticResource ActionButton}" Background="{DynamicResource DangerBrush}"
+                            Command="{Binding CancelCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+
+                    <!-- Confirm Button -->
+                    <Button Grid.Column="2" Content="✔  Confirm &amp; Print" IsDefault="True"
+                            Style="{StaticResource ActionButton}" Background="{DynamicResource SuccessBrush}"
+                            Command="{Binding ConfirmCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
