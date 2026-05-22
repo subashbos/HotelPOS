@@ -54,7 +54,17 @@ namespace HotelPOS.Views
         {
             try
             {
-                var cats = await _categoryService.GetCategoriesAsync();
+                await App.DbLock.WaitAsync();
+                IEnumerable<Category> cats;
+                try
+                {
+                    cats = await _categoryService.GetCategoriesAsync();
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
+
                 var list = cats.ToList();
                 list.Insert(0, new Category { Id = 0, Name = "All Categories" });
                 ComboCategory.ItemsSource = list;
@@ -87,8 +97,18 @@ namespace HotelPOS.Views
                 var categoryId = (int?)ComboCategory.SelectedValue;
 
                 // 1. Get all orders and items catalog
-                var allOrders = await _orderService.GetAllOrdersWithItemsAsync();
-                var allItems = await _itemService.GetItemsAsync();
+                await App.DbLock.WaitAsync();
+                List<HotelPOS.Domain.Order> allOrders;
+                List<HotelPOS.Domain.Item> allItems;
+                try
+                {
+                    allOrders = await _orderService.GetAllOrdersWithItemsAsync();
+                    allItems = await _itemService.GetItemsAsync();
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
 
                 // 2. Filter orders by date range and active status
                 var filteredOrders = allOrders.Where(o => !o.IsDeleted);

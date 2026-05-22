@@ -8,12 +8,14 @@ namespace HotelPOS.Application
         private readonly IOrderRepository _orderRepo;
         private readonly IItemRepository _itemRepo;
         private readonly ICategoryRepository _categoryRepo;
+        private readonly IPurchaseRepository _purchaseRepo;
 
-        public ReportService(IOrderRepository orderRepo, IItemRepository itemRepo, ICategoryRepository categoryRepo)
+        public ReportService(IOrderRepository orderRepo, IItemRepository itemRepo, ICategoryRepository categoryRepo, IPurchaseRepository purchaseRepo)
         {
             _orderRepo = orderRepo;
             _itemRepo = itemRepo;
             _categoryRepo = categoryRepo;
+            _purchaseRepo = purchaseRepo;
         }
 
         public async Task<SalesReportDto> GetSalesReportAsync(
@@ -204,6 +206,56 @@ namespace HotelPOS.Application
             }
 
             return result;
+        }
+
+        public async Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportAsync(
+            int page, int pageSize, DateTime? from, DateTime? to, int? supplierId, string? itemName, string? paymentType, string? invoiceNo)
+        {
+            var utcFrom = from?.ToUniversalTime();
+            var utcTo = to?.ToUniversalTime();
+
+            var (purchases, totalCount) = await _purchaseRepo.GetPagedPurchasesAsync(page, pageSize, utcFrom, utcTo, supplierId, itemName, paymentType, invoiceNo);
+
+            var rows = new List<PurchaseReportRowDto>();
+            int sno = (page - 1) * pageSize + 1;
+
+            decimal totalAmountAll = 0;
+            decimal totalTaxAll = 0;
+            decimal totalDiscountAll = 0;
+            int totalQtyAll = 0;
+
+            foreach (var p in purchases)
+            {
+                foreach (var item in p.PurchaseItems)
+                {
+                    if (!string.IsNullOrWhiteSpace(itemName) && !item.ItemName.Contains(itemName, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var row = new PurchaseReportRowDto
+                    {
+                        SNo = sno++,
+                        PurchaseId = p.Id,
+                        PurchaseDate = p.PurchaseDate.ToLocalTime(),
+                        InvoiceNumber = p.InvoiceNumber,
+                        SupplierName = p.Supplier?.Name ?? "Unknown",
+                        ItemName = item.ItemName,
+                        Quantity = item.Quantity,
+                        UnitPrice = item.UnitPrice,
+                        TaxAmount = item.Total * (item.TaxPercentage / 100m),
+                        Discount = item.Discount,
+                        TotalAmount = item.Total,
+                        PaymentType = string.IsNullOrWhiteSpace(p.PaymentType) ? "Cash" : p.PaymentType
+                    };
+                    rows.Add(row);
+
+                    totalAmountAll += row.TotalAmount;
+                    totalTaxAll += row.TaxAmount;
+                    totalDiscountAll += row.Discount;
+                    totalQtyAll += row.Quantity;
+                }
+            }
+
+            return (rows, totalCount, totalAmountAll, totalTaxAll, totalDiscountAll, totalQtyAll);
         }
     }
 }

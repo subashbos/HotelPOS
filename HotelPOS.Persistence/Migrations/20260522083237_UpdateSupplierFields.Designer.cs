@@ -4,6 +4,7 @@ using HotelPOS.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelPOS.Persistence.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260522083237_UpdateSupplierFields")]
+    partial class UpdateSupplierFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -801,9 +804,6 @@ namespace HotelPOS.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("Suppliers");
 
                     b.HasData(
@@ -1012,9 +1012,6 @@ namespace HotelPOS.Persistence.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.HasIndex("Username")
-                        .IsUnique();
-
                     b.ToTable("Users");
 
                     b.HasData(
@@ -1023,10 +1020,10 @@ namespace HotelPOS.Persistence.Migrations
                             Id = 1,
                             IsActive = true,
                             MustChangePassword = true,
-                            PasswordHash = "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=",
+                            PasswordHash = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc=",
                             Role = "Admin",
                             RoleId = 1,
-                            Salt = "jwhVPO8B1u7Hqc4drt45HQ==",
+                            Salt = "cUDnxEUZDYmisbvUU2zu1Q==",
                             Username = "admin"
                         });
                 });

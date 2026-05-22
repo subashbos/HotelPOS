@@ -27,6 +27,13 @@ namespace HotelPOS.Application
             if (discount < 0)
                 throw new ArgumentException("Discount cannot be negative.", nameof(discount));
 
+            // ── Financial guard: discount cannot exceed the pre-tax subtotal ──
+            var preCheckSubtotal = items.Sum(x => x.Price * x.Quantity);
+            if (discount > preCheckSubtotal)
+                throw new ArgumentException(
+                    $"Discount (₹{discount:N2}) cannot exceed order subtotal (₹{preCheckSubtotal:N2}).",
+                    nameof(discount));
+
             var allowedModes = new[] { "Cash", "Card", "UPI" };
             if (!allowedModes.Contains(paymentMode))
                 throw new ArgumentException($"Invalid payment mode. Allowed: {string.Join(", ", allowedModes)}", nameof(paymentMode));

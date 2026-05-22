@@ -35,6 +35,8 @@ namespace HotelPOS.Views
         private readonly INotificationService _notificationService;
         private List<LedgerRow> _allRows = new();
         private bool _isLoaded = false;
+        private bool _isLoading = false;
+        private bool _loadRequested = false;
 
         public LedgerView(IOrderService orderService, INotificationService notificationService)
         {
@@ -54,20 +56,32 @@ namespace HotelPOS.Views
         {
             if (!_isLoaded) return;
 
+            _loadRequested = true;
+            if (_isLoading) return;
+
+            _isLoading = true;
             try
             {
-                DateTime? from = FromDate.SelectedDate;
-                DateTime? to = ToDate.SelectedDate?.AddDays(1);
+                while (_loadRequested)
+                {
+                    _loadRequested = false;
+                    DateTime? from = FromDate.SelectedDate;
+                    DateTime? to = ToDate.SelectedDate?.AddDays(1);
 
-                var allOrders = await _orderService.GetAllOrdersWithItemsAsync();
-                var orders = allOrders.AsEnumerable();
-                if (from.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() >= from.Value);
-                if (to.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() <= to.Value);
-                BuildLedger(orders.ToList());
+                    var allOrders = await _orderService.GetAllOrdersWithItemsAsync();
+                    var orders = allOrders.AsEnumerable();
+                    if (from.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() >= from.Value);
+                    if (to.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() <= to.Value);
+                    BuildLedger(orders.ToList());
+                }
             }
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Ledger Error: {ex.Message}");
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 

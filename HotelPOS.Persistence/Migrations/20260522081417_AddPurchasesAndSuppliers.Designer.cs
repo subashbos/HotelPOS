@@ -4,6 +4,7 @@ using HotelPOS.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelPOS.Persistence.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260522081417_AddPurchasesAndSuppliers")]
+    partial class AddPurchasesAndSuppliers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -754,17 +757,9 @@ namespace HotelPOS.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("City")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("ContactPerson")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("CreditLimit")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(100)
@@ -779,30 +774,11 @@ namespace HotelPOS.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<decimal>("OpeningBalance")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("PaymentTerms")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Pincode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("State")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("Suppliers");
 
@@ -810,54 +786,30 @@ namespace HotelPOS.Persistence.Migrations
                         new
                         {
                             Id = 1,
-                            City = "Mumbai",
-                            CreditLimit = 50000m,
                             Gstin = "27AAAAA1111A1Z1",
                             Name = "Metro Wholesalers",
-                            OpeningBalance = 0m,
-                            PaymentTerms = "Credit",
-                            Phone = "9876543210",
-                            Pincode = "400001",
-                            State = "Maharashtra"
+                            Phone = "9876543210"
                         },
                         new
                         {
                             Id = 2,
-                            City = "Pune",
-                            CreditLimit = 100000m,
                             Gstin = "27BBBBB2222B2Z2",
                             Name = "Apex Food Distributors",
-                            OpeningBalance = 5000m,
-                            PaymentTerms = "30 Days",
-                            Phone = "9876543211",
-                            Pincode = "411001",
-                            State = "Maharashtra"
+                            Phone = "9876543211"
                         },
                         new
                         {
                             Id = 3,
-                            City = "Mumbai",
-                            CreditLimit = 25000m,
                             Gstin = "27CCCCC3333C3Z3",
                             Name = "Supreme Dairy Partners",
-                            OpeningBalance = 0m,
-                            PaymentTerms = "Cash",
-                            Phone = "9876543212",
-                            Pincode = "400002",
-                            State = "Maharashtra"
+                            Phone = "9876543212"
                         },
                         new
                         {
                             Id = 4,
-                            City = "Nashik",
-                            CreditLimit = 30000m,
                             Gstin = "27DDDDD4444D4Z4",
                             Name = "Standard Kitchen Supplies",
-                            OpeningBalance = 1500m,
-                            PaymentTerms = "Credit",
-                            Phone = "9876543213",
-                            Pincode = "422001",
-                            State = "Maharashtra"
+                            Phone = "9876543213"
                         });
                 });
 
@@ -1012,9 +964,6 @@ namespace HotelPOS.Persistence.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.HasIndex("Username")
-                        .IsUnique();
-
                     b.ToTable("Users");
 
                     b.HasData(
@@ -1023,10 +972,10 @@ namespace HotelPOS.Persistence.Migrations
                             Id = 1,
                             IsActive = true,
                             MustChangePassword = true,
-                            PasswordHash = "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=",
+                            PasswordHash = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc=",
                             Role = "Admin",
                             RoleId = 1,
-                            Salt = "jwhVPO8B1u7Hqc4drt45HQ==",
+                            Salt = "cUDnxEUZDYmisbvUU2zu1Q==",
                             Username = "admin"
                         });
                 });

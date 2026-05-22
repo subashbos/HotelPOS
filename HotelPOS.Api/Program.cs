@@ -2,22 +2,25 @@ using HotelPOS.Api.Middleware;
 using HotelPOS.Persistence.Interfaces;
 using HotelPOS.Persistence;
 using HotelPOS.Persistence.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ── Controllers with automatic model validation responses ─────────────────
 builder.Services.AddControllers();
 
-// Database Configuration
+// ── Database Configuration ────────────────────────────────────────────────
 builder.Services.AddDbContext<HotelDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Dependency Injection: Generic Repository
+// ── Dependency Injection: Generic Repository ──────────────────────────────
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-// CORS Configuration
+// ── CORS Configuration ────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -28,12 +31,36 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// ── JWT Authentication ────────────────────────────────────────────────────
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("JWT Key is not configured in appsettings.json.");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "HotelPOS";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "HotelPOSClient";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// ── OpenAPI ───────────────────────────────────────────────────────────────
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ── Middleware Pipeline ───────────────────────────────────────────────────
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors("AllowAngular");
 
@@ -44,6 +71,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();   // MUST come before UseAuthorization
 app.UseAuthorization();
 app.MapControllers();
 

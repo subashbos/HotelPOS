@@ -216,7 +216,7 @@ namespace HotelPOS.Application
                 var held = new HeldOrder
                 {
                     HoldName = string.IsNullOrWhiteSpace(holdName) ? $"Table {tableNumber}" : holdName,
-                    HeldAt = DateTime.Now,
+                    HeldAt = DateTime.UtcNow,
                     TableNumber = tableNumber,
                     Items = items.Select(x => new OrderItem
                     {

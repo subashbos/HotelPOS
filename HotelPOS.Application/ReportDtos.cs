@@ -86,4 +86,20 @@ namespace HotelPOS.Application
         public string MonthName { get; set; } = string.Empty;
         public decimal Revenue { get; set; }
     }
+
+    public class PurchaseReportRowDto
+    {
+        public int SNo { get; set; }
+        public int PurchaseId { get; set; }
+        public DateTime PurchaseDate { get; set; }
+        public string InvoiceNumber { get; set; } = string.Empty;
+        public string SupplierName { get; set; } = string.Empty;
+        public string ItemName { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal TaxAmount { get; set; }
+        public decimal Discount { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string PaymentType { get; set; } = "Cash";
+    }
 }
