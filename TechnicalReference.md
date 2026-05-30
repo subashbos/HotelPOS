@@ -1,68 +1,64 @@
 # HotelPOS Technical Reference
 
-This document provides deep-dive implementation details for the core technical components of the HotelPOS system.
+This document provides deep-dive implementation details for the core technical components, database structures, and synchronization engines of the HotelPOS system.
 
 ---
 
-## 1. CartService Implementation
-The `CartService` is the stateful engine of the billing workflow. It maintains active sessions in memory using a `ConcurrentDictionary<int, List<OrderItem>>`.
+## 1. DbContext Concurrency Synchronization (`App.DbLock`)
+To allow a shared scoped Entity Framework DbContext instance to handle multi-threaded queries without throws, a global semaphore lock is integrated across the WPF codebase.
 
-### Key Methods
-- `GetItems(int tableNumber)`: Returns a sorted list of items. It uses `.OrderBy(x => x.ItemName)` to ensure a consistent visual order in the UI.
-- `TransferTable(source, target)`: Atomically moves items between tables. If the target table is occupied, items are merged; otherwise, the session is moved entirely.
-- `HoldOrder(table, name)`: Captures the current cart state into a `HeldOrder` object, removes it from the active table, and triggers the KOT (Kitchen Order Ticket) workflow.
+### Technical Design
+- **Engine**: System `SemaphoreSlim(1, 1)` declared statically on `App` namespace.
+- **Lock Scope**: Limits database reads and writes to a single concurrent operation, serializing access safely.
+- **Implementation Pattern**: Strict `await App.DbLock.WaitAsync()` followed by database execution within a `try` block, and a guaranteed `App.DbLock.Release()` inside `finally`.
+- **Preclusion of Deadlocks**: Semaphore calls inside view event handlers (e.g. `CategoryView`, `TableView`) are structured to release locks *before* subsequent view refreshing operations re-acquire them.
 
-### Thread Safety
-All collection mutations are wrapped in a private `lock (_lock)` object to prevent race conditions during rapid keyboard entry or multi-user scenarios.
-
----
-
-## 2. BillingViewModel Logic
-The `BillingViewModel` acts as the orchestrator for the POS UI.
-
-### Data Synchronization (`UpdateCart`)
-The `UpdateCart` method is called whenever the state changes (table switch, item added, etc.).
-1. It retrieves the latest item list from `CartService`.
-2. It reconciles the `ObservableCollection<CartRow>` by removing stale rows and updating existing ones.
-3. **Sorting & Sequencing**: It explicitly sorts the collection alphabetically and reassigns `S.No` (Serial Number) from 1 to ensure a predictable UI experience.
-
-### Keyboard Event Handling
-Intercepted via `PreviewKeyDown` in `BillingView.xaml.cs`, commands are routed to the VM:
-- **F4**: Executes `SaveOrderCommand`.
-- **Enter (on Search)**: Adds the selected autocomplete item to the cart.
-- **Enter (outside Search)**: Triggers checkout if the cart is not empty.
+```csharp
+await App.DbLock.WaitAsync();
+try
+{
+    // Scoped DB Operation
+    await _orderService.SaveOrderAsync(items, table);
+}
+finally
+{
+    App.DbLock.Release();
+}
+```
 
 ---
 
-## 3. Receipt Generation (`ReceiptGenerator`)
-Receipts are built using WPF **FlowDocuments** for high-resolution printing.
+## 2. CartState Stateful Engine (`CartService`)
+The stateful core of the billing POS workspace, managing active tables and customer bills in memory.
 
-### Formatting Logic
-- **Thermal Mode**: Sets `MaxPageWidth` to 285px and uses smaller font sizes (9pt - 15pt).
-- **Compliance Toggles**: 
-    - If `IsCompositionScheme` is true:
-        - Header = `BILL OF SUPPLY`
-        - Subtotal and GST lines are omitted.
-    - If false:
-        - Header = `TAX INVOICE`
-        - Includes CGST/SGST breakdown per tax rate.
+### Technical Specifications
+- **Concurrency Model**: Utilizes `ConcurrentDictionary<int, List<OrderItem>>` mapping Table Numbers (keys) to active order rows (values).
+- **Mutations & Thread Safety**: All collection manipulations (additions, quantity changes, updates) are strictly enclosed within private `lock (_lock)` blocks.
+- **Key Workflows**:
+  - `TransferTable(sourceTable, targetTable)`: Atomically merges or re-assigns cart list keys.
+  - `HoldOrder(table, cashier)`: Converts the cart collections into persistent KOT entities, clearing active memory states.
 
 ---
 
-## 4. Database Schema (EF Core)
-Persistence is handled via Entity Framework Core.
-
-### Core Entities
-- **Order**: Stores header info (ID, Date, Total, PaymentMode, Customer info).
-- **OrderItem**: Stores line-item snapshots (Price, Tax %, Quantity) at the time of sale to preserve historical accuracy even if master item prices change.
-- **SystemSetting**: A single-row table storing business profile and printer preferences.
-
-### Migration Strategy
-Standard EF Core Migrations are stored in `HotelPOS.Persistence`. The app automatically applies pending migrations on startup in `App.xaml.cs`.
+## 3. Clean Architecture DTO Contracts
+All data validation contracts and request models are separated from outer persistent ORM schemas and UI services.
+- **Namespaces**: Divided into clean folders under `HotelPOS.Application/DTOs/` (e.g. `Item/CreateItemDto`, `Table/CreateTableDto`, `Order/CreateOrderDto`).
+- **Data Hydration**: Controllers, handlers, and MVVM ViewModels instantiate these immutable structures to map incoming payloads without exposing database entity objects.
 
 ---
 
-## 5. Theming System
-Themes are defined in `Themes/DarkTheme.xaml` and `Themes/LightTheme.xaml`.
-- **Dynamic Swapping**: The `ThemeService` clears the `MergedDictionaries[0]` and inserts the new theme URI.
-- **Color Tokens**: All UI elements bind to dynamic resources like `{DynamicResource PrimaryBrush}` rather than static colors.
+## 4. UI/UX Theming & Dynamic Assets
+The desktop interface supports instant dark/light themes.
+- **Resource Management**: Dynamic dictionaries are defined in `/Themes/DarkTheme.xaml` and `/Themes/LightTheme.xaml`.
+- **Runtime Swapping**: `ThemeService` clears the first index of `MergedDictionaries` and injects the selected theme URI dynamically.
+- **Micro-Animations**: Uses hardware-accelerated WPF `DoubleAnimation` for smooth sidebar collapses and tab transitions.
+
+---
+
+## 5. Persistence & Migrations (EF Core 10)
+Database synchronization and history tracking are automated on application initialization.
+
+### Schema Safeguards
+- **Baseline Migration Strategy**: To prevent database collision crashes (such as `Table Already Exists`), `App.xaml.cs` inspects database states at startup.
+- **Migrations History Injection**: If physical tables are already present on disk, migration history markers are baselined dynamically via `ExecuteSqlRaw` before running `context.Database.Migrate()`.
+- **Transaction Preservations**: Line item histories (`OrderItem`) snapshot item pricing, CGST, and SGST rates at the precise moment of sale, ensuring total historical audit accuracy.
