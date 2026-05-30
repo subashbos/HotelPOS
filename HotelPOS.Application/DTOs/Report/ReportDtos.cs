@@ -1,4 +1,4 @@
-namespace HotelPOS.Application
+namespace HotelPOS.Application.DTOs.Report
 {
     /// <summary>Top-level aggregated numbers shown in the dashboard header cards.</summary>
     public class SalesReportDto

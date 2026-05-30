@@ -1,3 +1,4 @@
+using HotelPOS.Application.DTOs.Report;
 namespace HotelPOS.Application.Interfaces
 {
     public interface IReportService

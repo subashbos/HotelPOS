@@ -1,3 +1,4 @@
+using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Domain;
 
 namespace HotelPOS.Application.Interfaces

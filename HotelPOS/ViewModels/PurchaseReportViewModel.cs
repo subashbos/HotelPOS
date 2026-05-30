@@ -1,3 +1,4 @@
+using HotelPOS.Application.DTOs.Report;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application;

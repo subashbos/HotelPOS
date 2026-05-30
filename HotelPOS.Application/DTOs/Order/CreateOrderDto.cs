@@ -1,4 +1,4 @@
-namespace HotelPOS.Application
+namespace HotelPOS.Application.DTOs.Order
 {
     public class CreateOrderDto
     {

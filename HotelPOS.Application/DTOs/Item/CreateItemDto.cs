@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace HotelPOS.Application
+namespace HotelPOS.Application.DTOs.Item
 {
     public class CreateItemDto
     {

@@ -1,3 +1,4 @@
+using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interfaces;
