@@ -1,5 +1,4 @@
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Interface;
 using HotelPOS.Infrastructure;
@@ -99,6 +98,8 @@ namespace HotelPOS
             services.AddScoped<ICashRepository, CashRepository>();
             services.AddScoped<ITableRepository, TableRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+            services.AddScoped<ISupplierRepository, SupplierRepository>();
 
             // ── Services (Scoped) ─────────────────────────────────────────────
             services.AddScoped<IOrderService, OrderService>();
@@ -112,15 +113,23 @@ namespace HotelPOS
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ITableService, TableService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IPurchaseService, PurchaseService>();
+            services.AddScoped<ISupplierService, SupplierService>();
 
             services.AddSingleton<ICartService, CartService>();
             services.AddSingleton<INotificationService, NotificationService>();
             services.AddSingleton<IThemeService, ThemeService>();
             services.AddSingleton<IBackupService, BackupService>();
+            services.AddSingleton<IDialogService, Services.DialogService>();
+
 
             // ── ViewModels ────────────────────────────────────────────────────
             services.AddTransient<BillingViewModel>();
             services.AddTransient<SessionViewModel>();
+            services.AddTransient<PurchaseEntryViewModel>();
+            services.AddTransient<SupplierViewModel>();
+            services.AddTransient<SupplierEntryViewModel>();
+            services.AddTransient<PurchaseReportViewModel>();
 
             // ── Views & Windows ───────────────────────────────────────────────
             services.AddTransient<SessionView>();
@@ -131,9 +140,12 @@ namespace HotelPOS
             services.AddTransient<JournalView>();
             services.AddTransient<SettingsView>();
             services.AddTransient<AuditView>();
+            services.AddTransient<PurchaseEntryView>();
             services.AddTransient<BillingView>();
+            services.AddTransient<SupplierView>();
             services.AddTransient<SalesReportView>();
             services.AddTransient<ItemReportView>();
+            services.AddTransient<PurchaseReportView>();
             services.AddTransient<TableView>();
             services.AddTransient<RolesView>();
 

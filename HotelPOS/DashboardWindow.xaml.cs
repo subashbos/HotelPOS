@@ -1,4 +1,3 @@
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
@@ -29,6 +28,9 @@ namespace HotelPOS
         private RolesView? _cachedRoles;
         private SalesReportView? _cachedSales;
         private ItemReportView? _cachedItemReport;
+        private PurchaseReportView? _cachedPurchaseReport;
+        private PurchaseEntryView? _cachedPurchase;
+        private SupplierView? _cachedSuppliers;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
         private readonly IUserRepository _userRepository;
@@ -58,13 +60,11 @@ namespace HotelPOS
                 var username = AppSession.CurrentUser.Username;
                 var role     = AppSession.CurrentUser.Role;
 
-                UserNameText.Text     = username;
                 UserNameTextExp.Text  = username;
                 UserRoleText.Text     = role;
 
                 // Avatar initial
                 var initial = username.Length > 0 ? username[0].ToString().ToUpper() : "U";
-                UserAvatarText.Text    = initial;
                 UserAvatarTextExp.Text = initial;
 
                 // ── Always refresh permissions from DB on load ────────────────
@@ -115,56 +115,64 @@ namespace HotelPOS
         /// Re-evaluates sidebar visibility against the current session's permissions.
         /// Called once at login and again whenever the active user's role permissions are updated live.
         /// </summary>
+        private bool HasPermission(string moduleName)
+        {
+            var user = AppSession.CurrentUser;
+            if (user == null) return false;
+
+            var permissions = user.RoleDetails?.Permissions ?? new List<RolePermission>();
+            var perm = permissions.FirstOrDefault(p => string.Equals(p.ModuleName, moduleName, StringComparison.OrdinalIgnoreCase));
+
+            if (perm != null)
+            {
+                return perm.CanAccess;
+            }
+
+            // Fallback
+            bool isAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+            bool isCashier = string.Equals(user.Role, "Cashier", StringComparison.OrdinalIgnoreCase);
+
+            if (isAdmin) return true;
+            if (isCashier && (moduleName == "Billing" || moduleName == "Shift")) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Re-evaluates sidebar visibility against the current session's permissions.
+        /// Called once at login and again whenever the active user's role permissions are updated live.
+        /// </summary>
         public void ApplyPermissions()
         {
             var user = AppSession.CurrentUser;
             if (user == null) return;
 
-            // Ensure we have permissions. If RoleDetails is missing, the user might have been loaded
-            // without Includes, so we fallback to role-based defaults for safety.
-            var permissions = user.RoleDetails?.Permissions ?? new List<RolePermission>();
+            // Set visibility for all 13 individual buttons based on module permissions
+            NavDash.Visibility = HasPermission("Dashboard") ? Visibility.Visible : Visibility.Collapsed;
+            NavBilling.Visibility = HasPermission("Billing") ? Visibility.Visible : Visibility.Collapsed;
 
-            // Helper to set visibility — module is now a StackPanel (not Expander)
-            void SetVisibility(StackPanel module, Button btn, string moduleName)
-            {
-                // Find permission with case-insensitive matching
-                var perm = permissions.FirstOrDefault(p => string.Equals(p.ModuleName, moduleName, StringComparison.OrdinalIgnoreCase));
-                bool canAccess;
+            NavSales.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
+            NavShift.Visibility = HasPermission("Shift") ? Visibility.Visible : Visibility.Collapsed;
 
-                if (perm != null)
-                {
-                    canAccess = perm.CanAccess;
-                }
-                else
-                {
-                    bool isAdmin   = string.Equals(user.Role, "Admin",   StringComparison.OrdinalIgnoreCase);
-                    bool isCashier = string.Equals(user.Role, "Cashier", StringComparison.OrdinalIgnoreCase);
-                    canAccess = isAdmin;
-                    if (isCashier && (moduleName == "Billing" || moduleName == "Shift"))
-                        canAccess = true;
-                }
+            NavMenu.Visibility = HasPermission("Items") ? Visibility.Visible : Visibility.Collapsed;
+            NavTables.Visibility = HasPermission("Tables") ? Visibility.Visible : Visibility.Collapsed;
 
-                btn.Visibility = canAccess ? Visibility.Visible : Visibility.Collapsed;
+            NavCats.Visibility = HasPermission("Categories") ? Visibility.Visible : Visibility.Collapsed;
+            NavPurchase.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
+            NavSuppliers.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
 
-                // Hide the group StackPanel if none of its buttons are visible
-                bool anyVisible = module.Children.OfType<Button>().Any(b => b.Visibility == Visibility.Visible);
-                module.Visibility = anyVisible ? Visibility.Visible : Visibility.Collapsed;
-            }
+            NavItemReport.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
+            NavPurchaseReport.Visibility = HasPermission("Purchase") || HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
+            NavLedger.Visibility = HasPermission("Ledger") ? Visibility.Visible : Visibility.Collapsed;
+            NavJournal.Visibility = HasPermission("Journal") ? Visibility.Visible : Visibility.Collapsed;
 
-            // Sync with RoleService.cs module list
-            SetVisibility(ModuleStats, NavDash, "Dashboard");
-            SetVisibility(ModuleOps, NavBilling, "Billing");
-            SetVisibility(ModuleInv, NavMenu, "Items");
-            SetVisibility(ModuleInv, NavCats, "Categories");
-            SetVisibility(ModuleInv, NavTables, "Tables");
-            SetVisibility(ModuleStats, NavLedger, "Ledger");
-            SetVisibility(ModuleStats, NavJournal, "Journal");
-            SetVisibility(ModuleAdmin, NavSettings, "Settings");
-            SetVisibility(ModuleAdmin, NavAudit, "Audit");
-            SetVisibility(ModuleOps, NavShift, "Shift");
-            SetVisibility(ModuleAdmin, NavRoles, "Roles");
-            SetVisibility(ModuleStats, NavSales, "SalesReport");
-            SetVisibility(ModuleStats, NavItemReport, "SalesReport");
+            NavRoles.Visibility = HasPermission("Roles") ? Visibility.Visible : Visibility.Collapsed;
+
+            NavSettings.Visibility = HasPermission("Settings") ? Visibility.Visible : Visibility.Collapsed;
+            NavAudit.Visibility = HasPermission("Audit") ? Visibility.Visible : Visibility.Collapsed;
+
+            // Update section header visibilities dynamically
+            UpdateHeaderVisibilities();
         }
 
         // ── Navigation ────────────────────────────────────────────────────────
@@ -204,6 +212,20 @@ namespace HotelPOS
             SetActive(NavTables);
         }
 
+        private void NavPurchase_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedPurchase ??= _serviceProvider.GetRequiredService<PurchaseEntryView>();
+            MainContentArea.Content = _cachedPurchase;
+            SetActive(NavPurchase);
+        }
+
+        private void NavSuppliers_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedSuppliers ??= _serviceProvider.GetRequiredService<SupplierView>();
+            MainContentArea.Content = _cachedSuppliers;
+            SetActive(NavSuppliers);
+        }
+
         private void NavLedger_Click(object sender, RoutedEventArgs e)
         {
             _cachedLedger ??= _serviceProvider.GetRequiredService<LedgerView>();
@@ -230,6 +252,13 @@ namespace HotelPOS
             _cachedItemReport ??= _serviceProvider.GetRequiredService<ItemReportView>();
             MainContentArea.Content = _cachedItemReport;
             SetActive(NavItemReport);
+        }
+
+        private void NavPurchaseReport_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedPurchaseReport ??= _serviceProvider.GetRequiredService<PurchaseReportView>();
+            MainContentArea.Content = _cachedPurchaseReport;
+            SetActive(NavPurchaseReport);
         }
 
         private void NavSettings_Click(object sender, RoutedEventArgs e)
@@ -262,11 +291,56 @@ namespace HotelPOS
 
         private void SetActive(Button active)
         {
-            foreach (var btn in new[] { NavDash, NavBilling, NavMenu, NavCats, NavTables, NavLedger, NavJournal, NavSettings, NavAudit, NavShift, NavRoles, NavSales, NavItemReport })
-                btn.IsEnabled = btn != active;
+            // 1. Enable all 13 navigation buttons
+            var allButtons = new[]
+            {
+                NavBilling, NavShift,
+                NavMenu, NavCats, NavTables, NavPurchase, NavSuppliers,
+                NavDash, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
+                NavSettings, NavRoles, NavAudit
+            };
+            foreach (var btn in allButtons)
+            {
+                btn.IsEnabled = true;
+            }
 
-            // Use ToolTip as the page title since button content is now a StackPanel
-            PageTitleText.Text = active.ToolTip?.ToString() ?? "Dashboard";
+            // 2. Disable the active button to trigger its visual teal/cyan active state template
+            active.IsEnabled = false;
+
+            // 3. Use ToolTip or Tag as the page title
+            PageTitleText.Text = active.ToolTip?.ToString() ?? active.Tag?.ToString() ?? "Dashboard";
+
+            // 4. Ensure header visibilities are up-to-date
+            UpdateHeaderVisibilities();
+        }
+
+        private void UpdateHeaderVisibilities()
+        {
+            bool isExpanded = (string?)SidebarBorder.Tag == "expanded";
+
+            if (!isExpanded)
+            {
+                // Compact mode: hide all headers
+                HeaderOps.Visibility = Visibility.Collapsed;
+                HeaderInv.Visibility = Visibility.Collapsed;
+                HeaderStats.Visibility = Visibility.Collapsed;
+                HeaderAdmin.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // Expanded mode: show header ONLY if at least one child button is visible
+                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible)
+                    ? Visibility.Visible : Visibility.Collapsed;
+
+                HeaderInv.Visibility = (NavMenu.Visibility == Visibility.Visible || NavCats.Visibility == Visibility.Visible || NavTables.Visibility == Visibility.Visible || NavPurchase.Visibility == Visibility.Visible || NavSuppliers.Visibility == Visibility.Visible)
+                    ? Visibility.Visible : Visibility.Collapsed;
+
+                HeaderStats.Visibility = (NavDash.Visibility == Visibility.Visible || NavSales.Visibility == Visibility.Visible || NavItemReport.Visibility == Visibility.Visible || NavPurchaseReport.Visibility == Visibility.Visible || NavLedger.Visibility == Visibility.Visible || NavJournal.Visibility == Visibility.Visible)
+                    ? Visibility.Visible : Visibility.Collapsed;
+
+                HeaderAdmin.Visibility = (NavSettings.Visibility == Visibility.Visible || NavRoles.Visibility == Visibility.Visible || NavAudit.Visibility == Visibility.Visible)
+                    ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         // ── Sidebar Toggle ────────────────────────────────────────────────────
@@ -276,17 +350,27 @@ namespace HotelPOS
             bool expand = (string?)SidebarBorder.Tag != "expanded";
 
             SidebarBorder.Tag    = expand ? "expanded" : "compact";
-            SidebarColumn.Width  = new GridLength(expand ? 220 : 80);
+            double targetWidth = expand ? 220 : 70;
 
-            // Logo text
-            SidebarLogoText.Visibility = expand ? Visibility.Visible : Visibility.Collapsed;
+            // Smooth hardware-accelerated grid sidebar animation
+            var animation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                To = targetWidth,
+                Duration = System.TimeSpan.FromMilliseconds(200),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseInOut }
+            };
+            SidebarBorder.BeginAnimation(WidthProperty, animation);
 
             // Bottom panels
             BottomCompact.Visibility  = expand ? Visibility.Collapsed : Visibility.Visible;
             BottomExpanded.Visibility = expand ? Visibility.Visible   : Visibility.Collapsed;
 
-            // Toggle icon
-            ToggleIcon.Text = expand ? "◀" : "≡";
+            // Header panels
+            HeaderCompact.Visibility = expand ? Visibility.Collapsed : Visibility.Visible;
+            HeaderExpanded.Visibility = expand ? Visibility.Visible : Visibility.Collapsed;
+
+            // Update section header visibilities dynamically
+            UpdateHeaderVisibilities();
         }
 
         public void StartEditOrder(Order order)

@@ -11,6 +11,7 @@ namespace HotelPOS.Tests
         private readonly Mock<IOrderRepository> _orderRepoMock;
         private readonly Mock<IItemRepository> _itemRepoMock;
         private readonly Mock<ICategoryRepository> _categoryRepoMock;
+        private readonly Mock<IPurchaseRepository> _purchaseRepoMock;
         private readonly ReportService _service;
 
         public ReportServiceTests()
@@ -18,7 +19,8 @@ namespace HotelPOS.Tests
             _orderRepoMock = new Mock<IOrderRepository>();
             _itemRepoMock = new Mock<IItemRepository>();
             _categoryRepoMock = new Mock<ICategoryRepository>();
-            _service = new ReportService(_orderRepoMock.Object, _itemRepoMock.Object, _categoryRepoMock.Object);
+            _purchaseRepoMock = new Mock<IPurchaseRepository>();
+            _service = new ReportService(_orderRepoMock.Object, _itemRepoMock.Object, _categoryRepoMock.Object, _purchaseRepoMock.Object);
         }
 
         [Fact]

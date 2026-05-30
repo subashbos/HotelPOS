@@ -17,11 +17,12 @@ namespace HotelPOS.Tests
         private readonly Mock<IOrderRepository> _orderRepo = new();
         private readonly Mock<IItemRepository> _itemRepo = new();
         private readonly Mock<ICategoryRepository> _catRepo = new();
+        private readonly Mock<IPurchaseRepository> _purchaseRepo = new();
         private readonly ReportService _service;
 
         public ReportServiceLoopholeTests()
         {
-            _service = new ReportService(_orderRepo.Object, _itemRepo.Object, _catRepo.Object);
+            _service = new ReportService(_orderRepo.Object, _itemRepo.Object, _catRepo.Object, _purchaseRepo.Object);
         }
 
         private void SetupEmptyOrders() =>

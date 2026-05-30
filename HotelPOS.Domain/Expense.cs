@@ -8,7 +8,7 @@ namespace HotelPOS.Domain
         public int Id { get; set; }
 
         [Required]
-        public DateTime Date { get; set; } = DateTime.Now;
+        public DateTime Date { get; set; } = DateTime.UtcNow;
 
         [Required]
         [MaxLength(200)]

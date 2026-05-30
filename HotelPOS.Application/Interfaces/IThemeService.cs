@@ -1,4 +1,4 @@
-namespace HotelPOS.Application.Interface
+namespace HotelPOS.Application.Interfaces
 {
     public interface IThemeService
     {

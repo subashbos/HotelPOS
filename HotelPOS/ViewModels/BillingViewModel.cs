@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using System.Collections.ObjectModel;
@@ -17,6 +16,7 @@ namespace HotelPOS.ViewModels
         private readonly INotificationService _notificationService;
         private readonly ICashService _cashService;
         private readonly ITableService _tableService;
+        private readonly IDialogService? _dialogService;
 
         [ObservableProperty]
         private string _searchText = string.Empty;
@@ -165,7 +165,8 @@ namespace HotelPOS.ViewModels
         public BillingViewModel(IItemService itemService, ICartService cartService,
                                 IOrderService orderService, ISettingService settingService,
                                 ICategoryService categoryService, INotificationService notificationService,
-                                ICashService cashService, ITableService tableService)
+                                ICashService cashService, ITableService tableService,
+                                IDialogService? dialogService = null)
         {
             _itemService = itemService;
             _cartService = cartService;
@@ -175,6 +176,7 @@ namespace HotelPOS.ViewModels
             _notificationService = notificationService;
             _cashService = cashService;
             _tableService = tableService;
+            _dialogService = dialogService;
 
             LoadHeldOrders();
         }
@@ -726,24 +728,61 @@ namespace HotelPOS.ViewModels
         [RelayCommand]
         private async Task SaveOrderAsync()
         {
+            var rawItems = _cartService.GetItems(TableNumber);
+            if (rawItems.Count == 0)
+            {
+                _notificationService.ShowInfo("Cannot save empty order");
+                return;
+            }
+
+            // LOOPHOLE FIX: Validate PaymentMode
+            if (string.IsNullOrWhiteSpace(PaymentMode))
+            {
+                _notificationService.ShowError("Please select a payment mode before checkout.");
+                return;
+            }
+
+            // LOOPHOLE FIX: Prevent checkout if shift is closed
+            // Acquire lock momentarily to check session status
             await App.DbLock.WaitAsync();
             try
             {
-                var rawItems = _cartService.GetItems(TableNumber);
-                if (rawItems.Count == 0)
+                var currentSession = await _cashService.GetCurrentSessionAsync();
+                if (currentSession == null)
                 {
-                    _notificationService.ShowInfo("Cannot save empty order");
+                    _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
                     return;
                 }
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
 
-                // LOOPHOLE FIX: Validate PaymentMode
-                if (string.IsNullOrWhiteSpace(PaymentMode))
+            // Show Confirm Checkout Dialog if service is available
+            if (_dialogService != null)
+            {
+                var details = new ConfirmCheckoutDetails
                 {
-                    _notificationService.ShowError("Please select a payment mode before checkout.");
+                    TotalItems = rawItems.Sum(i => i.Quantity),
+                    TotalAmount = Subtotal + GstAmount,
+                    DiscountAmount = DiscountAmount,
+                    FinalPayableAmount = TotalAmount,
+                    PaymentMode = PaymentMode
+                };
+
+                bool confirmed = await _dialogService.ShowConfirmCheckoutAsync(details);
+                if (!confirmed)
+                {
                     return;
                 }
+            }
 
-                // LOOPHOLE FIX: Prevent checkout if shift is closed
+            // Re-acquire lock to actually perform the save
+            await App.DbLock.WaitAsync();
+            try
+            {
+                // Re-verify shift state under lock
                 var currentSession = await _cashService.GetCurrentSessionAsync();
                 if (currentSession == null)
                 {

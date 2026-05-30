@@ -1,4 +1,4 @@
-namespace HotelPOS.Application.Interface
+namespace HotelPOS.Application.Interfaces
 {
     public interface IReportService
     {
@@ -17,5 +17,9 @@ namespace HotelPOS.Application.Interface
 
         /// <summary>Returns monthly sales revenue for the current year.</summary>
         Task<List<MonthlySalesChartDto>> GetMonthlyChartDataAsync();
+
+        /// <summary>Returns paged purchase report with totals.</summary>
+        Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportAsync(
+            int page, int pageSize, DateTime? from, DateTime? to, int? supplierId, string? itemName, string? paymentType, string? invoiceNo);
     }
 }

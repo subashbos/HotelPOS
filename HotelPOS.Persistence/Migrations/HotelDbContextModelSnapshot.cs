@@ -340,6 +340,104 @@ namespace HotelPOS.Persistence.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Purchase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("GrandTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PaymentType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("PurchaseDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalDiscount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalTax")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("Purchases");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.PurchaseItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("PurchaseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TaxPercentage")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("PurchaseId");
+
+                    b.ToTable("PurchaseItems");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -509,6 +607,24 @@ namespace HotelPOS.Persistence.Migrations
                         },
                         new
                         {
+                            Id = 23,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "SalesReport",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 25,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Purchase",
+                            RoleId = 1
+                        },
+                        new
+                        {
                             Id = 11,
                             CanAccess = false,
                             CanDelete = true,
@@ -605,6 +721,143 @@ namespace HotelPOS.Persistence.Migrations
                             CanEdit = true,
                             ModuleName = "Roles",
                             RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 24,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "SalesReport",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 26,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Purchase",
+                            RoleId = 2
+                        });
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Supplier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ContactPerson")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("CreditLimit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Gstin")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("OpeningBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PaymentTerms")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Pincode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("State")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Suppliers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            City = "Mumbai",
+                            CreditLimit = 50000m,
+                            Gstin = "27AAAAA1111A1Z1",
+                            Name = "Metro Wholesalers",
+                            OpeningBalance = 0m,
+                            PaymentTerms = "Credit",
+                            Phone = "9876543210",
+                            Pincode = "400001",
+                            State = "Maharashtra"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            City = "Pune",
+                            CreditLimit = 100000m,
+                            Gstin = "27BBBBB2222B2Z2",
+                            Name = "Apex Food Distributors",
+                            OpeningBalance = 5000m,
+                            PaymentTerms = "30 Days",
+                            Phone = "9876543211",
+                            Pincode = "411001",
+                            State = "Maharashtra"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            City = "Mumbai",
+                            CreditLimit = 25000m,
+                            Gstin = "27CCCCC3333C3Z3",
+                            Name = "Supreme Dairy Partners",
+                            OpeningBalance = 0m,
+                            PaymentTerms = "Cash",
+                            Phone = "9876543212",
+                            Pincode = "400002",
+                            State = "Maharashtra"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            City = "Nashik",
+                            CreditLimit = 30000m,
+                            Gstin = "27DDDDD4444D4Z4",
+                            Name = "Standard Kitchen Supplies",
+                            OpeningBalance = 1500m,
+                            PaymentTerms = "Credit",
+                            Phone = "9876543213",
+                            Pincode = "422001",
+                            State = "Maharashtra"
                         });
                 });
 
@@ -759,6 +1012,9 @@ namespace HotelPOS.Persistence.Migrations
 
                     b.HasIndex("RoleId");
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("Users");
 
                     b.HasData(
@@ -767,10 +1023,10 @@ namespace HotelPOS.Persistence.Migrations
                             Id = 1,
                             IsActive = true,
                             MustChangePassword = true,
-                            PasswordHash = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc=",
+                            PasswordHash = "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=",
                             Role = "Admin",
                             RoleId = 1,
-                            Salt = "cUDnxEUZDYmisbvUU2zu1Q==",
+                            Salt = "jwhVPO8B1u7Hqc4drt45HQ==",
                             Username = "admin"
                         });
                 });
@@ -804,6 +1060,36 @@ namespace HotelPOS.Persistence.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Purchase", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.PurchaseItem", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelPOS.Domain.Purchase", "Purchase")
+                        .WithMany("PurchaseItems")
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Purchase");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.RolePermission", b =>
                 {
                     b.HasOne("HotelPOS.Domain.Role", null)
@@ -825,6 +1111,11 @@ namespace HotelPOS.Persistence.Migrations
             modelBuilder.Entity("HotelPOS.Domain.Order", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Purchase", b =>
+                {
+                    b.Navigation("PurchaseItems");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Role", b =>
