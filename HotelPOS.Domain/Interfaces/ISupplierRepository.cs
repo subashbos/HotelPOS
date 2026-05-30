@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace HotelPOS.Domain.Interface
+namespace HotelPOS.Domain.Interfaces
 {
     public interface ISupplierRepository
     {

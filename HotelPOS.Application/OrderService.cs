@@ -1,7 +1,7 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Events;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using MediatR;
 
 namespace HotelPOS.Application

@@ -6,7 +6,7 @@ using ToastNotifications.Messages;
 using System.Linq;
 using System.Windows;
 
-namespace HotelPOS.Infrastructure
+namespace HotelPOS.Services
 {
     public class NotificationService : INotificationService
     {

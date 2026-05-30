@@ -52,6 +52,7 @@ namespace HotelPOS.ViewModels
 
         public async Task LoadSuppliersAsync()
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var suppliers = await _supplierService.GetSuppliersAsync();
@@ -62,6 +63,10 @@ namespace HotelPOS.ViewModels
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Failed to load suppliers: {ex.Message}");
+            }
+            finally
+            {
+                App.DbLock.Release();
             }
         }
 
@@ -133,16 +138,21 @@ namespace HotelPOS.ViewModels
                 var confirmed = await ConfirmDeleteAsync(target.Name);
                 if (confirmed)
                 {
+                    await App.DbLock.WaitAsync();
                     try
                     {
                         await _supplierService.DeleteSupplierAsync(target.Id);
                         _notificationService.ShowSuccess($"Supplier '{target.Name}' deleted successfully.");
-                        await LoadSuppliersAsync();
                     }
                     catch (Exception ex)
                     {
                         _notificationService.ShowError($"Failed to delete supplier: {ex.Message}");
                     }
+                    finally
+                    {
+                        App.DbLock.Release();
+                    }
+                    await LoadSuppliersAsync();
                 }
             }
         }

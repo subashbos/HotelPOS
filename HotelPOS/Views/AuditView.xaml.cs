@@ -28,6 +28,7 @@ namespace HotelPOS.Views
 
         private async Task RefreshLogsAsync()
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var start = FromDate.SelectedDate?.Date;
@@ -40,6 +41,10 @@ namespace HotelPOS.Views
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Error loading audit logs: {ex.Message}");
+            }
+            finally
+            {
+                App.DbLock.Release();
             }
         }
     }

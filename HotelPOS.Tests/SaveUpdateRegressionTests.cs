@@ -1,7 +1,8 @@
+using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using HotelPOS.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

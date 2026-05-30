@@ -1,3 +1,4 @@
+using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
@@ -25,6 +26,7 @@ namespace HotelPOS
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var cats = await _categoryService.GetCategoriesAsync();
@@ -44,6 +46,7 @@ namespace HotelPOS
                 }
             }
             catch (Exception ex) { ShowStatus(ex.Message, true); }
+            finally { App.DbLock.Release(); }
 
             ItemNameBox.Focus();
         }
@@ -102,28 +105,36 @@ namespace HotelPOS
                     Barcode = BarcodeBox.Text?.Trim()
                 };
 
-                if (_editingItem == null)
+                await App.DbLock.WaitAsync();
+                try
                 {
-                    await _itemService.AddItemAsync(dto);
-                    ItemSaved?.Invoke();
-                    
-                    _notificationService.ShowSuccess($"'{name}' saved successfully.");
-                    
-                    // Clear for next item
-                    ItemNameBox.Clear(); 
-                    ItemPriceBox.Clear();
-                    BarcodeBox.Clear();
-                    StockQuantityBox.Clear();
-                    ItemCategoryCombo.SelectedIndex = -1; 
-                    TaxCombo.SelectedIndex = 0;
-                    ItemNameBox.Focus();
-                    StatusBorder.Visibility = Visibility.Collapsed;
+                    if (_editingItem == null)
+                    {
+                        await _itemService.AddItemAsync(dto);
+                        ItemSaved?.Invoke();
+                        
+                        _notificationService.ShowSuccess($"'{name}' saved successfully.");
+                        
+                        // Clear for next item
+                        ItemNameBox.Clear(); 
+                        ItemPriceBox.Clear();
+                        BarcodeBox.Clear();
+                        StockQuantityBox.Clear();
+                        ItemCategoryCombo.SelectedIndex = -1; 
+                        TaxCombo.SelectedIndex = 0;
+                        ItemNameBox.Focus();
+                        StatusBorder.Visibility = Visibility.Collapsed;
+                    }
+                    else
+                    {
+                        await _itemService.UpdateItemAsync(_editingItem.Id, dto);
+                        ItemSaved?.Invoke();
+                        Close();
+                    }
                 }
-                else
+                finally
                 {
-                    await _itemService.UpdateItemAsync(_editingItem.Id, dto);
-                    ItemSaved?.Invoke();
-                    Close();
+                    App.DbLock.Release();
                 }
             }
             catch (Exception ex)

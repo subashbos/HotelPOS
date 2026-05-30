@@ -1,6 +1,6 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
-using HotelPOS.Persistence.Interfaces;
+using HotelPOS.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,9 +13,9 @@ namespace HotelPOS.Api.Controllers
     [Authorize]
     public class ItemsController : BaseApiController
     {
-        private readonly IRepository<Item> _itemRepo;
+        private readonly IItemRepository _itemRepo;
 
-        public ItemsController(IRepository<Item> itemRepo)
+        public ItemsController(IItemRepository itemRepo)
         {
             _itemRepo = itemRepo;
         }
@@ -55,7 +55,6 @@ namespace HotelPOS.Api.Controllers
             };
 
             await _itemRepo.AddAsync(item);
-            await _itemRepo.SaveChangesAsync();
             return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
         }
     }

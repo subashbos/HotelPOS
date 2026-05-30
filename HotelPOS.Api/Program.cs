@@ -1,7 +1,6 @@
 using HotelPOS.Api.Middleware;
-using HotelPOS.Persistence.Interfaces;
+using HotelPOS.Domain.Interfaces;
 using HotelPOS.Persistence;
-using HotelPOS.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,8 +16,8 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<HotelDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ── Dependency Injection: Generic Repository ──────────────────────────────
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+// ── Dependency Injection: Item Repository ─────────────────────────────────
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
 
 // ── CORS Configuration ────────────────────────────────────────────────────
 builder.Services.AddCors(options =>

@@ -1,5 +1,6 @@
+using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 
 namespace HotelPOS.Application
 {

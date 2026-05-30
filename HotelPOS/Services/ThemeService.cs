@@ -1,7 +1,7 @@
 using HotelPOS.Application.Interfaces;
 using System.Windows;
 
-namespace HotelPOS.Infrastructure
+namespace HotelPOS.Services
 {
     public class ThemeService : IThemeService
     {

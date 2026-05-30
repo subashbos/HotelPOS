@@ -1,6 +1,6 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using HotelPOS.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
@@ -74,8 +74,17 @@ namespace HotelPOS
                 try
                 {
                     // Step 1: Reload user from DB to get fresh RoleDetails + Permissions
-                    var freshUser = await _userRepository.GetUserByUsernameAsync(
-                        AppSession.CurrentUser.Username);
+                    User? freshUser = null;
+                    await App.DbLock.WaitAsync();
+                    try
+                    {
+                        freshUser = await _userRepository.GetUserByUsernameAsync(
+                            AppSession.CurrentUser.Username);
+                    }
+                    finally
+                    {
+                        App.DbLock.Release();
+                    }
 
                     if (freshUser?.RoleDetails != null)
                     {
@@ -86,12 +95,21 @@ namespace HotelPOS
                     {
                         // Fallback: RoleId is null on the user record — look up role by name
                         // This handles users created before role linking was enforced.
-                        var roleByName = await _roleService
-                            .GetAllRolesAsync()
-                            .ContinueWith(t => t.Result
-                                .FirstOrDefault(r => string.Equals(r.Name,
-                                    AppSession.CurrentUser.Role,
-                                    StringComparison.OrdinalIgnoreCase)));
+                        Role? roleByName = null;
+                        await App.DbLock.WaitAsync();
+                        try
+                        {
+                            roleByName = await _roleService
+                                .GetAllRolesAsync()
+                                .ContinueWith(t => t.Result
+                                    .FirstOrDefault(r => string.Equals(r.Name,
+                                        AppSession.CurrentUser.Role,
+                                        StringComparison.OrdinalIgnoreCase)));
+                        }
+                        finally
+                        {
+                            App.DbLock.Release();
+                        }
 
                         if (roleByName != null)
                         {

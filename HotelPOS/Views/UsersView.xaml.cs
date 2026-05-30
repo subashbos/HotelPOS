@@ -30,7 +30,16 @@ namespace HotelPOS.Views
 
         private async Task LoadRolesAsync()
         {
-            var roles = await _roleService.GetAllRolesAsync();
+            await App.DbLock.WaitAsync();
+            List<Role> roles;
+            try
+            {
+                roles = await _roleService.GetAllRolesAsync();
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
             NewRoleCombo.ItemsSource = roles;
             NewRoleCombo.DisplayMemberPath = "Name";
             NewRoleCombo.SelectedValuePath = "Id";
@@ -39,7 +48,16 @@ namespace HotelPOS.Views
 
         public async Task RefreshAsync()
         {
-            var users = await _userService.GetAllUsersAsync();
+            await App.DbLock.WaitAsync();
+            List<User> users;
+            try
+            {
+                users = await _userService.GetAllUsersAsync();
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
             for (int i = 0; i < users.Count; i++) users[i].SNo = i + 1;
             UsersGrid.ItemsSource = users;
         }
@@ -51,7 +69,15 @@ namespace HotelPOS.Views
         private async void Enable_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
-            await _userService.ToggleActiveAsync(u.Id, true);
+            await App.DbLock.WaitAsync();
+            try
+            {
+                await _userService.ToggleActiveAsync(u.Id, true);
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
             await RefreshAsync();
             ShowFeedback($"✅ {u.Username} has been enabled.", true);
         }
@@ -60,7 +86,15 @@ namespace HotelPOS.Views
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
             if (u.Id == AppSession.CurrentUser?.Id) { ShowFeedback("You cannot disable your own account.", false); return; }
-            await _userService.ToggleActiveAsync(u.Id, false);
+            await App.DbLock.WaitAsync();
+            try
+            {
+                await _userService.ToggleActiveAsync(u.Id, false);
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
             await RefreshAsync();
             ShowFeedback($"🚫 {u.Username} has been disabled.", true);
         }
@@ -72,7 +106,17 @@ namespace HotelPOS.Views
             var dialog = new PasswordResetDialog(u.Username) { Owner = Window.GetWindow(this) };
             if (dialog.ShowDialog() == true)
             {
-                var (ok, err) = await _userService.ResetPasswordAsync(u.Id, dialog.NewPassword);
+                bool ok;
+                string err;
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    (ok, err) = await _userService.ResetPasswordAsync(u.Id, dialog.NewPassword);
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 ShowFeedback(ok ? $"🔑 Password reset for {u.Username}." : err, ok);
             }
         }
@@ -88,7 +132,15 @@ namespace HotelPOS.Views
 
             try
             {
-                await _userService.DeleteUserAsync(u.Id, AppSession.CurrentUser?.Id ?? 0);
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    await _userService.DeleteUserAsync(u.Id, AppSession.CurrentUser?.Id ?? 0);
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 await RefreshAsync();
                 ShowFeedback($"🗑 {u.Username} deleted.", true);
             }
@@ -107,7 +159,18 @@ namespace HotelPOS.Views
                 return;
             }
 
-            var (ok, err) = await _userService.AddUserAsync(username, password, selectedRole.Name, selectedRole.Id);
+            bool ok;
+            string err;
+            await App.DbLock.WaitAsync();
+            try
+            {
+                (ok, err) = await _userService.AddUserAsync(username, password, selectedRole.Name, selectedRole.Id);
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
+
             if (ok)
             {
                 NewUsernameBox.Clear();
