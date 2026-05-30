@@ -159,6 +159,7 @@ namespace HotelPOS.ViewModels
         public event Action? OrderEditCancelled;
         public event Action? PrintPreviewClosed;
         public event Action? CartCleared;
+        public event Action? CheckoutCancelled;
 
         private List<Item> _allItems = new();
 
@@ -349,8 +350,17 @@ namespace HotelPOS.ViewModels
                 filtered = filtered.Where(i => i.CategoryId == SelectedCategoryId);
 
             if (!string.IsNullOrWhiteSpace(SearchText))
-                filtered = filtered.Where(i => i.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                                      (!string.IsNullOrEmpty(i.Barcode) && i.Barcode.Contains(SearchText, StringComparison.OrdinalIgnoreCase)));
+            {
+                var query = SearchText.Trim();
+                filtered = filtered.Where(i => i.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                                              (!string.IsNullOrEmpty(i.Barcode) && i.Barcode.Contains(query, StringComparison.OrdinalIgnoreCase)))
+                                   .OrderBy(i => i.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                                   .ThenBy(i => i.Name);
+            }
+            else
+            {
+                filtered = filtered.OrderBy(i => i.Name);
+            }
 
             Items.Clear();
             foreach (var item in filtered) Items.Add(item);
@@ -774,6 +784,7 @@ namespace HotelPOS.ViewModels
                 bool confirmed = await _dialogService.ShowConfirmCheckoutAsync(details);
                 if (!confirmed)
                 {
+                    CheckoutCancelled?.Invoke();
                     return;
                 }
             }
