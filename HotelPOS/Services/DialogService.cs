@@ -1,4 +1,4 @@
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
 using System.Linq;

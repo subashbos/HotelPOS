@@ -6,7 +6,7 @@ using Xunit;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediatR;
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 
 namespace HotelPOS.Tests
 {

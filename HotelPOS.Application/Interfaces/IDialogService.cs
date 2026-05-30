@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace HotelPOS.Application.Interface
+namespace HotelPOS.Application.Interfaces
 {
     public class ConfirmCheckoutDetails
     {

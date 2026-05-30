@@ -1,4 +1,4 @@
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using System.Windows;
 
 namespace HotelPOS.Infrastructure

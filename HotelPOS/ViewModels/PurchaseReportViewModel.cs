@@ -1,9 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
-using HotelPOS.Domain;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

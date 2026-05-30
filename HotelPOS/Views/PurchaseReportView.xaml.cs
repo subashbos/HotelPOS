@@ -1,6 +1,6 @@
 using ClosedXML.Excel;
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.ViewModels;
 using Microsoft.Win32;
 using System;

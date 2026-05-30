@@ -1,5 +1,4 @@
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
@@ -862,8 +861,6 @@ namespace HotelPOS.Tests
 // ─────────────────────────────────────────────────────────────────────────────
 namespace HotelPOS.Tests
 {
-    using HotelPOS.Application.Interface;
-    using HotelPOS.Application.Interfaces;
     using HotelPOS.Domain;
     using Moq;
     using Xunit;

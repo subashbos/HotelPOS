@@ -1,4 +1,3 @@
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using System.Collections.Generic;

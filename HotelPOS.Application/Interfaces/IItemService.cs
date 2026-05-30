@@ -1,6 +1,6 @@
 using HotelPOS.Domain;
 
-namespace HotelPOS.Application.Interface
+namespace HotelPOS.Application.Interfaces
 {
     public interface IItemService
     {

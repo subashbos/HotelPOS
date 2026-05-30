@@ -1,4 +1,3 @@
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;

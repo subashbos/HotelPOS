@@ -1,4 +1,4 @@
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Interface;
 using System.Collections.Concurrent;

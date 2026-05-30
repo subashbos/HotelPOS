@@ -1,5 +1,4 @@
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using Microsoft.Win32;
 using System;

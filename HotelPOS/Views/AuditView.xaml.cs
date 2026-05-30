@@ -1,4 +1,3 @@
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
