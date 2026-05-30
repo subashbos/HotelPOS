@@ -25,6 +25,7 @@ namespace HotelPOS.Views
 
         private async Task LoadDataAsync()
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var categories = await _categoryService.GetCategoriesAsync();
@@ -32,6 +33,7 @@ namespace HotelPOS.Views
                 CategoryGrid.ItemsSource = categories;
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
+            finally { App.DbLock.Release(); }
         }
 
         private async void Add_Click(object sender, RoutedEventArgs e)
@@ -39,6 +41,7 @@ namespace HotelPOS.Views
             var name = NameBox.Text.Trim();
             if (string.IsNullOrEmpty(name)) { ShowStatus("Please enter a category name.", false); return; }
 
+            await App.DbLock.WaitAsync();
             try
             {
                 if (_editingCategory == null)
@@ -53,9 +56,11 @@ namespace HotelPOS.Views
                     ExitEditMode();
                 }
                 NameBox.Clear();
-                await LoadDataAsync();
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
+            finally { App.DbLock.Release(); }
+
+            await LoadDataAsync();
         }
 
         private void Edit_Click(object sender, RoutedEventArgs e)
@@ -78,9 +83,16 @@ namespace HotelPOS.Views
                 if (MessageBox.Show("Delete this category? Items linked to it will lose their category.", "Confirm Delete",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    await _categoryService.DeleteCategoryAsync(id);
+                    await App.DbLock.WaitAsync();
+                    try
+                    {
+                        await _categoryService.DeleteCategoryAsync(id);
+                        ShowStatus("🗑 Category deleted.", true);
+                    }
+                    catch (Exception ex) { ShowStatus(ex.Message, false); }
+                    finally { App.DbLock.Release(); }
+
                     await LoadDataAsync();
-                    ShowStatus("🗑 Category deleted.", true);
                 }
             }
         }

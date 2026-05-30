@@ -40,7 +40,16 @@ namespace HotelPOS
                 LoginButton.IsEnabled = false;
                 LoginButton.Content = "Authenticating...";
 
-                var user = await _authService.AuthenticateAsync(username, password);
+                Domain.User? user = null;
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    user = await _authService.AuthenticateAsync(username, password);
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
 
                 if (user == null)
                 {
@@ -54,7 +63,20 @@ namespace HotelPOS
                         var dialog = new Views.PasswordResetDialog(user.Username) { Owner = this };
                         if (dialog.ShowDialog() == true)
                         {
-                            var (ok, err) = await _userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
+                            bool ok = false;
+                            string? err = null;
+                            await App.DbLock.WaitAsync();
+                            try
+                            {
+                                var res = await _userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
+                                ok = res.Success;
+                                err = res.Error;
+                            }
+                            finally
+                            {
+                                App.DbLock.Release();
+                            }
+
                             if (!ok)
                             {
                                 _notificationService.ShowError($"Failed to update password: {err}");

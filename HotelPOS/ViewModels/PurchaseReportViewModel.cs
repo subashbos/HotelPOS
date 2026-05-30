@@ -68,7 +68,16 @@ namespace HotelPOS.ViewModels
         {
             try
             {
-                var suppliers = await _purchaseService.GetSuppliersAsync();
+                List<Supplier> suppliers;
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    suppliers = await _purchaseService.GetSuppliersAsync();
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 Suppliers.Clear();
                 Suppliers.Add(new Supplier { Id = 0, Name = "All Suppliers" });
                 foreach (var sup in suppliers) Suppliers.Add(sup);
@@ -107,6 +116,7 @@ namespace HotelPOS.ViewModels
 
         private async Task LoadDataAsync(int page, int pageSize)
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var from = FilterFrom;
@@ -130,6 +140,10 @@ namespace HotelPOS.ViewModels
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Failed to load report: {ex.Message}");
+            }
+            finally
+            {
+                App.DbLock.Release();
             }
         }
     }

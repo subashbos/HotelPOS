@@ -57,6 +57,7 @@ namespace HotelPOS.Views
 
         private async Task RefreshTotalCountAsync()
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var from = FromDate.SelectedDate;
@@ -73,10 +74,15 @@ namespace HotelPOS.Views
             {
                 ShowError("Failed to refresh count", ex);
             }
+            finally
+            {
+                App.DbLock.Release();
+            }
         }
 
         private async Task LoadPagedAsync(int page, int size)
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var from = FromDate.SelectedDate;
@@ -103,6 +109,10 @@ namespace HotelPOS.Views
             catch (Exception ex)
             {
                 ShowError("Failed to load page", ex);
+            }
+            finally
+            {
+                App.DbLock.Release();
             }
         }
 
@@ -191,6 +201,7 @@ namespace HotelPOS.Views
             };
             if (dlg.ShowDialog() != true) return;
 
+            await App.DbLock.WaitAsync();
             try
             {
                 var from = FromDate.SelectedDate ?? DateTime.Today.AddDays(-30);
@@ -227,6 +238,10 @@ namespace HotelPOS.Views
             {
                 _notificationService.ShowError($"Export error: {ex.Message}");
             }
+            finally
+            {
+                App.DbLock.Release();
+            }
         }
 
         // ── Print Receipt ─────────────────────────────────────────────────────
@@ -234,6 +249,7 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is int orderId)
             {
+                await App.DbLock.WaitAsync();
                 try
                 {
                     var settings = await _settingService.GetSettingsAsync();
@@ -258,7 +274,11 @@ namespace HotelPOS.Views
                 }
                 catch (Exception ex)
                 {
-                        _notificationService.ShowError($"Failed to print receipt: {ex.Message}");
+                    _notificationService.ShowError($"Failed to print receipt: {ex.Message}");
+                }
+                finally
+                {
+                    App.DbLock.Release();
                 }
             }
         }
@@ -293,15 +313,20 @@ namespace HotelPOS.Views
                 if (MessageBox.Show($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
+                    await App.DbLock.WaitAsync();
                     try
                     {
                         await _orderService.DeleteOrderAsync(orderId);
-                        await LoadAsync();
                     }
                     catch (Exception ex)
                     {
-                            _notificationService.ShowError($"Delete failed: {ex.Message}");
+                        _notificationService.ShowError($"Delete failed: {ex.Message}");
                     }
+                    finally
+                    {
+                        App.DbLock.Release();
+                    }
+                    await LoadAsync();
                 }
             }
         }

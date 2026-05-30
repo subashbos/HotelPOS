@@ -180,37 +180,45 @@ namespace HotelPOS.ViewModels
                     return;
                 }
 
-                // Check for duplicate names (excluding current ID)
-                var isUnique = await _supplierService.ValidateSupplierNameUniqueAsync(Name, Id);
-                if (!isUnique)
+                await App.DbLock.WaitAsync();
+                try
                 {
-                    NameError = $"A supplier named '{Name.Trim()}' already exists.";
-                    _notificationService.ShowWarning(NameError);
-                    return;
+                    // Check for duplicate names (excluding current ID)
+                    var isUnique = await _supplierService.ValidateSupplierNameUniqueAsync(Name, Id);
+                    if (!isUnique)
+                    {
+                        NameError = $"A supplier named '{Name.Trim()}' already exists.";
+                        _notificationService.ShowWarning(NameError);
+                        return;
+                    }
+
+                    // Phone formatting
+                    var cleanPhone = Regex.Replace(Phone, @"[^\d\+\-\(\)\s]", "");
+
+                    // Map to domain entity
+                    var supplier = new Supplier
+                    {
+                        Id = Id,
+                        Name = Name.Trim(),
+                        ContactPerson = ContactPerson?.Trim(),
+                        Phone = cleanPhone.Trim(),
+                        Email = Email?.Trim(),
+                        Gstin = Gstin?.Trim(),
+                        Address = Address?.Trim(),
+                        City = City?.Trim(),
+                        State = State?.Trim(),
+                        Pincode = Pincode?.Trim(),
+                        OpeningBalance = OpeningBalance,
+                        CreditLimit = CreditLimit,
+                        PaymentTerms = PaymentTerms?.Trim()
+                    };
+
+                    await _supplierService.SaveSupplierAsync(supplier);
                 }
-
-                // Phone formatting
-                var cleanPhone = Regex.Replace(Phone, @"[^\d\+\-\(\)\s]", "");
-
-                // Map to domain entity
-                var supplier = new Supplier
+                finally
                 {
-                    Id = Id,
-                    Name = Name.Trim(),
-                    ContactPerson = ContactPerson?.Trim(),
-                    Phone = cleanPhone.Trim(),
-                    Email = Email?.Trim(),
-                    Gstin = Gstin?.Trim(),
-                    Address = Address?.Trim(),
-                    City = City?.Trim(),
-                    State = State?.Trim(),
-                    Pincode = Pincode?.Trim(),
-                    OpeningBalance = OpeningBalance,
-                    CreditLimit = CreditLimit,
-                    PaymentTerms = PaymentTerms?.Trim()
-                };
-
-                await _supplierService.SaveSupplierAsync(supplier);
+                    App.DbLock.Release();
+                }
 
                 _notificationService.ShowSuccess(IsEditMode ? "Supplier updated successfully." : "Supplier saved successfully.");
                 RequestClose?.Invoke(this, true);

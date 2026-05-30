@@ -63,6 +63,7 @@ namespace HotelPOS.ViewModels
 
         public async Task LoadDataAsync()
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 Suppliers.Clear();
@@ -88,6 +89,10 @@ namespace HotelPOS.ViewModels
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Failed to load catalog data: {ex.Message}");
+            }
+            finally
+            {
+                App.DbLock.Release();
             }
         }
 
@@ -185,7 +190,15 @@ namespace HotelPOS.ViewModels
                     }).ToList()
                 };
 
-                await _purchaseService.SavePurchaseAsync(purchase);
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    await _purchaseService.SavePurchaseAsync(purchase);
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 _notificationService.ShowSuccess("Purchase entry saved successfully and stock quantities updated.");
 
                 // Reset form fields

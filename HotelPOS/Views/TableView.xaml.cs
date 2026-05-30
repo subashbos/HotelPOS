@@ -27,6 +27,7 @@ namespace HotelPOS.Views
 
         private async Task LoadDataAsync()
         {
+            await App.DbLock.WaitAsync();
             try
             {
                 var tables = await _tableService.GetTablesAsync();
@@ -34,6 +35,7 @@ namespace HotelPOS.Views
                 TableGrid.ItemsSource = tables;
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
+            finally { App.DbLock.Release(); }
         }
 
         private async void Add_Click(object sender, RoutedEventArgs e)
@@ -61,6 +63,7 @@ namespace HotelPOS.Views
                 IsActive = IsActiveBox.IsChecked ?? true
             };
 
+            await App.DbLock.WaitAsync();
             try
             {
                 if (_editingTable == null)
@@ -75,9 +78,11 @@ namespace HotelPOS.Views
                     ExitEditMode();
                 }
                 ResetForm();
-                await LoadDataAsync();
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
+            finally { App.DbLock.Release(); }
+
+            await LoadDataAsync();
         }
 
         private void Edit_Click(object sender, RoutedEventArgs e)
@@ -103,9 +108,16 @@ namespace HotelPOS.Views
                 if (MessageBox.Show("Delete this table?", "Confirm Delete",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    await _tableService.DeleteTableAsync(id);
+                    await App.DbLock.WaitAsync();
+                    try
+                    {
+                        await _tableService.DeleteTableAsync(id);
+                        ShowStatus("🗑 Table deleted.", true);
+                    }
+                    catch (Exception ex) { ShowStatus(ex.Message, false); }
+                    finally { App.DbLock.Release(); }
+
                     await LoadDataAsync();
-                    ShowStatus("🗑 Table deleted.", true);
                 }
             }
         }
