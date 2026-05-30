@@ -1,0 +1,43 @@
+name: ESLint Analysis
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  eslint:
+    name: Run ESLint Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: HotelPOS.Client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: HotelPOS.Client
+
+      - name: Run ESLint and generate SARIF report
+        run: npm run lint
+        working-directory: HotelPOS.Client
+        continue-on-error: true
+
+      - name: Upload ESLint SARIF results
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: eslint-results.sarif
+          wait-for-processing: true
