@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 // Components
 import { IndexNavbarComponent } from './components/navbars/index-navbar/index-navbar.component';
@@ -79,9 +80,11 @@ import { ProfileComponent } from './views/profile/profile.component';
   ],
   imports: [
     CommonModule,
-    RouterModule
+    RouterModule,
+    FormsModule
   ],
   exports: [
+    FormsModule,
     IndexNavbarComponent,
     AuthNavbarComponent,
     AdminNavbarComponent,

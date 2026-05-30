@@ -18,6 +18,8 @@ builder.Services.AddDbContext<HotelDbContext>(options =>
 
 // ── Dependency Injection: Item Repository ─────────────────────────────────
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<HotelPOS.Application.Interfaces.IAuthService, HotelPOS.Application.AuthService>();
 
 // ── CORS Configuration ────────────────────────────────────────────────────
 builder.Services.AddCors(options =>
