@@ -1,4 +1,4 @@
-using HotelPOS.Infrastructure;
+using HotelPOS.Services;
 using Xunit;
 
 namespace HotelPOS.Tests

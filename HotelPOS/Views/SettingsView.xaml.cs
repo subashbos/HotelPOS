@@ -52,7 +52,15 @@ namespace HotelPOS.Views
 
         private async Task LoadSettingsAsync()
         {
-            _current = await _settingService.GetSettingsAsync();
+            await App.DbLock.WaitAsync();
+            try
+            {
+                _current = await _settingService.GetSettingsAsync();
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
 
             // Profile
             HotelNameBox.Text = _current.HotelName;
@@ -112,7 +120,15 @@ namespace HotelPOS.Views
         {
             try
             {
-                await _settingService.SaveSettingsAsync(_current!);
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    await _settingService.SaveSettingsAsync(_current!);
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 _notificationService.ShowSuccess("Settings saved successfully.");
             }
             catch (Exception ex)
