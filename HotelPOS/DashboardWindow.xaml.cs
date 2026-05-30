@@ -1,6 +1,6 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using HotelPOS.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;

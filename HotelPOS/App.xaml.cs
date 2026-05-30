@@ -1,6 +1,6 @@
 using HotelPOS.Application;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using HotelPOS.Infrastructure;
 using HotelPOS.Persistence;
 using HotelPOS.ViewModels;

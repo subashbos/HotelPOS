@@ -1,4 +1,4 @@
-namespace HotelPOS.Domain.Interface
+namespace HotelPOS.Domain.Interfaces
 {
     public interface IOrderRepository
     {

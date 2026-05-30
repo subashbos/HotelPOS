@@ -1,7 +1,7 @@
 using HotelPOS.Application;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using HotelPOS.ViewModels;
 using Moq;
 using System;
