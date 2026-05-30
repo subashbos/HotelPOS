@@ -67,7 +67,17 @@ namespace HotelPOS.Views
                     DateTime? from = FromDate.SelectedDate;
                     DateTime? to = ToDate.SelectedDate?.AddDays(1);
 
-                    var allOrders = await _orderService.GetAllOrdersWithItemsAsync();
+                    List<Order> allOrders;
+                    await App.DbLock.WaitAsync();
+                    try
+                    {
+                        allOrders = await _orderService.GetAllOrdersWithItemsAsync();
+                    }
+                    finally
+                    {
+                        App.DbLock.Release();
+                    }
+
                     var orders = allOrders.AsEnumerable();
                     if (from.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() >= from.Value);
                     if (to.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() <= to.Value);
