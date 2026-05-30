@@ -68,11 +68,14 @@
                                 <TextBlock Text="CATEGORY NAME" Style="{StaticResource FieldLabel}"/>
                                 <TextBox x:Name="NameBox" Style="{StaticResource InputField}"/>
 
+                                <TextBlock Text="DISPLAY ORDER" Style="{StaticResource FieldLabel}"/>
+                                <TextBox x:Name="DisplayOrderBox" Style="{StaticResource InputField}" Text="0" PreviewTextInput="NumberOnly_PreviewTextInput"/>
+
                                 <Border x:Name="StatusBorder" CornerRadius="8" Padding="14,10" Margin="0,8,0,0" Visibility="Collapsed">
                                     <TextBlock x:Name="StatusText" TextWrapping="Wrap" FontSize="13"/>
                                 </Border>
                             </StackPanel>
-
+                            
                             <StackPanel Grid.Row="2">
                                 <Button x:Name="SubmitButton" Content="＋  Add Category"
                                         Click="Add_Click"
@@ -126,6 +129,14 @@
                                         <Setter Property="VerticalAlignment" Value="Center"/>
                                         <Setter Property="Padding" Value="16,0"/>
                                         <Setter Property="FontWeight" Value="SemiBold"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="DISPLAY ORDER" Binding="{Binding DisplayOrder}" Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Padding" Value="16,0"/>
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>

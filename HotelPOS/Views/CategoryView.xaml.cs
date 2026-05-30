@@ -29,8 +29,9 @@ namespace HotelPOS.Views
             try
             {
                 var categories = await _categoryService.GetCategoriesAsync();
-                for (int i = 0; i < categories.Count; i++) categories[i].SNo = i + 1;
-                CategoryGrid.ItemsSource = categories;
+                var orderedCategories = categories.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                for (int i = 0; i < orderedCategories.Count; i++) orderedCategories[i].SNo = i + 1;
+                CategoryGrid.ItemsSource = orderedCategories;
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
             finally { App.DbLock.Release(); }
@@ -41,21 +42,24 @@ namespace HotelPOS.Views
             var name = NameBox.Text.Trim();
             if (string.IsNullOrEmpty(name)) { ShowStatus("Please enter a category name.", false); return; }
 
+            int.TryParse(DisplayOrderBox.Text, out var displayOrder);
+
             await App.DbLock.WaitAsync();
             try
             {
                 if (_editingCategory == null)
                 {
-                    await _categoryService.AddCategoryAsync(name);
+                    await _categoryService.AddCategoryAsync(name, displayOrder);
                     ShowStatus($"✅ Category '{name}' added.", true);
                 }
                 else
                 {
-                    await _categoryService.UpdateCategoryAsync(_editingCategory.Id, name);
+                    await _categoryService.UpdateCategoryAsync(_editingCategory.Id, name, displayOrder);
                     ShowStatus($"✅ Category '{name}' updated.", true);
                     ExitEditMode();
                 }
                 NameBox.Clear();
+                DisplayOrderBox.Text = "0";
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
             finally { App.DbLock.Release(); }
@@ -69,6 +73,7 @@ namespace HotelPOS.Views
             {
                 _editingCategory = category;
                 NameBox.Text = category.Name;
+                DisplayOrderBox.Text = category.DisplayOrder.ToString();
                 FormTitle.Text = "✏ Edit Category";
                 SubmitButton.Content = "💾 Save Changes";
                 CancelEditButton.Visibility = Visibility.Visible;
@@ -101,6 +106,7 @@ namespace HotelPOS.Views
         {
             ExitEditMode();
             NameBox.Clear();
+            DisplayOrderBox.Text = "0";
         }
 
         private void ExitEditMode()
@@ -109,6 +115,12 @@ namespace HotelPOS.Views
             FormTitle.Text = "Add New Category";
             SubmitButton.Content = "＋ Add Category";
             CancelEditButton.Visibility = Visibility.Collapsed;
+            DisplayOrderBox.Text = "0";
+        }
+
+        private void NumberOnly_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$");
         }
 
         private void ShowStatus(string message, bool success)

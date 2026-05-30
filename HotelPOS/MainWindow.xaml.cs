@@ -99,7 +99,8 @@ namespace HotelPOS
                 ? _allItems.OrderBy(x => x.Name).ToList()
                 : _allItems
                     .Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
-                    .OrderBy(x => x.Name)
+                    .OrderBy(x => x.Name.StartsWith(search, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                    .ThenBy(x => x.Name)
                     .ToList();
 
             ItemList.ItemsSource = null;

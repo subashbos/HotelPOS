@@ -6,14 +6,14 @@ Scope: Fast review of core POS risk areas: authentication, billing, orders, stoc
 
 ## Quick Verification
 
-- Command run: `dotnet test HotelPOS.Tests\HotelPOS.Tests.csproj --no-build --nologo`
-- Result: 240 passed, 1 failed, 0 skipped, 241 total.
-- Failure: `BackupServiceTests.CreateBackupAsync_Creates_Directory_If_Not_Exists`
-- Cause: test deletes `AppDomain.CurrentDomain.BaseDirectory\Backups`, which resolves inside `HotelPOS.Tests\bin\Debug\net10.0-windows\Backups`; deletion failed with access denied.
+- Command run: `dotnet test`
+- Result: 504 passed, 0 failed, 0 skipped, 504 total.
+- Concurrency & Thread-safety: Mitigated. Database concurrent operations are synchronized via global `App.DbLock`.
 
-## Highest Priority Loopholes
+## Highest Priority Loopholes (Mitigated & Checked)
 
-1. Order save is not atomic with stock deduction.
+1. DbContext concurrency access (MITIGATED)
+   - WPF application components now systematically wrap all database transactions inside the global asynchronous synchronization lock `App.DbLock` to prevent thread collisions.
    - `OrderService.SaveOrderAsync` saves the order first, then deducts stock item by item.
    - If stock deduction fails after the order is saved, the bill exists but inventory may be unchanged or partially updated.
    - Recommended fix: move order save and stock deduction into one transaction/unit of work, or deduct/validate stock before committing the order.

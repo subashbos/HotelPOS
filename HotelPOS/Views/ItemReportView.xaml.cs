@@ -64,8 +64,8 @@ namespace HotelPOS.Views
                     App.DbLock.Release();
                 }
 
-                var list = cats.ToList();
-                list.Insert(0, new Category { Id = 0, Name = "All Categories" });
+                var list = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                list.Insert(0, new Category { Id = 0, Name = "All Categories", DisplayOrder = -1 });
                 ComboCategory.ItemsSource = list;
                 ComboCategory.SelectedIndex = 0;
             }

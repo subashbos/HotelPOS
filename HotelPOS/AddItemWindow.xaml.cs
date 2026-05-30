@@ -30,7 +30,8 @@ namespace HotelPOS
             try
             {
                 var cats = await _categoryService.GetCategoriesAsync();
-                ItemCategoryCombo.ItemsSource = cats;
+                var orderedCats = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                ItemCategoryCombo.ItemsSource = orderedCats;
 
                 if (_editingItem != null)
                 {

@@ -32,6 +32,7 @@ Use this checklist before deploying any new version of HotelPOS.
 - [ ] Stock deduction on checkout.
 - [ ] Stock return on order deletion.
 - [ ] Negative stock prevented (check error message).
+- [ ] Category Display Order works (correctly sorts categories in Billing, Add Item, reports, and can be edited/inserted).
 - [ ] Bulk item import (CSV/Excel) handles duplicates.
 
 ## 6. Cash & Reporting

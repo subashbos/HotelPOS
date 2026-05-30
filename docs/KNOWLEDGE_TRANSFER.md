@@ -49,6 +49,19 @@ Defined in `HotelPOS/App.xaml.cs`.
 - Shared utility services such as cart/theme/notification/backup are singleton in current registration
 - Login and dashboard sessions are intentionally scoped and disposed on close
 
+### Thread-Safety & DbContext Synchronization
+
+To prevent EF Core concurrent `DbContext` access errors inside the WPF application (where multiple user events or background tasks might hit the database simultaneously), the application utilizes a global semaphore lock `App.DbLock`.
+- All service and repository database operations initiated from WPF Views, Windows, Dialogs, or ViewModels must be wrapped in `await App.DbLock.WaitAsync(); try { ... } finally { App.DbLock.Release(); }` blocks.
+- This ensures complete thread-safety across active user sessions.
+
+### Category DisplayOrder & Custom Sorting
+
+The `Category` entity includes a `DisplayOrder` property (integer).
+- Cashiers/Admins can specify `DisplayOrder` when adding or editing categories in the master `CategoryView` panel.
+- Category listings throughout POS Billing, Add Item dialog, sales reports, and inventory views are dynamically ordered by `DisplayOrder` (ascending) and then by `Name` alphabetically.
+- Default categories receive a display order of `0` by default.
+
 ### Authentication
 
 Implemented in `HotelPOS.Application/AuthService.cs`.

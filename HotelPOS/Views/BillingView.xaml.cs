@@ -37,6 +37,7 @@ namespace HotelPOS.Views
             _viewModel.OrderEditCancelled += () => OrderEditCancelled?.Invoke();
             _viewModel.PrintPreviewClosed += () => FocusSearch();
             _viewModel.CartCleared += () => FocusSearch();
+            _viewModel.CheckoutCancelled += () => FocusSearch();
         }
 
         public event Action? OrderUpdated;
