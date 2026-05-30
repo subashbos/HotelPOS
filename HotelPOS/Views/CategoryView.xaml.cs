@@ -29,8 +29,9 @@ namespace HotelPOS.Views
             try
             {
                 var categories = await _categoryService.GetCategoriesAsync();
-                for (int i = 0; i < categories.Count; i++) categories[i].SNo = i + 1;
-                CategoryGrid.ItemsSource = categories;
+                var orderedCategories = categories.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                for (int i = 0; i < orderedCategories.Count; i++) orderedCategories[i].SNo = i + 1;
+                CategoryGrid.ItemsSource = orderedCategories;
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
             finally { App.DbLock.Release(); }

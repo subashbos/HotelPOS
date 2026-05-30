@@ -314,10 +314,11 @@ namespace HotelPOS.ViewModels
                 _isInitializing = true;
                 _allItems = await _itemService.GetItemsAsync();
                 var cats = await _categoryService.GetCategoriesAsync();
+                var orderedCats = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
 
                 Categories.Clear();
-                Categories.Add(new Category { Id = 0, Name = "All" });
-                foreach (var cat in cats) Categories.Add(cat);
+                Categories.Add(new Category { Id = 0, Name = "All", DisplayOrder = -1 });
+                foreach (var cat in orderedCats) Categories.Add(cat);
 
                 var settings = await _settingService.GetSettingsAsync();
                 IsCompositionScheme = settings.IsCompositionScheme;
