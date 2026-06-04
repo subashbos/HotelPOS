@@ -2,7 +2,8 @@ import { Component, OnInit, AfterViewInit } from "@angular/core";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
-@Component({ 
+@Component({
+  standalone: false, 
   selector: "app-card-line-chart",
   templateUrl: "./card-line-chart.component.html",
 })

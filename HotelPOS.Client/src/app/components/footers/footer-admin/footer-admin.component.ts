@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 
-@Component({    
+@Component({
+  standalone: false,    
   selector: "app-footer-admin",
   templateUrl: "./footer-admin.component.html",
 })

@@ -1,7 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { createPopper } from "@popperjs/core";
 
-@Component({    
+@Component({
+  standalone: false,    
   selector: "app-index-dropdown",
   templateUrl: "./index-dropdown.component.html",
 })

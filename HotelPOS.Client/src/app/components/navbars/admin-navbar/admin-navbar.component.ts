@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 
-@Component({    
+@Component({
+  standalone: false,    
   selector: "app-admin-navbar",
   templateUrl: "./admin-navbar.component.html",
 })

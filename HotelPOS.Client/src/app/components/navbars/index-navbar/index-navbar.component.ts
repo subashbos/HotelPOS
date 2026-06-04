@@ -2,7 +2,8 @@ import { Component, OnInit } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { PagesDropdownComponent } from "../../dropdowns/pages-dropdown/pages-dropdown.component";
 
-@Component({    
+@Component({
+  standalone: false,    
   selector: "app-index-navbar",
   
   

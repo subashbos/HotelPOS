@@ -26,6 +26,7 @@ interface HeldOrder {
 }
 
 @Component({
+  standalone: false,
   
   selector: 'app-billing',
   templateUrl: './billing.component.html',

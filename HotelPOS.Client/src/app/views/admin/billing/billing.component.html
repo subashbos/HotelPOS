@@ -177,6 +177,7 @@
               *ngFor="let row of cart"
               (click)="selectRow(row)"
               (keyup.enter)="selectRow(row)"
+              (keydown.space)="$event.preventDefault(); selectRow(row)"
               [ngClass]="selectedCartRow === row ? 'bg-red-50 border-l-4 border-l-red-500' : 'hover:bg-blueGray-50'"
               class="border-b border-solid border-blueGray-100 cursor-pointer transition-colors duration-100"
               tabindex="0"

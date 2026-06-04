@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 
-@Component({    
+@Component({
+  standalone: false,    
   selector: "app-auth-navbar",
   templateUrl: "./auth-navbar.component.html",
 })

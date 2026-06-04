@@ -2,7 +2,8 @@ import { Component, OnInit } from "@angular/core";
 
 declare const google: any;
 
-@Component({    
+@Component({
+  standalone: false,    
   selector: "app-map-example",
   templateUrl: "./map-example.component.html",
 })

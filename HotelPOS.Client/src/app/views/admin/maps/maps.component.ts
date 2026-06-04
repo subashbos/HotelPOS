@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 
-@Component({    
+@Component({
+  standalone: false,    
   selector: "app-maps",
   templateUrl: "./maps.component.html",
 })

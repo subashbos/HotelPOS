@@ -1,6 +1,7 @@
 import { Component } from "@angular/core";
 
-@Component({    
+@Component({
+  standalone: false,    
   selector: "app-profile",
   templateUrl: "./profile.component.html",
 })
