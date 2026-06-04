@@ -285,7 +285,10 @@ export class BillingComponent implements OnInit {
   // ── Checkout ──
   processCheckout(): void {
     if (this.cart.length === 0) return;
-    this.lastInvoiceNumber = `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const randomArray = new Uint32Array(1);
+    window.crypto.getRandomValues(randomArray);
+    const randomSuffix = 1000 + (randomArray[0] % 9000);
+    this.lastInvoiceNumber = `INV-${new Date().getFullYear()}-${randomSuffix}`;
     this.showCheckoutModal = true;
   }
 
