@@ -44,7 +44,7 @@
                 class="px-4 py-2.5 hover:bg-red-600 hover:text-white cursor-pointer flex justify-between items-center border-b border-solid border-blueGray-100 last:border-b-0 group"
               >
                 <div class="flex items-center gap-2">
-                  <img [src]="item.image" class="w-7 h-7 rounded-full object-cover">
+                  <img [src]="item.image" [alt]="item.name" class="w-7 h-7 rounded-full object-cover">
                   <span class="text-xs font-bold text-blueGray-700 group-hover:text-white">{{ item.name }}</span>
                   <span class="text-[10px] text-orange-500 group-hover:text-orange-200">({{ item.taxPercentage }}% GST)</span>
                 </div>
@@ -177,8 +177,11 @@
             <tr
               *ngFor="let row of cart"
               (click)="selectRow(row)"
+              (keyup.enter)="selectRow(row)"
               [ngClass]="selectedCartRow === row ? 'bg-red-50 border-l-4 border-l-red-500' : 'hover:bg-blueGray-50'"
               class="border-b border-solid border-blueGray-100 cursor-pointer transition-colors duration-100"
+              tabindex="0"
+              role="button"
             >
               <!-- # SNo -->
               <td class="px-3 py-2.5 text-center text-blueGray-500 text-sm font-medium">{{ row.sNo }}</td>
@@ -289,23 +292,23 @@
 
         <div *ngIf="showCustomerDetails" class="mt-3 space-y-2">
           <div class="grid grid-cols-4 gap-2 items-center">
-            <label class="text-xs text-blueGray-500 font-bold">Name:</label>
-            <input type="text" [(ngModel)]="customerName" placeholder="Customer name"
+            <label for="customerName" class="text-xs text-blueGray-500 font-bold">Name:</label>
+            <input id="customerName" type="text" [(ngModel)]="customerName" placeholder="Customer name"
               class="col-span-3 border border-solid border-blueGray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-red-400" />
           </div>
           <div class="grid grid-cols-4 gap-2 items-center">
-            <label class="text-xs text-blueGray-500 font-bold">Phone:</label>
-            <input type="text" [(ngModel)]="customerPhone" placeholder="Phone number"
+            <label for="customerPhone" class="text-xs text-blueGray-500 font-bold">Phone:</label>
+            <input id="customerPhone" type="text" [(ngModel)]="customerPhone" placeholder="Phone number"
               class="col-span-3 border border-solid border-blueGray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-red-400" />
           </div>
           <div class="grid grid-cols-4 gap-2 items-center">
-            <label class="text-xs text-blueGray-500 font-bold">GSTIN:</label>
-            <input type="text" [(ngModel)]="customerGstin" placeholder="GSTIN (optional)"
+            <label for="customerGstin" class="text-xs text-blueGray-500 font-bold">GSTIN:</label>
+            <input id="customerGstin" type="text" [(ngModel)]="customerGstin" placeholder="GSTIN (optional)"
               class="col-span-3 border border-solid border-blueGray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-red-400 uppercase" />
           </div>
           <div class="grid grid-cols-4 gap-2 items-center">
-            <label class="text-xs text-blueGray-500 font-bold">Table:</label>
-            <input type="text" [(ngModel)]="tableNumber" placeholder="Table No."
+            <label for="tableNumber" class="text-xs text-blueGray-500 font-bold">Table:</label>
+            <input id="tableNumber" type="text" [(ngModel)]="tableNumber" placeholder="Table No."
               class="col-span-3 border border-solid border-blueGray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-red-400" />
           </div>
         </div>
@@ -374,7 +377,7 @@
 
 <!-- Invoice Modal (receipt dialog on Checkout) -->
 <div *ngIf="showCheckoutModal" class="fixed z-50 inset-0 overflow-y-auto flex items-center justify-center p-4">
-  <div class="fixed inset-0 bg-black opacity-50" (click)="showCheckoutModal = false"></div>
+  <div class="fixed inset-0 bg-black opacity-50" (click)="showCheckoutModal = false" (keyup.escape)="showCheckoutModal = false" tabindex="0" role="button"></div>
   <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-auto z-10 overflow-hidden">
     <div class="bg-emerald-500 px-6 py-4 text-white flex justify-between items-center">
       <h3 class="font-bold text-base uppercase">💳 Invoice Generated</h3>

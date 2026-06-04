@@ -15,7 +15,7 @@ export class LoginComponent implements OnInit {
   errorMessage = "";
   isLoading = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private readonly authService: AuthService, private readonly router: Router) {}
 
   ngOnInit(): void {
     // If already logged in, redirect to admin dashboard

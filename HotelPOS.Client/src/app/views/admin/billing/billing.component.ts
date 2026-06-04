@@ -73,7 +73,7 @@ export class BillingComponent implements OnInit {
   heldOrders: HeldOrder[] = [];
   showHeldOrders = false;
 
-  constructor(private itemService: ItemService) {}
+  constructor(private readonly itemService: ItemService) {}
 
   ngOnInit(): void {
     this.loadItems();
@@ -274,7 +274,7 @@ export class BillingComponent implements OnInit {
 
   get totalAmount(): number {
     const t = this.subtotal + this.gstAmount - this.discountAmount;
-    return t > 0 ? t : 0;
+    return Math.max(t, 0);
   }
 
   get totalItemsCount(): number {

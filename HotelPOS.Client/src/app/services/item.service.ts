@@ -7,9 +7,9 @@ import { Item } from '../models/item.model';
   providedIn: 'root'
 })
 export class ItemService {
-  private apiUrl = 'https://localhost:55982/api/items';
+  private readonly apiUrl = 'https://localhost:55982/api/items';
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   getItems(): Observable<Item[]> {
     return this.http.get<Item[]>(this.apiUrl);
