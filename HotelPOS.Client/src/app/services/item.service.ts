@@ -19,7 +19,7 @@ export class ItemService {
     return this.http.get<Item>(`${this.apiUrl}/${id}`);
   }
 
-  createItem(item: any): Observable<Item> {
+  createItem(item: Partial<Item>): Observable<Item> {
     return this.http.post<Item>(this.apiUrl, item);
   }
 }

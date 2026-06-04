@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from "@angular/core";
 
-@Component({ standalone: false,   
+@Component({    
   selector: "app-card-table",
   templateUrl: "./card-table.component.html",
 })

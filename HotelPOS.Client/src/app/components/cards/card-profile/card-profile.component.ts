@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 
-@Component({ standalone: false,   
+@Component({    
   selector: "app-card-profile",
   templateUrl: "./card-profile.component.html",
 })

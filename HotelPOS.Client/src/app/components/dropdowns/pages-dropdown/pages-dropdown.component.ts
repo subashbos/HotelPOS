@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { createPopper } from "@popperjs/core";
 import { RouterModule } from "@angular/router";
 
-@Component({ standalone: false,   
+@Component({    
   selector: "app-pages-dropdown",
   
   

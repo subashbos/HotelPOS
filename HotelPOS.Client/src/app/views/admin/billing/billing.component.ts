@@ -26,7 +26,7 @@ interface HeldOrder {
 }
 
 @Component({
-  standalone: false,
+  
   selector: 'app-billing',
   templateUrl: './billing.component.html',
 })
@@ -36,15 +36,15 @@ export class BillingComponent implements OnInit {
   // ── Menu Data from API ──
   allItems: Item[] = [];
   categories: string[] = ['All'];
-  selectedCategory: string = 'All';
+  selectedCategory = 'All';
 
   // ── State ──
-  isLoading: boolean = false;
-  loadError: string = '';
+  isLoading = false;
+  loadError = '';
 
   // ── Search & AutoComplete ──
-  searchQuery: string = '';
-  showAutoComplete: boolean = false;
+  searchQuery = '';
+  showAutoComplete = false;
   autoCompleteItems: Item[] = [];
 
   // ── Cart ──
@@ -52,26 +52,26 @@ export class BillingComponent implements OnInit {
   selectedCartRow: CartRow | null = null;
 
   // ── Order Meta ──
-  orderType: string = 'Dine In';
-  paymentMode: string = 'Cash';
+  orderType = 'Dine In';
+  paymentMode = 'Cash';
 
   // ── Customer Details ──
-  showCustomerDetails: boolean = false;
-  customerName: string = '';
-  customerPhone: string = '';
-  customerGstin: string = '';
-  tableNumber: string = '';
+  showCustomerDetails = false;
+  customerName = '';
+  customerPhone = '';
+  customerGstin = '';
+  tableNumber = '';
 
   // ── Discount ──
-  discountAmount: number = 0;
+  discountAmount = 0;
 
   // ── Checkout ──
-  showCheckoutModal: boolean = false;
-  lastInvoiceNumber: string = '';
+  showCheckoutModal = false;
+  lastInvoiceNumber = '';
 
   // ── Hold Orders ──
   heldOrders: HeldOrder[] = [];
-  showHeldOrders: boolean = false;
+  showHeldOrders = false;
 
   constructor(private itemService: ItemService) {}
 

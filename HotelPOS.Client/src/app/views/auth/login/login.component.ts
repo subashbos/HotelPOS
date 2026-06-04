@@ -3,7 +3,7 @@ import { Router } from "@angular/router";
 import { AuthService } from "../../../services/auth.service";
 
 @Component({
-  standalone: false,
+  
   selector: "app-login",
   templateUrl: "./login.component.html",
 })
@@ -34,7 +34,7 @@ export class LoginComponent implements OnInit {
     this.errorMessage = "";
 
     this.authService.login(this.credentials).subscribe({
-      next: (response) => {
+      next: () => {
         this.isLoading = false;
         // Redirect to admin dashboard
         this.router.navigate(["/admin/dashboard"]);

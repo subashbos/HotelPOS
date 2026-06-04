@@ -2,7 +2,7 @@ import { Component, OnInit } from "@angular/core";
 
 declare const google: any;
 
-@Component({ standalone: false,   
+@Component({    
   selector: "app-map-example",
   templateUrl: "./map-example.component.html",
 })
@@ -11,8 +11,8 @@ export class MapExampleComponent implements OnInit {
 
   ngOnInit(): void {
     let map = document.getElementById("map-canvas");
-    let lat = map.getAttribute("data-lat");
-    let lng = map.getAttribute("data-lng");
+    const lat = map.getAttribute("data-lat");
+    const lng = map.getAttribute("data-lng");
 
     const myLatlng = new google.maps.LatLng(lat, lng);
     const mapOptions = {

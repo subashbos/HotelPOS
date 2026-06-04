@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, ViewChild, ElementRef } from "@angular/core";
 import { createPopper } from "@popperjs/core";
 
-@Component({ standalone: false,   
+@Component({    
   selector: "app-user-dropdown",
   templateUrl: "./user-dropdown.component.html",
 })

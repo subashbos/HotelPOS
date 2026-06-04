@@ -1,7 +1,7 @@
 import { Component, AfterViewInit, ViewChild, ElementRef } from "@angular/core";
 import { createPopper } from "@popperjs/core";
 
-@Component({ standalone: false,   
+@Component({    
   selector: "app-notification-dropdown",
   templateUrl: "./notification-dropdown.component.html",
 })

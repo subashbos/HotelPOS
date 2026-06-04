@@ -2,6 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
+interface LoginResponse {
+  token: string;
+  username: string;
+  role: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -10,8 +16,8 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  login(credentials: { username: string; password: string }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
+  login(credentials: { username: string; password: string }): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
         if (response && response.token) {
           this.saveSession(response.token, response.username, response.role);

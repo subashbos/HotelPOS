@@ -1,11 +1,7 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 
-@Component({ standalone: false,   
+@Component({    
   selector: "app-settings",
   templateUrl: "./settings.component.html",
 })
-export class SettingsComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit(): void {}
-}
+export class SettingsComponent {}
