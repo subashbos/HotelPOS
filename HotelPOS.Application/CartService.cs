@@ -1,5 +1,5 @@
 
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using System.Collections.Concurrent;
 
@@ -118,6 +118,15 @@ namespace HotelPOS.Application
             }
         }
 
+        public void ClearAll()
+        {
+            lock (_lock)
+            {
+                _tableCarts.Clear();
+                _heldOrders.Clear();
+            }
+        }
+
         public List<OrderItem> GetItems(int tableNumber)
         {
             lock (_lock)
@@ -207,7 +216,7 @@ namespace HotelPOS.Application
                 var held = new HeldOrder
                 {
                     HoldName = string.IsNullOrWhiteSpace(holdName) ? $"Table {tableNumber}" : holdName,
-                    HeldAt = DateTime.Now,
+                    HeldAt = DateTime.UtcNow,
                     TableNumber = tableNumber,
                     Items = items.Select(x => new OrderItem
                     {
@@ -310,5 +319,6 @@ namespace HotelPOS.Application
         public bool Remove(T item) { lock (_sync) return _list.Remove(item); }
         public List<T> ToList() { lock (_sync) return new List<T>(_list); }
         public T? FirstOrDefault(Func<T, bool> predicate) { lock (_sync) return _list.FirstOrDefault(predicate); }
+        public void Clear() { lock (_sync) _list.Clear(); }
     }
 }

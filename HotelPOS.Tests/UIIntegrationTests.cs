@@ -1,5 +1,6 @@
+using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using Moq;
 using Xunit;

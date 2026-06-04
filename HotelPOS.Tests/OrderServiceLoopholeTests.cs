@@ -1,8 +1,8 @@
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Events;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using MediatR;
 using Moq;
 using Xunit;
@@ -11,9 +11,8 @@ namespace HotelPOS.Tests
 {
     /// <summary>
     /// Covers OrderService edge cases missing from OrderServiceTests.cs:
-    /// invalid table number, negative discount, invalid payment mode,
-    /// discount > subtotal clamping, delete non-existent order,
-    /// GetOrder null, and fiscal year boundary.
+    /// invalid table number, negative discount, discount exceeding subtotal (now an error),
+    /// invalid payment mode, delete non-existent order, GetOrder null, and fiscal year boundary.
     /// </summary>
     public class OrderServiceLoopholeTests
     {
@@ -81,20 +80,14 @@ namespace HotelPOS.Tests
             Assert.Null(ex);
         }
 
-        // ── SaveOrderAsync — discount > subtotal clamped to 0 ───────────────
+        // ── SaveOrderAsync — discount > subtotal is now a hard error ────────
 
         [Fact]
-        public async Task SaveOrderAsync_DiscountExceedsSubtotal_TotalIsZero()
+        public async Task SaveOrderAsync_DiscountExceedsSubtotal_ThrowsArgumentException()
         {
-            _repo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV/2526/0001");
-            Order? saved = null;
-            _repo.Setup(r => r.AddAsync(It.IsAny<Order>()))
-                 .Callback<Order>(o => saved = o)
-                 .ReturnsAsync(1);
-
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 1, discount: 9999m);
-
-            Assert.Equal(0m, saved!.TotalAmount);
+            // Subtotal of OneItem() = 100. Discount of 9999 must now be rejected.
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, discount: 9999m));
         }
 
         [Fact]

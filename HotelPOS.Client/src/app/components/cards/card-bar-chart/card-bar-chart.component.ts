@@ -2,7 +2,8 @@ import { Component, OnInit, AfterViewInit } from "@angular/core";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
-@Component({ standalone: false,
+@Component({
+  standalone: false, 
   selector: "app-card-bar-chart",
   templateUrl: "./card-bar-chart.component.html",
 })
@@ -11,7 +12,7 @@ export class CardBarChartComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {}
   ngAfterViewInit() {
-    let config: any = {
+    const config: any = {
       type: "bar",
       data: {
         labels: [

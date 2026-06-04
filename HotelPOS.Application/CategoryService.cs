@@ -1,6 +1,6 @@
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 
 namespace HotelPOS.Application
 {
@@ -20,7 +20,7 @@ namespace HotelPOS.Application
             return await _repo.GetAllAsync();
         }
 
-        public async Task<int> AddCategoryAsync(string name)
+        public async Task<int> AddCategoryAsync(string name, int displayOrder = 0)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Category name is required.");
 
@@ -28,11 +28,11 @@ namespace HotelPOS.Application
             if (existing.Any(c => c.Name.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"Category '{name}' already exists.");
 
-            var category = new Category { Name = name.Trim() };
+            var category = new Category { Name = name.Trim(), DisplayOrder = displayOrder };
             return await _repo.AddAsync(category);
         }
 
-        public async Task UpdateCategoryAsync(int id, string name)
+        public async Task UpdateCategoryAsync(int id, string name, int displayOrder = 0)
         {
             if (id <= 0) throw new ArgumentException("Invalid ID");
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Category name is required.");
@@ -45,6 +45,7 @@ namespace HotelPOS.Application
             if (existing == null) throw new KeyNotFoundException($"Category #{id} not found.");
 
             existing.Name = name.Trim();
+            existing.DisplayOrder = displayOrder;
             await _repo.UpdateAsync(existing);
         }
 

@@ -1,5 +1,5 @@
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 
 namespace HotelPOS.Persistence
 {

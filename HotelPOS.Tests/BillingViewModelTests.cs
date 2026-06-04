@@ -1,4 +1,3 @@
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.ViewModels;
@@ -219,6 +218,76 @@ namespace HotelPOS.Tests
             _cartService.Verify(s => s.HoldOrder(It.IsAny<int>(), It.IsAny<string>()), Times.Once);
             _notificationService.Verify(n => n.ShowSuccess(It.IsAny<string>()), Times.Once);
             Assert.Single(_vm.HeldOrders);
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_DialogConfirmed_SavesOrderSuccessfully()
+        {
+            // Arrange
+            var mockDialogService = new Mock<IDialogService>();
+            mockDialogService
+                .Setup(s => s.ShowConfirmCheckoutAsync(It.IsAny<ConfirmCheckoutDetails>()))
+                .ReturnsAsync(true); // User confirms!
+
+            var localVm = new BillingViewModel(
+                _itemService.Object,
+                _cartService.Object,
+                _orderService.Object,
+                _settingService.Object,
+                _categoryService.Object,
+                _notificationService.Object,
+                _cashService.Object,
+                _tableService.Object,
+                mockDialogService.Object);
+
+            var items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 2, Price = 100 } };
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(items);
+            _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
+
+            // Act
+            await localVm.SaveOrderCommand.ExecuteAsync(null);
+
+            // Assert
+            mockDialogService.Verify(s => s.ShowConfirmCheckoutAsync(It.Is<ConfirmCheckoutDetails>(d => d.TotalItems == 2 && d.PaymentMode == "Cash")), Times.Once);
+            _orderService.Verify(s => s.SaveOrderAsync(
+                It.IsAny<List<OrderItem>>(), It.IsAny<int>(), It.IsAny<decimal>(), 
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 
+                It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_DialogCancelled_AbortsCheckout()
+        {
+            // Arrange
+            var mockDialogService = new Mock<IDialogService>();
+            mockDialogService
+                .Setup(s => s.ShowConfirmCheckoutAsync(It.IsAny<ConfirmCheckoutDetails>()))
+                .ReturnsAsync(false); // User cancels!
+
+            var localVm = new BillingViewModel(
+                _itemService.Object,
+                _cartService.Object,
+                _orderService.Object,
+                _settingService.Object,
+                _categoryService.Object,
+                _notificationService.Object,
+                _cashService.Object,
+                _tableService.Object,
+                mockDialogService.Object);
+
+            var items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 2, Price = 100 } };
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(items);
+            _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
+
+            // Act
+            await localVm.SaveOrderCommand.ExecuteAsync(null);
+
+            // Assert
+            mockDialogService.Verify(s => s.ShowConfirmCheckoutAsync(It.IsAny<ConfirmCheckoutDetails>()), Times.Once);
+            _orderService.Verify(s => s.SaveOrderAsync(
+                It.IsAny<List<OrderItem>>(), It.IsAny<int>(), It.IsAny<decimal>(), 
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 
+                It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 }

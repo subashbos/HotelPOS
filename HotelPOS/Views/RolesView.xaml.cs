@@ -1,4 +1,3 @@
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using System.Collections.Generic;
@@ -95,13 +94,21 @@ namespace HotelPOS.Views
 
         private async Task LoadDataAsync()
         {
-            var roles = await _roleService.GetAllRolesAsync();
-            RolesGrid.ItemsSource = roles;
-
-            if (roles != null && roles.Any())
+            await App.DbLock.WaitAsync();
+            try
             {
-                var adminRole = roles.FirstOrDefault(r => r.Name == "Admin");
-                RolesGrid.SelectedItem = adminRole ?? roles.First();
+                var roles = await _roleService.GetAllRolesAsync();
+                RolesGrid.ItemsSource = roles;
+
+                if (roles != null && roles.Any())
+                {
+                    var adminRole = roles.FirstOrDefault(r => r.Name == "Admin");
+                    RolesGrid.SelectedItem = adminRole ?? roles.First();
+                }
+            }
+            finally
+            {
+                App.DbLock.Release();
             }
         }
 
@@ -147,7 +154,17 @@ namespace HotelPOS.Views
             var name = NewRoleNameBox.Text.Trim();
             if (string.IsNullOrEmpty(name)) return;
 
-            var success = await _roleService.AddRoleAsync(name, "");
+            bool success = false;
+            await App.DbLock.WaitAsync();
+            try
+            {
+                success = await _roleService.AddRoleAsync(name, "");
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
+
             if (success)
             {
                 _notificationService.ShowSuccess($"Role '{name}' created.");
@@ -182,7 +199,15 @@ namespace HotelPOS.Views
                 .Select(vm => vm.ToPermission())
                 .ToList();
 
-            await _roleService.UpdateRolePermissionsAsync(_selectedRole.Id, permissions);
+            await App.DbLock.WaitAsync();
+            try
+            {
+                await _roleService.UpdateRolePermissionsAsync(_selectedRole.Id, permissions);
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
 
             // ── Live-refresh: if the saved role is the current user's own role,
             //    update their in-memory permissions and re-apply sidebar visibility
@@ -231,7 +256,16 @@ namespace HotelPOS.Views
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
-                await _roleService.DeleteRoleAsync(_selectedRole.Id);
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    await _roleService.DeleteRoleAsync(_selectedRole.Id);
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
+
                 _notificationService.ShowSuccess($"Role '{_selectedRole.Name}' deleted.");
                 _selectedRole = null;
                 _currentPermissions.Clear();

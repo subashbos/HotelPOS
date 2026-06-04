@@ -1,7 +1,7 @@
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Events;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using MediatR;
 
 namespace HotelPOS.Application
@@ -26,6 +26,13 @@ namespace HotelPOS.Application
 
             if (discount < 0)
                 throw new ArgumentException("Discount cannot be negative.", nameof(discount));
+
+            // ── Financial guard: discount cannot exceed the pre-tax subtotal ──
+            var preCheckSubtotal = items.Sum(x => x.Price * x.Quantity);
+            if (discount > preCheckSubtotal)
+                throw new ArgumentException(
+                    $"Discount (₹{discount:N2}) cannot exceed order subtotal (₹{preCheckSubtotal:N2}).",
+                    nameof(discount));
 
             var allowedModes = new[] { "Cash", "Card", "UPI" };
             if (!allowedModes.Contains(paymentMode))

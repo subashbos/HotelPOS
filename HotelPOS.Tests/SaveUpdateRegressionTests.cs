@@ -1,8 +1,8 @@
+using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using HotelPOS.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -679,7 +679,7 @@ namespace HotelPOS.Tests
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
-            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object);
+            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object);
             var report = await service.GetSalesReportAsync();
 
             Assert.Single(report.RecentOrders);
@@ -718,7 +718,7 @@ namespace HotelPOS.Tests
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
-            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object);
+            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object);
             var report = await service.GetSalesReportAsync();
 
             // Null PaymentMode should default to "Cash"
@@ -755,7 +755,7 @@ namespace HotelPOS.Tests
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
-            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object);
+            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object);
             var report = await service.GetSalesReportAsync();
 
             var row = report.RecentOrders[0];
@@ -862,8 +862,6 @@ namespace HotelPOS.Tests
 // ─────────────────────────────────────────────────────────────────────────────
 namespace HotelPOS.Tests
 {
-    using HotelPOS.Application.Interface;
-    using HotelPOS.Application.Interfaces;
     using HotelPOS.Domain;
     using Moq;
     using Xunit;

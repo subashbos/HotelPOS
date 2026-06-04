@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 // Components
 import { IndexNavbarComponent } from './components/navbars/index-navbar/index-navbar.component';
@@ -40,6 +41,7 @@ import { RegisterComponent } from './views/auth/register/register.component';
 import { IndexComponent } from './views/index/index.component';
 import { LandingComponent } from './views/landing/landing.component';
 import { ProfileComponent } from './views/profile/profile.component';
+import { BillingComponent } from './views/admin/billing/billing.component';
 
 @NgModule({
   declarations: [
@@ -75,13 +77,16 @@ import { ProfileComponent } from './views/profile/profile.component';
     RegisterComponent,
     IndexComponent,
     LandingComponent,
-    ProfileComponent
+    ProfileComponent,
+    BillingComponent
   ],
   imports: [
     CommonModule,
-    RouterModule
+    RouterModule,
+    FormsModule
   ],
   exports: [
+    FormsModule,
     IndexNavbarComponent,
     AuthNavbarComponent,
     AdminNavbarComponent,
@@ -114,7 +119,8 @@ import { ProfileComponent } from './views/profile/profile.component';
     RegisterComponent,
     IndexComponent,
     LandingComponent,
-    ProfileComponent
+    ProfileComponent,
+    BillingComponent
   ]
 })
 export class TemplateModule { }

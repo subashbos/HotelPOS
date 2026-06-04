@@ -1,9 +1,8 @@
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using HotelPOS.Domain.Events;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using MediatR;
 using Moq;
 using Xunit;

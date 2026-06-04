@@ -53,32 +53,37 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Date Range -->
-                    <Border Grid.Column="0" Background="{DynamicResource AppBackground}" CornerRadius="12" Padding="12,4">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Range:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}" FontSize="12" FontWeight="SemiBold"/>
-                            <DatePicker x:Name="FilterFrom" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="Filter_Changed" Width="110"/>
-                            <TextBlock Text="to" VerticalAlignment="Center" Margin="8,0" Foreground="{DynamicResource TextMuted}" FontSize="12"/>
-                            <DatePicker x:Name="FilterTo" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="Filter_Changed" Width="110"/>
-                        </StackPanel>
-                    </Border>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Date Range" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+                        <Border Background="{DynamicResource AppBackground}" CornerRadius="10" Padding="12,0" Height="38" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <DatePicker x:Name="FilterFrom" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="Filter_Changed" Width="100"/>
+                                <TextBlock Text="to" VerticalAlignment="Center" Margin="8,0" Foreground="{DynamicResource TextMuted}" FontSize="12"/>
+                                <DatePicker x:Name="FilterTo" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="Filter_Changed" Width="100"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
 
                     <!-- Search Bar -->
-                    <Border Grid.Column="2" Background="{DynamicResource AppBackground}" CornerRadius="12" Padding="12,4">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,10,0" Opacity="0.5"/>
-                            <TextBox x:Name="SearchText" Grid.Column="1" Background="Transparent" BorderThickness="0" 
-                                     VerticalContentAlignment="Center" FontSize="13" TextChanged="Filter_Changed"
-                                     Tag="Search by Invoice or Customer..."/>
-                        </Grid>
-                    </Border>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Search" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+                        <Border Background="{DynamicResource AppBackground}" CornerRadius="10" Padding="12,0" Height="38" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,10,0" Opacity="0.5"/>
+                                <TextBox x:Name="SearchText" Grid.Column="1" Background="Transparent" BorderThickness="0" 
+                                         VerticalContentAlignment="Center" FontSize="13" TextChanged="Filter_Changed"
+                                         Tag="Search by Invoice or Customer..."/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
 
                     <!-- Payment Mode -->
                     <StackPanel Grid.Column="4">
-                        <TextBlock Text="Payment Mode" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Payment Mode" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
                         <ComboBox x:Name="ComboPayment" Width="120" Height="38" SelectionChanged="Filter_Changed">
                             <ComboBoxItem Content="All" IsSelected="True"/>
                             <ComboBoxItem Content="Cash"/>
@@ -89,31 +94,33 @@
 
                     <!-- Category -->
                     <StackPanel Grid.Column="6">
-                        <TextBlock Text="Category" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Category" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
                         <ComboBox x:Name="ComboCategory" Width="150" Height="38" DisplayMemberPath="Name" SelectedValuePath="Id" SelectionChanged="Filter_Changed"/>
                     </StackPanel>
 
                     <!-- Order Type (Pills) -->
-                    <StackPanel Grid.Column="8" VerticalAlignment="Bottom" Margin="0,0,0,2">
+                    <StackPanel Grid.Column="8">
                         <TextBlock Text="Order Type" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton x:Name="TypeAll" Content="All" IsChecked="True" Style="{StaticResource FilterPill}" Click="Filter_Changed" Margin="0,0,8,0"/>
-                            <RadioButton x:Name="TypeDine" Content="Dine-In" Style="{StaticResource FilterPill}" Click="Filter_Changed" Margin="0,0,8,0"/>
-                            <RadioButton x:Name="TypeTake" Content="Takeaway" Style="{StaticResource FilterPill}" Click="Filter_Changed" Margin="0,0,8,0"/>
-                            <RadioButton x:Name="TypeOnline" Content="Online" Style="{StaticResource FilterPill}" Click="Filter_Changed"/>
+                        <StackPanel Orientation="Horizontal" Height="38" VerticalAlignment="Center">
+                            <RadioButton x:Name="TypeAll" Content="All" IsChecked="True" Style="{StaticResource FilterPill}" Click="Filter_Changed" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="TypeDine" Content="Dine-In" Style="{StaticResource FilterPill}" Click="Filter_Changed" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="TypeTake" Content="Takeaway" Style="{StaticResource FilterPill}" Click="Filter_Changed" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <RadioButton x:Name="TypeOnline" Content="Online" Style="{StaticResource FilterPill}" Click="Filter_Changed" VerticalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Refresh Button -->
-                    <Button Grid.Column="10" Click="Refresh_Click" VerticalAlignment="Bottom" Margin="0,0,0,2"
-                            Background="{DynamicResource PrimaryBrush}" Foreground="White" Width="42" Height="42">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="10"/>
-                            </Style>
-                        </Button.Resources>
-                        <TextBlock Text="↻" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
-                    </Button>
+                    <StackPanel Grid.Column="10" VerticalAlignment="Bottom">
+                        <TextBlock Text=" " FontSize="11" Margin="0,0,0,6"/>
+                        <Button Click="Refresh_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" Width="38" Height="38">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="10"/>
+                                </Style>
+                            </Button.Resources>
+                            <TextBlock Text="↻" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </Grid>
         </Border>
@@ -126,16 +133,16 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <DataGrid x:Name="SalesGrid" Style="{StaticResource PremiumGrid}">
+                <DataGrid x:Name="SalesGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                        <DataGridTextColumn Header="DATE &amp; TIME" Binding="{Binding CreatedAt, StringFormat=dd MMM yyyy hh:mm tt}" Width="180"/>
-                        <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="140"/>
-                        <DataGridTextColumn Header="CUSTOMER" Binding="{Binding CustomerName}" Width="*"/>
+                        <DataGridTextColumn Header="DATE &amp; TIME" Binding="{Binding CreatedAt, StringFormat=dd MMM yyyy hh:mm tt}" Width="180" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="140" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="CUSTOMER" Binding="{Binding CustomerName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
                         <DataGridTemplateColumn Header="TYPE" Width="100" HeaderStyle="{StaticResource CenterHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#F0F4F8" CornerRadius="6" Padding="8,2" HorizontalAlignment="Center">
+                                    <Border Background="#F0F4F8" CornerRadius="6" Padding="8,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding OrderType}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                                     </Border>
                                 </DataTemplate>
@@ -144,21 +151,21 @@
                         <DataGridTemplateColumn Header="PAYMENT" Width="100" HeaderStyle="{StaticResource CenterHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding PaymentMode}" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{DynamicResource SecondaryBrush}"/>
+                                    <TextBlock Text="{Binding PaymentMode}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryBrush}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="AMOUNT" Width="130" HeaderStyle="{StaticResource RightHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Total, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                                    <TextBlock Text="{Binding Total, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="ACTIONS" Width="100" HeaderStyle="{StaticResource CenterHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <Button Style="{StaticResource ActionBtn}" Content="✎" ToolTip="Edit Order" Click="EditOrder_Click" Tag="{Binding}"/>
                                         <Button Style="{StaticResource ActionBtn}" Content="🖨" ToolTip="Print Receipt" Margin="6,0,0,0" Foreground="{DynamicResource AccentBrush}" Click="PrintOrder_Click" Tag="{Binding}"/>
                                     </StackPanel>

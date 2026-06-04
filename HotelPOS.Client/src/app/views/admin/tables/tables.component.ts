@@ -1,11 +1,8 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 
-@Component({ standalone: false,   
+@Component({
+  standalone: false,    
   selector: "app-tables",
   templateUrl: "./tables.component.html",
 })
-export class TablesComponent implements OnInit {
-  constructor() {}
-
-  ngOnInit(): void {}
-}
+export class TablesComponent {}

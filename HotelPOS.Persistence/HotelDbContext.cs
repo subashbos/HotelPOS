@@ -20,24 +20,39 @@ namespace HotelPOS.Persistence
         public DbSet<Table> Tables { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<PurchaseItem> PurchaseItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Indexes for Performance
+            // ── Global soft-delete query filter (prevents deleted orders appearing in any query) ──
+            modelBuilder.Entity<Order>().HasQueryFilter(o => !o.IsDeleted);
+
+            // ── Indexes for Performance ──────────────────────────────────────────
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.CreatedAt);
 
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.IsDeleted);
- 
+
             modelBuilder.Entity<Order>()
                 .HasIndex(o => new { o.FiscalYear, o.InvoiceNumber })
                 .IsUnique();
 
             modelBuilder.Entity<AuditLog>()
                 .HasIndex(a => a.Timestamp);
+
+            // ── Security indexes for auth-critical lookups ───────────────────────
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
+            modelBuilder.Entity<Supplier>()
+                .HasIndex(s => s.Name)
+                .IsUnique();
 
             // ── Decimal Precision ─────────────────────────────────────────────
             foreach (var property in modelBuilder.Model.GetEntityTypes()
@@ -68,6 +83,7 @@ namespace HotelPOS.Persistence
                 new RolePermission { Id = 10, RoleId = 1, ModuleName = "Shift", CanAccess = true },
                 new RolePermission { Id = 21, RoleId = 1, ModuleName = "Roles", CanAccess = true },
                 new RolePermission { Id = 23, RoleId = 1, ModuleName = "SalesReport", CanAccess = true },
+                new RolePermission { Id = 25, RoleId = 1, ModuleName = "Purchase", CanAccess = true },
 
                 // Cashier: Restricted access
                 new RolePermission { Id = 11, RoleId = 2, ModuleName = "Dashboard", CanAccess = false },
@@ -81,17 +97,18 @@ namespace HotelPOS.Persistence
                 new RolePermission { Id = 19, RoleId = 2, ModuleName = "Audit", CanAccess = false },
                 new RolePermission { Id = 20, RoleId = 2, ModuleName = "Shift", CanAccess = true },
                 new RolePermission { Id = 22, RoleId = 2, ModuleName = "Roles", CanAccess = false },
-                new RolePermission { Id = 24, RoleId = 2, ModuleName = "SalesReport", CanAccess = false }
+                new RolePermission { Id = 24, RoleId = 2, ModuleName = "SalesReport", CanAccess = false },
+                new RolePermission { Id = 26, RoleId = 2, ModuleName = "Purchase", CanAccess = false }
             );
 
-            // ── User seed (admin / admin) ─────────────────────────────────────
+            // ── User seed (admin / admin@1234) ─────────────────────────────────────
             modelBuilder.Entity<User>().HasData(
                 new User
                 {
                     Id = 1,
                     Username = "admin",
-                    PasswordHash = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc=",
-                    Salt = "cUDnxEUZDYmisbvUU2zu1Q==",
+                    PasswordHash = "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=",
+                    Salt = "jwhVPO8B1u7Hqc4drt45HQ==",
                     Role = "Admin",
                     RoleId = 1,
                     IsActive = true,
@@ -117,6 +134,14 @@ namespace HotelPOS.Persistence
                     ShowPhoneOnReceipt = true,
                     ShowThankYouFooter = true
                 }
+            );
+
+            // ── Suppliers seed ────────────────────────────────────────────────
+            modelBuilder.Entity<Supplier>().HasData(
+                new Supplier { Id = 1, Name = "Metro Wholesalers", Phone = "9876543210", Gstin = "27AAAAA1111A1Z1", City = "Mumbai", State = "Maharashtra", Pincode = "400001", OpeningBalance = 0, CreditLimit = 50000, PaymentTerms = "Credit" },
+                new Supplier { Id = 2, Name = "Apex Food Distributors", Phone = "9876543211", Gstin = "27BBBBB2222B2Z2", City = "Pune", State = "Maharashtra", Pincode = "411001", OpeningBalance = 5000, CreditLimit = 100000, PaymentTerms = "30 Days" },
+                new Supplier { Id = 3, Name = "Supreme Dairy Partners", Phone = "9876543212", Gstin = "27CCCCC3333C3Z3", City = "Mumbai", State = "Maharashtra", Pincode = "400002", OpeningBalance = 0, CreditLimit = 25000, PaymentTerms = "Cash" },
+                new Supplier { Id = 4, Name = "Standard Kitchen Supplies", Phone = "9876543213", Gstin = "27DDDDD4444D4Z4", City = "Nashik", State = "Maharashtra", Pincode = "422001", OpeningBalance = 1500, CreditLimit = 30000, PaymentTerms = "Credit" }
             );
         }
     }

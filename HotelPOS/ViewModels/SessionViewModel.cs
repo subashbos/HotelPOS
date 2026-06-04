@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using System.Collections.ObjectModel;
@@ -46,18 +45,35 @@ namespace HotelPOS.ViewModels
 
         public async Task RefreshStatusAsync()
         {
-            CurrentSession = await _cashService.GetCurrentSessionAsync();
-            IsSessionOpen = CurrentSession != null;
-            if (IsSessionOpen)
+            await App.DbLock.WaitAsync();
+            try
             {
-                var sales = await _cashService.GetTotalSalesForCurrentSessionAsync();
-                ExpectedCash = CurrentSession!.OpeningBalance + sales;
+                CurrentSession = await _cashService.GetCurrentSessionAsync();
+                IsSessionOpen = CurrentSession != null;
+                if (IsSessionOpen)
+                {
+                    var sales = await _cashService.GetTotalSalesForCurrentSessionAsync();
+                    ExpectedCash = CurrentSession!.OpeningBalance + sales;
+                }
+            }
+            finally
+            {
+                App.DbLock.Release();
             }
         }
 
         public async Task LoadHistoryAsync()
         {
-            var history = await _cashService.GetSessionHistoryAsync();
+            List<CashSession> history;
+            await App.DbLock.WaitAsync();
+            try
+            {
+                history = await _cashService.GetSessionHistoryAsync();
+            }
+            finally
+            {
+                App.DbLock.Release();
+            }
             SessionHistory.Clear();
             for (int i = 0; i < history.Count; i++)
             {
@@ -77,7 +93,15 @@ namespace HotelPOS.ViewModels
                     return;
                 }
 
-                await _cashService.OpenSessionAsync(OpeningBalance, AppSession.CurrentUser?.Username ?? "System");
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    await _cashService.OpenSessionAsync(OpeningBalance, AppSession.CurrentUser?.Username ?? "System");
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 await RefreshStatusAsync();
                 _notificationService.ShowSuccess("Shift started successfully");
             }
@@ -92,7 +116,15 @@ namespace HotelPOS.ViewModels
         {
             try
             {
-                await _cashService.CloseSessionAsync(ActualCash, Notes, AppSession.CurrentUser?.Username ?? "System");
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    await _cashService.CloseSessionAsync(ActualCash, Notes, AppSession.CurrentUser?.Username ?? "System");
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 await RefreshStatusAsync();
                 await LoadHistoryAsync();
                 _notificationService.ShowSuccess("Shift closed successfully");

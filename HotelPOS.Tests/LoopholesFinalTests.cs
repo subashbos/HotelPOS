@@ -1,12 +1,12 @@
 using HotelPOS.Application;
 using HotelPOS.Domain;
-using HotelPOS.Domain.Interface;
+using HotelPOS.Domain.Interfaces;
 using Moq;
 using Xunit;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediatR;
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 
 namespace HotelPOS.Tests
 {

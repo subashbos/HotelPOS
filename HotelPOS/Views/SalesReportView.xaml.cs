@@ -1,5 +1,5 @@
+using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
-using HotelPOS.Application.Interface;
 using HotelPOS.Application.Interfaces;
 using Microsoft.Win32;
 using System;
@@ -34,11 +34,17 @@ namespace HotelPOS.Views
             };
 
             Loaded += async (s, e) => {
-                FilterFrom.SelectedDate = DateTime.Today;
-                FilterTo.SelectedDate = DateTime.Today;
-                await LoadCategoriesAsync();
-                // LoadDataAsync is implicitly called by SelectedDateChanged events, 
-                // but we call it explicitly here just in case or if no events fired.
+                _isLoading = true;
+                try
+                {
+                    FilterFrom.SelectedDate = DateTime.Today;
+                    FilterTo.SelectedDate = DateTime.Today;
+                    await LoadCategoriesAsync();
+                }
+                finally
+                {
+                    _isLoading = false;
+                }
                 await LoadDataAsync();
             };
         }
@@ -47,9 +53,19 @@ namespace HotelPOS.Views
         {
             try
             {
-                var cats = await _categoryService.GetCategoriesAsync();
-                var list = cats.ToList();
-                list.Insert(0, new HotelPOS.Domain.Category { Id = 0, Name = "All Categories" });
+                await App.DbLock.WaitAsync();
+                IEnumerable<HotelPOS.Domain.Category> cats;
+                try
+                {
+                    cats = await _categoryService.GetCategoriesAsync();
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
+                
+                var list = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                list.Insert(0, new HotelPOS.Domain.Category { Id = 0, Name = "All Categories", DisplayOrder = -1 });
                 ComboCategory.ItemsSource = list;
                 ComboCategory.SelectedIndex = 0;
             }
@@ -83,9 +99,18 @@ namespace HotelPOS.Views
                 else if (TypeOnline.IsChecked == true) orderType = "Online";
 
                 // We use a large page size for the report or handle pagination
-                var (orders, totalCount) = await _orderService.GetPagedOrdersAsync(1, 1000, from, to, null, search, payment, orderType, categoryId);
+                await App.DbLock.WaitAsync();
+                (IEnumerable<HotelPOS.Domain.Order> orders, int totalCount) result;
+                try
+                {
+                    result = await _orderService.GetPagedOrdersAsync(1, 1000, from, to, null, search, payment, orderType, categoryId);
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
 
-                var reportRows = orders.Select((o, idx) => new RecentOrderRowDto
+                var reportRows = result.orders.Select((o, idx) => new RecentOrderRowDto
                 {
                     SNo = idx + 1,
                     OrderId = o.Id,
@@ -104,7 +129,7 @@ namespace HotelPOS.Views
                 }).ToList();
 
                 Pager.SetSource(reportRows);
-                TotalOrdersCount.Text = totalCount.ToString();
+                TotalOrdersCount.Text = result.totalCount.ToString();
                 TotalRevenueSum.Text = $"Rs. {reportRows.Sum(x => x.Total):N2}";
             }
             catch (Exception ex)

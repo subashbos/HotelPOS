@@ -1,4 +1,4 @@
-using HotelPOS.Application.Interface;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
@@ -64,7 +64,15 @@ namespace HotelPOS
             // async void is required for event-like startup calls — guard with try/catch
             try
             {
-                _allItems = await _itemService.GetItemsAsync();
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    _allItems = await _itemService.GetItemsAsync();
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 ApplyItemFilter();
 
                 ShowStatus(_allItems.Count == 0
@@ -91,7 +99,8 @@ namespace HotelPOS
                 ? _allItems.OrderBy(x => x.Name).ToList()
                 : _allItems
                     .Where(x => x.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
-                    .OrderBy(x => x.Name)
+                    .OrderBy(x => x.Name.StartsWith(search, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                    .ThenBy(x => x.Name)
                     .ToList();
 
             ItemList.ItemsSource = null;
@@ -160,7 +169,16 @@ namespace HotelPOS
 
             try
             {
-                int orderId = await _orderService.SaveOrderAsync(items, tableNumber);
+                int orderId = 0;
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    orderId = await _orderService.SaveOrderAsync(items, tableNumber);
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
 
                 var subtotal = _cartService.GetSubtotal(tableNumber);
                 var gst = _cartService.GetGstAmount(tableNumber);
@@ -190,7 +208,16 @@ namespace HotelPOS
                 ShowStatus($"Checkout completed for Table {tableNumber}. Order #{orderId}");
 
                 // Show print preview blocking dialog
-                var settings = await _settingService.GetSettingsAsync();
+                SystemSetting settings;
+                await App.DbLock.WaitAsync();
+                try
+                {
+                    settings = await _settingService.GetSettingsAsync();
+                }
+                finally
+                {
+                    App.DbLock.Release();
+                }
                 var previewWindow = new PrintPreviewWindow(printOrder, settings) { Owner = this };
                 previewWindow.ShowDialog();
             }
