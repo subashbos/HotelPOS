@@ -41,6 +41,7 @@ import { RegisterComponent } from './views/auth/register/register.component';
 import { IndexComponent } from './views/index/index.component';
 import { LandingComponent } from './views/landing/landing.component';
 import { ProfileComponent } from './views/profile/profile.component';
+import { BillingComponent } from './views/admin/billing/billing.component';
 
 @NgModule({
   declarations: [
@@ -76,7 +77,8 @@ import { ProfileComponent } from './views/profile/profile.component';
     RegisterComponent,
     IndexComponent,
     LandingComponent,
-    ProfileComponent
+    ProfileComponent,
+    BillingComponent
   ],
   imports: [
     CommonModule,
@@ -117,7 +119,8 @@ import { ProfileComponent } from './views/profile/profile.component';
     RegisterComponent,
     IndexComponent,
     LandingComponent,
-    ProfileComponent
+    ProfileComponent,
+    BillingComponent
   ]
 })
 export class TemplateModule { }
