@@ -19,7 +19,7 @@ export class AuthService {
   login(credentials: { username: string; password: string }): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        if (response && response.token) {
+        if (response?.token) {
           this.saveSession(response.token, response.username, response.role);
         }
       })

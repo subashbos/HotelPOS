@@ -41,7 +41,7 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        if (err.error && err.error.message) {
+        if (err.error?.message) {
           this.errorMessage = err.error.message;
         } else if (err.status === 401) {
           this.errorMessage = "Invalid username or password.";
