@@ -1,15 +1,14 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 
-@Component({ standalone: false,   
+@Component({
+  standalone: false,    
   selector: "app-sidebar",
   templateUrl: "./sidebar.component.html",
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   collapseShow = "hidden";
-  constructor() {}
 
-  ngOnInit() {}
-  toggleCollapseShow(classes) {
+  toggleCollapseShow(classes: string) {
     this.collapseShow = classes;
   }
 }

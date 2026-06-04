@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from "@angular/core";
 
-@Component({ standalone: false,   
+@Component({
+  standalone: false,    
   selector: "app-footer-small",
   templateUrl: "./footer-small.component.html",
 })
