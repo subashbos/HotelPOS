@@ -1,6 +1,7 @@
 using HotelPOS.Application;
-using HotelPOS.Domain;
-using HotelPOS.Domain.Interfaces;
+using HotelPOS.Application.UseCases;
+using HotelPOS.Domain.Entities;
+using HotelPOS.Application.Interfaces;
 using Moq;
 using Xunit;
 using System.Collections.Generic;

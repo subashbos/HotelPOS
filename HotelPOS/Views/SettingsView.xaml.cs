@@ -1,5 +1,5 @@
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using System.Drawing.Printing;
 using System.Windows;
 using System.Windows.Controls;

@@ -14,12 +14,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <!-- Needed by HotelDbContextFactory to read appsettings.json at migration design-time -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HotelPOS.Application\HotelPOS.Application.csproj" />
     <ProjectReference Include="..\HotelPOS.Domain\HotelPOS.Domain.csproj" />
-    <ProjectReference Include="..\HotelPOS.Persistence\HotelPOS.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Api.Controllers
 {

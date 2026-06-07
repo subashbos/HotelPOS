@@ -1,6 +1,5 @@
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
-using HotelPOS.Domain.Interfaces;
+using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

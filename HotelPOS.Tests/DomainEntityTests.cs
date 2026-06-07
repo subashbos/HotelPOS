@@ -1,4 +1,4 @@
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using Xunit;
 
 namespace HotelPOS.Tests;

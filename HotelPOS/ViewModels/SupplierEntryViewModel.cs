@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;

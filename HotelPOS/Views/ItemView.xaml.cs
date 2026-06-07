@@ -1,8 +1,9 @@
 using HotelPOS.Application.DTOs.Item;
 using ClosedXML.Excel;
 using HotelPOS.Application;
+using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Windows;

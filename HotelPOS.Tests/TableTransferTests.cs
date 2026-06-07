@@ -1,5 +1,6 @@
 using HotelPOS.Application;
-using HotelPOS.Domain;
+using HotelPOS.Application.UseCases;
+using HotelPOS.Domain.Entities;
 using Xunit;
 
 namespace HotelPOS.Tests

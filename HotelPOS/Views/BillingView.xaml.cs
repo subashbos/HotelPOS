@@ -1,4 +1,4 @@
-using HotelPOS.Domain; // Domain entities for binding
+using HotelPOS.Domain.Entities; // Domain entities for binding
 using HotelPOS.ViewModels; // Main ViewModels for DataContext
 using System.Windows;
 using System.Windows.Controls;

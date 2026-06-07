@@ -1,5 +1,6 @@
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
+using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using Microsoft.Win32;
 using System;
@@ -54,7 +55,7 @@ namespace HotelPOS.Views
             try
             {
                 await App.DbLock.WaitAsync();
-                IEnumerable<HotelPOS.Domain.Category> cats;
+                IEnumerable<HotelPOS.Domain.Entities.Category> cats;
                 try
                 {
                     cats = await _categoryService.GetCategoriesAsync();
@@ -65,7 +66,7 @@ namespace HotelPOS.Views
                 }
                 
                 var list = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
-                list.Insert(0, new HotelPOS.Domain.Category { Id = 0, Name = "All Categories", DisplayOrder = -1 });
+                list.Insert(0, new HotelPOS.Domain.Entities.Category { Id = 0, Name = "All Categories", DisplayOrder = -1 });
                 ComboCategory.ItemsSource = list;
                 ComboCategory.SelectedIndex = 0;
             }
@@ -100,7 +101,7 @@ namespace HotelPOS.Views
 
                 // We use a large page size for the report or handle pagination
                 await App.DbLock.WaitAsync();
-                (IEnumerable<HotelPOS.Domain.Order> orders, int totalCount) result;
+                (IEnumerable<HotelPOS.Domain.Entities.Order> orders, int totalCount) result;
                 try
                 {
                     result = await _orderService.GetPagedOrdersAsync(1, 1000, from, to, null, search, payment, orderType, categoryId);
@@ -149,7 +150,7 @@ namespace HotelPOS.Views
                 var window = Window.GetWindow(this) as DashboardWindow;
                 if (window != null)
                 {
-                    var order = new HotelPOS.Domain.Order
+                    var order = new HotelPOS.Domain.Entities.Order
                     {
                         Id = row.OrderId,
                         InvoiceNumber = row.InvoiceNumber,
@@ -176,7 +177,7 @@ namespace HotelPOS.Views
                 try
                 {
                     var settings = await _settingService.GetSettingsAsync();
-                    var order = new HotelPOS.Domain.Order
+                    var order = new HotelPOS.Domain.Entities.Order
                     {
                         Id = row.OrderId,
                         InvoiceNumber = row.InvoiceNumber,

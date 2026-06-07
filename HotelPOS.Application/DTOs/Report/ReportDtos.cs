@@ -56,7 +56,7 @@ namespace HotelPOS.Application.DTOs.Report
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }
         public string? CustomerGstin { get; set; }
-        public List<HotelPOS.Domain.OrderItem> Items { get; set; } = new();
+        public List<HotelPOS.Domain.Entities.OrderItem> Items { get; set; } = new();
     }
 
     /// <summary>One row in the "Item Report" grid.</summary>

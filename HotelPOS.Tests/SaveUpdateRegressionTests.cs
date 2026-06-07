@@ -1,9 +1,9 @@
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
+using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
-using HotelPOS.Domain.Interfaces;
-using HotelPOS.Persistence;
+using HotelPOS.Domain.Entities;
+using HotelPOS.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -862,7 +862,6 @@ namespace HotelPOS.Tests
 // ─────────────────────────────────────────────────────────────────────────────
 namespace HotelPOS.Tests
 {
-    using HotelPOS.Domain;
     using Moq;
     using Xunit;
 

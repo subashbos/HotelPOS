@@ -1,5 +1,5 @@
 using HotelPOS.Application.DTOs.Item;
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.Interfaces
 {

@@ -1,4 +1,4 @@
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;

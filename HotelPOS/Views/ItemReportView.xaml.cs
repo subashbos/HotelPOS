@@ -1,6 +1,7 @@
 using HotelPOS.Application;
+using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -97,8 +98,8 @@ namespace HotelPOS.Views
 
                 // 1. Get all orders and items catalog
                 await App.DbLock.WaitAsync();
-                List<HotelPOS.Domain.Order> allOrders;
-                List<HotelPOS.Domain.Item> allItems;
+                List<HotelPOS.Domain.Entities.Order> allOrders;
+                List<HotelPOS.Domain.Entities.Item> allItems;
                 try
                 {
                     allOrders = await _orderService.GetAllOrdersWithItemsAsync();

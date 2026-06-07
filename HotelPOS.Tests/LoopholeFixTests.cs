@@ -1,5 +1,5 @@
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
 using Moq;
 using Xunit;

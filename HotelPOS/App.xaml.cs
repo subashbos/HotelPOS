@@ -1,8 +1,8 @@
 using HotelPOS.Application;
+using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Interfaces;
 using HotelPOS.Services;
-using HotelPOS.Persistence;
+using HotelPOS.Infrastructure.Persistence;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
 using Microsoft.EntityFrameworkCore;

@@ -1,5 +1,5 @@
-using HotelPOS.Domain;
-using HotelPOS.Persistence;
+using HotelPOS.Domain.Entities;
+using HotelPOS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

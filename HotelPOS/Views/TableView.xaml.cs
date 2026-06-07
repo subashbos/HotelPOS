@@ -1,7 +1,8 @@
 using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application;
+using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;

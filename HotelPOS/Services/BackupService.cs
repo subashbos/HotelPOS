@@ -1,5 +1,5 @@
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Persistence;
+using HotelPOS.Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

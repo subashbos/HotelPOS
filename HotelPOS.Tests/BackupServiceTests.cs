@@ -1,5 +1,5 @@
 using HotelPOS.Services;
-using HotelPOS.Persistence;
+using HotelPOS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO;

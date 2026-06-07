@@ -1,4 +1,4 @@
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
 using Xunit;

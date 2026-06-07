@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HotelPOS.Persistence\HotelPOS.Persistence.csproj" />
+    <ProjectReference Include="..\HotelPOS.Infrastructure\HotelPOS.Infrastructure.csproj" />
     <ProjectReference Include="..\HotelPOS.Application\HotelPOS.Application.csproj" />
     <ProjectReference Include="..\HotelPOS.Domain\HotelPOS.Domain.csproj" />
   </ItemGroup>

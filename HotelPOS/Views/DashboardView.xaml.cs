@@ -1,6 +1,7 @@
 using HotelPOS.Application.DTOs.Report;
 using ClosedXML.Excel;
 using HotelPOS.Application;
+using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using Microsoft.Win32;
 using System;
@@ -335,7 +336,7 @@ namespace HotelPOS.Views
                 var window = Window.GetWindow(this) as DashboardWindow;
                 if (window != null)
                 {
-                    var order = new HotelPOS.Domain.Order
+                    var order = new HotelPOS.Domain.Entities.Order
                     {
                         Id = row.OrderId,
                         TableNumber = row.TableNumber,
@@ -361,7 +362,7 @@ namespace HotelPOS.Views
                 try
                 {
                     var settings = await _settingService.GetSettingsAsync();
-                    var order = new HotelPOS.Domain.Order
+                    var order = new HotelPOS.Domain.Entities.Order
                     {
                         Id = row.OrderId,
                         TableNumber = row.TableNumber,

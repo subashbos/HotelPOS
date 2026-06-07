@@ -40,7 +40,7 @@ namespace HotelPOS
                 LoginButton.IsEnabled = false;
                 LoginButton.Content = "Authenticating...";
 
-                Domain.User? user = null;
+                HotelPOS.Domain.Entities.User? user = null;
                 await App.DbLock.WaitAsync();
                 try
                 {

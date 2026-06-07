@@ -1,4 +1,4 @@
-using HotelPOS.Domain;
+using HotelPOS.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
