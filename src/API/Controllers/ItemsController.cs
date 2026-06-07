@@ -1,0 +1,92 @@
+using HotelPOS.Application.UseCases.Items.Commands;
+using HotelPOS.Application.UseCases.Items.Queries;
+using HotelPOS.Domain.Entities;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HotelPOS.Api.Controllers
+{
+    /// <summary>
+    /// Items catalogue API — requires a valid JWT token on all endpoints.
+    /// Uses a DTO for input to ensure business validation in the service layer.
+    /// </summary>
+    [Authorize]
+    public class ItemsController : BaseApiController
+    {
+        private readonly IMediator _mediator;
+
+        public ItemsController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Item>>> GetItems()
+        {
+            var items = await _mediator.Send(new GetItemsQuery());
+            return Ok(items);
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<Item>> GetItem(int id)
+        {
+            if (id <= 0) return BadRequest("Invalid item ID.");
+            var item = await _mediator.Send(new GetItemByIdQuery(id));
+            if (item == null) return NotFound();
+            return Ok(item);
+        }
+
+        // POST body uses CreateItemRequest DTO — never the raw domain entity
+        [HttpPost]
+        public async Task<ActionResult<Item>> CreateItem([FromBody] CreateItemRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var command = new CreateItemCommand(
+                    request.Name,
+                    request.Price,
+                    request.TaxPercentage,
+                    request.CategoryId,
+                    request.HsnCode,
+                    request.Barcode,
+                    request.StockQuantity,
+                    request.TrackInventory
+                );
+
+                var item = await _mediator.Send(command);
+                return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
+            }
+            catch (System.InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (System.ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
+    }
+
+    /// <summary>DTO to prevent binding raw domain entities from HTTP requests.</summary>
+    public sealed class CreateItemRequest
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.MaxLength(200)]
+        public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero.")]
+        public decimal Price { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Range(0, 100, ErrorMessage = "Tax percentage must be between 0 and 100.")]
+        public decimal TaxPercentage { get; set; }
+
+        public int? CategoryId { get; set; }
+        public string? HsnCode { get; set; }
+        public string? Barcode { get; set; }
+        public int StockQuantity { get; set; } = 0;
+        public bool TrackInventory { get; set; } = false;
+    }
+}

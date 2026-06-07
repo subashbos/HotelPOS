@@ -369,6 +369,8 @@ FodyWeavers.xsd
 # Compiled application output (publish/release builds)
 Build/
 build/
+.codex-build/
+eslint-results.sarif
 
 # SQLite database files (runtime data, not source)
 *.db
