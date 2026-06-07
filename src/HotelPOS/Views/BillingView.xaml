@@ -338,7 +338,8 @@
                 </Grid>
 
                 <DataGrid x:Name="CartGrid" Grid.Row="1" ItemsSource="{Binding Cart}" SelectedItem="{Binding SelectedCartRow}" 
-                          Style="{StaticResource PremiumGrid}" RowHeight="28" MinHeight="308"
+                          Style="{StaticResource PremiumGrid}" RowHeight="28" MinHeight="150"
+                          HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
                           CellEditEnding="CartGrid_CellEditEnding">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="35" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>

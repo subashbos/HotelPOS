@@ -185,9 +185,8 @@
                         </Grid>
                     </Grid>
                 </Border>
-
                 <!-- ─── Navigation ─── -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden"
                                HorizontalScrollBarVisibility="Disabled" Margin="0,6,0,6">
                     <StackPanel>
 

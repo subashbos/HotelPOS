@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "eslint . --format @microsoft/eslint-formatter-sarif --output-file ../eslint-results.sarif"
+    "lint": "eslint . --format @microsoft/eslint-formatter-sarif --output-file ../../eslint-results.sarif"
   },
   "dependencies": {
     "@angular/animations": "^19.0.0",

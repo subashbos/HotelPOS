@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.5.11723.231
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Domain", "HotelPOS.Domain\HotelPOS.Domain.csproj", "{D1A2B3C4-E5F6-4A7B-8C9D-0E1F2A3B4C5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Domain", "src\Domain\Domain.csproj", "{D1A2B3C4-E5F6-4A7B-8C9D-0E1F2A3B4C5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Application", "HotelPOS.Application\HotelPOS.Application.csproj", "{74B78AF0-3E0C-4ECE-89A9-DA9DB46FD4E1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Application", "src\Application\Application.csproj", "{74B78AF0-3E0C-4ECE-89A9-DA9DB46FD4E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Infrastructure", "HotelPOS.Infrastructure\HotelPOS.Infrastructure.csproj", "{771C817E-8566-45EB-BE9B-EA118D9846E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Infrastructure", "src\Infrastructure\Infrastructure.csproj", "{771C817E-8566-45EB-BE9B-EA118D9846E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS", "HotelPOS\HotelPOS.csproj", "{35A3FFAE-56B2-4CF7-BA9C-41ABB6035AE7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS", "src\HotelPOS\HotelPOS.csproj", "{35A3FFAE-56B2-4CF7-BA9C-41ABB6035AE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Tests", "HotelPOS.Tests\HotelPOS.Tests.csproj", "{8F73B0A0-6436-41BA-B22C-0AF212B2E07D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Tests", "src\HotelPOS.Tests\HotelPOS.Tests.csproj", "{8F73B0A0-6436-41BA-B22C-0AF212B2E07D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Api", "HotelPOS.Api\HotelPOS.Api.csproj", "{51B7500E-6DFF-48F0-8EDD-8C94749126A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Api", "src\API\API.csproj", "{51B7500E-6DFF-48F0-8EDD-8C94749126A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

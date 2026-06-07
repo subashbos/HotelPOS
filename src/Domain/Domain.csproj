@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>HotelPOS.Domain</AssemblyName>
+    <RootNamespace>HotelPOS.Domain</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,5 +1,7 @@
-using HotelPOS.Application.Interfaces;
+using HotelPOS.Application.UseCases.Items.Commands;
+using HotelPOS.Application.UseCases.Items.Queries;
 using HotelPOS.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,17 +14,17 @@ namespace HotelPOS.Api.Controllers
     [Authorize]
     public class ItemsController : BaseApiController
     {
-        private readonly IItemRepository _itemRepo;
+        private readonly IMediator _mediator;
 
-        public ItemsController(IItemRepository itemRepo)
+        public ItemsController(IMediator mediator)
         {
-            _itemRepo = itemRepo;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Item>>> GetItems()
         {
-            var items = await _itemRepo.GetAllAsync();
+            var items = await _mediator.Send(new GetItemsQuery());
             return Ok(items);
         }
 
@@ -30,7 +32,7 @@ namespace HotelPOS.Api.Controllers
         public async Task<ActionResult<Item>> GetItem(int id)
         {
             if (id <= 0) return BadRequest("Invalid item ID.");
-            var item = await _itemRepo.GetByIdAsync(id);
+            var item = await _mediator.Send(new GetItemByIdQuery(id));
             if (item == null) return NotFound();
             return Ok(item);
         }
@@ -41,20 +43,30 @@ namespace HotelPOS.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var item = new Item
+            try
             {
-                Name = request.Name.Trim(),
-                Price = request.Price,
-                TaxPercentage = request.TaxPercentage,
-                CategoryId = request.CategoryId,
-                HsnCode = request.HsnCode,
-                Barcode = request.Barcode,
-                StockQuantity = request.StockQuantity,
-                TrackInventory = request.TrackInventory
-            };
+                var command = new CreateItemCommand(
+                    request.Name,
+                    request.Price,
+                    request.TaxPercentage,
+                    request.CategoryId,
+                    request.HsnCode,
+                    request.Barcode,
+                    request.StockQuantity,
+                    request.TrackInventory
+                );
 
-            await _itemRepo.AddAsync(item);
-            return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
+                var item = await _mediator.Send(command);
+                return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
+            }
+            catch (System.InvalidOperationException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+            catch (System.ArgumentException ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
     }
 
