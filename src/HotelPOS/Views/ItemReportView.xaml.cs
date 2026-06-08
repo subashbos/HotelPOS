@@ -51,6 +51,10 @@ namespace HotelPOS.Views
             };
         }
 
+        /// <summary>
+        /// Loads categories from a scoped category service, inserts an "All Categories" entry, and populates the category combo box.
+        /// </summary>
+        /// <returns>A task that completes after categories have been loaded and the combo box has been populated.</returns>
         private async Task LoadCategoriesAsync()
         {
             try
@@ -81,6 +85,13 @@ namespace HotelPOS.Views
 
         private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadDataAsync();
 
+        /// <summary>
+        /// Loads item sales data using the current date range, category and search filters, aggregates sales per item, and updates the report grid and totals in the view.
+        /// </summary>
+        /// <remarks>
+        /// The method fetches all orders and item catalog entries from a scoped service provider, filters orders by the selected date range and active status, aggregates order items by item id (computing quantity sold and total revenue), applies category and search filters, sorts results by total revenue, assigns sequential row numbers, and binds the resulting rows to the pager and UI totals.
+        /// </remarks>
+        /// <returns>Completes when the report data has been loaded, processed, and bound to the UI.</returns>
         public async Task LoadDataAsync()
         {
             if (_isLoading) return;

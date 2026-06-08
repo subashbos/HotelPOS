@@ -82,6 +82,11 @@ namespace HotelPOS.Views
         private Role? _selectedRole;
         private List<PermissionViewModel> _currentPermissions = new();
 
+        /// <summary>
+        /// Initializes the RolesView, wires required services, and begins loading role data when the control is loaded.
+        /// </summary>
+        /// <param name="roleService">Injected role service (resolved per operation) required for dependency injection.</param>
+        /// <param name="notificationService">Service used to display notifications to the user.</param>
         public RolesView(IRoleService roleService, INotificationService notificationService)
         {
             InitializeComponent();
@@ -89,7 +94,10 @@ namespace HotelPOS.Views
             Loaded += async (s, e) => await LoadDataAsync();
         }
 
-        // ── Data loading ──────────────────────────────────────────────────────
+        /// <summary>
+        /// Loads roles from the role service, sets them as the ItemsSource for RolesGrid, and selects the "Admin" role if present (otherwise selects the first role).
+        /// </summary>
+        /// <returns>A task that completes after roles have been loaded and the RolesGrid selection has been updated.</returns>
 
         private async Task LoadDataAsync()
         {
@@ -142,7 +150,12 @@ namespace HotelPOS.Views
             }
         }
 
-        // ── Add role ──────────────────────────────────────────────────────────
+        /// <summary>
+        /// Creates a new role using the name entered in the NewRoleNameBox, notifies the user of the result, and reloads the role list on success.
+        /// </summary>
+        /// <remarks>
+        /// If the name input is empty no action is taken. The method resolves an <c>IRoleService</c> from a scoped service provider to perform the creation. On success it clears the input box, shows a success notification, and refreshes the displayed roles; on failure it shows an error notification.
+        /// </remarks>
 
         private async void AddRole_Click(object sender, RoutedEventArgs e)
         {
@@ -180,7 +193,13 @@ namespace HotelPOS.Views
             foreach (var p in _currentPermissions) p.CanAccess = false;
         }
 
-        // ── Save permissions ──────────────────────────────────────────────────
+        /// <summary>
+        /// Persist the edited permissions for the currently selected role and, if that role belongs to the active user, apply the changes to the running session's UI immediately.
+        /// </summary>
+        /// <remarks>
+        /// Converts the view-model permission edits into domain permissions, updates them via the role service, and shows a success notification.
+        /// If the saved role matches the current session user's role, the user's in-memory permissions are replaced and the dashboard's permission application is invoked so changes take effect without requiring re-login.
+        /// </remarks>
 
         private async void SavePermissions_Click(object sender, RoutedEventArgs e)
         {
@@ -225,7 +244,12 @@ namespace HotelPOS.Views
             }
         }
 
-        // ── Delete role ───────────────────────────────────────────────────────
+        /// <summary>
+        /// Handles the Delete Role button click by confirming and removing the selected role, then updating the UI.
+        /// </summary>
+        /// <remarks>
+        /// If the selected role is null the method exits immediately. Deletion is blocked for the "Admin" role and will display an error notification. When confirmed by the user, the role is removed via the role service, a success notification is shown, the current selection and permissions are cleared, the permission editor is hidden, and the roles list is reloaded.
+        /// </remarks>
 
         private async void DeleteRole_Click(object sender, RoutedEventArgs e)
         {

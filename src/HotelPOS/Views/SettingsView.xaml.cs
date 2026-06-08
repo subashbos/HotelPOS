@@ -13,6 +13,9 @@ namespace HotelPOS.Views
         private readonly UsersView _usersView;
         private SystemSetting? _current;
 
+        /// <summary>
+        /// Initializes the SettingsView control, embeds a UsersView into the Users tab, stores the notification service, and registers a Loaded handler that loads printers, loads settings, and initializes the embedded users view.
+        /// </summary>
         public SettingsView(ISettingService settingService, IUserService userService, IRoleService roleService, INotificationService notificationService)
         {
             InitializeComponent();
@@ -43,7 +46,10 @@ namespace HotelPOS.Views
             catch { /* silently skip if no printers installed */ }
         }
 
-        // ── Load ─────────────────────────────────────────────────────────────
+        /// <summary>
+        /// Load the current system settings and apply them to the view's UI controls.
+        /// </summary>
+        /// <returns>A task that completes when settings have been loaded and UI controls updated.</returns>
 
         private async Task LoadSettingsAsync()
         {
@@ -107,6 +113,9 @@ namespace HotelPOS.Views
             await Save();
         }
 
+        /// <summary>
+        /// Persists the currently loaded settings and displays a success or error notification to the user.
+        /// </summary>
         private async Task Save()
         {
             try

@@ -26,6 +26,15 @@ namespace HotelPOS
             _notificationService = notificationService;
         }
 
+        /// <summary>
+        /// Populate the category list and initialize the form fields when the window is loaded.
+        /// </summary>
+        /// <remarks>
+        /// Loads categories from the category service, orders them, and assigns them to the category combo box.
+        /// If an editing item is present, populates the input controls (name, price, category, tax, barcode, inventory tracking, stock)
+        /// and updates the window title and submit button for edit mode. Any errors are shown via <c>ShowStatus</c>.
+        /// The item name input receives focus after initialization.
+        /// </remarks>
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             using (var scope = App.CreateDbScope())
@@ -74,6 +83,12 @@ namespace HotelPOS
             TaxCombo.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Handles the Add/Save button click: validates form input and either creates a new item or updates an existing one.
+        /// </summary>
+        /// <remarks>
+        /// On successful validation, the method constructs a DTO and uses the item service to add or update the item. For new items it invokes <c>ItemSaved</c>, shows a success notification, and clears the form for another entry; for edits it invokes <c>ItemSaved</c> and closes the window. Validation errors and unexpected exceptions are shown in the status UI.
+        /// </remarks>
         private async void AddItem_Click(object sender, RoutedEventArgs e)
         {
             try

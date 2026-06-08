@@ -127,7 +127,10 @@ namespace HotelPOS.Views
             return (DateTime.Today, null);
         }
 
-        // ── Data loading ──────────────────────────────────────────────────────
+        /// <summary>
+        /// Loads dashboard reports for the resolved date range and updates the view's summaries, grids, charts, and cached report data.
+        /// </summary>
+        /// <returns>A task that completes when the load operation and all UI updates (reports, charts, and date-wise report) have finished.</returns>
 
         public async Task LoadAsync()
         {
@@ -194,6 +197,14 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Builds the date-wise orders summary for the given range and updates the view with the aggregated rows.
+        /// </summary>
+        /// <param name="from">The inclusive start date to include orders (compare uses order.CreatedAt.ToLocalTime() >= from).</param>
+        /// <param name="to">The exclusive end date to include orders (compare uses order.CreatedAt.ToLocalTime() &lt; to).</param>
+        /// <remarks>
+        /// Loads all orders, filters them by the provided date range, groups them by calendar date, and populates <see cref="LastDailyReport"/> with per-day aggregates. Also updates <see cref="DateRangeTotalText.Text"/> with the sum of NetIncome and sets the <see cref="DatePager"/> source. Exceptions thrown while loading or processing orders are caught and suppressed; in that case the existing report state is left unchanged.
+        /// </remarks>
         private async Task BuildDateReport(DateTime? from, DateTime? to)
         {
             try
@@ -364,6 +375,11 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Opens a print-preview window for the order represented by the clicked button's Tag.
+        /// </summary>
+        /// <param name="sender">The Button whose Tag contains a <see cref="RecentOrderRowDto"/> representing the order to preview.</param>
+        /// <param name="e">Event data for the click event.</param>
         private async void PrintOrder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button b && b.Tag is RecentOrderRowDto row)
@@ -402,6 +418,10 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Prompts for confirmation and, if confirmed, deletes the order identified by the invoking button's Tag and refreshes the dashboard data; shows an error notification on failure.
+        /// </summary>
+        /// <param name="sender">The Button that raised the event; its Tag must be an <c>int</c> containing the order ID to delete.</param>
         private async void DeleteOrder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button b && b.Tag is int orderId)

@@ -66,6 +66,12 @@ namespace HotelPOS.ViewModels
             _notificationService = notificationService;
         }
 
+        /// <summary>
+        /// Populates the Suppliers collection (including an "All Suppliers" entry), selects it, and loads the first page of the purchase report.
+        /// </summary>
+        /// <remarks>
+        /// If an exception occurs during initialization, an error message is shown via the notification service.
+        /// </remarks>
         public async Task InitializeAsync()
         {
             try
@@ -112,6 +118,12 @@ namespace HotelPOS.ViewModels
             await LoadDataAsync(page, pageSize);
         }
 
+        /// <summary>
+        /// Loads the specified page of purchase report data using current filters, replaces ReportRows with the returned items, updates aggregated totals, and reports the total count to the pager.
+        /// </summary>
+        /// <param name="page">The 1-based page number to load.</param>
+        /// <param name="pageSize">The number of items to request for the page.</param>
+        /// <remarks>On failure, displays an error notification via the notification service.</remarks>
         private async Task LoadDataAsync(int page, int pageSize)
         {
             using (var scope = App.CreateDbScope())

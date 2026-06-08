@@ -21,6 +21,12 @@ namespace HotelPOS
         public static App CurrentApp => (App)System.Windows.Application.Current;
         public ServiceProvider ServiceProvider { get; private set; } = null!;
 
+        /// <summary>
+        /// Creates an IServiceScope for resolving scoped services such as a DbContext.
+        /// </summary>
+        /// <returns>
+        /// An IServiceScope that resolves services from the application's ServiceProvider; if no WPF Application instance exists, returns a dummy scope that yields null for service resolutions and whose Dispose method is a no-op.
+        /// </returns>
         public static IServiceScope CreateDbScope()
         {
             if (System.Windows.Application.Current == null)
@@ -33,14 +39,30 @@ namespace HotelPOS
         private class DummyScope : IServiceScope
         {
             public IServiceProvider ServiceProvider => new DummyServiceProvider();
-            public void Dispose() { }
+            /// <summary>
+/// Performs no operation; provided to satisfy IDisposable for dummy scopes.
+/// </summary>
+public void Dispose() { }
         }
 
         private class DummyServiceProvider : IServiceProvider
         {
-            public object? GetService(Type serviceType) => null;
+            /// <summary>
+/// Resolves a service of the specified type from this provider; this implementation never returns a service.
+/// </summary>
+/// <param name="serviceType">The type of service to resolve.</param>
+/// <returns>Always `null`.</returns>
+public object? GetService(Type serviceType) => null;
         }
 
+        /// <summary>
+        /// Configures logging, global exception handlers, dependency injection, and the database, then opens the initial login window.
+        /// </summary>
+        /// <param name="e">Startup event arguments supplied by the WPF runtime.</param>
+        /// <remarks>
+        /// This method sets up Serilog, registers application services, viewmodels, and views into the DI container, initializes or migrates the database schema, and shows the login window in its own DI scope.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">Thrown when a database connection string is not found in configuration (expects 'ConnectionStrings:DefaultConnection' or the HOTELPOS_DEFAULT_CONNECTION environment variable).</exception>
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);

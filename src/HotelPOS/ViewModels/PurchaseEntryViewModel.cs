@@ -62,6 +62,10 @@ namespace HotelPOS.ViewModels
             _ = LoadDataAsync();
         }
 
+        /// <summary>
+        /// Loads suppliers and catalog items into the view model and ensures there is at least one purchase row.
+        /// </summary>
+        /// <returns>A task that completes after Suppliers and CatalogItems are populated and PurchaseRows contains at least one row.</returns>
         public async Task LoadDataAsync()
         {
             using (var scope = App.CreateDbScope())
@@ -97,6 +101,9 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Adds a new empty purchase row to the PurchaseRows collection.
+        /// </summary>
         [RelayCommand]
         private void AddRow()
         {
@@ -119,6 +126,13 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Validates the current purchase form, persists the purchase to the data store, and resets the form on success.
+        /// </summary>
+        /// <remarks>
+        /// Performs form- and row-level validations, shows warning notifications for validation failures, saves a constructed Purchase (including its PurchaseItems) via the application-scoped IPurchaseService, shows a success notification on completion, and shows an error notification if saving fails.
+        /// </remarks>
+        /// <returns>A task that completes when the save operation and its notifications have finished.</returns>
         [RelayCommand]
         private async Task SavePurchaseAsync()
         {

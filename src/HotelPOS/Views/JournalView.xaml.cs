@@ -57,6 +57,12 @@ namespace HotelPOS.Views
             await RefreshTotalCountAsync();
         }
 
+        /// <summary>
+        /// Updates the journal pager's total record count and the row count text based on the currently selected date range and table filter.
+        /// </summary>
+        /// <remarks>
+        /// Reads the FromDate and ToDate controls (ToDate is treated as exclusive by adding one day) and the optional table filter, requests the total count from the order service, sets JournalPager's external source to that total, and updates RowCountText with a human-readable transaction count. If an error occurs, it reports it via ShowError.
+        /// </remarks>
         private async Task RefreshTotalCountAsync()
         {
             using (var scope = App.CreateDbScope())
@@ -81,6 +87,12 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Loads a single page of orders using the current date and table filters and sets the JournalGrid's ItemsSource to the resulting list of JournalRow entries.
+        /// </summary>
+        /// <param name="page">One-based page index to load.</param>
+        /// <param name="size">Number of orders per page.</param>
+        /// <remarks>On failure the method reports the error via ShowError and does not propagate the exception.</remarks>
         private async Task LoadPagedAsync(int page, int size)
         {
             using (var scope = App.CreateDbScope())
@@ -191,6 +203,16 @@ namespace HotelPOS.Views
                 _notificationService.ShowError($"Export error: {ex.Message}");
             }
         }
+        /// <summary>
+        /// Exports a GST report for the selected date range to an Excel file and prompts the user to save it.
+        /// </summary>
+        /// <remarks>
+        /// If FromDate or ToDate are not selected, the method defaults the range to the last 30 days (FromDate = today - 30 days, ToDate = today).
+        /// The report is retrieved from IReportService and written to an .xlsx workbook with columns: Date, Orders, Gross Revenue, GST (5%), Net Revenue.
+        /// Success or failure is reported via the notification service.
+        /// </remarks>
+        /// <param name="sender">The source of the event (typically the export button).</param>
+        /// <param name="e">Event data for the click event.</param>
         private async void ExportGst_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new SaveFileDialog
@@ -245,7 +267,11 @@ namespace HotelPOS.Views
             }
         }
 
-        // ── Print Receipt ─────────────────────────────────────────────────────
+        /// <summary>
+        /// Prints or previews the receipt for the order identified by the sender Button's Tag.
+        /// </summary>
+        /// <param name="sender">The event source; expected to be a <see cref="System.Windows.Controls.Button"/> whose <c>Tag</c> contains the order ID (an <c>int</c>).</param>
+        /// <param name="e">Event arguments for the routed event.</param>
         private async void PrintReceipt_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button b && b.Tag is int orderId)
@@ -309,6 +335,11 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Prompts the user to confirm deletion of the order identified by the clicked button's Tag and, if confirmed, deletes that order using a scoped IOrderService and reloads the journal view.
+        /// </summary>
+        /// <param name="sender">The Button whose Tag contains the order ID to delete.</param>
+        /// <param name="e">Click event data.</param>
         private async void DeleteOrder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button b && b.Tag is int orderId)

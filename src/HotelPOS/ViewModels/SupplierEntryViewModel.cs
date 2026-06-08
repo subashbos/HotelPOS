@@ -162,6 +162,12 @@ namespace HotelPOS.ViewModels
             return true;
         }
 
+        /// <summary>
+        /// Validates the view-model's fields, persists the supplier to the data store, and requests the UI to close on success.
+        /// </summary>
+        /// <remarks>
+        /// Runs name, phone, and email validation; if validation fails it shows a warning and aborts. It verifies supplier-name uniqueness (excluding the current record), normalizes the phone value, maps view-model fields to a Supplier entity, and saves it using an ISupplierService resolved from a scoped provider (falling back to the injected service). On success it shows a success notification and invokes <c>RequestClose</c> with <c>true</c>. On failure it shows an error notification; exceptions are handled internally.
+        /// </remarks>
         [RelayCommand]
         private async Task SaveAsync()
         {

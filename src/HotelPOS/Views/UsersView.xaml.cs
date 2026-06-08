@@ -17,17 +17,32 @@ namespace HotelPOS.Views
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
         private static readonly SolidColorBrush ErrorFg = new(Color.FromRgb(0x72, 0x1C, 0x24));
 
+        /// <summary>
+        /// Initializes a new instance of the UsersView control and prepares its UI components.
+        /// </summary>
         public UsersView(IUserService userService, IRoleService roleService)
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Initializes the view by loading users into the grid and populating the roles dropdown.
+        /// </summary>
+        /// <returns>Completes when users have been refreshed and roles have been loaded.</returns>
         public async Task InitializeAsync()
         {
             await RefreshAsync();
             await LoadRolesAsync();
         }
 
+        /// <summary>
+        /// Loads all roles from the database and populates the NewRoleCombo dropdown.
+        /// </summary>
+        /// <remarks>
+        /// The method sets the combo's ItemsSource to the retrieved role list, configures
+        /// DisplayMemberPath to "Name" and SelectedValuePath to "Id", and selects the first
+        /// role if any exist.
+        /// </remarks>
         private async Task LoadRolesAsync()
         {
             List<Role> roles;
@@ -42,6 +57,9 @@ namespace HotelPOS.Views
             if (roles.Any()) NewRoleCombo.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Reloads the user list from the database, assigns a 1-based sequence number to each user's <c>SNo</c>, and updates <c>UsersGrid.ItemsSource</c>.
+        /// </summary>
         public async Task RefreshAsync()
         {
             List<User> users;
@@ -58,6 +76,11 @@ namespace HotelPOS.Views
 
         private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
 
+        /// <summary>
+        /// Enables the currently selected user account and refreshes the displayed user list.
+        /// </summary>
+        /// <param name="sender">The control that raised the event.</param>
+        /// <param name="e">Event data.</param>
         private async void Enable_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
@@ -70,6 +93,12 @@ namespace HotelPOS.Views
             ShowFeedback($"✅ {u.Username} has been enabled.", true);
         }
 
+        /// <summary>
+        /// Disables the currently selected user account in the grid.
+        /// </summary>
+        /// <remarks>
+        /// If no user is selected, displays "Select a user first." If the selected user is the current session user, displays "You cannot disable your own account." Otherwise sets the user's active state to false, refreshes the user list, and displays a success message "🚫 {username} has been disabled.".
+        /// </remarks>
         private async void Disable_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
@@ -83,6 +112,11 @@ namespace HotelPOS.Views
             ShowFeedback($"🚫 {u.Username} has been disabled.", true);
         }
 
+        /// <summary>
+        /// Opens a password-reset dialog for the currently selected user and, if confirmed, resets that user's password and displays success or error feedback.
+        /// </summary>
+        /// <param name="sender">The source of the click event.</param>
+        /// <param name="e">The routed event data.</param>
         private async void ResetPwd_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
@@ -101,6 +135,14 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Deletes the currently selected user after asking for confirmation and refreshes the displayed user list.
+        /// </summary>
+        /// <remarks>
+        /// If no user is selected, displays an error message. Presents a confirmation dialog before deletion;
+        /// on confirmation the user is removed and a success message is shown. Any exception raised during deletion
+        /// is displayed as error feedback.
+        /// </remarks>
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
@@ -123,6 +165,12 @@ namespace HotelPOS.Views
             catch (Exception ex) { ShowFeedback(ex.Message, false); }
         }
 
+        /// <summary>
+        /// Creates a new user from the Add User form and updates the displayed users list.
+        /// </summary>
+        /// <remarks>
+        /// Reads the username, password, and selected role from the form controls. If no role is selected, displays an error feedback message and aborts. On success, clears the input fields, refreshes the users grid, and displays a success feedback message; on failure, displays the returned error message.
+        /// </remarks>
         private async void AddUser_Click(object sender, RoutedEventArgs e)
         {
             var username = NewUsernameBox.Text.Trim();
