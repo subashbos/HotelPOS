@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -63,36 +64,36 @@ namespace HotelPOS.ViewModels
 
         public async Task LoadDataAsync()
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                Suppliers.Clear();
-                var suppliers = await _purchaseService.GetSuppliersAsync();
-                foreach (var sup in suppliers)
+                var purchaseService = scope.ServiceProvider.GetService<IPurchaseService>() ?? _purchaseService;
+                var itemService = scope.ServiceProvider.GetService<IItemService>() ?? _itemService;
+                try
                 {
-                    Suppliers.Add(sup);
-                }
+                    Suppliers.Clear();
+                    var suppliers = await purchaseService.GetSuppliersAsync();
+                    foreach (var sup in suppliers)
+                    {
+                        Suppliers.Add(sup);
+                    }
 
-                CatalogItems.Clear();
-                var items = await _itemService.GetItemsAsync();
-                foreach (var it in items)
-                {
-                    CatalogItems.Add(it);
-                }
+                    CatalogItems.Clear();
+                    var items = await itemService.GetItemsAsync();
+                    foreach (var it in items)
+                    {
+                        CatalogItems.Add(it);
+                    }
 
-                // Initialize with one empty row if none exist
-                if (PurchaseRows.Count == 0)
-                {
-                    AddRow();
+                    // Initialize with one empty row if none exist
+                    if (PurchaseRows.Count == 0)
+                    {
+                        AddRow();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                _notificationService.ShowError($"Failed to load catalog data: {ex.Message}");
-            }
-            finally
-            {
-                App.DbLock.Release();
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Failed to load catalog data: {ex.Message}");
+                }
             }
         }
 
@@ -190,14 +191,10 @@ namespace HotelPOS.ViewModels
                     }).ToList()
                 };
 
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    await _purchaseService.SavePurchaseAsync(purchase);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var purchaseService = scope.ServiceProvider.GetService<IPurchaseService>() ?? _purchaseService;
+                    await purchaseService.SavePurchaseAsync(purchase);
                 }
                 _notificationService.ShowSuccess("Purchase entry saved successfully and stock quantities updated.");
 

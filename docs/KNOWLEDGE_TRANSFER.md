@@ -51,9 +51,10 @@ Defined in `HotelPOS/App.xaml.cs`.
 
 ### Thread-Safety & DbContext Synchronization
 
-To prevent EF Core concurrent `DbContext` access errors inside the WPF application (where multiple user events or background tasks might hit the database simultaneously), the application utilizes a global semaphore lock `App.DbLock`.
-- All service and repository database operations initiated from WPF Views, Windows, Dialogs, or ViewModels must be wrapped in `await App.DbLock.WaitAsync(); try { ... } finally { App.DbLock.Release(); }` blocks.
-- This ensures complete thread-safety across active user sessions.
+To prevent EF Core concurrent `DbContext` access errors inside the WPF application (where multiple user events or background tasks might hit the database simultaneously), the application utilizes dynamic scoped service resolution.
+- All service and repository database operations initiated from WPF Views, Windows, Dialogs, or ViewModels are executed inside a temporary scope retrieved via `using (var scope = App.CreateDbScope())`.
+- This ensures separate, isolated database context instances are used per transaction/operation, guaranteeing thread safety.
+- For unit testing, a built-in fallback automatically routes calls to constructor-injected service fields when the WPF app context is not running.
 
 ### Category DisplayOrder & Custom Sorting
 

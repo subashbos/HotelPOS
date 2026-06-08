@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -52,21 +53,20 @@ namespace HotelPOS.ViewModels
 
         public async Task LoadSuppliersAsync()
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var suppliers = await _supplierService.GetSuppliersAsync();
-                _allSuppliers.Clear();
-                _allSuppliers.AddRange(suppliers);
-                ApplyFilter();
-            }
-            catch (Exception ex)
-            {
-                _notificationService.ShowError($"Failed to load suppliers: {ex.Message}");
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var supplierService = scope.ServiceProvider.GetService<ISupplierService>() ?? _supplierService;
+                try
+                {
+                    var suppliers = await supplierService.GetSuppliersAsync();
+                    _allSuppliers.Clear();
+                    _allSuppliers.AddRange(suppliers);
+                    ApplyFilter();
+                }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Failed to load suppliers: {ex.Message}");
+                }
             }
         }
 
@@ -138,19 +138,18 @@ namespace HotelPOS.ViewModels
                 var confirmed = await ConfirmDeleteAsync(target.Name);
                 if (confirmed)
                 {
-                    await App.DbLock.WaitAsync();
-                    try
+                    using (var scope = App.CreateDbScope())
                     {
-                        await _supplierService.DeleteSupplierAsync(target.Id);
-                        _notificationService.ShowSuccess($"Supplier '{target.Name}' deleted successfully.");
-                    }
-                    catch (Exception ex)
-                    {
-                        _notificationService.ShowError($"Failed to delete supplier: {ex.Message}");
-                    }
-                    finally
-                    {
-                        App.DbLock.Release();
+                        var supplierService = scope.ServiceProvider.GetService<ISupplierService>() ?? _supplierService;
+                        try
+                        {
+                            await supplierService.DeleteSupplierAsync(target.Id);
+                            _notificationService.ShowSuccess($"Supplier '{target.Name}' deleted successfully.");
+                        }
+                        catch (Exception ex)
+                        {
+                            _notificationService.ShowError($"Failed to delete supplier: {ex.Message}");
+                        }
                     }
                     await LoadSuppliersAsync();
                 }

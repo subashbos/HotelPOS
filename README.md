@@ -25,11 +25,11 @@ For in-depth explanations of the system's design and features, refer to the dedi
 - **Repository Pattern**: Strict decoupling of data persistence layers (`HotelPOS.Persistence`) using Entity Framework Core.
 
 ### 🛡️ Enterprise-Grade Thread Safety
-- **Global DbContext Serialization**: Implements a centralized synchronization semaphore (`App.DbLock`) across **14 major views and view-models** to fully eliminate EF Core concurrent access exceptions (`InvalidOperationException`) in highly dynamic user interfaces.
+- **Scoped DbContext Resolution**: Avoids concurrent EF Core access exceptions without relying on global blocks by utilizing short-lived `IServiceScope` lifecycles on distinct UI execution contexts, ensuring independent database contexts per operation.
 - **Safe Cart Synchronization**: Core billing operations (`CartService`) utilize robust concurrency models to guarantee thread safety during fast checkout operations.
 
 ### 🧪 Robust Test Coverage
-- **100% Green Suite**: Anchored by **504 comprehensive integration and unit tests** covering checkout calculations, tax validations, cashier shifts, and billing edge cases.
+- **100% Green Suite**: Anchored by **510 comprehensive integration and unit tests** covering checkout calculations, tax validations, cashier shifts, and billing edge cases.
 
 ---
 

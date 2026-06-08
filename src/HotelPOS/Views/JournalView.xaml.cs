@@ -1,7 +1,9 @@
 using ClosedXML.Excel;
+using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Win32;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -57,62 +59,60 @@ namespace HotelPOS.Views
 
         private async Task RefreshTotalCountAsync()
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var from = FromDate.SelectedDate;
-                var to = ToDate.SelectedDate?.AddDays(1);
-                int? tbl = GetTableFilter();
+                var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                try
+                {
+                    var from = FromDate.SelectedDate;
+                    var to = ToDate.SelectedDate?.AddDays(1);
+                    int? tbl = GetTableFilter();
 
-                // Get count by requesting a minimal page
-                var (_, total) = await _orderService.GetPagedOrdersAsync(1, 1, from, to, tbl);
+                    // Get count by requesting a minimal page
+                    var (_, total) = await orderService.GetPagedOrdersAsync(1, 1, from, to, tbl);
 
-                JournalPager.SetExternalSource(total);
-                RowCountText.Text = $"{total} transaction{(total == 1 ? "" : "s")}";
-            }
-            catch (Exception ex)
-            {
-                ShowError("Failed to refresh count", ex);
-            }
-            finally
-            {
-                App.DbLock.Release();
+                    JournalPager.SetExternalSource(total);
+                    RowCountText.Text = $"{total} transaction{(total == 1 ? "" : "s")}";
+                }
+                catch (Exception ex)
+                {
+                    ShowError("Failed to refresh count", ex);
+                }
             }
         }
 
         private async Task LoadPagedAsync(int page, int size)
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var from = FromDate.SelectedDate;
-                var to = ToDate.SelectedDate?.AddDays(1);
-                int? tbl = GetTableFilter();
+                var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                try
+                {
+                    var from = FromDate.SelectedDate;
+                    var to = ToDate.SelectedDate?.AddDays(1);
+                    int? tbl = GetTableFilter();
 
-                var (items, _) = await _orderService.GetPagedOrdersAsync(page, size, from, to, tbl);
-                int startSno = (page - 1) * size + 1;
+                    var (items, _) = await orderService.GetPagedOrdersAsync(page, size, from, to, tbl);
+                    int startSno = (page - 1) * size + 1;
 
-                JournalGrid.ItemsSource = items
-                    .Select((o, idx) => new JournalRow
-                    {
-                        SNo = startSno + idx,
-                        Id = o.Id,
-                        TableNumber = o.TableNumber,
-                        CreatedAt = o.CreatedAt,
-                        TotalAmount = o.TotalAmount,
-                        DiscountAmount = o.DiscountAmount,
-                        PaymentMode = o.PaymentMode,
-                        Items = o.Items ?? new List<OrderItem>()
-                    })
-                    .ToList();
-            }
-            catch (Exception ex)
-            {
-                ShowError("Failed to load page", ex);
-            }
-            finally
-            {
-                App.DbLock.Release();
+                    JournalGrid.ItemsSource = items
+                        .Select((o, idx) => new JournalRow
+                        {
+                            SNo = startSno + idx,
+                            Id = o.Id,
+                            TableNumber = o.TableNumber,
+                            CreatedAt = o.CreatedAt,
+                            TotalAmount = o.TotalAmount,
+                            DiscountAmount = o.DiscountAmount,
+                            PaymentMode = o.PaymentMode,
+                            Items = o.Items ?? new List<OrderItem>()
+                        })
+                        .ToList();
+                }
+                catch (Exception ex)
+                {
+                    ShowError("Failed to load page", ex);
+                }
             }
         }
 
@@ -201,12 +201,17 @@ namespace HotelPOS.Views
             };
             if (dlg.ShowDialog() != true) return;
 
-            await App.DbLock.WaitAsync();
             try
             {
                 var from = FromDate.SelectedDate ?? DateTime.Today.AddDays(-30);
                 var to = ToDate.SelectedDate ?? DateTime.Today;
-                var data = await _reportService.GetGstReportAsync(from, to);
+                
+                List<GstReportRowDto> data;
+                using (var scope = App.CreateDbScope())
+                {
+                    var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
+                    data = await reportService.GetGstReportAsync(from, to);
+                }
 
                 using var wb = new XLWorkbook();
                 var ws = wb.Worksheets.Add("GST Report");
@@ -238,10 +243,6 @@ namespace HotelPOS.Views
             {
                 _notificationService.ShowError($"Export error: {ex.Message}");
             }
-            finally
-            {
-                App.DbLock.Release();
-            }
         }
 
         // ── Print Receipt ─────────────────────────────────────────────────────
@@ -249,12 +250,18 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is int orderId)
             {
-                await App.DbLock.WaitAsync();
                 try
                 {
-                    var settings = await _settingService.GetSettingsAsync();
-                    var orders = await _orderService.GetAllOrdersWithItemsAsync();
-                    var order = orders.FirstOrDefault(o => o.Id == orderId);
+                    SystemSetting settings;
+                    Order? order;
+                    using (var scope = App.CreateDbScope())
+                    {
+                        var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                        var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                        settings = await settingService.GetSettingsAsync();
+                        var orders = await orderService.GetAllOrdersWithItemsAsync();
+                        order = orders.FirstOrDefault(o => o.Id == orderId);
+                    }
 
                     if (order == null) return;
 
@@ -275,10 +282,6 @@ namespace HotelPOS.Views
                 catch (Exception ex)
                 {
                     _notificationService.ShowError($"Failed to print receipt: {ex.Message}");
-                }
-                finally
-                {
-                    App.DbLock.Release();
                 }
             }
         }
@@ -313,18 +316,17 @@ namespace HotelPOS.Views
                 if (MessageBox.Show($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    await App.DbLock.WaitAsync();
                     try
                     {
-                        await _orderService.DeleteOrderAsync(orderId);
+                        using (var scope = App.CreateDbScope())
+                        {
+                            var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                            await orderService.DeleteOrderAsync(orderId);
+                        }
                     }
                     catch (Exception ex)
                     {
                         _notificationService.ShowError($"Delete failed: {ex.Message}");
-                    }
-                    finally
-                    {
-                        App.DbLock.Release();
                     }
                     await LoadAsync();
                 }

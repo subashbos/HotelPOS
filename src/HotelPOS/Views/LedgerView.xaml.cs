@@ -2,6 +2,7 @@ using ClosedXML.Excel;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Win32;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -68,14 +69,10 @@ namespace HotelPOS.Views
                     DateTime? to = ToDate.SelectedDate?.AddDays(1);
 
                     List<Order> allOrders;
-                    await App.DbLock.WaitAsync();
-                    try
+                    using (var scope = App.CreateDbScope())
                     {
-                        allOrders = await _orderService.GetAllOrdersWithItemsAsync();
-                    }
-                    finally
-                    {
-                        App.DbLock.Release();
+                        var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                        allOrders = await orderService.GetAllOrdersWithItemsAsync();
                     }
 
                     var orders = allOrders.AsEnumerable();

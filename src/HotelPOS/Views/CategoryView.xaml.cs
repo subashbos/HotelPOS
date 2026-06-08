@@ -1,5 +1,6 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -25,16 +26,18 @@ namespace HotelPOS.Views
 
         private async Task LoadDataAsync()
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var categories = await _categoryService.GetCategoriesAsync();
-                var orderedCategories = categories.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
-                for (int i = 0; i < orderedCategories.Count; i++) orderedCategories[i].SNo = i + 1;
-                CategoryGrid.ItemsSource = orderedCategories;
+                var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                try
+                {
+                    var categories = await categoryService.GetCategoriesAsync();
+                    var orderedCategories = categories.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                    for (int i = 0; i < orderedCategories.Count; i++) orderedCategories[i].SNo = i + 1;
+                    CategoryGrid.ItemsSource = orderedCategories;
+                }
+                catch (Exception ex) { ShowStatus(ex.Message, false); }
             }
-            catch (Exception ex) { ShowStatus(ex.Message, false); }
-            finally { App.DbLock.Release(); }
         }
 
         private async void Add_Click(object sender, RoutedEventArgs e)
@@ -44,25 +47,27 @@ namespace HotelPOS.Views
 
             int.TryParse(DisplayOrderBox.Text, out var displayOrder);
 
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                if (_editingCategory == null)
+                var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                try
                 {
-                    await _categoryService.AddCategoryAsync(name, displayOrder);
-                    ShowStatus($"✅ Category '{name}' added.", true);
+                    if (_editingCategory == null)
+                    {
+                        await categoryService.AddCategoryAsync(name, displayOrder);
+                        ShowStatus($"✅ Category '{name}' added.", true);
+                    }
+                    else
+                    {
+                        await categoryService.UpdateCategoryAsync(_editingCategory.Id, name, displayOrder);
+                        ShowStatus($"✅ Category '{name}' updated.", true);
+                        ExitEditMode();
+                    }
+                    NameBox.Clear();
+                    DisplayOrderBox.Text = "0";
                 }
-                else
-                {
-                    await _categoryService.UpdateCategoryAsync(_editingCategory.Id, name, displayOrder);
-                    ShowStatus($"✅ Category '{name}' updated.", true);
-                    ExitEditMode();
-                }
-                NameBox.Clear();
-                DisplayOrderBox.Text = "0";
+                catch (Exception ex) { ShowStatus(ex.Message, false); }
             }
-            catch (Exception ex) { ShowStatus(ex.Message, false); }
-            finally { App.DbLock.Release(); }
 
             await LoadDataAsync();
         }
@@ -88,14 +93,16 @@ namespace HotelPOS.Views
                 if (MessageBox.Show("Delete this category? Items linked to it will lose their category.", "Confirm Delete",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    await App.DbLock.WaitAsync();
-                    try
+                    using (var scope = App.CreateDbScope())
                     {
-                        await _categoryService.DeleteCategoryAsync(id);
-                        ShowStatus("🗑 Category deleted.", true);
+                        var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                        try
+                        {
+                            await categoryService.DeleteCategoryAsync(id);
+                            ShowStatus("🗑 Category deleted.", true);
+                        }
+                        catch (Exception ex) { ShowStatus(ex.Message, false); }
                     }
-                    catch (Exception ex) { ShowStatus(ex.Message, false); }
-                    finally { App.DbLock.Release(); }
 
                     await LoadDataAsync();
                 }

@@ -2,6 +2,7 @@ using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Services;
+using HotelPOS.Infrastructure;
 using HotelPOS.Infrastructure.Persistence;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
@@ -17,8 +18,28 @@ namespace HotelPOS
 {
     public partial class App : System.Windows.Application
     {
-        public static readonly System.Threading.SemaphoreSlim DbLock = new(1, 1);
+        public static App CurrentApp => (App)System.Windows.Application.Current;
         public ServiceProvider ServiceProvider { get; private set; } = null!;
+
+        public static IServiceScope CreateDbScope()
+        {
+            if (System.Windows.Application.Current == null)
+            {
+                return new DummyScope();
+            }
+            return CurrentApp.ServiceProvider.CreateScope();
+        }
+
+        private class DummyScope : IServiceScope
+        {
+            public IServiceProvider ServiceProvider => new DummyServiceProvider();
+            public void Dispose() { }
+        }
+
+        private class DummyServiceProvider : IServiceProvider
+        {
+            public object? GetService(Type serviceType) => null;
+        }
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -64,7 +85,7 @@ namespace HotelPOS
             if (string.IsNullOrWhiteSpace(connectionString))
             {
                 throw new InvalidOperationException(
-                    "Connection string is missing. Configure 'ConnectionStrings:DefaultConnection' in appsettings or set HOTELPOS_DEFAULT_CONNECTION.");
+                     "Connection string is missing. Configure 'ConnectionStrings:DefaultConnection' in appsettings or set HOTELPOS_DEFAULT_CONNECTION.");
             }
 
             var services = new ServiceCollection();
@@ -89,17 +110,7 @@ namespace HotelPOS
             services.AddSingleton<IUserContext, UserContext>();
 
             // ── Repositories (Scoped) ─────────────────────────────────────────
-            services.AddScoped<IOrderRepository, OrderRepository>();
-            services.AddScoped<IItemRepository, ItemRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<ISettingRepository, SettingRepository>();
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IAuditRepository, AuditRepository>();
-            services.AddScoped<ICashRepository, CashRepository>();
-            services.AddScoped<ITableRepository, TableRepository>();
-            services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IPurchaseRepository, PurchaseRepository>();
-            services.AddScoped<ISupplierRepository, SupplierRepository>();
+            services.AddInfrastructure();
 
             // ── Services (Scoped) ─────────────────────────────────────────────
             services.AddScoped<IOrderService, OrderService>();

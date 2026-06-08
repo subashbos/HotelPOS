@@ -74,15 +74,11 @@ namespace HotelPOS
                 {
                     // Step 1: Reload user from DB to get fresh RoleDetails + Permissions
                     User? freshUser = null;
-                    await App.DbLock.WaitAsync();
-                    try
+                    using (var scope = App.CreateDbScope())
                     {
-                        freshUser = await _userRepository.GetUserByUsernameAsync(
+                        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+                        freshUser = await userRepository.GetUserByUsernameAsync(
                             AppSession.CurrentUser.Username);
-                    }
-                    finally
-                    {
-                        App.DbLock.Release();
                     }
 
                     if (freshUser?.RoleDetails != null)
@@ -95,19 +91,15 @@ namespace HotelPOS
                         // Fallback: RoleId is null on the user record — look up role by name
                         // This handles users created before role linking was enforced.
                         Role? roleByName = null;
-                        await App.DbLock.WaitAsync();
-                        try
+                        using (var scope = App.CreateDbScope())
                         {
-                            roleByName = await _roleService
+                            var roleService = scope.ServiceProvider.GetRequiredService<IRoleService>();
+                            roleByName = await roleService
                                 .GetAllRolesAsync()
                                 .ContinueWith(t => t.Result
                                     .FirstOrDefault(r => string.Equals(r.Name,
                                         AppSession.CurrentUser.Role,
                                         StringComparison.OrdinalIgnoreCase)));
-                        }
-                        finally
-                        {
-                            App.DbLock.Release();
                         }
 
                         if (roleByName != null)

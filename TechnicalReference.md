@@ -4,25 +4,19 @@ This document provides deep-dive implementation details for the core technical c
 
 ---
 
-## 1. DbContext Concurrency Synchronization (`App.DbLock`)
-To allow a shared scoped Entity Framework DbContext instance to handle multi-threaded queries without throws, a global semaphore lock is integrated across the WPF codebase.
+## 1. DbContext Concurrency Synchronization (Scoped DbContext Resolution)
+To allow the WPF client to perform asynchronous database queries without throwing concurrency errors, the application uses short-lived dependency injection scopes.
 
 ### Technical Design
-- **Engine**: System `SemaphoreSlim(1, 1)` declared statically on `App` namespace.
-- **Lock Scope**: Limits database reads and writes to a single concurrent operation, serializing access safely.
-- **Implementation Pattern**: Strict `await App.DbLock.WaitAsync()` followed by database execution within a `try` block, and a guaranteed `App.DbLock.Release()` inside `finally`.
-- **Preclusion of Deadlocks**: Semaphore calls inside view event handlers (e.g. `CategoryView`, `TableView`) are structured to release locks *before* subsequent view refreshing operations re-acquire them.
+- **Engine**: Dynamic scope factory (`App.CreateDbScope()`) that spawns an `IServiceScope` from the root ServiceProvider container.
+- **Scope Isolation**: Limits the lifetime of resolved services and `DbContext` to the boundary of a single asynchronous operation or logical transaction block, ensuring that distinct database connections are utilized for concurrent operations.
+- **Fallback**: Includes `System.Windows.Application.Current` check. During xUnit unit test runs, `App.CreateDbScope()` returns a `DummyScope` that resolves services to `null`. This forces components to seamlessly fall back to their constructor-injected fields (mocked by tests).
 
 ```csharp
-await App.DbLock.WaitAsync();
-try
+using (var scope = App.CreateDbScope())
 {
-    // Scoped DB Operation
-    await _orderService.SaveOrderAsync(items, table);
-}
-finally
-{
-    App.DbLock.Release();
+    var orderService = scope.ServiceProvider.GetService<IOrderService>() ?? _orderService;
+    await orderService.SaveOrderAsync(items, table);
 }
 ```
 

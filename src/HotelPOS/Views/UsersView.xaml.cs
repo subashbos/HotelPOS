@@ -1,5 +1,9 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -8,8 +12,6 @@ namespace HotelPOS.Views
 {
     public partial class UsersView : UserControl
     {
-        private readonly IUserService _userService;
-        private readonly IRoleService _roleService;
         private static readonly SolidColorBrush SuccessBg = new(Color.FromRgb(0xD4, 0xED, 0xDA));
         private static readonly SolidColorBrush SuccessFg = new(Color.FromRgb(0x15, 0x57, 0x24));
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
@@ -18,8 +20,6 @@ namespace HotelPOS.Views
         public UsersView(IUserService userService, IRoleService roleService)
         {
             InitializeComponent();
-            _userService = userService;
-            _roleService = roleService;
         }
 
         public async Task InitializeAsync()
@@ -30,15 +30,11 @@ namespace HotelPOS.Views
 
         private async Task LoadRolesAsync()
         {
-            await App.DbLock.WaitAsync();
             List<Role> roles;
-            try
+            using (var scope = App.CreateDbScope())
             {
-                roles = await _roleService.GetAllRolesAsync();
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var roleService = scope.ServiceProvider.GetRequiredService<IRoleService>();
+                roles = await roleService.GetAllRolesAsync();
             }
             NewRoleCombo.ItemsSource = roles;
             NewRoleCombo.DisplayMemberPath = "Name";
@@ -48,15 +44,11 @@ namespace HotelPOS.Views
 
         public async Task RefreshAsync()
         {
-            await App.DbLock.WaitAsync();
             List<User> users;
-            try
+            using (var scope = App.CreateDbScope())
             {
-                users = await _userService.GetAllUsersAsync();
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                users = await userService.GetAllUsersAsync();
             }
             for (int i = 0; i < users.Count; i++) users[i].SNo = i + 1;
             UsersGrid.ItemsSource = users;
@@ -69,14 +61,10 @@ namespace HotelPOS.Views
         private async void Enable_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                await _userService.ToggleActiveAsync(u.Id, true);
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                await userService.ToggleActiveAsync(u.Id, true);
             }
             await RefreshAsync();
             ShowFeedback($"✅ {u.Username} has been enabled.", true);
@@ -86,14 +74,10 @@ namespace HotelPOS.Views
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
             if (u.Id == AppSession.CurrentUser?.Id) { ShowFeedback("You cannot disable your own account.", false); return; }
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                await _userService.ToggleActiveAsync(u.Id, false);
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                await userService.ToggleActiveAsync(u.Id, false);
             }
             await RefreshAsync();
             ShowFeedback($"🚫 {u.Username} has been disabled.", true);
@@ -108,14 +92,10 @@ namespace HotelPOS.Views
             {
                 bool ok;
                 string err;
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    (ok, err) = await _userService.ResetPasswordAsync(u.Id, dialog.NewPassword);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                    (ok, err) = await userService.ResetPasswordAsync(u.Id, dialog.NewPassword);
                 }
                 ShowFeedback(ok ? $"🔑 Password reset for {u.Username}." : err, ok);
             }
@@ -132,14 +112,10 @@ namespace HotelPOS.Views
 
             try
             {
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    await _userService.DeleteUserAsync(u.Id, AppSession.CurrentUser?.Id ?? 0);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                    await userService.DeleteUserAsync(u.Id, AppSession.CurrentUser?.Id ?? 0);
                 }
                 await RefreshAsync();
                 ShowFeedback($"🗑 {u.Username} deleted.", true);
@@ -161,14 +137,10 @@ namespace HotelPOS.Views
 
             bool ok;
             string err;
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                (ok, err) = await _userService.AddUserAsync(username, password, selectedRole.Name, selectedRole.Id);
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                (ok, err) = await userService.AddUserAsync(username, password, selectedRole.Name, selectedRole.Id);
             }
 
             if (ok)

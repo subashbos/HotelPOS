@@ -64,14 +64,10 @@ namespace HotelPOS
             // async void is required for event-like startup calls — guard with try/catch
             try
             {
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    _allItems = await _itemService.GetItemsAsync();
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
+                    _allItems = await itemService.GetItemsAsync();
                 }
                 ApplyItemFilter();
 
@@ -170,14 +166,10 @@ namespace HotelPOS
             try
             {
                 int orderId = 0;
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    orderId = await _orderService.SaveOrderAsync(items, tableNumber);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                    orderId = await orderService.SaveOrderAsync(items, tableNumber);
                 }
 
                 var subtotal = _cartService.GetSubtotal(tableNumber);
@@ -209,14 +201,10 @@ namespace HotelPOS
 
                 // Show print preview blocking dialog
                 SystemSetting settings;
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    settings = await _settingService.GetSettingsAsync();
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                    settings = await settingService.GetSettingsAsync();
                 }
                 var previewWindow = new PrintPreviewWindow(printOrder, settings) { Owner = this };
                 previewWindow.ShowDialog();

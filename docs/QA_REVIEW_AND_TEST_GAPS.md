@@ -7,13 +7,13 @@ Scope: Fast review of core POS risk areas: authentication, billing, orders, stoc
 ## Quick Verification
 
 - Command run: `dotnet test`
-- Result: 504 passed, 0 failed, 0 skipped, 504 total.
-- Concurrency & Thread-safety: Mitigated. Database concurrent operations are synchronized via global `App.DbLock`.
+- Result: 510 passed, 0 failed, 0 skipped, 510 total.
+- Concurrency & Thread-safety: Mitigated. Database concurrent operations are isolated using dynamic scoped service resolution.
 
 ## Highest Priority Loopholes (Mitigated & Checked)
 
 1. DbContext concurrency access (MITIGATED)
-   - WPF application components now systematically wrap all database transactions inside the global asynchronous synchronization lock `App.DbLock` to prevent thread collisions.
+   - WPF application components systematically execute database operations inside temporary DI scopes (`App.CreateDbScope()`) to avoid thread collisions and context sharing.
    - `OrderService.SaveOrderAsync` saves the order first, then deducts stock item by item.
    - If stock deduction fails after the order is saved, the bill exists but inventory may be unchanged or partially updated.
    - Recommended fix: move order save and stock deduction into one transaction/unit of work, or deduct/validate stock before committing the order.

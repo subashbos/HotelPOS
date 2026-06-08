@@ -2,6 +2,7 @@ using HotelPOS.Api;
 using HotelPOS.Api.Middleware;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
+using HotelPOS.Infrastructure;
 using HotelPOS.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,14 +20,12 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<HotelDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ── Dependency Injection: Item Repository ─────────────────────────────────
+// ── Dependency Injection ──────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, ApiUserContext>();
-builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddInfrastructure();
 
-builder.Services.AddScoped<IItemRepository, ItemRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<HotelPOS.Application.Interfaces.IAuthService, HotelPOS.Application.UseCases.AuthService>();
 
 // ── MediatR Configuration ─────────────────────────────────────────────────

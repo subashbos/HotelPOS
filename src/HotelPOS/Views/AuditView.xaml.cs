@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -28,23 +29,22 @@ namespace HotelPOS.Views
 
         private async Task RefreshLogsAsync()
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var start = FromDate.SelectedDate?.Date;
-                var end = ToDate.SelectedDate?.Date.AddDays(1).AddSeconds(-1);
-                var logs = await _auditService.GetLogsAsync(start, end);
-                var sorted = logs.OrderByDescending(l => l.Timestamp).ToList();
-                for (int i = 0; i < sorted.Count; i++) sorted[i].SNo = i + 1;
-                AuditGrid.ItemsSource = sorted;
-            }
-            catch (Exception ex)
-            {
-                _notificationService.ShowError($"Error loading audit logs: {ex.Message}");
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var auditService = scope.ServiceProvider.GetRequiredService<IAuditService>();
+                try
+                {
+                    var start = FromDate.SelectedDate?.Date;
+                    var end = ToDate.SelectedDate?.Date.AddDays(1).AddSeconds(-1);
+                    var logs = await auditService.GetLogsAsync(start, end);
+                    var sorted = logs.OrderByDescending(l => l.Timestamp).ToList();
+                    for (int i = 0; i < sorted.Count; i++) sorted[i].SNo = i + 1;
+                    AuditGrid.ItemsSource = sorted;
+                }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Error loading audit logs: {ex.Message}");
+                }
             }
         }
     }
