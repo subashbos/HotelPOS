@@ -13,7 +13,7 @@ namespace HotelPOS.Views
         private readonly UsersView _usersView;
         private SystemSetting? _current;
 
-        public SettingsView(ISettingService settingService, IUserService userService, IRoleService roleService, INotificationService notificationService)
+        public SettingsView(IUserService userService, IRoleService roleService, INotificationService notificationService)
         {
             InitializeComponent();
             _notificationService = notificationService;

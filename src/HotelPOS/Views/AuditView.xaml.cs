@@ -31,7 +31,7 @@ namespace HotelPOS.Views
         {
             using (var scope = App.CreateDbScope())
             {
-                var auditService = scope.ServiceProvider.GetRequiredService<IAuditService>();
+                var auditService = scope.ServiceProvider.GetService<IAuditService>() ?? _auditService;
                 try
                 {
                     var start = FromDate.SelectedDate?.Date;

@@ -73,7 +73,7 @@ namespace HotelPOS.ViewModels
                 List<Supplier> suppliers;
                 using (var scope = App.CreateDbScope())
                 {
-                    var purchaseService = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
+                    var purchaseService = scope.ServiceProvider.GetService<IPurchaseService>() ?? _purchaseService;
                     suppliers = await purchaseService.GetSuppliersAsync();
                 }
                 Suppliers.Clear();
@@ -116,7 +116,7 @@ namespace HotelPOS.ViewModels
         {
             using (var scope = App.CreateDbScope())
             {
-                var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
+                var reportService = scope.ServiceProvider.GetService<IReportService>() ?? _reportService;
                 try
                 {
                     var from = FilterFrom;
