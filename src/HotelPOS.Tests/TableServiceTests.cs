@@ -107,11 +107,60 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task DeleteTableAsync_ShouldCallRepo()
         {
+            // Arrange
+            var table = new Table { Id = 1, Number = 2, IsDeleted = false };
+            _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(table);
+
             // Act
             await _service.DeleteTableAsync(1);
 
             // Assert
             _repoMock.Verify(r => r.DeleteAsync(1), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateTableAsync_NotFound_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Table>());
+            _repoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Table?)null);
+            var dto = new CreateTableDto { Number = 2, Name = "T2" };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _service.UpdateTableAsync(99, dto));
+        }
+
+        [Fact]
+        public async Task GetTablesAsync_NullFromRepo_ReturnsEmptyList()
+        {
+            // Arrange
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync((List<Table>)null!);
+
+            // Act
+            var result = await _service.GetTablesAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task DeleteTableAsync_NotFoundOrAlreadyDeleted_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            _repoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Table?)null);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _service.DeleteTableAsync(99));
+
+            // Verify with soft-deleted table
+            var deletedTable = new Table { Id = 100, Number = 5, IsDeleted = true };
+            _repoMock.Setup(r => r.GetByIdAsync(100)).ReturnsAsync(deletedTable);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _service.DeleteTableAsync(100));
         }
     }
 }

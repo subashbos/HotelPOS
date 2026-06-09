@@ -86,6 +86,13 @@ namespace HotelPOS.Views
         {
             InitializeComponent();
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(roleService);
+                App.RegisterTestService(notificationService);
+            }
+
             Loaded += async (s, e) => await LoadDataAsync();
         }
 

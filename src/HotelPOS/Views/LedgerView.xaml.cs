@@ -43,6 +43,12 @@ namespace HotelPOS.Views
             InitializeComponent();
             _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(notificationService);
+            }
             LedgerPager.PageChanged += page => LedgerGrid.ItemsSource = page;
 
             Loaded += async (s, e) =>

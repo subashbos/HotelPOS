@@ -132,5 +132,85 @@ namespace HotelPOS.Tests
             // if the conversion logic is working as intended (Local vs UTC)
             Assert.NotEmpty(result);
         }
+
+        [Fact]
+        public async Task GetPagedPurchaseReportAsync_AppliesFiltersAndComputesTotalsCorrectly()
+        {
+            // Arrange
+            var fromDate = DateTime.UtcNow.AddDays(-7);
+            var toDate = DateTime.UtcNow;
+            var supplierId = 12;
+            var itemName = "Rice";
+            var paymentType = "UPI";
+            var invoiceNo = "INV-99";
+
+            var item = new PurchaseItem
+            {
+                ItemName = "Rice Brand A",
+                Quantity = 5,
+                UnitPrice = 10,
+                Total = 50,
+                TaxPercentage = 10,
+                Discount = 5
+            };
+
+            var purchase = new Purchase
+            {
+                Id = 101,
+                PurchaseDate = DateTime.UtcNow,
+                InvoiceNumber = "INV-99",
+                Supplier = new Supplier { Name = "Global Supplier" },
+                PaymentType = "UPI",
+                PurchaseItems = new List<PurchaseItem> { item }
+            };
+
+            _purchaseRepoMock.Setup(r => r.GetPagedPurchasesAsync(
+                1, 20, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), supplierId, itemName, paymentType, invoiceNo))
+                .ReturnsAsync((new List<Purchase> { purchase }, 1));
+
+            // Act
+            var result = await _service.GetPagedPurchaseReportAsync(
+                1, 20, fromDate, toDate, supplierId, itemName, paymentType, invoiceNo);
+
+            // Assert
+            Assert.Single(result.items);
+            Assert.Equal(1, result.totalCount);
+            Assert.Equal(50m, result.totalPurchases);
+            Assert.Equal(5m, result.totalTax); // 50 * 10%
+            Assert.Equal(5m, result.totalDiscount);
+            Assert.Equal(5, result.totalQty);
+
+            var firstRow = result.items[0];
+            Assert.Equal("INV-99", firstRow.InvoiceNumber);
+            Assert.Equal("Global Supplier", firstRow.SupplierName);
+            Assert.Equal("UPI", firstRow.PaymentType);
+        }
+
+        [Fact]
+        public async Task GetSalesReportAsync_CappedAt500Orders_RestrictsQueryPageSize()
+        {
+            // Arrange
+            var fakeOrders = Enumerable.Range(1, 500)
+                .Select(id => new Order { Id = id, TotalAmount = 10, CreatedAt = DateTime.UtcNow })
+                .ToList();
+
+            // Setup repository to return capped subset, but total count in database could be e.g. 750
+            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(1, 500, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null))
+                .ReturnsAsync((fakeOrders, 750));
+
+            _itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
+            _categoryRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
+
+            // Act
+            var result = await _service.GetSalesReportAsync();
+
+            // Assert
+            // Verify that the query page size was restricted to 500
+            _orderRepoMock.Verify(r => r.GetPagedWithItemsAsync(1, 500, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null), Times.Once);
+
+            // TotalOrders should reflect the count of orders retrieved (capped at 500), not the 750 database total count
+            Assert.Equal(500, result.TotalOrders);
+            Assert.Equal(5000m, result.TotalRevenue); // 500 * 10
+        }
     }
 }

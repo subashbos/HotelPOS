@@ -16,14 +16,20 @@ namespace HotelPOS.Application.UseCases
 
         public async Task LogActionAsync(string entityName, int entityId, string action, string? details = null)
         {
+            if (string.IsNullOrWhiteSpace(entityName))
+                throw new ArgumentException("Entity name cannot be empty or whitespace.", nameof(entityName));
+
+            if (string.IsNullOrWhiteSpace(action))
+                throw new ArgumentException("Action cannot be empty or whitespace.", nameof(action));
+
             var log = new AuditLog
             {
-                EntityName = entityName,
+                EntityName = entityName.Trim(),
                 EntityId = entityId,
-                Action = action,
+                Action = action.Trim(),
                 Timestamp = DateTime.UtcNow,
                 Details = details,
-                Username = _userContext.CurrentUsername
+                Username = string.IsNullOrWhiteSpace(_userContext.CurrentUsername) ? "System" : _userContext.CurrentUsername.Trim()
             };
 
             await _repo.AddAsync(log);

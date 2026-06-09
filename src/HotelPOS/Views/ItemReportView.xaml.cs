@@ -30,6 +30,14 @@ namespace HotelPOS.Views
             _itemService = itemService;
             _notificationService = notificationService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(categoryService);
+                App.RegisterTestService(itemService);
+                App.RegisterTestService(notificationService);
+            }
+
             Pager.PageChanged += page =>
             {
                 ReportGrid.ItemsSource = page;

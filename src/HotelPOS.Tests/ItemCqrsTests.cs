@@ -118,5 +118,162 @@ namespace HotelPOS.Tests
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
         }
+
+        [Fact]
+        public async Task UpdateItemCommand_ValidRequest_ShouldUpdateItem()
+        {
+            // Arrange
+            var item = new Item
+            {
+                Id = 10,
+                Name = "Old Burger",
+                Price = 100,
+                TaxPercentage = 5,
+                CategoryId = 1,
+                HsnCode = "H1",
+                Barcode = "B1",
+                StockQuantity = 10,
+                TrackInventory = true
+            };
+
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item> { item });
+            _repoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(item);
+
+            var command = new UpdateItemCommand(
+                10,
+                "New Burger",
+                120,
+                5,
+                1,
+                "H1",
+                "B1",
+                15,
+                true
+            );
+            var handler = new UpdateItemCommandHandler(_repoMock.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("New Burger", result.Name);
+            Assert.Equal(120, result.Price);
+            Assert.Equal(15, result.StockQuantity);
+            _repoMock.Verify(r => r.UpdateAsync(item), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateItemCommand_DuplicateName_ShouldThrow()
+        {
+            // Arrange
+            var item1 = new Item { Id = 10, Name = "Burger" };
+            var item2 = new Item { Id = 11, Name = "Pizza" };
+
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item> { item1, item2 });
+
+            var command = new UpdateItemCommand(
+                10,
+                "Pizza", // renaming Burger to Pizza (which already exists)
+                250,
+                12,
+                2,
+                "HSN123",
+                "BAR123",
+                100,
+                true
+            );
+            var handler = new UpdateItemCommandHandler(_repoMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task UpdateItemCommand_NotFound_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
+            _repoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Item?)null);
+
+            var command = new UpdateItemCommand(
+                99,
+                "Ghost Pizza",
+                250,
+                12,
+                2,
+                "HSN123",
+                "BAR123",
+                100,
+                true
+            );
+            var handler = new UpdateItemCommandHandler(_repoMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(command, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task UpdateItemCommand_InvalidPrice_ThrowsArgumentException()
+        {
+            // Arrange
+            var command = new UpdateItemCommand(
+                10,
+                "Free Pizza",
+                -10, // negative price
+                12,
+                2,
+                "HSN123",
+                "BAR123",
+                100,
+                true
+            );
+            var handler = new UpdateItemCommandHandler(_repoMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(command, CancellationToken.None));
+        }
+
+        [Fact]
+        public async Task DeleteItemCommand_ValidRequest_ShouldDeleteItem()
+        {
+            // Arrange
+            var item = new Item { Id = 10, Name = "Item to Delete" };
+            _repoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(item);
+            var command = new DeleteItemCommand(10);
+            var handler = new DeleteItemCommandHandler(_repoMock.Object);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.True(result);
+            _repoMock.Verify(r => r.DeleteAsync(10), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteItemCommand_NotFound_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            _repoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Item?)null);
+            var command = new DeleteItemCommand(99);
+            var handler = new DeleteItemCommandHandler(_repoMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(command, CancellationToken.None));
+            _repoMock.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task DeleteItemCommand_InvalidId_ThrowsArgumentException()
+        {
+            // Arrange
+            var command = new DeleteItemCommand(-1);
+            var handler = new DeleteItemCommandHandler(_repoMock.Object);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(command, CancellationToken.None));
+            _repoMock.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
+        }
     }
 }

@@ -62,6 +62,14 @@ namespace HotelPOS.Views
             _settingService = settingService;
             _notificationService = notificationService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(reportService);
+                App.RegisterTestService(settingService);
+                App.RegisterTestService(notificationService);
+            }
+
             // Wire pagination and calculate subtotals on page change
             TablePager.PageChanged += page =>
             {

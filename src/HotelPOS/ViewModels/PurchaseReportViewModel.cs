@@ -64,6 +64,13 @@ namespace HotelPOS.ViewModels
             _reportService = reportService;
             _purchaseService = purchaseService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(reportService);
+                App.RegisterTestService(purchaseService);
+                App.RegisterTestService(notificationService);
+            }
         }
 
         public async Task InitializeAsync()
@@ -73,7 +80,7 @@ namespace HotelPOS.ViewModels
                 List<Supplier> suppliers;
                 using (var scope = App.CreateDbScope())
                 {
-                    var purchaseService = scope.ServiceProvider.GetService<IPurchaseService>() ?? _purchaseService;
+                    var purchaseService = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
                     suppliers = await purchaseService.GetSuppliersAsync();
                 }
                 Suppliers.Clear();
@@ -116,7 +123,7 @@ namespace HotelPOS.ViewModels
         {
             using (var scope = App.CreateDbScope())
             {
-                var reportService = scope.ServiceProvider.GetService<IReportService>() ?? _reportService;
+                var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
                 try
                 {
                     var from = FilterFrom;

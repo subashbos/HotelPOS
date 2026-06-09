@@ -29,7 +29,7 @@ For in-depth explanations of the system's design and features, refer to the dedi
 - **Safe Cart Synchronization**: Core billing operations (`CartService`) utilize robust concurrency models to guarantee thread safety during fast checkout operations.
 
 ### 🧪 Robust Test Coverage
-- **100% Green Suite**: Anchored by **510 comprehensive integration and unit tests** covering checkout calculations, tax validations, cashier shifts, and billing edge cases.
+- **100% Green Suite**: Anchored by **515 comprehensive integration and unit tests** covering checkout calculations, tax validations, cashier shifts, and billing edge cases.
 
 ---
 

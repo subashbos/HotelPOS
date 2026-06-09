@@ -40,6 +40,14 @@ namespace HotelPOS.Views
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _notificationService = notificationService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(settingService);
+                App.RegisterTestService(reportService);
+                App.RegisterTestService(notificationService);
+            }
+
             // Wire pager for server-side pagination
             JournalPager.ExternalPageRequested += async (page, size) => await LoadPagedAsync(page, size);
 

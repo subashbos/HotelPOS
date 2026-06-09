@@ -16,6 +16,12 @@ namespace HotelPOS.Views
             _auditService = auditService;
             _notificationService = notificationService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(auditService);
+                App.RegisterTestService(notificationService);
+            }
+
             FromDate.SelectedDate = DateTime.Today;
             ToDate.SelectedDate = DateTime.Today;
 
@@ -31,7 +37,7 @@ namespace HotelPOS.Views
         {
             using (var scope = App.CreateDbScope())
             {
-                var auditService = scope.ServiceProvider.GetService<IAuditService>() ?? _auditService;
+                var auditService = scope.ServiceProvider.GetRequiredService<IAuditService>();
                 try
                 {
                     var start = FromDate.SelectedDate?.Date;

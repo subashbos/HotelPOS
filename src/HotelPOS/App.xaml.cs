@@ -21,6 +21,16 @@ namespace HotelPOS
         public static App CurrentApp => (App)System.Windows.Application.Current;
         public ServiceProvider ServiceProvider { get; private set; } = null!;
 
+        private static readonly System.Threading.ThreadLocal<System.Collections.Generic.Dictionary<Type, object>> _testServices = new(() => new());
+
+        public static void RegisterTestService<T>(T service) where T : class
+        {
+            if (service != null)
+            {
+                _testServices.Value![typeof(T)] = service;
+            }
+        }
+
         public static IServiceScope CreateDbScope()
         {
             if (System.Windows.Application.Current == null)
@@ -38,7 +48,14 @@ namespace HotelPOS
 
         private class DummyServiceProvider : IServiceProvider
         {
-            public object? GetService(Type serviceType) => null;
+            public object? GetService(Type serviceType)
+            {
+                if (_testServices.Value!.TryGetValue(serviceType, out var service))
+                {
+                    return service;
+                }
+                return null;
+            }
         }
 
         protected override void OnStartup(StartupEventArgs e)

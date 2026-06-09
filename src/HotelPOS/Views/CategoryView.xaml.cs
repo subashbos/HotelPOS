@@ -21,6 +21,12 @@ namespace HotelPOS.Views
         {
             InitializeComponent();
             _categoryService = categoryService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(categoryService);
+            }
+
             Loaded += async (s, e) => await LoadDataAsync();
         }
 

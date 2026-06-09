@@ -77,6 +77,12 @@ namespace HotelPOS.ViewModels
         {
             _supplierService = supplierService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(supplierService);
+                App.RegisterTestService(notificationService);
+            }
         }
 
         public void LoadSupplier(Supplier supplier)
@@ -180,7 +186,7 @@ namespace HotelPOS.ViewModels
 
                 using (var scope = App.CreateDbScope())
                 {
-                    var supplierService = scope.ServiceProvider.GetService<ISupplierService>() ?? _supplierService;
+                    var supplierService = scope.ServiceProvider.GetRequiredService<ISupplierService>();
 
                     // Check for duplicate names (excluding current ID)
                     var isUnique = await supplierService.ValidateSupplierNameUniqueAsync(Name, Id);

@@ -24,6 +24,14 @@ namespace HotelPOS.Views
             InitializeComponent();
             _notificationService = notificationService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(categoryService);
+                App.RegisterTestService(settingService);
+                App.RegisterTestService(notificationService);
+            }
+
             Pager.PageChanged += page =>
             {
                 SalesGrid.ItemsSource = page;

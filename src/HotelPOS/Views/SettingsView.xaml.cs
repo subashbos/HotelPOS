@@ -18,6 +18,13 @@ namespace HotelPOS.Views
             InitializeComponent();
             _notificationService = notificationService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(userService);
+                App.RegisterTestService(roleService);
+                App.RegisterTestService(notificationService);
+            }
+
             // Embed UsersView into the Users tab
             _usersView = new UsersView(userService, roleService);
             UsersHost.Content = _usersView;
