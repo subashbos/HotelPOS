@@ -3,6 +3,7 @@ using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -11,7 +12,6 @@ namespace HotelPOS.Views
 {
     public partial class TableView : UserControl
     {
-        private readonly ITableService _tableService;
         private Table? _editingTable;
 
         private static readonly SolidColorBrush SuccessBg = new(Color.FromRgb(0xD4, 0xED, 0xDA));
@@ -19,24 +19,26 @@ namespace HotelPOS.Views
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
         private static readonly SolidColorBrush ErrorFg = new(Color.FromRgb(0x72, 0x1C, 0x24));
 
-        public TableView(ITableService tableService)
+        public TableView()
         {
             InitializeComponent();
-            _tableService = tableService;
             Loaded += async (s, e) => await LoadDataAsync();
         }
 
         private async Task LoadDataAsync()
         {
-            await App.DbLock.WaitAsync();
             try
             {
-                var tables = await _tableService.GetTablesAsync();
+                List<Table> tables;
+                using (var scope = App.CreateDbScope())
+                {
+                    var tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
+                    tables = await tableService.GetTablesAsync();
+                }
                 for (int i = 0; i < tables.Count; i++) tables[i].SNo = i + 1;
                 TableGrid.ItemsSource = tables;
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
-            finally { App.DbLock.Release(); }
         }
 
         private async void Add_Click(object sender, RoutedEventArgs e)
@@ -64,24 +66,26 @@ namespace HotelPOS.Views
                 IsActive = IsActiveBox.IsChecked ?? true
             };
 
-            await App.DbLock.WaitAsync();
             try
             {
-                if (_editingTable == null)
+                using (var scope = App.CreateDbScope())
                 {
-                    await _tableService.AddTableAsync(dto);
-                    ShowStatus($"✅ Table '{name}' added.", true);
-                }
-                else
-                {
-                    await _tableService.UpdateTableAsync(_editingTable.Id, dto);
-                    ShowStatus($"✅ Table '{name}' updated.", true);
-                    ExitEditMode();
+                    var tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
+                    if (_editingTable == null)
+                    {
+                        await tableService.AddTableAsync(dto);
+                        ShowStatus($"✅ Table '{name}' added.", true);
+                    }
+                    else
+                    {
+                        await tableService.UpdateTableAsync(_editingTable.Id, dto);
+                        ShowStatus($"✅ Table '{name}' updated.", true);
+                        ExitEditMode();
+                    }
                 }
                 ResetForm();
             }
             catch (Exception ex) { ShowStatus(ex.Message, false); }
-            finally { App.DbLock.Release(); }
 
             await LoadDataAsync();
         }
@@ -109,14 +113,16 @@ namespace HotelPOS.Views
                 if (MessageBox.Show("Delete this table?", "Confirm Delete",
                     MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
                 {
-                    await App.DbLock.WaitAsync();
                     try
                     {
-                        await _tableService.DeleteTableAsync(id);
+                        using (var scope = App.CreateDbScope())
+                        {
+                            var tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
+                            await tableService.DeleteTableAsync(id);
+                        }
                         ShowStatus("🗑 Table deleted.", true);
                     }
                     catch (Exception ex) { ShowStatus(ex.Message, false); }
-                    finally { App.DbLock.Release(); }
 
                     await LoadDataAsync();
                 }

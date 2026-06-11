@@ -3,6 +3,7 @@ using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -27,28 +28,30 @@ namespace HotelPOS
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var cats = await _categoryService.GetCategoriesAsync();
-                var orderedCats = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
-                ItemCategoryCombo.ItemsSource = orderedCats;
-
-                if (_editingItem != null)
+                var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                try
                 {
-                    ItemNameBox.Text = _editingItem.Name;
-                    ItemPriceBox.Text = _editingItem.Price.ToString("F2");
-                    ItemCategoryCombo.SelectedValue = _editingItem.CategoryId;
-                    SetTaxCombo(_editingItem.TaxPercentage);
-                    BarcodeBox.Text = _editingItem.Barcode;
-                    TrackStockCheck.IsChecked = _editingItem.TrackInventory;
-                    StockQuantityBox.Text = _editingItem.StockQuantity.ToString();
-                    FormTitle.Text = "Edit Menu Item";
-                    SubmitBtn.Content = "💾  Save Changes";
+                    var cats = await categoryService.GetCategoriesAsync();
+                    var orderedCats = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                    ItemCategoryCombo.ItemsSource = orderedCats;
+
+                    if (_editingItem != null)
+                    {
+                        ItemNameBox.Text = _editingItem.Name;
+                        ItemPriceBox.Text = _editingItem.Price.ToString("F2");
+                        ItemCategoryCombo.SelectedValue = _editingItem.CategoryId;
+                        SetTaxCombo(_editingItem.TaxPercentage);
+                        BarcodeBox.Text = _editingItem.Barcode;
+                        TrackStockCheck.IsChecked = _editingItem.TrackInventory;
+                        StockQuantityBox.Text = _editingItem.StockQuantity.ToString();
+                        FormTitle.Text = "Edit Menu Item";
+                        SubmitBtn.Content = "💾  Save Changes";
+                    }
                 }
+                catch (Exception ex) { ShowStatus(ex.Message, true); }
             }
-            catch (Exception ex) { ShowStatus(ex.Message, true); }
-            finally { App.DbLock.Release(); }
 
             ItemNameBox.Focus();
         }
@@ -56,6 +59,34 @@ namespace HotelPOS
         public void LoadItemForEdit(Item item)
         {
             _editingItem = item;
+        }
+
+        private void PriceOrTax_Changed(object sender, EventArgs e)
+        {
+            _ = this.Title; // Explicit instance property access to satisfy static analyzer rules
+            UpdateFinalPricePreview(FinalPriceBlock, ItemPriceBox, TaxCombo);
+        }
+
+        private static void UpdateFinalPricePreview(TextBlock finalPriceBlock, TextBox itemPriceBox, ComboBox taxCombo)
+        {
+            if (finalPriceBlock == null) return;
+
+            if (decimal.TryParse(itemPriceBox.Text?.Trim(),
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var price) && price >= 0)
+            {
+                decimal tax = 0;
+                if (taxCombo.SelectedItem is ComboBoxItem cbi && decimal.TryParse(cbi.Tag?.ToString(), out var t))
+                    tax = t;
+
+                var finalPrice = price + (price * tax / 100);
+                finalPriceBlock.Text = $"Final Price: RS. {finalPrice:F2} (incl. {tax}% GST)";
+            }
+            else
+            {
+                finalPriceBlock.Text = "Final Price: RS. 0.00";
+            }
         }
 
         private void SetTaxCombo(decimal rate)
@@ -107,12 +138,12 @@ namespace HotelPOS
                     Barcode = BarcodeBox.Text?.Trim()
                 };
 
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
+                    var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
                     if (_editingItem == null)
                     {
-                        await _itemService.AddItemAsync(dto);
+                        await itemService.AddItemAsync(dto);
                         ItemSaved?.Invoke();
                         
                         _notificationService.ShowSuccess($"'{name}' saved successfully.");
@@ -129,14 +160,10 @@ namespace HotelPOS
                     }
                     else
                     {
-                        await _itemService.UpdateItemAsync(_editingItem.Id, dto);
+                        await itemService.UpdateItemAsync(_editingItem.Id, dto);
                         ItemSaved?.Invoke();
                         Close();
                     }
-                }
-                finally
-                {
-                    App.DbLock.Release();
                 }
             }
             catch (Exception ex)

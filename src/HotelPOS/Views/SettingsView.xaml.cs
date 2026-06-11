@@ -1,5 +1,6 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System.Drawing.Printing;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,23 +9,24 @@ namespace HotelPOS.Views
 {
     public partial class SettingsView : UserControl
     {
-        private readonly ISettingService _settingService;
-        private readonly IUserService _userService;
-        private readonly IRoleService _roleService;
         private readonly INotificationService _notificationService;
         private readonly UsersView _usersView;
         private SystemSetting? _current;
 
-        public SettingsView(ISettingService settingService, IUserService userService, IRoleService roleService, INotificationService notificationService)
+        public SettingsView(IUserService userService, IRoleService roleService, INotificationService notificationService)
         {
             InitializeComponent();
-            _settingService = settingService;
-            _userService = userService;
-            _roleService = roleService;
             _notificationService = notificationService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(userService);
+                App.RegisterTestService(roleService);
+                App.RegisterTestService(notificationService);
+            }
+
             // Embed UsersView into the Users tab
-            _usersView = new UsersView(_userService, _roleService);
+            _usersView = new UsersView(userService, roleService);
             UsersHost.Content = _usersView;
 
             Loaded += async (s, e) =>
@@ -52,14 +54,10 @@ namespace HotelPOS.Views
 
         private async Task LoadSettingsAsync()
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                _current = await _settingService.GetSettingsAsync();
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                _current = await settingService.GetSettingsAsync();
             }
 
             // Profile
@@ -120,14 +118,10 @@ namespace HotelPOS.Views
         {
             try
             {
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    await _settingService.SaveSettingsAsync(_current!);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                    await settingService.SaveSettingsAsync(_current!);
                 }
                 _notificationService.ShowSuccess("Settings saved successfully.");
             }

@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 
 namespace HotelPOS.ViewModels
@@ -35,6 +36,12 @@ namespace HotelPOS.ViewModels
         {
             _cashService = cashService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(cashService);
+                App.RegisterTestService(notificationService);
+            }
         }
 
         public async Task InitializeAsync()
@@ -45,34 +52,28 @@ namespace HotelPOS.ViewModels
 
         public async Task RefreshStatusAsync()
         {
-            await App.DbLock.WaitAsync();
-            try
+            if (_cashService == null) return;
+
+            using (var scope = App.CreateDbScope())
             {
-                CurrentSession = await _cashService.GetCurrentSessionAsync();
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                CurrentSession = await cashService.GetCurrentSessionAsync();
                 IsSessionOpen = CurrentSession != null;
                 if (IsSessionOpen)
                 {
-                    var sales = await _cashService.GetTotalSalesForCurrentSessionAsync();
+                    var sales = await cashService.GetTotalSalesForCurrentSessionAsync();
                     ExpectedCash = CurrentSession!.OpeningBalance + sales;
                 }
-            }
-            finally
-            {
-                App.DbLock.Release();
             }
         }
 
         public async Task LoadHistoryAsync()
         {
             List<CashSession> history;
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                history = await _cashService.GetSessionHistoryAsync();
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                history = await cashService.GetSessionHistoryAsync();
             }
             SessionHistory.Clear();
             for (int i = 0; i < history.Count; i++)
@@ -93,14 +94,10 @@ namespace HotelPOS.ViewModels
                     return;
                 }
 
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    await _cashService.OpenSessionAsync(OpeningBalance, AppSession.CurrentUser?.Username ?? "System");
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                    await cashService.OpenSessionAsync(OpeningBalance, AppSession.CurrentUser?.Username ?? "System");
                 }
                 await RefreshStatusAsync();
                 _notificationService.ShowSuccess("Shift started successfully");
@@ -116,14 +113,10 @@ namespace HotelPOS.ViewModels
         {
             try
             {
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    await _cashService.CloseSessionAsync(ActualCash, Notes, AppSession.CurrentUser?.Username ?? "System");
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                    await cashService.CloseSessionAsync(ActualCash, Notes, AppSession.CurrentUser?.Username ?? "System");
                 }
                 await RefreshStatusAsync();
                 await LoadHistoryAsync();

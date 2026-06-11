@@ -1,5 +1,6 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -77,16 +78,20 @@ namespace HotelPOS.Views
     // ── RolesView ─────────────────────────────────────────────────────────────
     public partial class RolesView : UserControl
     {
-        private readonly IRoleService _roleService;
         private readonly INotificationService _notificationService;
         private Role? _selectedRole;
         private List<PermissionViewModel> _currentPermissions = new();
 
-        public RolesView(IRoleService roleService, INotificationService notificationService)
+        public RolesView(INotificationService notificationService)
         {
             InitializeComponent();
-            _roleService = roleService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(notificationService);
+            }
+
             Loaded += async (s, e) => await LoadDataAsync();
         }
 
@@ -94,10 +99,10 @@ namespace HotelPOS.Views
 
         private async Task LoadDataAsync()
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var roles = await _roleService.GetAllRolesAsync();
+                var roleService = scope.ServiceProvider.GetRequiredService<IRoleService>();
+                var roles = await roleService.GetAllRolesAsync();
                 RolesGrid.ItemsSource = roles;
 
                 if (roles != null && roles.Any())
@@ -105,10 +110,6 @@ namespace HotelPOS.Views
                     var adminRole = roles.FirstOrDefault(r => r.Name == "Admin");
                     RolesGrid.SelectedItem = adminRole ?? roles.First();
                 }
-            }
-            finally
-            {
-                App.DbLock.Release();
             }
         }
 
@@ -155,14 +156,10 @@ namespace HotelPOS.Views
             if (string.IsNullOrEmpty(name)) return;
 
             bool success = false;
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                success = await _roleService.AddRoleAsync(name, "");
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var roleService = scope.ServiceProvider.GetRequiredService<IRoleService>();
+                success = await roleService.AddRoleAsync(name, "");
             }
 
             if (success)
@@ -199,14 +196,10 @@ namespace HotelPOS.Views
                 .Select(vm => vm.ToPermission())
                 .ToList();
 
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                await _roleService.UpdateRolePermissionsAsync(_selectedRole.Id, permissions);
-            }
-            finally
-            {
-                App.DbLock.Release();
+                var roleService = scope.ServiceProvider.GetRequiredService<IRoleService>();
+                await roleService.UpdateRolePermissionsAsync(_selectedRole.Id, permissions);
             }
 
             // ── Live-refresh: if the saved role is the current user's own role,
@@ -256,14 +249,10 @@ namespace HotelPOS.Views
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    await _roleService.DeleteRoleAsync(_selectedRole.Id);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var roleService = scope.ServiceProvider.GetRequiredService<IRoleService>();
+                    await roleService.DeleteRoleAsync(_selectedRole.Id);
                 }
 
                 _notificationService.ShowSuccess($"Role '{_selectedRole.Name}' deleted.");

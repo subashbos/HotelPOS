@@ -2,6 +2,7 @@ using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -15,19 +16,18 @@ namespace HotelPOS.Views
 {
     public partial class SalesReportView : UserControl
     {
-        private readonly IOrderService _orderService;
-        private readonly ICategoryService _categoryService;
-        private readonly ISettingService _settingService;
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
-        public SalesReportView(IOrderService orderService, ICategoryService categoryService, ISettingService settingService, INotificationService notificationService)
+        public SalesReportView(INotificationService notificationService)
         {
             InitializeComponent();
-            _orderService = orderService;
-            _categoryService = categoryService;
-            _settingService = settingService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(notificationService);
+            }
 
             Pager.PageChanged += page =>
             {
@@ -54,15 +54,11 @@ namespace HotelPOS.Views
         {
             try
             {
-                await App.DbLock.WaitAsync();
                 IEnumerable<HotelPOS.Domain.Entities.Category> cats;
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    cats = await _categoryService.GetCategoriesAsync();
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                    cats = await categoryService.GetCategoriesAsync();
                 }
                 
                 var list = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
@@ -100,15 +96,11 @@ namespace HotelPOS.Views
                 else if (TypeOnline.IsChecked == true) orderType = "Online";
 
                 // We use a large page size for the report or handle pagination
-                await App.DbLock.WaitAsync();
                 (IEnumerable<HotelPOS.Domain.Entities.Order> orders, int totalCount) result;
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    result = await _orderService.GetPagedOrdersAsync(1, 1000, from, to, null, search, payment, orderType, categoryId);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                    result = await orderService.GetPagedOrdersAsync(1, 1000, from, to, null, search, payment, orderType, categoryId);
                 }
 
                 var reportRows = result.orders.Select((o, idx) => new RecentOrderRowDto
@@ -176,7 +168,13 @@ namespace HotelPOS.Views
             {
                 try
                 {
-                    var settings = await _settingService.GetSettingsAsync();
+                    HotelPOS.Domain.Entities.SystemSetting settings;
+                    using (var scope = App.CreateDbScope())
+                    {
+                        var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                        settings = await settingService.GetSettingsAsync();
+                    }
+
                     var order = new HotelPOS.Domain.Entities.Order
                     {
                         Id = row.OrderId,

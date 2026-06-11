@@ -52,5 +52,56 @@ namespace HotelPOS.Tests
             // Assert
             _catRepoMock.Verify(r => r.DeleteAsync(1), Times.Once);
         }
+
+        [Fact]
+        public async Task UpdateCategoryAsync_NotFound_ThrowsKeyNotFoundException()
+        {
+            // Arrange
+            _catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
+            _catRepoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Category?)null);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => _service.UpdateCategoryAsync(99, "Dessert"));
+        }
+
+        [Fact]
+        public async Task UpdateCategoryAsync_DuplicateName_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var existing = new List<Category>
+            {
+                new Category { Id = 1, Name = "Food" },
+                new Category { Id = 2, Name = "Drinks" }
+            };
+            _catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(existing);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.UpdateCategoryAsync(1, "Drinks"));
+            Assert.Contains("already exists", ex.Message);
+        }
+
+        [Fact]
+        public async Task UpdateCategoryAsync_EmptyName_ThrowsArgumentException()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => _service.UpdateCategoryAsync(1, "   "));
+        }
+
+        [Fact]
+        public async Task GetCategoriesAsync_NullFromRepo_ReturnsEmptyList()
+        {
+            // Arrange
+            _catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync((List<Category>)null!);
+
+            // Act
+            var result = await _service.GetCategoriesAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
     }
 }

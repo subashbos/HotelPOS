@@ -56,10 +56,10 @@ Infrastructure services that are tightly coupled to the WPF UI framework reside 
 - **`NotificationService`**: Triggers interactive toast popups for success, warning, and error messages.
 - **`ThemeService`**: Manipulates WPF XAML resource dictionaries at runtime to toggle Light/Dark themes.
 
-### 3.3 Thread-Safe DbContext Synchronization (`App.DbLock`)
-Because WPF resolves services and view-models inside the shared logged-in session scope, concurrent asynchronous database queries from different tabs or background tasks could trigger EF Core concurrency exceptions.
-- **Remediation**: Implements a global, non-reentrant synchronization semaphore (`App.DbLock`) across **14 major views and view-models** to serialize all database reads/writes safely.
-- **Integration**: Every view-behind database call is safely wrapped inside `try-finally` blocks to ensure locks are always released.
+### 3.3 Thread-Safe DbContext Concurrency (Scoped DbContext Resolution)
+Because EF Core DbContext is not thread-safe and WPF view-models are usually resolved inside the shared logged-in session scope, concurrent database queries from different tabs or background tasks could trigger concurrency exceptions.
+- **Remediation**: Implements dynamic scoped service resolution (`App.CreateDbScope()`) across ViewModels and Views to spawn transient, short-lived scopes per database operation (or operation block), isolating the database connection context per task.
+- **Test Compatibility**: ViewModels fall back to constructor-injected dependencies when running within unit test runners where the WPF application environment is not initialized, preserving test isolation.
 
 ---
 

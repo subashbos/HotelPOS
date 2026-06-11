@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 
 namespace HotelPOS.ViewModels
@@ -179,6 +180,19 @@ namespace HotelPOS.ViewModels
             _tableService = tableService;
             _dialogService = dialogService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(itemService);
+                App.RegisterTestService(cartService);
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(settingService);
+                App.RegisterTestService(categoryService);
+                App.RegisterTestService(notificationService);
+                App.RegisterTestService(cashService);
+                App.RegisterTestService(tableService);
+                if (dialogService != null) App.RegisterTestService(dialogService);
+            }
+
             LoadHeldOrders();
         }
 
@@ -258,47 +272,46 @@ namespace HotelPOS.ViewModels
 
         private async void RefreshTables()
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var tables = await _tableService.GetTablesAsync();
-                Tables.Clear();
-                var activeTables = _cartService.GetActiveTables();
+                var tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
+                try
+                {
+                    var tables = await tableService.GetTablesAsync();
+                    Tables.Clear();
+                    var activeTables = _cartService.GetActiveTables();
 
-                if (tables == null || tables.Count == 0)
-                {
-                    // Fallback to default 20 tables if none defined yet
-                    for (int i = 1; i <= 20; i++)
+                    if (tables == null || tables.Count == 0)
                     {
-                        Tables.Add(new TableStatus
+                        // Fallback to default 20 tables if none defined yet
+                        for (int i = 1; i <= 20; i++)
                         {
-                            TableNumber = i,
-                            IsOccupied = activeTables.Contains(i),
-                            IsCurrent = i == TableNumber
-                        });
+                            Tables.Add(new TableStatus
+                            {
+                                TableNumber = i,
+                                IsOccupied = activeTables.Contains(i),
+                                IsCurrent = i == TableNumber
+                            });
+                        }
+                    }
+                    else
+                    {
+                        foreach (var t in tables.Where(x => x.IsActive).OrderBy(x => x.Number))
+                        {
+                            Tables.Add(new TableStatus
+                            {
+                                TableNumber = t.Number,
+                                TableName = t.Name,
+                                IsOccupied = activeTables.Contains(t.Number),
+                                IsCurrent = t.Number == TableNumber
+                            });
+                        }
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    foreach (var t in tables.Where(x => x.IsActive).OrderBy(x => x.Number))
-                    {
-                        Tables.Add(new TableStatus
-                        {
-                            TableNumber = t.Number,
-                            TableName = t.Name,
-                            IsOccupied = activeTables.Contains(t.Number),
-                            IsCurrent = t.Number == TableNumber
-                        });
-                    }
+                    _notificationService.ShowError($"Failed to refresh tables: {ex.Message}");
                 }
-            }
-            catch (Exception ex)
-            {
-                _notificationService.ShowError($"Failed to refresh tables: {ex.Message}");
-            }
-            finally
-            {
-                App.DbLock.Release();
             }
         }
 
@@ -308,38 +321,44 @@ namespace HotelPOS.ViewModels
         {
             if (_isInitializing) return;
 
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                _isInitializing = true;
-                _allItems = await _itemService.GetItemsAsync();
-                var cats = await _categoryService.GetCategoriesAsync();
-                var orderedCats = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+                var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
+                var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
 
-                Categories.Clear();
-                Categories.Add(new Category { Id = 0, Name = "All", DisplayOrder = -1 });
-                foreach (var cat in orderedCats) Categories.Add(cat);
-
-                var settings = await _settingService.GetSettingsAsync();
-                IsCompositionScheme = settings.IsCompositionScheme;
-
-                ApplyFilter();
-                UpdateCart();
-
-                var currentSession = await _cashService.GetCurrentSessionAsync();
-                if (currentSession == null)
+                try
                 {
-                    _notificationService.ShowWarning("Please open a shift in the 'Shift' tab before starting billing.");
+                    _isInitializing = true;
+                    _allItems = await itemService.GetItemsAsync();
+                    var cats = await categoryService.GetCategoriesAsync();
+                    var orderedCats = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
+
+                    Categories.Clear();
+                    Categories.Add(new Category { Id = 0, Name = "All", DisplayOrder = -1 });
+                    foreach (var cat in orderedCats) Categories.Add(cat);
+
+                    var settings = await settingService.GetSettingsAsync();
+                    IsCompositionScheme = settings.IsCompositionScheme;
+
+                    ApplyFilter();
+                    UpdateCart();
+
+                    var currentSession = await cashService.GetCurrentSessionAsync();
+                    if (currentSession == null)
+                    {
+                        _notificationService.ShowWarning("Please open a shift in the 'Shift' tab before starting billing.");
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                _notificationService.ShowError($"Failed to load data: {ex.Message}");
-            }
-            finally
-            {
-                _isInitializing = false;
-                App.DbLock.Release();
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Failed to load data: {ex.Message}");
+                }
+                finally
+                {
+                    _isInitializing = false;
+                }
             }
         }
 
@@ -754,20 +773,15 @@ namespace HotelPOS.ViewModels
             }
 
             // LOOPHOLE FIX: Prevent checkout if shift is closed
-            // Acquire lock momentarily to check session status
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var currentSession = await _cashService.GetCurrentSessionAsync();
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                var currentSession = await cashService.GetCurrentSessionAsync();
                 if (currentSession == null)
                 {
                     _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
                     return;
                 }
-            }
-            finally
-            {
-                App.DbLock.Release();
             }
 
             // Show Confirm Checkout Dialog if service is available
@@ -790,37 +804,42 @@ namespace HotelPOS.ViewModels
                 }
             }
 
-            // Re-acquire lock to actually perform the save
-            await App.DbLock.WaitAsync();
+            // Perform the save
             try
             {
-                // Re-verify shift state under lock
-                var currentSession = await _cashService.GetCurrentSessionAsync();
-                if (currentSession == null)
+                using (var scope = App.CreateDbScope())
                 {
-                    _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
-                    return;
-                }
+                    var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
 
-                if (IsEditMode && _editingOrder != null)
-                {
-                    _editingOrder.Items = rawItems;
-                    _editingOrder.TableNumber = TableNumber;
-                    _editingOrder.DiscountAmount = DiscountAmount;
-                    _editingOrder.PaymentMode = PaymentMode;
-                    _editingOrder.OrderType = OrderType;
-                    _editingOrder.CustomerName = CustomerName;
-                    _editingOrder.CustomerPhone = CustomerPhone;
-                    _editingOrder.CustomerGstin = CustomerGstin;
+                    // Re-verify shift state under lock
+                    var currentSession = await cashService.GetCurrentSessionAsync();
+                    if (currentSession == null)
+                    {
+                        _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
+                        return;
+                    }
 
-                    await _orderService.UpdateOrderAsync(_editingOrder);
-                }
-                else
-                {
-                    int orderId = await _orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, PaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType);
+                    if (IsEditMode && _editingOrder != null)
+                    {
+                        _editingOrder.Items = rawItems;
+                        _editingOrder.TableNumber = TableNumber;
+                        _editingOrder.DiscountAmount = DiscountAmount;
+                        _editingOrder.PaymentMode = PaymentMode;
+                        _editingOrder.OrderType = OrderType;
+                        _editingOrder.CustomerName = CustomerName;
+                        _editingOrder.CustomerPhone = CustomerPhone;
+                        _editingOrder.CustomerGstin = CustomerGstin;
 
-                    // Trigger Print
-                    await PrintOrderAsync(orderId);
+                        await orderService.UpdateOrderAsync(_editingOrder);
+                    }
+                    else
+                    {
+                        int orderId = await orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, PaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType);
+
+                        // Trigger Print
+                        await PrintOrderAsync(orderId);
+                    }
                 }
 
                 var wasEditMode = IsEditMode;
@@ -849,18 +868,21 @@ namespace HotelPOS.ViewModels
             {
                 _notificationService.ShowError($"Save failed: {ex.Message}");
             }
-            finally
-            {
-                App.DbLock.Release();
-            }
         }
 
         private async Task PrintOrderAsync(int orderId, Order? preLoadedOrder = null, bool skipPreview = false)
         {
             try
             {
-                var settings = await _settingService.GetSettingsAsync();
-                var order = preLoadedOrder ?? await _orderService.GetOrderAsync(orderId);
+                SystemSetting settings;
+                Order? order;
+                using (var scope = App.CreateDbScope())
+                {
+                    var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                    settings = await settingService.GetSettingsAsync();
+                    order = preLoadedOrder ?? await orderService.GetOrderAsync(orderId);
+                }
 
                 if (order == null) return;
 

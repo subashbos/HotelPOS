@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -58,19 +59,16 @@ namespace HotelPOS.ViewModels
         private bool _isEditMode;
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsNameInvalid))]
         private string _nameError = string.Empty;
 
         public bool IsNameInvalid => !string.IsNullOrEmpty(NameError);
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsPhoneInvalid))]
         private string _phoneError = string.Empty;
 
         public bool IsPhoneInvalid => !string.IsNullOrEmpty(PhoneError);
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsEmailInvalid))]
         private string _emailError = string.Empty;
 
         public bool IsEmailInvalid => !string.IsNullOrEmpty(EmailError);
@@ -79,6 +77,12 @@ namespace HotelPOS.ViewModels
         {
             _supplierService = supplierService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(supplierService);
+                App.RegisterTestService(notificationService);
+            }
         }
 
         public void LoadSupplier(Supplier supplier)
@@ -154,7 +158,7 @@ namespace HotelPOS.ViewModels
                 EmailError = string.Empty;
                 return true;
             }
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
             if (!emailRegex.IsMatch(Email.Trim()))
             {
                 EmailError = "Please enter a valid Email ID";
@@ -180,11 +184,12 @@ namespace HotelPOS.ViewModels
                     return;
                 }
 
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
+                    var supplierService = scope.ServiceProvider.GetRequiredService<ISupplierService>();
+
                     // Check for duplicate names (excluding current ID)
-                    var isUnique = await _supplierService.ValidateSupplierNameUniqueAsync(Name, Id);
+                    var isUnique = await supplierService.ValidateSupplierNameUniqueAsync(Name, Id);
                     if (!isUnique)
                     {
                         NameError = $"A supplier named '{Name.Trim()}' already exists.";
@@ -213,11 +218,7 @@ namespace HotelPOS.ViewModels
                         PaymentTerms = PaymentTerms?.Trim()
                     };
 
-                    await _supplierService.SaveSupplierAsync(supplier);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    await supplierService.SaveSupplierAsync(supplier);
                 }
 
                 _notificationService.ShowSuccess(IsEditMode ? "Supplier updated successfully." : "Supplier saved successfully.");

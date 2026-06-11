@@ -119,5 +119,33 @@ namespace HotelPOS.Tests
             Assert.Equal(1, result.Skipped);
             _repoMock.Verify(r => r.AddAsync(It.Is<Item>(i => i.Name == "Pasta")), Times.Once);
         }
+
+        [Fact]
+        public async Task BulkAddAsync_ShouldSkipBarcodeConflicts()
+        {
+            // Arrange
+            var existing = new List<Item> 
+            { 
+                new Item { Name = "Pizza", Barcode = "11111" } 
+            };
+            var dtos = new List<CreateItemDto>
+            {
+                new CreateItemDto { Name = "Pasta", Price = 150, Barcode = "11111" }, // Skip due to conflict with existing DB item
+                new CreateItemDto { Name = "Burger", Price = 100, Barcode = "22222" }, // Add
+                new CreateItemDto { Name = "Fries", Price = 80, Barcode = "22222" }    // Skip due to duplicate barcode within same batch
+            };
+
+            _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(existing);
+
+            // Act
+            var result = await _service.BulkAddAsync(dtos);
+
+            // Assert
+            Assert.Equal(1, result.Added); // Only Burger added
+            Assert.Equal(2, result.Skipped); // Pasta and Fries skipped
+            _repoMock.Verify(r => r.AddAsync(It.Is<Item>(i => i.Name == "Burger")), Times.Once);
+            _repoMock.Verify(r => r.AddAsync(It.Is<Item>(i => i.Name == "Pasta")), Times.Never);
+            _repoMock.Verify(r => r.AddAsync(It.Is<Item>(i => i.Name == "Fries")), Times.Never);
+        }
     }
 }

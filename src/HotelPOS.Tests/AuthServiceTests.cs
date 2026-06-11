@@ -87,5 +87,74 @@ namespace HotelPOS.Tests
             // Assert
             Assert.Null(result); // Should fail even with correct password because IsActive is false
         }
+
+        [Fact]
+        public async Task AuthenticateAsync_LockoutWindowExpired_ResetsLockoutAndAllowsLogin()
+        {
+            // Arrange
+            var username = "expiry_test_" + Guid.NewGuid();
+            _userRepoMock.Setup(r => r.GetUserByUsernameAsync(username)).ReturnsAsync((User?)null);
+
+            // 1. Fail 5 times to trigger lockout
+            for (int i = 0; i < 5; i++)
+            {
+                await _service.AuthenticateAsync(username, "wrong_password");
+            }
+
+            // Verify currently locked out
+            var lockedResult = await _service.AuthenticateAsync(username, "wrong_password");
+            Assert.Null(lockedResult);
+            _userRepoMock.Verify(r => r.GetUserByUsernameAsync(username), Times.Exactly(5));
+
+            // 2. Use reflection to adjust LockedUntilUtc in the past
+            var failedLoginsField = typeof(AuthService).GetField("FailedLogins", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            var failedLogins = failedLoginsField?.GetValue(null) as System.Collections.IDictionary;
+            Assert.NotNull(failedLogins);
+
+            object? state = null;
+            foreach (System.Collections.DictionaryEntry entry in failedLogins!)
+            {
+                if (entry.Key?.ToString()?.Equals(username, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    state = entry.Value;
+                    break;
+                }
+            }
+            Assert.NotNull(state);
+
+            var stateType = typeof(AuthService).GetNestedType("FailedLoginState", System.Reflection.BindingFlags.NonPublic);
+            Assert.NotNull(stateType);
+            var constructor = stateType!.GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, null, new[] { typeof(int), typeof(DateTimeOffset?) }, null);
+            Assert.NotNull(constructor);
+            var newState = constructor!.Invoke(new object?[] { 5, DateTimeOffset.UtcNow.AddMinutes(-10) });
+            failedLogins[username] = newState;
+
+            // 3. Try to authenticate again. The lockout should be cleared and repo is queried again
+            _userRepoMock.Invocations.Clear();
+            var afterExpiryResult = await _service.AuthenticateAsync(username, "wrong_password");
+            Assert.Null(afterExpiryResult);
+            _userRepoMock.Verify(r => r.GetUserByUsernameAsync(username), Times.Once);
+        }
+
+        [Fact]
+        public async Task AuthenticateAsync_ConcurrentFailedLogins_HandlesConcurrencyGracefully()
+        {
+            // Arrange
+            var username = "concurrent_test_" + Guid.NewGuid();
+            _userRepoMock.Setup(r => r.GetUserByUsernameAsync(username)).ReturnsAsync((User?)null);
+
+            // Act
+            var tasks = Enumerable.Range(0, 20)
+                .Select(_ => Task.Run(() => _service.AuthenticateAsync(username, "wrong")))
+                .ToArray();
+
+            await Task.WhenAll(tasks);
+
+            // Assert - subsequent login attempts should be locked out
+            _userRepoMock.Invocations.Clear();
+            var lockedResult = await _service.AuthenticateAsync(username, "wrong");
+            Assert.Null(lockedResult);
+            _userRepoMock.Verify(r => r.GetUserByUsernameAsync(username), Times.Never);
+        }
     }
 }

@@ -41,14 +41,10 @@ namespace HotelPOS
                 LoginButton.Content = "Authenticating...";
 
                 HotelPOS.Domain.Entities.User? user = null;
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    user = await _authService.AuthenticateAsync(username, password);
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+                    user = await authService.AuthenticateAsync(username, password);
                 }
 
                 if (user == null)
@@ -65,16 +61,12 @@ namespace HotelPOS
                         {
                             bool ok = false;
                             string? err = null;
-                            await App.DbLock.WaitAsync();
-                            try
+                            using (var pwScope = App.CreateDbScope())
                             {
-                                var res = await _userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
+                                var userService = pwScope.ServiceProvider.GetRequiredService<IUserService>();
+                                var res = await userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
                                 ok = res.Success;
                                 err = res.Error;
-                            }
-                            finally
-                            {
-                                App.DbLock.Release();
                             }
 
                             if (!ok)

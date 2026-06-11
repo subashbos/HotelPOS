@@ -103,6 +103,18 @@ namespace HotelPOS.Tests
             _repo.Verify(r => r.UpdateAsync(user), Times.Once);
         }
 
+        [Fact]
+        public async Task ToggleActiveAsync_AlreadyInactive_RemainsInactive()
+        {
+            var user = new User { Id = 3, IsActive = false };
+            _repo.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(user);
+
+            await _service.ToggleActiveAsync(3, false);
+
+            Assert.False(user.IsActive);
+            _repo.Verify(r => r.UpdateAsync(user), Times.Once);
+        }
+
         // ── DeleteUserAsync not-found ────────────────────────────────────────
 
         [Fact]

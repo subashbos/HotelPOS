@@ -5,6 +5,7 @@ using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -63,6 +64,13 @@ namespace HotelPOS.ViewModels
             _reportService = reportService;
             _purchaseService = purchaseService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(reportService);
+                App.RegisterTestService(purchaseService);
+                App.RegisterTestService(notificationService);
+            }
         }
 
         public async Task InitializeAsync()
@@ -70,14 +78,10 @@ namespace HotelPOS.ViewModels
             try
             {
                 List<Supplier> suppliers;
-                await App.DbLock.WaitAsync();
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    suppliers = await _purchaseService.GetSuppliersAsync();
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var purchaseService = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
+                    suppliers = await purchaseService.GetSuppliersAsync();
                 }
                 Suppliers.Clear();
                 Suppliers.Add(new Supplier { Id = 0, Name = "All Suppliers" });
@@ -117,34 +121,33 @@ namespace HotelPOS.ViewModels
 
         private async Task LoadDataAsync(int page, int pageSize)
         {
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                var from = FilterFrom;
-                var to = FilterTo?.AddDays(1);
-                var supplierId = SelectedSupplier?.Id == 0 ? (int?)null : SelectedSupplier?.Id;
+                var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
+                try
+                {
+                    var from = FilterFrom;
+                    var to = FilterTo?.AddDays(1);
+                    var supplierId = SelectedSupplier?.Id == 0 ? (int?)null : SelectedSupplier?.Id;
 
-                var result = await _reportService.GetPagedPurchaseReportAsync(
-                    page, pageSize, from, to, supplierId, ItemNameSearch, SelectedPaymentType, InvoiceNoSearch);
+                    var result = await reportService.GetPagedPurchaseReportAsync(
+                        page, pageSize, from, to, supplierId, ItemNameSearch, SelectedPaymentType, InvoiceNoSearch);
 
-                ReportRows.Clear();
-                foreach (var row in result.items) ReportRows.Add(row);
+                    ReportRows.Clear();
+                    foreach (var row in result.items) ReportRows.Add(row);
 
-                TotalPurchasesCount = result.totalCount;
-                TotalPurchaseAmount = result.totalPurchases;
-                TotalTax = result.totalTax;
-                TotalDiscount = result.totalDiscount;
-                TotalQuantity = result.totalQty;
+                    TotalPurchasesCount = result.totalCount;
+                    TotalPurchaseAmount = result.totalPurchases;
+                    TotalTax = result.totalTax;
+                    TotalDiscount = result.totalDiscount;
+                    TotalQuantity = result.totalQty;
 
-                SetPagerTotalCount?.Invoke(result.totalCount);
-            }
-            catch (Exception ex)
-            {
-                _notificationService.ShowError($"Failed to load report: {ex.Message}");
-            }
-            finally
-            {
-                App.DbLock.Release();
+                    SetPagerTotalCount?.Invoke(result.totalCount);
+                }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Failed to load report: {ex.Message}");
+                }
             }
         }
     }

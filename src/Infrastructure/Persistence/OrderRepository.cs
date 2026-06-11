@@ -22,6 +22,36 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<string> GetNextInvoiceNumberAsync(string fiscalYear)
         {
+            if (_context.Database.IsSqlServer())
+            {
+                if (_context.Database.CurrentTransaction == null)
+                {
+                    throw new InvalidOperationException("GetNextInvoiceNumberAsync must be called within an active transaction for concurrency safety.");
+                }
+
+                var resourceParam = new Microsoft.Data.SqlClient.SqlParameter("@Resource", $"InvoiceGen_{fiscalYear}");
+                var modeParam = new Microsoft.Data.SqlClient.SqlParameter("@LockMode", "Exclusive");
+                var ownerParam = new Microsoft.Data.SqlClient.SqlParameter("@LockOwner", "Transaction");
+                var timeoutParam = new Microsoft.Data.SqlClient.SqlParameter("@LockTimeout", 15000); // 15 seconds
+
+                var resultParam = new Microsoft.Data.SqlClient.SqlParameter
+                {
+                    ParameterName = "@Result",
+                    SqlDbType = System.Data.SqlDbType.Int,
+                    Direction = System.Data.ParameterDirection.Output
+                };
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "EXEC @Result = sp_getapplock @Resource, @LockMode, @LockOwner, @LockTimeout",
+                    resultParam, resourceParam, modeParam, ownerParam, timeoutParam);
+
+                var lockResult = (int)resultParam.Value;
+                if (lockResult < 0)
+                {
+                    throw new InvalidOperationException($"Could not acquire lock for invoice generation. Result code: {lockResult}");
+                }
+            }
+
             // Find the highest sequence number for this fiscal year
             // Invoice format: INV/2026-27/0001
             var lastOrder = await _context.Orders

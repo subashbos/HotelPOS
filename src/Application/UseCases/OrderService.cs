@@ -67,31 +67,31 @@ namespace HotelPOS.Application.UseCases
                 })
                 .ToList();
 
-            var now = DateTime.UtcNow;
-            var fy = GetFiscalYear(now.ToLocalTime());
-            var inv = await _repo.GetNextInvoiceNumberAsync(fy);
-
-            var order = new Order
-            {
-                InvoiceNumber = inv,
-                FiscalYear = fy,
-                CreatedAt = now,
-                TableNumber = effectiveTableNumber,
-                Items = orderItems
-            };
-
-            CalculateTotals(order, orderItems);
-            order.DiscountAmount = discount;
-            order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - discount);
-            order.PaymentMode = paymentMode;
-            order.OrderType = orderType;
-            order.CustomerName = customerName;
-            order.CustomerPhone = customerPhone;
-            order.CustomerGstin = customerGstin;
-
             await _repo.BeginTransactionAsync();
             try
             {
+                var now = DateTime.UtcNow;
+                var fy = GetFiscalYear(now.ToLocalTime());
+                var inv = await _repo.GetNextInvoiceNumberAsync(fy);
+
+                var order = new Order
+                {
+                    InvoiceNumber = inv,
+                    FiscalYear = fy,
+                    CreatedAt = now,
+                    TableNumber = effectiveTableNumber,
+                    Items = orderItems
+                };
+
+                CalculateTotals(order, orderItems);
+                order.DiscountAmount = discount;
+                order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - discount);
+                order.PaymentMode = paymentMode;
+                order.OrderType = orderType;
+                order.CustomerName = customerName;
+                order.CustomerPhone = customerPhone;
+                order.CustomerGstin = customerGstin;
+
                 var orderId = await _repo.AddAsync(order);
 
                 // Deduct Stock

@@ -3,6 +3,7 @@ using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Win32;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,19 +16,18 @@ namespace HotelPOS.Views
 {
     public partial class ItemReportView : UserControl
     {
-        private readonly IOrderService _orderService;
-        private readonly ICategoryService _categoryService;
-        private readonly IItemService _itemService;
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
-        public ItemReportView(IOrderService orderService, ICategoryService categoryService, IItemService itemService, INotificationService notificationService)
+        public ItemReportView(INotificationService notificationService)
         {
             InitializeComponent();
-            _orderService = orderService;
-            _categoryService = categoryService;
-            _itemService = itemService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(notificationService);
+            }
 
             Pager.PageChanged += page =>
             {
@@ -54,15 +54,11 @@ namespace HotelPOS.Views
         {
             try
             {
-                await App.DbLock.WaitAsync();
                 IEnumerable<Category> cats;
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    cats = await _categoryService.GetCategoriesAsync();
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                    cats = await categoryService.GetCategoriesAsync();
                 }
 
                 var list = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
@@ -97,17 +93,14 @@ namespace HotelPOS.Views
                 var categoryId = (int?)ComboCategory.SelectedValue;
 
                 // 1. Get all orders and items catalog
-                await App.DbLock.WaitAsync();
                 List<HotelPOS.Domain.Entities.Order> allOrders;
                 List<HotelPOS.Domain.Entities.Item> allItems;
-                try
+                using (var scope = App.CreateDbScope())
                 {
-                    allOrders = await _orderService.GetAllOrdersWithItemsAsync();
-                    allItems = await _itemService.GetItemsAsync();
-                }
-                finally
-                {
-                    App.DbLock.Release();
+                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                    var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
+                    allOrders = await orderService.GetAllOrdersWithItemsAsync();
+                    allItems = await itemService.GetItemsAsync();
                 }
 
                 // 2. Filter orders by date range and active status

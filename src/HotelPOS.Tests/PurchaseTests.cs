@@ -244,6 +244,104 @@ namespace HotelPOS.Tests
             Assert.Equal(0, secondRow.ItemId); // resets back to 0
         }
 
+        [Fact]
+        public async Task SavePurchaseAsync_NullPurchase_ThrowsArgumentNullException()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(
+                () => _purchaseService.SavePurchaseAsync(null!));
+        }
+
+        [Fact]
+        public async Task SavePurchaseAsync_ZeroQuantityItem_ThrowsArgumentException()
+        {
+            // Arrange
+            var purchase = new Purchase
+            {
+                SupplierId = 1,
+                InvoiceNumber = "INV-101",
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    new PurchaseItem { ItemId = 10, ItemName = "Rice", Quantity = 0, UnitPrice = 100 }
+                }
+            };
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ArgumentException>(
+                () => _purchaseService.SavePurchaseAsync(purchase));
+            Assert.Contains("must be greater than zero", ex.Message);
+        }
+
+        [Fact]
+        public async Task SavePurchaseAsync_NegativePrice_ThrowsArgumentException()
+        {
+            // Arrange
+            var purchase = new Purchase
+            {
+                SupplierId = 1,
+                InvoiceNumber = "INV-101",
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    new PurchaseItem { ItemId = 10, ItemName = "Rice", Quantity = 5, UnitPrice = -5 }
+                }
+            };
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ArgumentException>(
+                () => _purchaseService.SavePurchaseAsync(purchase));
+            Assert.Contains("cannot be negative", ex.Message);
+        }
+
+        [Fact]
+        public async Task SavePurchaseAsync_ItemNotInCatalog_GracefullySkips()
+        {
+            // Arrange
+            var purchase = new Purchase
+            {
+                SupplierId = 1,
+                InvoiceNumber = "INV-101",
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    new PurchaseItem { ItemId = 999, ItemName = "Unknown Item", Quantity = 5, UnitPrice = 10 }
+                }
+            };
+
+            _itemRepoMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Item?)null);
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => _purchaseService.SavePurchaseAsync(purchase));
+
+            // Assert
+            Assert.Null(exception);
+            _purchaseRepoMock.Verify(r => r.AddAsync(purchase), Times.Once);
+            _itemRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SavePurchaseAsync_WhenStockUpdateThrows_PurchaseIsStillSaved_NoTransactionWrap()
+        {
+            // Arrange
+            var catalogItem = new Item { Id = 10, Name = "Rice", StockQuantity = 10, TrackInventory = true };
+            var purchase = new Purchase
+            {
+                SupplierId = 1,
+                InvoiceNumber = "INV-101",
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    new PurchaseItem { ItemId = 10, ItemName = "Rice", Quantity = 5, UnitPrice = 10 }
+                }
+            };
+
+            _itemRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(catalogItem);
+            _itemRepoMock.Setup(r => r.UpdateAsync(catalogItem)).ThrowsAsync(new Exception("Database connection failure"));
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => _purchaseService.SavePurchaseAsync(purchase));
+
+            // Verify purchase was saved BEFORE the stock update failed (since there is no transaction wrap)
+            _purchaseRepoMock.Verify(r => r.AddAsync(purchase), Times.Once);
+        }
+
         #endregion
     }
 }

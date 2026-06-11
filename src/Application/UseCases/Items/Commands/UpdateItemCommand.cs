@@ -9,7 +9,8 @@ using System.Collections.Generic;
 
 namespace HotelPOS.Application.UseCases.Items.Commands
 {
-    public record CreateItemCommand(
+    public record UpdateItemCommand(
+        int Id,
         string Name,
         decimal Price,
         decimal TaxPercentage,
@@ -20,17 +21,20 @@ namespace HotelPOS.Application.UseCases.Items.Commands
         bool TrackInventory
     ) : IRequest<Item>;
 
-    public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Item>
+    public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, Item>
     {
         private readonly IItemRepository _itemRepository;
 
-        public CreateItemCommandHandler(IItemRepository itemRepository)
+        public UpdateItemCommandHandler(IItemRepository itemRepository)
         {
             _itemRepository = itemRepository;
         }
 
-        public async Task<Item> Handle(CreateItemCommand request, CancellationToken cancellationToken)
+        public async Task<Item> Handle(UpdateItemCommand request, CancellationToken cancellationToken)
         {
+            if (request.Id <= 0)
+                throw new ArgumentException("Invalid item ID.", nameof(request));
+
             if (string.IsNullOrWhiteSpace(request.Name))
                 throw new ArgumentException("Item name cannot be empty or whitespace.", nameof(request));
 
@@ -43,26 +47,27 @@ namespace HotelPOS.Application.UseCases.Items.Commands
             if (request.TaxPercentage < 0)
                 throw new ArgumentException("Tax percentage cannot be negative.", nameof(request));
 
-            var existing = await _itemRepository.GetAllAsync() ?? new List<Item>();
-            if (existing.Any(i => i.Name.Trim().Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
+            var existingAll = await _itemRepository.GetAllAsync() ?? new List<Item>();
+            if (existingAll.Any(i => i.Id != request.Id && i.Name.Trim().Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"An item with the name '{request.Name}' already exists.");
 
-            if (!string.IsNullOrWhiteSpace(request.Barcode) && existing.Any(i => i.Barcode == request.Barcode))
+            if (!string.IsNullOrWhiteSpace(request.Barcode) && existingAll.Any(i => i.Id != request.Id && i.Barcode == request.Barcode))
                 throw new InvalidOperationException($"Barcode '{request.Barcode}' is already assigned to another item.");
 
-            var item = new Item
-            {
-                Name = request.Name.Trim(),
-                Price = request.Price,
-                TaxPercentage = request.TaxPercentage,
-                CategoryId = request.CategoryId,
-                HsnCode = request.HsnCode,
-                Barcode = request.Barcode,
-                StockQuantity = request.StockQuantity,
-                TrackInventory = request.TrackInventory
-            };
+            var item = await _itemRepository.GetByIdAsync(request.Id);
+            if (item == null)
+                throw new KeyNotFoundException($"Item #{request.Id} not found.");
 
-            await _itemRepository.AddAsync(item);
+            item.Name = request.Name.Trim();
+            item.Price = request.Price;
+            item.TaxPercentage = request.TaxPercentage;
+            item.CategoryId = request.CategoryId;
+            item.HsnCode = request.HsnCode;
+            item.Barcode = request.Barcode;
+            item.StockQuantity = request.StockQuantity;
+            item.TrackInventory = request.TrackInventory;
+
+            await _itemRepository.UpdateAsync(item);
             return item;
         }
     }

@@ -3,7 +3,9 @@ using ClosedXML.Excel;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Entities;
 using Microsoft.Win32;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -41,7 +43,6 @@ namespace HotelPOS.Views
     {
         private readonly IOrderService _orderService;
         private readonly IReportService _reportService;
-        private readonly ISettingService _settingService;
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
@@ -52,13 +53,19 @@ namespace HotelPOS.Views
 
         private readonly string[] _pieColors = { "#4facfe", "#00f2fe", "#f093fb", "#f5576c", "#48c6ef", "#6B8DD6", "#8E37D7", "#3B2667", "#BC78EC" };
 
-        public DashboardView(IOrderService orderService, IReportService reportService, ISettingService settingService, INotificationService notificationService)
+        public DashboardView(IOrderService orderService, IReportService reportService, INotificationService notificationService)
         {
             InitializeComponent();
             _orderService = orderService;
             _reportService = reportService;
-            _settingService = settingService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(reportService);
+                App.RegisterTestService(notificationService);
+            }
 
             // Wire pagination and calculate subtotals on page change
             TablePager.PageChanged += page =>
@@ -131,62 +138,64 @@ namespace HotelPOS.Views
         {
             if (_isLoading) return;
             
-            await App.DbLock.WaitAsync();
-            try
+            using (var scope = App.CreateDbScope())
             {
-                _isLoading = true;
-                var (from, to) = ResolveRange();
-
-                // Sales + Item reports
-                var sales = await _reportService.GetSalesReportAsync(from, to);
-                var items = await _reportService.GetItemReportAsync(from, to);
-
-                LastSalesReport = sales;
-                LastItemReport = items;
-
-                RevenueValueText.Text = $"Rs. {sales.TotalRevenue:N2}";
-                OrdersValueText.Text = sales.TotalOrders.ToString("N0");
-                AvgValueText.Text = $"Rs. {sales.AverageOrderValue:N2}";
-                TopItemText.Text = sales.MostPopularItem ?? "—";
-
-                TablePager.SetSource(sales.SalesByTable);
-
-                ItemPager.SetSource(items);
-                PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
-
-                // Update Range Totals for the entire filtered period
-                TableRangeTotalText.Text = $"Rs. {sales.SalesByTable.Sum(x => x.TotalRevenue):N2}";
-
-                ItemRangeTotalText.Text = $"Rs. {items.Sum(x => x.TotalRevenue):N2}";
-
-                // Pie Chart Logic
-                RenderPieChart(sales.SalesByCategory);
-
-                // Chart
-                var chartData = await _reportService.GetMonthlyChartDataAsync();
-                var maxRev = chartData.Max(x => x.Revenue);
-                if (maxRev == 0) maxRev = 1;
-
-                int i = 0;
-                SalesChart.ItemsSource = chartData.Select(x => new ChartBar
+                var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
+                try
                 {
-                    MonthName = x.MonthName,
-                    Revenue = x.Revenue,
-                    BarHeight = (double)(x.Revenue / maxRev) * 160,
-                    X = i++ * 58 + 20
-                }).ToList();
+                    _isLoading = true;
+                    var (from, to) = ResolveRange();
 
-                // Date-wise report — built from raw orders
-                await BuildDateReport(from, to);
-            }
-            catch (Exception ex)
-            {
-                _notificationService.ShowError($"Dashboard load failed: {ex.Message}");
-            }
-            finally
-            {
-                _isLoading = false;
-                App.DbLock.Release();
+                    // Sales + Item reports
+                    var sales = await reportService.GetSalesReportAsync(from, to);
+                    var items = await reportService.GetItemReportAsync(from, to);
+
+                    LastSalesReport = sales;
+                    LastItemReport = items;
+
+                    RevenueValueText.Text = $"Rs. {sales.TotalRevenue:N2}";
+                    OrdersValueText.Text = sales.TotalOrders.ToString("N0");
+                    AvgValueText.Text = $"Rs. {sales.AverageOrderValue:N2}";
+                    TopItemText.Text = sales.MostPopularItem ?? "—";
+
+                    TablePager.SetSource(sales.SalesByTable);
+
+                    ItemPager.SetSource(items);
+                    PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
+
+                    // Update Range Totals for the entire filtered period
+                    TableRangeTotalText.Text = $"Rs. {sales.SalesByTable.Sum(x => x.TotalRevenue):N2}";
+
+                    ItemRangeTotalText.Text = $"Rs. {items.Sum(x => x.TotalRevenue):N2}";
+
+                    // Pie Chart Logic
+                    RenderPieChart(sales.SalesByCategory);
+
+                    // Chart
+                    var chartData = await reportService.GetMonthlyChartDataAsync();
+                    var maxRev = chartData.Max(x => x.Revenue);
+                    if (maxRev == 0) maxRev = 1;
+
+                    int i = 0;
+                    SalesChart.ItemsSource = chartData.Select(x => new ChartBar
+                    {
+                        MonthName = x.MonthName,
+                        Revenue = x.Revenue,
+                        BarHeight = (double)(x.Revenue / maxRev) * 160,
+                        X = i++ * 58 + 20
+                    }).ToList();
+
+                    // Date-wise report — built from raw orders
+                    await BuildDateReport(from, to);
+                }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Dashboard load failed: {ex.Message}");
+                }
+                finally
+                {
+                    _isLoading = false;
+                }
             }
         }
 
@@ -194,7 +203,12 @@ namespace HotelPOS.Views
         {
             try
             {
-                var allOrders = await _orderService.GetAllOrdersWithItemsAsync();
+                List<Order> allOrders;
+                using (var scope = App.CreateDbScope())
+                {
+                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                    allOrders = await orderService.GetAllOrdersWithItemsAsync();
+                }
 
                 var filtered = allOrders.AsEnumerable();
                 if (from.HasValue) filtered = filtered.Where(o => o.CreatedAt.ToLocalTime() >= from.Value);
@@ -361,7 +375,12 @@ namespace HotelPOS.Views
             {
                 try
                 {
-                    var settings = await _settingService.GetSettingsAsync();
+                    SystemSetting settings;
+                    using (var scope = App.CreateDbScope())
+                    {
+                        var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                        settings = await settingService.GetSettingsAsync();
+                    }
                     var order = new HotelPOS.Domain.Entities.Order
                     {
                         Id = row.OrderId,
@@ -397,7 +416,11 @@ namespace HotelPOS.Views
                 {
                     try
                     {
-                        await _orderService.DeleteOrderAsync(orderId);
+                        using (var scope = App.CreateDbScope())
+                        {
+                            var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                            await orderService.DeleteOrderAsync(orderId);
+                        }
                         await LoadAsync();
                     }
                     catch (Exception ex)

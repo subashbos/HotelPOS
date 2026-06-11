@@ -18,7 +18,7 @@ namespace HotelPOS.Application.UseCases
             if (dto.Number <= 0)
                 throw new ArgumentException("Table number must be greater than zero.");
 
-            var existing = await _tableRepository.GetAllAsync();
+            var existing = await _tableRepository.GetAllAsync() ?? new List<Table>();
             if (existing.Any(t => t.Number == dto.Number && !t.IsDeleted))
                 throw new InvalidOperationException($"Table number {dto.Number} is already in use.");
 
@@ -34,7 +34,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<Table>> GetTablesAsync()
         {
-            return await _tableRepository.GetAllAsync();
+            return await _tableRepository.GetAllAsync() ?? new List<Table>();
         }
 
         public async Task UpdateTableAsync(int id, CreateTableDto dto)
@@ -42,23 +42,27 @@ namespace HotelPOS.Application.UseCases
             if (dto.Number <= 0)
                 throw new ArgumentException("Table number must be greater than zero.");
 
-            var existing = await _tableRepository.GetAllAsync();
+            var existing = await _tableRepository.GetAllAsync() ?? new List<Table>();
             if (existing.Any(t => t.Number == dto.Number && t.Id != id && !t.IsDeleted))
                 throw new InvalidOperationException($"Table number {dto.Number} is already in use.");
 
             var table = await _tableRepository.GetByIdAsync(id);
-            if (table is not null)
-            {
-                table.Number = dto.Number;
-                table.Name = dto.Name;
-                table.Capacity = dto.Capacity;
-                table.IsActive = dto.IsActive;
-                await _tableRepository.UpdateAsync(table);
-            }
+            if (table is null || table.IsDeleted)
+                throw new KeyNotFoundException($"Table #{id} not found.");
+
+            table.Number = dto.Number;
+            table.Name = dto.Name;
+            table.Capacity = dto.Capacity;
+            table.IsActive = dto.IsActive;
+            await _tableRepository.UpdateAsync(table);
         }
 
         public async Task DeleteTableAsync(int id)
         {
+            var table = await _tableRepository.GetByIdAsync(id);
+            if (table is null || table.IsDeleted)
+                throw new KeyNotFoundException($"Table #{id} not found or already deleted.");
+
             await _tableRepository.DeleteAsync(id);
         }
     }

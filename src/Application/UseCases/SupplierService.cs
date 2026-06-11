@@ -18,7 +18,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<Supplier>> GetSuppliersAsync()
         {
-            return await _supplierRepository.GetAllAsync();
+            return await _supplierRepository.GetAllAsync() ?? new List<Supplier>();
         }
 
         public async Task<Supplier?> GetSupplierByIdAsync(int id)
@@ -31,34 +31,7 @@ namespace HotelPOS.Application.UseCases
             if (supplier == null)
                 throw new ArgumentNullException(nameof(supplier));
 
-            // Validate Name
-            if (string.IsNullOrWhiteSpace(supplier.Name))
-                throw new ArgumentException("Supplier Name is required.");
-
-            // Validate Phone (optional)
-            if (!string.IsNullOrWhiteSpace(supplier.Phone))
-            {
-                // Standard clean-up & basic validation of phone: 10 to 15 digits
-                var cleanPhone = Regex.Replace(supplier.Phone, @"[^\d\+\-\(\)\s]", "");
-                var digitCount = Regex.Replace(cleanPhone, @"[^\d]", "").Length;
-                if (digitCount < 10 || digitCount > 15)
-                    throw new ArgumentException("Phone number must be a valid number between 10 and 15 digits.");
-
-                supplier.Phone = cleanPhone.Trim();
-            }
-            else
-            {
-                supplier.Phone = string.Empty;
-            }
-
-            // Validate Email (if provided)
-            if (!string.IsNullOrWhiteSpace(supplier.Email))
-            {
-                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-                if (!emailRegex.IsMatch(supplier.Email.Trim()))
-                    throw new ArgumentException("Email ID is invalid.");
-                supplier.Email = supplier.Email.Trim();
-            }
+            ValidateSupplier(supplier);
 
             // Check Duplicate Name
             if (await _supplierRepository.ExistsByNameAsync(supplier.Name.Trim(), supplier.Id))
@@ -84,8 +57,53 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
+        private void ValidateSupplier(Supplier supplier)
+        {
+            // Validate Name
+            if (string.IsNullOrWhiteSpace(supplier.Name))
+                throw new ArgumentException("Supplier Name is required.");
+
+            // Validate Phone (optional)
+            if (!string.IsNullOrWhiteSpace(supplier.Phone))
+            {
+                // Standard clean-up & basic validation of phone: 10 to 15 digits
+                var cleanPhone = Regex.Replace(supplier.Phone, @"[^\d\+\-\(\)\s]", "");
+                var digitCount = Regex.Replace(cleanPhone, @"[^\d]", "").Length;
+                if (digitCount < 10 || digitCount > 15)
+                    throw new ArgumentException("Phone number must be a valid number between 10 and 15 digits.");
+
+                supplier.Phone = cleanPhone.Trim();
+            }
+            else
+            {
+                supplier.Phone = string.Empty;
+            }
+
+            // Validate Email (if provided)
+            if (!string.IsNullOrWhiteSpace(supplier.Email))
+            {
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
+                if (!emailRegex.IsMatch(supplier.Email.Trim()))
+                    throw new ArgumentException("Email ID is invalid.");
+                supplier.Email = supplier.Email.Trim();
+            }
+
+            // Validate GSTIN (if provided)
+            if (!string.IsNullOrWhiteSpace(supplier.Gstin))
+            {
+                var gstinRegex = new Regex(@"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", RegexOptions.None, TimeSpan.FromSeconds(1));
+                if (!gstinRegex.IsMatch(supplier.Gstin.Trim().ToUpperInvariant()))
+                    throw new ArgumentException("GSTIN format is invalid.");
+                supplier.Gstin = supplier.Gstin.Trim().ToUpperInvariant();
+            }
+        }
+
         public async Task DeleteSupplierAsync(int id)
         {
+            var existing = await _supplierRepository.GetByIdAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException($"Supplier #{id} not found.");
+
             await _supplierRepository.DeleteAsync(id);
         }
 

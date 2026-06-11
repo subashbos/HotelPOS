@@ -2,6 +2,7 @@ using ClosedXML.Excel;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Win32;
+using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -30,18 +31,21 @@ namespace HotelPOS.Views
 
     public partial class LedgerView : UserControl
     {
-        private readonly IOrderService _orderService;
         private readonly INotificationService _notificationService;
         private List<LedgerRow> _allRows = new();
         private bool _isLoaded = false;
         private bool _isLoading = false;
         private bool _loadRequested = false;
 
-        public LedgerView(IOrderService orderService, INotificationService notificationService)
+        public LedgerView(INotificationService notificationService)
         {
             InitializeComponent();
-            _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(notificationService);
+            }
             LedgerPager.PageChanged += page => LedgerGrid.ItemsSource = page;
 
             Loaded += async (s, e) =>
@@ -68,14 +72,10 @@ namespace HotelPOS.Views
                     DateTime? to = ToDate.SelectedDate?.AddDays(1);
 
                     List<Order> allOrders;
-                    await App.DbLock.WaitAsync();
-                    try
+                    using (var scope = App.CreateDbScope())
                     {
-                        allOrders = await _orderService.GetAllOrdersWithItemsAsync();
-                    }
-                    finally
-                    {
-                        App.DbLock.Release();
+                        var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                        allOrders = await orderService.GetAllOrdersWithItemsAsync();
                     }
 
                     var orders = allOrders.AsEnumerable();
