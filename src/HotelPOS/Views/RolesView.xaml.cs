@@ -82,14 +82,13 @@ namespace HotelPOS.Views
         private Role? _selectedRole;
         private List<PermissionViewModel> _currentPermissions = new();
 
-        public RolesView(IRoleService roleService, INotificationService notificationService)
+        public RolesView(INotificationService notificationService)
         {
             InitializeComponent();
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
             {
-                App.RegisterTestService(roleService);
                 App.RegisterTestService(notificationService);
             }
 

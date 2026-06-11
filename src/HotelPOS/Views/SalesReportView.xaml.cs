@@ -19,16 +19,13 @@ namespace HotelPOS.Views
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
-        public SalesReportView(IOrderService orderService, ICategoryService categoryService, ISettingService settingService, INotificationService notificationService)
+        public SalesReportView(INotificationService notificationService)
         {
             InitializeComponent();
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
             {
-                App.RegisterTestService(orderService);
-                App.RegisterTestService(categoryService);
-                App.RegisterTestService(settingService);
                 App.RegisterTestService(notificationService);
             }
 

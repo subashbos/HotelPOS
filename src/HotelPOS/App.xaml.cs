@@ -40,13 +40,16 @@ namespace HotelPOS
             return CurrentApp.ServiceProvider.CreateScope();
         }
 
-        private class DummyScope : IServiceScope
+        private sealed class DummyScope : IServiceScope
         {
             public IServiceProvider ServiceProvider => new DummyServiceProvider();
-            public void Dispose() { }
+            public void Dispose() 
+            {
+                GC.SuppressFinalize(this);
+            }
         }
 
-        private class DummyServiceProvider : IServiceProvider
+        private sealed class DummyServiceProvider : IServiceProvider
         {
             public object? GetService(Type serviceType)
             {

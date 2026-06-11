@@ -52,6 +52,8 @@ namespace HotelPOS.ViewModels
 
         public async Task RefreshStatusAsync()
         {
+            if (_cashService == null) return;
+
             using (var scope = App.CreateDbScope())
             {
                 var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();

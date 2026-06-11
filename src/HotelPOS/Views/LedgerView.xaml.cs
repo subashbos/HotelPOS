@@ -31,22 +31,19 @@ namespace HotelPOS.Views
 
     public partial class LedgerView : UserControl
     {
-        private readonly IOrderService _orderService;
         private readonly INotificationService _notificationService;
         private List<LedgerRow> _allRows = new();
         private bool _isLoaded = false;
         private bool _isLoading = false;
         private bool _loadRequested = false;
 
-        public LedgerView(IOrderService orderService, INotificationService notificationService)
+        public LedgerView(INotificationService notificationService)
         {
             InitializeComponent();
-            _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
             {
-                App.RegisterTestService(orderService);
                 App.RegisterTestService(notificationService);
             }
             LedgerPager.PageChanged += page => LedgerGrid.ItemsSource = page;

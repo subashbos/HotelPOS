@@ -31,6 +31,34 @@ namespace HotelPOS.Application.UseCases
             if (supplier == null)
                 throw new ArgumentNullException(nameof(supplier));
 
+            ValidateSupplier(supplier);
+
+            // Check Duplicate Name
+            if (await _supplierRepository.ExistsByNameAsync(supplier.Name.Trim(), supplier.Id))
+                throw new ArgumentException($"A supplier named '{supplier.Name}' already exists.");
+
+            // Trim fields
+            supplier.Name = supplier.Name.Trim();
+            supplier.ContactPerson = supplier.ContactPerson?.Trim();
+            supplier.Address = supplier.Address?.Trim();
+            supplier.Gstin = supplier.Gstin?.Trim();
+            supplier.City = supplier.City?.Trim();
+            supplier.State = supplier.State?.Trim();
+            supplier.Pincode = supplier.Pincode?.Trim();
+            supplier.PaymentTerms = supplier.PaymentTerms?.Trim();
+
+            if (supplier.Id == 0)
+            {
+                await _supplierRepository.AddAsync(supplier);
+            }
+            else
+            {
+                await _supplierRepository.UpdateAsync(supplier);
+            }
+        }
+
+        private void ValidateSupplier(Supplier supplier)
+        {
             // Validate Name
             if (string.IsNullOrWhiteSpace(supplier.Name))
                 throw new ArgumentException("Supplier Name is required.");
@@ -67,29 +95,6 @@ namespace HotelPOS.Application.UseCases
                 if (!gstinRegex.IsMatch(supplier.Gstin.Trim().ToUpperInvariant()))
                     throw new ArgumentException("GSTIN format is invalid.");
                 supplier.Gstin = supplier.Gstin.Trim().ToUpperInvariant();
-            }
-
-            // Check Duplicate Name
-            if (await _supplierRepository.ExistsByNameAsync(supplier.Name.Trim(), supplier.Id))
-                throw new ArgumentException($"A supplier named '{supplier.Name}' already exists.");
-
-            // Trim fields
-            supplier.Name = supplier.Name.Trim();
-            supplier.ContactPerson = supplier.ContactPerson?.Trim();
-            supplier.Address = supplier.Address?.Trim();
-            supplier.Gstin = supplier.Gstin?.Trim();
-            supplier.City = supplier.City?.Trim();
-            supplier.State = supplier.State?.Trim();
-            supplier.Pincode = supplier.Pincode?.Trim();
-            supplier.PaymentTerms = supplier.PaymentTerms?.Trim();
-
-            if (supplier.Id == 0)
-            {
-                await _supplierRepository.AddAsync(supplier);
-            }
-            else
-            {
-                await _supplierRepository.UpdateAsync(supplier);
             }
         }
 
