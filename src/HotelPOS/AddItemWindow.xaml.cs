@@ -63,28 +63,28 @@ namespace HotelPOS
 
         private void PriceOrTax_Changed(object sender, EventArgs e)
         {
-            UpdateFinalPricePreview();
+            UpdateFinalPricePreview(FinalPriceBlock, ItemPriceBox, TaxCombo);
         }
 
-        private void UpdateFinalPricePreview()
+        private static void UpdateFinalPricePreview(TextBlock finalPriceBlock, TextBox itemPriceBox, ComboBox taxCombo)
         {
-            if (FinalPriceBlock == null) return;
+            if (finalPriceBlock == null) return;
 
-            if (decimal.TryParse(ItemPriceBox.Text?.Trim(),
+            if (decimal.TryParse(itemPriceBox.Text?.Trim(),
                     System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture,
                     out var price) && price >= 0)
             {
                 decimal tax = 0;
-                if (TaxCombo.SelectedItem is ComboBoxItem cbi && decimal.TryParse(cbi.Tag?.ToString(), out var t))
+                if (taxCombo.SelectedItem is ComboBoxItem cbi && decimal.TryParse(cbi.Tag?.ToString(), out var t))
                     tax = t;
 
                 var finalPrice = price + (price * tax / 100);
-                FinalPriceBlock.Text = $"Final Price: RS. {finalPrice:F2} (incl. {tax}% GST)";
+                finalPriceBlock.Text = $"Final Price: RS. {finalPrice:F2} (incl. {tax}% GST)";
             }
             else
             {
-                FinalPriceBlock.Text = "Final Price: RS. 0.00";
+                finalPriceBlock.Text = "Final Price: RS. 0.00";
             }
         }
 
