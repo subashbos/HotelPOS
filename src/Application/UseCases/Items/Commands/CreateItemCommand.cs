@@ -32,16 +32,16 @@ namespace HotelPOS.Application.UseCases.Items.Commands
         public async Task<Item> Handle(CreateItemCommand request, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.Name))
-                throw new ArgumentException("Item name cannot be empty or whitespace.", nameof(request.Name));
+                throw new ArgumentException("Item name cannot be empty or whitespace.", nameof(request));
 
             if (request.Name.Length > 200)
-                throw new ArgumentException("Item name must not exceed 200 characters.", nameof(request.Name));
+                throw new ArgumentException("Item name must not exceed 200 characters.", nameof(request));
 
             if (request.Price <= 0)
-                throw new ArgumentException("Item price must be greater than zero.", nameof(request.Price));
+                throw new ArgumentException("Item price must be greater than zero.", nameof(request));
 
             if (request.TaxPercentage < 0)
-                throw new ArgumentException("Tax percentage cannot be negative.", nameof(request.TaxPercentage));
+                throw new ArgumentException("Tax percentage cannot be negative.", nameof(request));
 
             var existing = await _itemRepository.GetAllAsync() ?? new List<Item>();
             if (existing.Any(i => i.Name.Trim().Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase)))

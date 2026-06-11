@@ -158,7 +158,7 @@ namespace HotelPOS.ViewModels
                 EmailError = string.Empty;
                 return true;
             }
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
             if (!emailRegex.IsMatch(Email.Trim()))
             {
                 EmailError = "Please enter a valid Email ID";

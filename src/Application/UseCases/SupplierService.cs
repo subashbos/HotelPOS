@@ -54,7 +54,7 @@ namespace HotelPOS.Application.UseCases
             // Validate Email (if provided)
             if (!string.IsNullOrWhiteSpace(supplier.Email))
             {
-                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
                 if (!emailRegex.IsMatch(supplier.Email.Trim()))
                     throw new ArgumentException("Email ID is invalid.");
                 supplier.Email = supplier.Email.Trim();
@@ -63,7 +63,7 @@ namespace HotelPOS.Application.UseCases
             // Validate GSTIN (if provided)
             if (!string.IsNullOrWhiteSpace(supplier.Gstin))
             {
-                var gstinRegex = new Regex(@"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$");
+                var gstinRegex = new Regex(@"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$", RegexOptions.None, TimeSpan.FromSeconds(1));
                 if (!gstinRegex.IsMatch(supplier.Gstin.Trim().ToUpperInvariant()))
                     throw new ArgumentException("GSTIN format is invalid.");
                 supplier.Gstin = supplier.Gstin.Trim().ToUpperInvariant();

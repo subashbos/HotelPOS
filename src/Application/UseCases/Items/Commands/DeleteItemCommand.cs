@@ -21,7 +21,7 @@ namespace HotelPOS.Application.UseCases.Items.Commands
         public async Task<bool> Handle(DeleteItemCommand request, CancellationToken cancellationToken)
         {
             if (request.Id <= 0)
-                throw new ArgumentException("Invalid item ID.", nameof(request.Id));
+                throw new ArgumentException("Invalid item ID.", nameof(request));
 
             var item = await _itemRepository.GetByIdAsync(request.Id);
             if (item == null)

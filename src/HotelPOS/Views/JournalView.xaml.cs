@@ -26,24 +26,21 @@ namespace HotelPOS.Views
     public partial class JournalView : UserControl
     {
         private readonly IOrderService _orderService;
-        private readonly ISettingService _settingService;
         private readonly IReportService _reportService;
         private readonly INotificationService _notificationService;
         private List<JournalRow> _allRows = new();
         private bool _isLoaded = false;   // prevents premature LoadAsync calls
 
-        public JournalView(IOrderService orderService, ISettingService settingService, IReportService reportService, INotificationService notificationService)
+        public JournalView(IOrderService orderService, IReportService reportService, INotificationService notificationService)
         {
             InitializeComponent();
             _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
-            _settingService = settingService ?? throw new ArgumentNullException(nameof(settingService));
             _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
             {
                 App.RegisterTestService(orderService);
-                App.RegisterTestService(settingService);
                 App.RegisterTestService(reportService);
                 App.RegisterTestService(notificationService);
             }
