@@ -17,159 +17,24 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <!-- Field Label Style -->
-        <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+        <Style x:Key="FieldLabel" TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}">
             <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="Margin" Value="0,0,0,4"/>
         </Style>
 
-        <!-- Premium Watermarked TextBox Style -->
-        <Style x:Key="InputField" TargetType="TextBox">
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Grid>
-                            <Border x:Name="Border"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="6">
-                                <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
-                            </Border>
-                            <TextBlock x:Name="PlaceholderText"
-                                       Text="{TemplateBinding Tag}"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       Opacity="0.5"
-                                       FontSize="{TemplateBinding FontSize}"
-                                       Padding="{TemplateBinding Padding}"
-                                       VerticalAlignment="Center"
-                                       IsHitTestVisible="False"
-                                       Visibility="Collapsed"/>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="Text" Value="">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                            <Trigger Property="Text" Value="{x:Null}">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Multiline TextBox Style with Top-Aligned Watermark -->
-        <Style x:Key="MultilineInputField" TargetType="TextBox" BasedOn="{StaticResource InputField}">
+        <!-- Multiline TextBox Style based on global default -->
+        <Style x:Key="MultilineInputField" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <Setter Property="AcceptsReturn" Value="True"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="VerticalContentAlignment" Value="Top"/>
             <Setter Property="Height" Value="60"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Grid>
-                            <Border x:Name="Border"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="6">
-                                <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
-                            </Border>
-                            <TextBlock x:Name="PlaceholderText"
-                                       Text="{TemplateBinding Tag}"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       Opacity="0.5"
-                                       FontSize="{TemplateBinding FontSize}"
-                                       Padding="{TemplateBinding Padding}"
-                                       VerticalAlignment="Top"
-                                       IsHitTestVisible="False"
-                                       Visibility="Collapsed"/>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="Text" Value="">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                            <Trigger Property="Text" Value="{x:Null}">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Right-Aligned Currency Input Style -->
-        <Style x:Key="CurrencyInputField" TargetType="TextBox" BasedOn="{StaticResource InputField}">
-            <Setter Property="HorizontalContentAlignment" Value="Right"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Grid>
-                            <Border x:Name="Border"
-                                    Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="6">
-                                <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
-                            </Border>
-                            <TextBlock x:Name="PlaceholderText"
-                                       Text="{TemplateBinding Tag}"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       Opacity="0.5"
-                                       FontSize="{TemplateBinding FontSize}"
-                                       Padding="{TemplateBinding Padding}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Right"
-                                       IsHitTestVisible="False"
-                                       Visibility="Collapsed"/>
-                        </Grid>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="Text" Value="">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                            <Trigger Property="Text" Value="{x:Null}">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="PlaceholderText" Property="Visibility" Value="Collapsed"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Combobox Dropdown Style -->
-        <Style x:Key="SelectField" TargetType="ComboBox">
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Style.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="6"/>
-                </Style>
-            </Style.Resources>
+        </Style>
+
+        <!-- Right-Aligned Currency Input Style based on global default -->
+        <Style x:Key="CurrencyInputField" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
     </Window.Resources>
 
@@ -233,7 +98,7 @@
                     <TextBlock Text="SUPPLIER NAME *" Style="{StaticResource FieldLabel}"/>
                     <TextBox x:Name="NameInput" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" GotFocus="Input_GotFocus" Tag="Enter supplier name">
                         <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource InputField}">
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsNameInvalid}" Value="True">
                                         <Setter Property="BorderBrush" Value="#EF4444"/>
@@ -250,20 +115,20 @@
                 <!-- City -->
                 <StackPanel Grid.Row="1" Grid.Column="2">
                     <TextBlock Text="CITY" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Tag="Enter city name"/>
+                    <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" Tag="Enter city name"/>
                 </StackPanel>
 
                 <!-- ================= ROW 2: CONTACT PERSON / STATE ================= -->
                 <!-- Contact Person -->
                 <StackPanel Grid.Row="2" Grid.Column="0">
                     <TextBlock Text="CONTACT PERSON" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding ContactPerson, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Tag="Enter contact person name"/>
+                    <TextBox Text="{Binding ContactPerson, UpdateSourceTrigger=PropertyChanged}" Tag="Enter contact person name"/>
                 </StackPanel>
 
                 <!-- State -->
                 <StackPanel Grid.Row="2" Grid.Column="2">
                     <TextBlock Text="STATE" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding State, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Tag="Enter state name"/>
+                    <TextBox Text="{Binding State, UpdateSourceTrigger=PropertyChanged}" Tag="Enter state name"/>
                 </StackPanel>
 
                 <!-- ================= ROW 3: PHONE NUMBER / PINCODE ================= -->
@@ -272,7 +137,7 @@
                     <TextBlock Text="PHONE NUMBER" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Tag="10-digit mobile number">
                         <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource InputField}">
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsPhoneInvalid}" Value="True">
                                         <Setter Property="BorderBrush" Value="#EF4444"/>
@@ -289,7 +154,7 @@
                 <!-- Pincode -->
                 <StackPanel Grid.Row="3" Grid.Column="2">
                     <TextBlock Text="PINCODE" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding Pincode, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Tag="Enter 6-digit pincode"/>
+                    <TextBox Text="{Binding Pincode, UpdateSourceTrigger=PropertyChanged}" Tag="Enter 6-digit pincode"/>
                 </StackPanel>
 
                 <!-- ================= ROW 4: EMAIL ID / OPENING BALANCE ================= -->
@@ -298,7 +163,7 @@
                     <TextBlock Text="EMAIL ID" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Tag="Enter email address">
                         <TextBox.Style>
-                            <Style TargetType="TextBox" BasedOn="{StaticResource InputField}">
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsEmailInvalid}" Value="True">
                                         <Setter Property="BorderBrush" Value="#EF4444"/>
@@ -327,7 +192,7 @@
                 <!-- GST Number -->
                 <StackPanel Grid.Row="5" Grid.Column="0">
                     <TextBlock Text="GST NUMBER (GSTIN)" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding Gstin, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" Tag="Enter GSTIN"/>
+                    <TextBox Text="{Binding Gstin, UpdateSourceTrigger=PropertyChanged}" Tag="Enter GSTIN"/>
                 </StackPanel>
 
                 <!-- Credit Limit (Currency Prefix, Right-Align, 50000.00 Default) -->
@@ -341,11 +206,10 @@
                     </Grid>
                 </StackPanel>
 
-                <!-- ================= ROW 6: EMPTY / PAYMENT TERMS ================= -->
                 <!-- Payment Terms (Dropdown) -->
                 <StackPanel Grid.Row="6" Grid.Column="2">
                     <TextBlock Text="PAYMENT TERMS" Style="{StaticResource FieldLabel}"/>
-                    <ComboBox SelectedValue="{Binding PaymentTerms}" SelectedValuePath="Content" Style="{StaticResource SelectField}" Margin="0,0,0,10">
+                    <ComboBox SelectedValue="{Binding PaymentTerms}" SelectedValuePath="Content" Margin="0,0,0,10">
                         <ComboBoxItem Content="Cash" IsSelected="True"/>
                         <ComboBoxItem Content="Credit"/>
                         <ComboBoxItem Content="30 Days"/>
@@ -367,15 +231,7 @@
         <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,14">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <!-- Cancel Button -->
-                <Button Content="✕  Cancel" Click="Cancel_Click" 
-                        Background="Transparent" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Foreground="{DynamicResource TextPrimary}"
-                        Padding="20,10" Margin="0,0,12,0" FontWeight="SemiBold" Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                <Button Content="✕  Cancel" Click="Cancel_Click" Style="{StaticResource SecondaryBtn}" Margin="0,0,12,0"/>
 
                 <!-- Save / Update (Emerald Green Button with Hover state) -->
                 <Button x:Name="SaveButton" Command="{Binding SaveCommand}"

@@ -180,6 +180,19 @@ namespace HotelPOS.ViewModels
             _tableService = tableService;
             _dialogService = dialogService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(itemService);
+                App.RegisterTestService(cartService);
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(settingService);
+                App.RegisterTestService(categoryService);
+                App.RegisterTestService(notificationService);
+                App.RegisterTestService(cashService);
+                App.RegisterTestService(tableService);
+                if (dialogService != null) App.RegisterTestService(dialogService);
+            }
+
             LoadHeldOrders();
         }
 
@@ -267,7 +280,7 @@ namespace HotelPOS.ViewModels
         {
             using (var scope = App.CreateDbScope())
             {
-                var tableService = scope.ServiceProvider.GetService<ITableService>() ?? _tableService;
+                var tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
                 try
                 {
                     var tables = await tableService.GetTablesAsync();
@@ -322,10 +335,10 @@ namespace HotelPOS.ViewModels
 
             using (var scope = App.CreateDbScope())
             {
-                var itemService = scope.ServiceProvider.GetService<IItemService>() ?? _itemService;
-                var categoryService = scope.ServiceProvider.GetService<ICategoryService>() ?? _categoryService;
-                var settingService = scope.ServiceProvider.GetService<ISettingService>() ?? _settingService;
-                var cashService = scope.ServiceProvider.GetService<ICashService>() ?? _cashService;
+                var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
+                var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
 
                 try
                 {
@@ -778,7 +791,7 @@ namespace HotelPOS.ViewModels
             // LOOPHOLE FIX: Prevent checkout if shift is closed
             using (var scope = App.CreateDbScope())
             {
-                var cashService = scope.ServiceProvider.GetService<ICashService>() ?? _cashService;
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
                 var currentSession = await cashService.GetCurrentSessionAsync();
                 if (currentSession == null)
                 {
@@ -812,8 +825,8 @@ namespace HotelPOS.ViewModels
             {
                 using (var scope = App.CreateDbScope())
                 {
-                    var cashService = scope.ServiceProvider.GetService<ICashService>() ?? _cashService;
-                    var orderService = scope.ServiceProvider.GetService<IOrderService>() ?? _orderService;
+                    var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
 
                     // Re-verify shift state under lock
                     var currentSession = await cashService.GetCurrentSessionAsync();
@@ -887,8 +900,8 @@ namespace HotelPOS.ViewModels
                 Order? order;
                 using (var scope = App.CreateDbScope())
                 {
-                    var settingService = scope.ServiceProvider.GetService<ISettingService>() ?? _settingService;
-                    var orderService = scope.ServiceProvider.GetService<IOrderService>() ?? _orderService;
+                    var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
                     settings = await settingService.GetSettingsAsync();
                     order = preLoadedOrder ?? await orderService.GetOrderAsync(orderId);
                 }

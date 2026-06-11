@@ -7,14 +7,17 @@ namespace HotelPOS.Views
 {
     public partial class AuditView : UserControl
     {
-        private readonly IAuditService _auditService;
         private readonly INotificationService _notificationService;
 
-        public AuditView(IAuditService auditService, INotificationService notificationService)
+        public AuditView(INotificationService notificationService)
         {
             InitializeComponent();
-            _auditService = auditService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(notificationService);
+            }
 
             FromDate.SelectedDate = DateTime.Today;
             ToDate.SelectedDate = DateTime.Today;

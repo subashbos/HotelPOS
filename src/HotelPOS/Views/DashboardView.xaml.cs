@@ -43,7 +43,6 @@ namespace HotelPOS.Views
     {
         private readonly IOrderService _orderService;
         private readonly IReportService _reportService;
-        private readonly ISettingService _settingService;
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
@@ -54,13 +53,19 @@ namespace HotelPOS.Views
 
         private readonly string[] _pieColors = { "#4facfe", "#00f2fe", "#f093fb", "#f5576c", "#48c6ef", "#6B8DD6", "#8E37D7", "#3B2667", "#BC78EC" };
 
-        public DashboardView(IOrderService orderService, IReportService reportService, ISettingService settingService, INotificationService notificationService)
+        public DashboardView(IOrderService orderService, IReportService reportService, INotificationService notificationService)
         {
             InitializeComponent();
             _orderService = orderService;
             _reportService = reportService;
-            _settingService = settingService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(orderService);
+                App.RegisterTestService(reportService);
+                App.RegisterTestService(notificationService);
+            }
 
             // Wire pagination and calculate subtotals on page change
             TablePager.PageChanged += page =>

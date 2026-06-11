@@ -16,7 +16,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<Category>> GetCategoriesAsync()
         {
-            return await _repo.GetAllAsync();
+            return await _repo.GetAllAsync() ?? new List<Category>();
         }
 
         public async Task<int> AddCategoryAsync(string name, int displayOrder = 0)

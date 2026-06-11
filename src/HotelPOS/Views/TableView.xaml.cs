@@ -19,10 +19,7 @@ namespace HotelPOS.Views
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
         private static readonly SolidColorBrush ErrorFg = new(Color.FromRgb(0x72, 0x1C, 0x24));
 
-        /// <summary>
-        /// Initializes the TableView control and schedules an initial table data load when the control is loaded.
-        /// </summary>
-        public TableView(ITableService tableService)
+        public TableView()
         {
             InitializeComponent();
             Loaded += async (s, e) => await LoadDataAsync();

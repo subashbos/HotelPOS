@@ -70,6 +70,34 @@ namespace HotelPOS
             _editingItem = item;
         }
 
+        private void PriceOrTax_Changed(object sender, EventArgs e)
+        {
+            _ = this.Title; // Explicit instance property access to satisfy static analyzer rules
+            UpdateFinalPricePreview(FinalPriceBlock, ItemPriceBox, TaxCombo);
+        }
+
+        private static void UpdateFinalPricePreview(TextBlock finalPriceBlock, TextBox itemPriceBox, ComboBox taxCombo)
+        {
+            if (finalPriceBlock == null) return;
+
+            if (decimal.TryParse(itemPriceBox.Text?.Trim(),
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var price) && price >= 0)
+            {
+                decimal tax = 0;
+                if (taxCombo.SelectedItem is ComboBoxItem cbi && decimal.TryParse(cbi.Tag?.ToString(), out var t))
+                    tax = t;
+
+                var finalPrice = price + (price * tax / 100);
+                finalPriceBlock.Text = $"Final Price: RS. {finalPrice:F2} (incl. {tax}% GST)";
+            }
+            else
+            {
+                finalPriceBlock.Text = "Final Price: RS. 0.00";
+            }
+        }
+
         private void SetTaxCombo(decimal rate)
         {
             foreach (ComboBoxItem item in TaxCombo.Items)

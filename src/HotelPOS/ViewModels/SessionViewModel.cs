@@ -36,6 +36,12 @@ namespace HotelPOS.ViewModels
         {
             _cashService = cashService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(cashService);
+                App.RegisterTestService(notificationService);
+            }
         }
 
         public async Task InitializeAsync()
@@ -52,9 +58,11 @@ namespace HotelPOS.ViewModels
         /// </remarks>
         public async Task RefreshStatusAsync()
         {
+            if (_cashService == null) return;
+
             using (var scope = App.CreateDbScope())
             {
-                var cashService = scope.ServiceProvider.GetService<ICashService>() ?? _cashService;
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
                 CurrentSession = await cashService.GetCurrentSessionAsync();
                 IsSessionOpen = CurrentSession != null;
                 if (IsSessionOpen)
@@ -74,7 +82,7 @@ namespace HotelPOS.ViewModels
             List<CashSession> history;
             using (var scope = App.CreateDbScope())
             {
-                var cashService = scope.ServiceProvider.GetService<ICashService>() ?? _cashService;
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
                 history = await cashService.GetSessionHistoryAsync();
             }
             SessionHistory.Clear();
@@ -101,7 +109,7 @@ namespace HotelPOS.ViewModels
 
                 using (var scope = App.CreateDbScope())
                 {
-                    var cashService = scope.ServiceProvider.GetService<ICashService>() ?? _cashService;
+                    var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
                     await cashService.OpenSessionAsync(OpeningBalance, AppSession.CurrentUser?.Username ?? "System");
                 }
                 await RefreshStatusAsync();
@@ -126,7 +134,7 @@ namespace HotelPOS.ViewModels
             {
                 using (var scope = App.CreateDbScope())
                 {
-                    var cashService = scope.ServiceProvider.GetService<ICashService>() ?? _cashService;
+                    var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
                     await cashService.CloseSessionAsync(ActualCash, Notes, AppSession.CurrentUser?.Username ?? "System");
                 }
                 await RefreshStatusAsync();

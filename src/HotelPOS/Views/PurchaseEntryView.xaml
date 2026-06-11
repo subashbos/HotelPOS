@@ -7,35 +7,30 @@
 
     <UserControl.Resources>
         <!-- Field Styles matching existing Views -->
-        <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="FontSize"   Value="12"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Setter Property="Margin"     Value="0,0,0,6"/>
-        </Style>
+        <Style x:Key="FieldLabel" TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}"/>
         
-        <Style x:Key="InputField" TargetType="TextBox">
-            <Setter Property="Padding"         Value="12,10"/>
-            <Setter Property="FontSize"        Value="14"/>
-            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground"      Value="{DynamicResource TextPrimary}"/>
+        <Style x:Key="InputField" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Height"          Value="40"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Margin"          Value="0,0,0,16"/>
         </Style>
 
-        <Style x:Key="GridTextBox" TargetType="TextBox">
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource AppBackground}"/>
-            <Setter Property="Padding" Value="6,4"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-            <Style.Triggers>
-                <Trigger Property="IsFocused" Value="True">
-                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                </Trigger>
-            </Style.Triggers>
+        <!-- Grid TextBox Style for uniform height and borders -->
+        <Style x:Key="GridTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="2,1"/>
+        </Style>
+
+        <!-- Grid ComboBox Style for matching height and borders in table cells -->
+        <Style x:Key="GridComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="8,2"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="2,1"/>
         </Style>
     </UserControl.Resources>
 
@@ -68,7 +63,7 @@
 
             <!-- ── LEFT FORM SIDEBAR (30%) ── -->
             <Border Grid.Column="0" Margin="0,0,16,0" Style="{StaticResource PremiumCard}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="0,4,0,4">
                         <TextBlock Text="INVOICE HEADER" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,16"/>
 
@@ -104,6 +99,7 @@
                         <TextBlock Text="Notes (Optional)" Style="{StaticResource FieldLabel}"/>
                         <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" 
                                  Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                 VerticalContentAlignment="Top" Padding="12,8"
                                  Style="{StaticResource InputField}"/>
                     </StackPanel>
                 </ScrollViewer>
@@ -170,8 +166,7 @@
                                                       DisplayMemberPath="Name"
                                                       IsEditable="True"
                                                       IsTextSearchEnabled="True"
-                                                      VerticalAlignment="Center"
-                                                      Margin="4,2"/>
+                                                      Style="{StaticResource GridComboBox}"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -182,7 +177,7 @@
                                         <DataTemplate>
                                             <TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" 
                                                      Style="{StaticResource GridTextBox}" 
-                                                     HorizontalContentAlignment="Center" Margin="4,2"/>
+                                                     HorizontalContentAlignment="Center"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -193,7 +188,7 @@
                                         <DataTemplate>
                                             <TextBox Text="{Binding UnitPrice, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" 
                                                      Style="{StaticResource GridTextBox}" 
-                                                     HorizontalContentAlignment="Right" Margin="4,2"/>
+                                                     HorizontalContentAlignment="Right"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -204,7 +199,7 @@
                                         <DataTemplate>
                                             <TextBox Text="{Binding TaxPercentage, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" 
                                                      Style="{StaticResource GridTextBox}" 
-                                                     HorizontalContentAlignment="Center" Margin="4,2"/>
+                                                     HorizontalContentAlignment="Center"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -215,7 +210,7 @@
                                         <DataTemplate>
                                             <TextBox Text="{Binding Discount, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" 
                                                      Style="{StaticResource GridTextBox}" 
-                                                     HorizontalContentAlignment="Right" Margin="4,2"/>
+                                                     HorizontalContentAlignment="Right"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -277,35 +272,33 @@
                     </Border>
 
                     <!-- Save & Cancel Action Buttons -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <Button Grid.Column="0" Content="❌  Cancel &amp; Reset"
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="❌  Cancel &amp; Reset"
                                 Command="{Binding CancelCommand}"
-                                Background="#E2E8F0" Foreground="#475569"
-                                Padding="24,12" FontSize="14" FontWeight="SemiBold" Cursor="Hand" BorderThickness="0">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="8"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
+                                Style="{StaticResource SecondaryBtn}"
+                                Padding="24,12" FontSize="14" Margin="0,0,12,0"/>
 
-                        <Button Grid.Column="2" Content="💾  Save Purchase"
-                                Command="{Binding SavePurchaseCommand}"
-                                Background="#0D9488" Foreground="White"
-                                Padding="32,12" FontSize="14" FontWeight="Bold" Cursor="Hand" BorderThickness="0">
+                        <Button Command="{Binding SavePurchaseCommand}"
+                                Foreground="White" BorderThickness="0"
+                                Padding="32,12" FontSize="14" FontWeight="Bold" Cursor="Hand">
                             <Button.Resources>
                                 <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="8"/>
+                                    <Setter Property="CornerRadius" Value="6"/>
                                 </Style>
                             </Button.Resources>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#0D9488"/>
+                                    <Setter Property="Content" Value="💾  Save Purchase"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#0F766E"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
                         </Button>
-                    </Grid>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Grid>

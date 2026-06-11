@@ -9,7 +9,6 @@ namespace HotelPOS.Views
 {
     public partial class CategoryView : UserControl
     {
-        private readonly ICategoryService _categoryService;
         private Category? _editingCategory;
 
         private static readonly SolidColorBrush SuccessBg = new(Color.FromRgb(0xD4, 0xED, 0xDA));
@@ -17,10 +16,10 @@ namespace HotelPOS.Views
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
         private static readonly SolidColorBrush ErrorFg = new(Color.FromRgb(0x72, 0x1C, 0x24));
 
-        public CategoryView(ICategoryService categoryService)
+        public CategoryView()
         {
             InitializeComponent();
-            _categoryService = categoryService;
+
             Loaded += async (s, e) => await LoadDataAsync();
         }
 

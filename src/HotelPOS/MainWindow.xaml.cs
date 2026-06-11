@@ -14,7 +14,6 @@ namespace HotelPOS
         private readonly IItemService _itemService;
         private readonly ICartService _cartService;
         private readonly IOrderService _orderService;
-        private readonly ISettingService _settingService;
         private List<Item> _allItems = new();
         private List<Item> _visibleItems = new();
         private List<MainCartRow> _cartRows = new();
@@ -22,15 +21,13 @@ namespace HotelPOS
         public MainWindow(
             IItemService itemService,
             ICartService cartService,
-            IOrderService orderService,
-            ISettingService settingService)
+            IOrderService orderService)
         {
             InitializeComponent();
 
             _itemService = itemService;
             _cartService = cartService;
             _orderService = orderService;
-            _settingService = settingService;
 
             TableSelector.SelectedIndex = 0;
 

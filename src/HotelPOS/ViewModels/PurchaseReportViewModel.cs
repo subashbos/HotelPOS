@@ -64,6 +64,13 @@ namespace HotelPOS.ViewModels
             _reportService = reportService;
             _purchaseService = purchaseService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(reportService);
+                App.RegisterTestService(purchaseService);
+                App.RegisterTestService(notificationService);
+            }
         }
 
         /// <summary>

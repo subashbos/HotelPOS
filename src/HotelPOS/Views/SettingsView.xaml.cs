@@ -13,13 +13,17 @@ namespace HotelPOS.Views
         private readonly UsersView _usersView;
         private SystemSetting? _current;
 
-        /// <summary>
-        /// Initializes the SettingsView control, embeds a UsersView into the Users tab, stores the notification service, and registers a Loaded handler that loads printers, loads settings, and initializes the embedded users view.
-        /// </summary>
-        public SettingsView(ISettingService settingService, IUserService userService, IRoleService roleService, INotificationService notificationService)
+        public SettingsView(IUserService userService, IRoleService roleService, INotificationService notificationService)
         {
             InitializeComponent();
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(userService);
+                App.RegisterTestService(roleService);
+                App.RegisterTestService(notificationService);
+            }
 
             // Embed UsersView into the Users tab
             _usersView = new UsersView(userService, roleService);

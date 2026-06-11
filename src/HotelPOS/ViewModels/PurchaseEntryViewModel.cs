@@ -56,6 +56,13 @@ namespace HotelPOS.ViewModels
             _itemService = itemService;
             _notificationService = notificationService;
 
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(purchaseService);
+                App.RegisterTestService(itemService);
+                App.RegisterTestService(notificationService);
+            }
+
             PurchaseRows.CollectionChanged += PurchaseRows_CollectionChanged;
 
             // Load suppliers and items in a non-blocking task
@@ -70,8 +77,8 @@ namespace HotelPOS.ViewModels
         {
             using (var scope = App.CreateDbScope())
             {
-                var purchaseService = scope.ServiceProvider.GetService<IPurchaseService>() ?? _purchaseService;
-                var itemService = scope.ServiceProvider.GetService<IItemService>() ?? _itemService;
+                var purchaseService = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
+                var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
                 try
                 {
                     Suppliers.Clear();
@@ -207,7 +214,7 @@ namespace HotelPOS.ViewModels
 
                 using (var scope = App.CreateDbScope())
                 {
-                    var purchaseService = scope.ServiceProvider.GetService<IPurchaseService>() ?? _purchaseService;
+                    var purchaseService = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
                     await purchaseService.SavePurchaseAsync(purchase);
                 }
                 _notificationService.ShowSuccess("Purchase entry saved successfully and stock quantities updated.");

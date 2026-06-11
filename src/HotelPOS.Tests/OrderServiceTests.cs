@@ -99,5 +99,49 @@ namespace HotelPOS.Tests
             _itemServiceMock.Verify(s => s.DeductStockAsync(1, -10), Times.Once);
             _repoMock.Verify(r => r.DeleteAsync(1), Times.Once);
         }
+
+        [Fact]
+        public async Task SaveOrderAsync_ShouldManageTransactionLifecycle()
+        {
+            // Arrange
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Test", Quantity = 2, Price = 100, TaxPercentage = 5, Total = 200 }
+            };
+            _repoMock.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(10);
+
+            // Act
+            await _service.SaveOrderAsync(items, 1);
+
+            // Assert
+            _repoMock.Verify(r => r.BeginTransactionAsync(), Times.Once);
+            _repoMock.Verify(r => r.CommitTransactionAsync(), Times.Once);
+            _repoMock.Verify(r => r.RollbackTransactionAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_WhenDeductStockFails_ShouldRollbackTransaction()
+        {
+            // Arrange
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Test", Quantity = 2, Price = 100, TaxPercentage = 5, Total = 200 }
+            };
+            _repoMock.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(10);
+            
+            // Force DeductStockAsync to fail
+            _itemServiceMock.Setup(s => s.DeductStockAsync(It.IsAny<int>(), It.IsAny<int>()))
+                             .ThrowsAsync(new Exception("Stock deduction error"));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<Exception>(() => _service.SaveOrderAsync(items, 1));
+            Assert.Equal("Stock deduction error", ex.Message);
+
+            _repoMock.Verify(r => r.BeginTransactionAsync(), Times.Once);
+            _repoMock.Verify(r => r.CommitTransactionAsync(), Times.Never);
+            _repoMock.Verify(r => r.RollbackTransactionAsync(), Times.Once);
+        }
     }
 }

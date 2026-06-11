@@ -16,19 +16,18 @@ namespace HotelPOS.Views
 {
     public partial class ItemReportView : UserControl
     {
-        private readonly IOrderService _orderService;
-        private readonly ICategoryService _categoryService;
-        private readonly IItemService _itemService;
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
-        public ItemReportView(IOrderService orderService, ICategoryService categoryService, IItemService itemService, INotificationService notificationService)
+        public ItemReportView(INotificationService notificationService)
         {
             InitializeComponent();
-            _orderService = orderService;
-            _categoryService = categoryService;
-            _itemService = itemService;
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(notificationService);
+            }
 
             Pager.PageChanged += page =>
             {

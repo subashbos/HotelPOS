@@ -21,12 +21,16 @@ namespace HotelPOS
         public static App CurrentApp => (App)System.Windows.Application.Current;
         public ServiceProvider ServiceProvider { get; private set; } = null!;
 
-        /// <summary>
-        /// Creates an IServiceScope for resolving scoped services such as a DbContext.
-        /// </summary>
-        /// <returns>
-        /// An IServiceScope that resolves services from the application's ServiceProvider; if no WPF Application instance exists, returns a dummy scope that yields null for service resolutions and whose Dispose method is a no-op.
-        /// </returns>
+        private static readonly System.Threading.ThreadLocal<System.Collections.Generic.Dictionary<Type, object>> _testServices = new(() => new());
+
+        public static void RegisterTestService<T>(T service) where T : class
+        {
+            if (service != null)
+            {
+                _testServices.Value![typeof(T)] = service;
+            }
+        }
+
         public static IServiceScope CreateDbScope()
         {
             if (System.Windows.Application.Current == null)
@@ -36,23 +40,25 @@ namespace HotelPOS
             return CurrentApp.ServiceProvider.CreateScope();
         }
 
-        private class DummyScope : IServiceScope
+        private sealed class DummyScope : IServiceScope
         {
             public IServiceProvider ServiceProvider => new DummyServiceProvider();
-            /// <summary>
-/// Performs no operation; provided to satisfy IDisposable for dummy scopes.
-/// </summary>
-public void Dispose() { }
+            public void Dispose() 
+            {
+                GC.SuppressFinalize(this);
+            }
         }
 
-        private class DummyServiceProvider : IServiceProvider
+        private sealed class DummyServiceProvider : IServiceProvider
         {
-            /// <summary>
-/// Resolves a service of the specified type from this provider; this implementation never returns a service.
-/// </summary>
-/// <param name="serviceType">The type of service to resolve.</param>
-/// <returns>Always `null`.</returns>
-public object? GetService(Type serviceType) => null;
+            public object? GetService(Type serviceType)
+            {
+                if (_testServices.Value!.TryGetValue(serviceType, out var service))
+                {
+                    return service;
+                }
+                return null;
+            }
         }
 
         /// <summary>

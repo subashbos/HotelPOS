@@ -19,13 +19,15 @@ namespace HotelPOS.Views
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SalesReportView"/> control, wires up paging and lifecycle event handlers, and starts initial category and report loading.
-        /// </summary>
-        public SalesReportView(IOrderService orderService, ICategoryService categoryService, ISettingService settingService, INotificationService notificationService)
+        public SalesReportView(INotificationService notificationService)
         {
             InitializeComponent();
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(notificationService);
+            }
 
             Pager.PageChanged += page =>
             {

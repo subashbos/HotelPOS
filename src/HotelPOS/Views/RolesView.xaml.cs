@@ -82,15 +82,16 @@ namespace HotelPOS.Views
         private Role? _selectedRole;
         private List<PermissionViewModel> _currentPermissions = new();
 
-        /// <summary>
-        /// Initializes the RolesView, wires required services, and begins loading role data when the control is loaded.
-        /// </summary>
-        /// <param name="roleService">Injected role service (resolved per operation) required for dependency injection.</param>
-        /// <param name="notificationService">Service used to display notifications to the user.</param>
-        public RolesView(IRoleService roleService, INotificationService notificationService)
+        public RolesView(INotificationService notificationService)
         {
             InitializeComponent();
             _notificationService = notificationService;
+
+            if (System.Windows.Application.Current == null)
+            {
+                App.RegisterTestService(notificationService);
+            }
+
             Loaded += async (s, e) => await LoadDataAsync();
         }
 

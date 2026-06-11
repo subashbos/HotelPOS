@@ -20,8 +20,14 @@ namespace HotelPOS.Application.UseCases
 
         private sealed class FailedLoginState
         {
-            public int Attempts { get; set; }
-            public DateTimeOffset? LockedUntilUtc { get; set; }
+            public int Attempts { get; }
+            public DateTimeOffset? LockedUntilUtc { get; }
+
+            public FailedLoginState(int attempts, DateTimeOffset? lockedUntilUtc)
+            {
+                Attempts = attempts;
+                LockedUntilUtc = lockedUntilUtc;
+            }
         }
 
         public AuthService(IUserRepository userRepository)
@@ -104,25 +110,25 @@ namespace HotelPOS.Application.UseCases
         {
             FailedLogins.AddOrUpdate(
                 username,
-                _ => new FailedLoginState
-                {
-                    Attempts = 1
-                },
+                _ => new FailedLoginState(1, null),
                 (_, existing) =>
                 {
-                    if (existing.LockedUntilUtc is not null && existing.LockedUntilUtc <= DateTimeOffset.UtcNow)
+                    int attempts = existing.Attempts;
+                    DateTimeOffset? lockedUntilUtc = existing.LockedUntilUtc;
+
+                    if (lockedUntilUtc is not null && lockedUntilUtc <= DateTimeOffset.UtcNow)
                     {
-                        existing.Attempts = 0;
-                        existing.LockedUntilUtc = null;
+                        attempts = 0;
+                        lockedUntilUtc = null;
                     }
 
-                    existing.Attempts += 1;
-                    if (existing.Attempts >= MaxFailedAttempts)
+                    attempts += 1;
+                    if (attempts >= MaxFailedAttempts)
                     {
-                        existing.LockedUntilUtc = DateTimeOffset.UtcNow.Add(LockoutWindow);
+                        lockedUntilUtc = DateTimeOffset.UtcNow.Add(LockoutWindow);
                     }
 
-                    return existing;
+                    return new FailedLoginState(attempts, lockedUntilUtc);
                 });
         }
     }

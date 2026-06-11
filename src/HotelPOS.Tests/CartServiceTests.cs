@@ -405,4 +405,38 @@ public class CartServiceTests
         Assert.Empty(_cart.GetItems(Table2));
         Assert.Empty(_cart.GetHeldOrders());
     }
+
+    [Fact]
+    public void SetQuantity_ExtremelyLargeQuantity_SetsValueAndCorrectTotal()
+    {
+        _cart.AddItem(Table1, MakeItem(1, "Coffee", 50m));
+        _cart.SetQuantity(Table1, 1, 1000000); // 1 Million
+
+        var item = _cart.GetItems(Table1)[0];
+        Assert.Equal(1000000, item.Quantity);
+        Assert.Equal(50000000m, item.Total);
+    }
+
+    [Fact]
+    public void SetQuantity_ZeroOrNegative_RemovesItem()
+    {
+        _cart.AddItem(Table1, MakeItem(1, "Coffee", 50m));
+        _cart.SetQuantity(Table1, 1, 0);
+        Assert.Empty(_cart.GetItems(Table1));
+
+        _cart.AddItem(Table1, MakeItem(1, "Coffee", 50m));
+        _cart.SetQuantity(Table1, 1, -5);
+        Assert.Empty(_cart.GetItems(Table1));
+    }
+
+    [Fact]
+    public void AddItemWithQuantity_NegativeQuantity_RemovesOrDecreasesQuantity()
+    {
+        _cart.AddItem(Table1, MakeItem(1, "Coffee", 50m));
+        _cart.AddItem(Table1, 1, 5); // Add 5 more (total = 6)
+        Assert.Equal(6, _cart.GetItems(Table1)[0].Quantity);
+
+        _cart.AddItem(Table1, 1, -10); // Subtract 10 (total <= 0)
+        Assert.Empty(_cart.GetItems(Table1));
+    }
 }
