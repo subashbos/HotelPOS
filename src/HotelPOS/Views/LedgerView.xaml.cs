@@ -55,6 +55,12 @@ namespace HotelPOS.Views
             };
         }
 
+        /// <summary>
+        /// Loads orders, applies the current From/To date filters, builds the ledger rows, and updates the view state.
+        /// </summary>
+        /// <remarks>
+        /// Coalesces concurrent requests: if a load is already running this method sets a request flag and returns; the active load will re-run while requests remain. The end date filter is treated as inclusive by adding one day to ToDate. Any exception during load is reported via the notification service.
+        /// </remarks>
         private async Task LoadAsync()
         {
             if (!_isLoaded) return;

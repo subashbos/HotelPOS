@@ -18,6 +18,19 @@ namespace HotelPOS.Application.UseCases
             _itemService = itemService;
         }
 
+        /// <summary>
+        /// Creates and persists a new order with the specified items, computes totals and taxes, deducts stock, and returns the created order's identifier.
+        /// </summary>
+        /// <param name="items">List of items to include in the order; each item must have Price &gt;= 0 and Quantity &gt; 0.</param>
+        /// <param name="tableNumber">Table number for the order; required when <paramref name="orderType"/> is "DineIn". For "Takeaway" or "Online", the table number is normalized to 0.</param>
+        /// <param name="discount">Discount amount applied to the order; must be &gt;= 0 and not exceed the pre-tax subtotal.</param>
+        /// <param name="paymentMode">Payment mode; allowed values: "Cash", "Card", "UPI".</param>
+        /// <param name="customerName">Optional customer name.</param>
+        /// <param name="customerPhone">Optional customer phone number.</param>
+        /// <param name="customerGstin">Optional customer GSTIN.</param>
+        /// <param name="orderType">Order type; allowed values: "DineIn", "Takeaway", "Online".</param>
+        /// <returns>The database identifier of the newly created order.</returns>
+        /// <exception cref="ArgumentException">Thrown when input validation fails (empty items, invalid table number, negative discount, discount exceeding subtotal, invalid payment mode/order type, or invalid item price/quantity).</exception>
         public async Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn")
         {
             if (items == null || items.Count == 0)

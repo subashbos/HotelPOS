@@ -57,6 +57,12 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Loads suppliers from the data service into the view model's in-memory list and updates the filtered Suppliers collection.
+        /// </summary>
+        /// <remarks>
+        /// On success, replaces the in-memory supplier cache with the fetched results and reapplies the current search filter. On failure, displays an error notification containing the exception message.
+        /// </remarks>
         public async Task LoadSuppliersAsync()
         {
             using (var scope = App.CreateDbScope())
@@ -129,6 +135,11 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Deletes the specified supplier (or the currently selected supplier) after confirmation, displays a success or error notification, and refreshes the supplier list.
+        /// If no supplier is provided and none is selected, a warning is shown and no action is taken.
+        /// </summary>
+        /// <param name="supplier">The supplier to delete; if null the currently selected supplier is used.</param>
         [RelayCommand]
         private async Task DeleteSupplierAsync(Supplier? supplier)
         {

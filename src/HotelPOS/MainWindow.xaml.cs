@@ -56,6 +56,12 @@ namespace HotelPOS
             // Admins just close this window and return to their owner (Dashboard)
         }
 
+        /// <summary>
+        /// Loads menu items from a new DI scope, updates the in-memory items and visible list, and updates the UI status.
+        /// </summary>
+        /// <remarks>
+        /// On success this updates the backing _allItems collection, reapplies the item filter, and shows a status message indicating the number of items loaded or none found. On failure it catches the exception and shows an error status message.
+        /// </remarks>
         private async void LoadItems()
         {
             // async void is required for event-like startup calls — guard with try/catch
@@ -149,6 +155,12 @@ namespace HotelPOS
             StatusText.Text = message;
         }
 
+        /// <summary>
+        /// Finalizes checkout for the currently selected table by saving the order, clearing the cart, and showing a print-preview dialog.
+        /// </summary>
+        /// <remarks>
+        /// If the table has no items the method updates the status and returns without performing any action. The order is persisted using a per-operation dependency-injection scope; after saving the order the cart totals are used to build a print-order model, the cart is cleared, and a blocking print-preview window is shown. Any exception during checkout updates the status with an error message.
+        /// </remarks>
         private async Task CheckoutCurrentTableAsync()
         {
             var tableNumber = SelectedTableNumber;

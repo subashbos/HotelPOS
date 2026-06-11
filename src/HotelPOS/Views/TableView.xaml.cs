@@ -25,6 +25,13 @@ namespace HotelPOS.Views
             Loaded += async (s, e) => await LoadDataAsync();
         }
 
+        /// <summary>
+        /// Loads table data from the data service and populates the UI grid.
+        /// </summary>
+        /// <remarks>
+        /// Fetches all tables, assigns sequential SNo values starting at 1, and sets TableGrid.ItemsSource.
+        /// If an exception occurs, the exception message is displayed via ShowStatus.
+        /// </remarks>
         private async Task LoadDataAsync()
         {
             try
@@ -41,6 +48,12 @@ namespace HotelPOS.Views
             catch (Exception ex) { ShowStatus(ex.Message, false); }
         }
 
+        /// <summary>
+        /// Handle the Add/Save button click: validate form inputs and create or update a table record.
+        /// </summary>
+        /// <remarks>
+        /// Validates the Name, Number, and Capacity fields; constructs a CreateTableDto; calls the table service to add a new table when not editing or to update the selected table when editing; shows a success or error status, resets the form, and reloads the table list.
+        /// </remarks>
         private async void Add_Click(object sender, RoutedEventArgs e)
         {
             var name = NameBox.Text.Trim();
@@ -106,6 +119,12 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Prompts for confirmation and, if confirmed, deletes the table identified by the Button's Tag and refreshes the list.
+        /// </summary>
+        /// <remarks>
+        /// Executes only when the event sender is a <see cref="Button"/> whose <c>Tag</c> is an <c>int</c> table id. On success shows a success status message; on error shows the exception message. Always reloads table data after attempting the deletion.
+        /// </remarks>
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button b && b.Tag is int id)

@@ -50,6 +50,10 @@ namespace HotelPOS.Views
             };
         }
 
+        /// <summary>
+        /// Loads categories from the category service, sorts them by display order then name, inserts an "All Categories" entry at the top, and populates the category combo box selecting the first item.
+        /// </summary>
+        /// <remarks>Exceptions thrown while loading categories are caught and ignored.</remarks>
         private async Task LoadCategoriesAsync()
         {
             try
@@ -77,6 +81,14 @@ namespace HotelPOS.Views
 
         private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadDataAsync();
 
+        /// <summary>
+        /// Loads sales report data using the current filter controls and updates the grid, pager, and summary totals in the UI.
+        /// </summary>
+        /// <remarks>
+        /// Prevents concurrent loads while running. Reads date range, search text, payment mode, selected category, and order type from the view controls,
+        /// retrieves matching orders from IOrderService within a scoped DI scope, maps them to RecentOrderRowDto entries, sets the Pager source,
+        /// and updates the total orders count and total revenue display. Any errors are reported via the notification service.
+        /// </remarks>
         public async Task LoadDataAsync()
         {
             if (_isLoading) return;
@@ -162,6 +174,12 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Opens a print preview window for the order represented by the clicked button's Tag.
+        /// </summary>
+        /// <remarks>
+        /// If the sender is not a Button or its Tag is not a RecentOrderRowDto, no action is taken. The method loads system settings before showing the preview and shows an error notification if the preview cannot be opened.
+        /// </remarks>
         private async void PrintOrder_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button b && b.Tag is RecentOrderRowDto row)

@@ -50,6 +50,12 @@ namespace HotelPOS.ViewModels
             await LoadHistoryAsync();
         }
 
+        /// <summary>
+        /// Updates the view-model's current cash session state by retrieving the active session from the cash service and, if one exists, computing the expected cash.
+        /// </summary>
+        /// <remarks>
+        /// Sets <see cref="CurrentSession"/>, <see cref="IsSessionOpen"/>, and when a session is open computes <see cref="ExpectedCash"/> as the session's OpeningBalance plus total sales.
+        /// </remarks>
         public async Task RefreshStatusAsync()
         {
             if (_cashService == null) return;
@@ -67,6 +73,10 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Loads past cash sessions from the data service into the SessionHistory collection and assigns sequential SNo values.
+        /// </summary>
+        /// <returns>A task that completes once the SessionHistory collection has been populated.</returns>
         public async Task LoadHistoryAsync()
         {
             List<CashSession> history;
@@ -83,6 +93,9 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Starts a new cash session using the current OpeningBalance, refreshes view-model state, and shows a success or error notification.
+        /// </summary>
         [RelayCommand]
         private async Task OpenSessionAsync()
         {
@@ -108,6 +121,12 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Closes the current cash session using the view-model's ActualCash and Notes, refreshes the session status and history, and shows a success or error notification.
+        /// </summary>
+        /// <remarks>
+        /// The close operation is submitted with the current user's username from AppSession.CurrentUser?.Username, or "System" if no user is available.
+        /// </remarks>
         [RelayCommand]
         private async Task CloseSessionAsync()
         {

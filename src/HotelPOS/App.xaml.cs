@@ -61,6 +61,14 @@ namespace HotelPOS
             }
         }
 
+        /// <summary>
+        /// Configures logging, global exception handlers, dependency injection, and the database, then opens the initial login window.
+        /// </summary>
+        /// <param name="e">Startup event arguments supplied by the WPF runtime.</param>
+        /// <remarks>
+        /// This method sets up Serilog, registers application services, viewmodels, and views into the DI container, initializes or migrates the database schema, and shows the login window in its own DI scope.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">Thrown when a database connection string is not found in configuration (expects 'ConnectionStrings:DefaultConnection' or the HOTELPOS_DEFAULT_CONNECTION environment variable).</exception>
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);

@@ -52,6 +52,14 @@ namespace HotelPOS
             _themeService.ToggleTheme();
         }
 
+        /// <summary>
+        /// Initializes the window UI for the current session: updates user header, refreshes role permissions from the database, applies navigation permissions, and selects the first permitted module to show.
+        /// </summary>
+        /// <param name="sender">Event source (window).</param>
+        /// <param name="e">Event arguments.</param>
+        /// <remarks>
+        /// If refreshing permissions from the database fails, the method silently falls back to the session's existing permission snapshot.
+        /// </remarks>
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             if (AppSession.CurrentUser != null)
