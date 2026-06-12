@@ -22,12 +22,15 @@ namespace HotelPOS.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            if (loginDto == null || string.IsNullOrWhiteSpace(loginDto.Username) || string.IsNullOrWhiteSpace(loginDto.Password))
+            if (loginDto == null)
             {
-                return BadRequest(new { Message = "Username and password are required." });
+                return BadRequest(new { Message = "Request body is required." });
             }
 
-            var user = await _authService.AuthenticateAsync(loginDto.Username, loginDto.Password);
+            var username = loginDto.Username ?? string.Empty;
+            var password = loginDto.Password ?? string.Empty;
+
+            var user = await _authService.AuthenticateAsync(username, password);
             if (user == null)
             {
                 return Unauthorized(new { Message = "Invalid username or password, or the account is locked/inactive." });
