@@ -171,25 +171,37 @@
                                     </StackPanel>
 
                                     <!-- Monthly Bar Chart -->
-                                    <ItemsControl x:Name="MonthlyChart" Grid.Row="2" Margin="10,0">
+                                    <ItemsControl x:Name="MonthlyChart" Grid.Row="2" Margin="10,0" ClipToBounds="True">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <Canvas Width="650" Height="200" Background="Transparent"/>
+                                                <Canvas Width="600" Height="200" Background="Transparent"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="ContentPresenter">
+                                                <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                                                <Setter Property="Canvas.Bottom" Value="0"/>
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Canvas>
-                                                    <!-- Revenue bar (Light blue) -->
-                                                    <Rectangle Width="16" Height="{Binding BarHeightRevenue}" Fill="#4facfe" RadiusX="3" RadiusY="3"
-                                                               Canvas.Left="{Binding X}" Canvas.Bottom="30" ToolTip="{Binding ToolTipRevenue}"/>
-                                                    <!-- Gross Profit bar (Green) -->
-                                                    <Rectangle Width="16" Height="{Binding BarHeightProfit}" Fill="#2ecc71" RadiusX="3" RadiusY="3"
-                                                               Canvas.Left="{Binding X1}" Canvas.Bottom="30" ToolTip="{Binding ToolTipProfit}"/>
-                                                    <!-- Month Name -->
-                                                    <TextBlock Text="{Binding MonthName}" FontSize="10" Foreground="{DynamicResource TextMuted}"
-                                                               Canvas.Left="{Binding X}" Canvas.Bottom="10" Width="40" TextAlignment="Center"/>
-                                                </Canvas>
+                                                <Grid Height="200" Width="36" VerticalAlignment="Bottom">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="4"/>
+                                                        <RowDefinition Height="20"/>
+                                                    </Grid.RowDefinitions>
+                                                    <Grid Grid.Row="0" VerticalAlignment="Bottom">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="2"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Column="0" Height="{Binding BarHeightRevenue}" Width="14" Background="#4facfe" CornerRadius="4,4,0,0" ToolTip="{Binding ToolTipRevenue}" VerticalAlignment="Bottom"/>
+                                                        <Border Grid.Column="2" Height="{Binding BarHeightProfit}" Width="14" Background="#2ecc71" CornerRadius="4,4,0,0" ToolTip="{Binding ToolTipProfit}" VerticalAlignment="Bottom"/>
+                                                    </Grid>
+                                                    <TextBlock Grid.Row="2" Text="{Binding MonthName}" FontSize="9" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
