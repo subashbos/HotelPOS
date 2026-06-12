@@ -16,7 +16,7 @@ namespace HotelPOS.Tests
         public SecurityPolicyTests()
         {
             _authService = new AuthService(_userRepo.Object);
-            _userService = new UserService(_userRepo.Object);
+            _userService = new UserService(_userRepo.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

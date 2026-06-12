@@ -64,6 +64,7 @@ namespace HotelPOS.Application.UseCases
                     ItemCount = o.Items.Count,
                     PaymentMode = string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode,
                     OrderType = string.IsNullOrWhiteSpace(o.OrderType) ? "DineIn" : o.OrderType,
+                    Status = string.IsNullOrWhiteSpace(o.Status) ? "Paid" : o.Status,
                     CustomerName = o.CustomerName,
                     CustomerPhone = o.CustomerPhone,
                     CustomerGstin = o.CustomerGstin,

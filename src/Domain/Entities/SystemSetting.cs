@@ -35,5 +35,9 @@ namespace HotelPOS.Domain.Entities
 
         /// <summary>When true, follows Indian GST Composition Scheme (5% turnover tax, no collection from customer, Bill of Supply title).</summary>
         public bool IsCompositionScheme { get; set; } = false;
+
+        // ── Disaster Recovery ────────────────────────────────────────────────
+        public bool EnableAutomatedBackups { get; set; } = true;
+        public string? OffsiteBackupPath { get; set; }
     }
 }

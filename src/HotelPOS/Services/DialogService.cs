@@ -37,6 +37,13 @@ namespace HotelPOS.Services
                 }
 
                 var result = window.ShowDialog();
+                if (result == true)
+                {
+                    details.PaymentMode = viewModel.PaymentMode;
+                    details.CashAmount = viewModel.CashAmount;
+                    details.CardAmount = viewModel.CardAmount;
+                    details.UpiAmount = viewModel.UpiAmount;
+                }
                 tcs.SetResult(result ?? false);
             });
 

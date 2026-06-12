@@ -2,6 +2,6 @@
   <Project Path="../Application/Application.csproj" />
   <Project Path="../Domain/Domain.csproj" />
   <Project Path="../Infrastructure/Infrastructure.csproj" />
-  <Project Path="HotelPOS.csproj" />
+  <Project Path="HotelPOS.WPF.csproj" />
   <Project Path="../HotelPOS.Tests/HotelPOS.Tests.csproj" />
 </Solution>

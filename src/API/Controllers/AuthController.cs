@@ -22,15 +22,20 @@ namespace HotelPOS.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            if (loginDto == null || string.IsNullOrWhiteSpace(loginDto.Username) || string.IsNullOrWhiteSpace(loginDto.Password))
-            {
-                return BadRequest(new { Message = "Username and password are required." });
-            }
-
-            var user = await _authService.AuthenticateAsync(loginDto.Username, loginDto.Password);
+            var dto = loginDto ?? new LoginDto();
+            var user = await _authService.AuthenticateAsync(dto.Username ?? string.Empty, dto.Password ?? string.Empty);
             if (user == null)
             {
                 return Unauthorized(new { Message = "Invalid username or password, or the account is locked/inactive." });
+            }
+
+            if (user.MustChangePassword)
+            {
+                return Unauthorized(new
+                {
+                    Message = "Password change required before accessing the API.",
+                    MustChangePassword = true
+                });
             }
 
             var token = GenerateJwtToken(user);

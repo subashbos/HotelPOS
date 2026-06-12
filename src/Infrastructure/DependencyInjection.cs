@@ -6,6 +6,10 @@ namespace HotelPOS.Infrastructure;
 
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Registers infrastructure repository implementations in the dependency injection container.
+    /// </summary>
+    /// <returns>The same <see cref="IServiceCollection"/> instance with the infrastructure repositories registered.</returns>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
         services.AddScoped<IAuditRepository, AuditRepository>();

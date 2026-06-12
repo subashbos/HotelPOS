@@ -6,10 +6,12 @@ namespace HotelPOS.Application.UseCases
     public class SettingService : ISettingService
     {
         private readonly ISettingRepository _repository;
+        private readonly IAuthorizationService _authorization;
 
-        public SettingService(ISettingRepository repository)
+        public SettingService(ISettingRepository repository, IAuthorizationService authorization)
         {
             _repository = repository;
+            _authorization = authorization;
         }
 
         public async Task<SystemSetting> GetSettingsAsync()
@@ -25,6 +27,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveSettingsAsync(SystemSetting settings)
         {
+            _authorization.EnsurePermission("Settings");
+
             var existing = await _repository.GetByIdAsync(1);
             if (existing != null)
             {

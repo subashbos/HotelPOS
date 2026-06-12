@@ -23,6 +23,10 @@ namespace HotelPOS.Views
             Loaded += async (s, e) => await LoadDataAsync();
         }
 
+        /// <summary>
+        /// Load categories from the database, order them by DisplayOrder then Name, assign sequential SNo values, and populate the CategoryGrid.
+        /// </summary>
+        /// <returns>Completes when categories have been loaded into the grid; if an error occurs, an error message is shown in the status display.</returns>
         private async Task LoadDataAsync()
         {
             using (var scope = App.CreateDbScope())
@@ -39,6 +43,12 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Handle the submit button click to add a new category or update the currently edited category, then refresh the grid.
+        /// </summary>
+        /// <remarks>
+        /// Validates that the category name is not empty (shows a failure status if it is), parses the display order (defaults to 0 on parse failure), and performs the add or update via an ICategoryService resolved from a DI scope. On success shows a status message, clears the input fields, exits edit mode when updating, and reloads the category list. Any exceptions are displayed via ShowStatus.
+        /// </remarks>
         private async void Add_Click(object sender, RoutedEventArgs e)
         {
             var name = NameBox.Text.Trim();
@@ -85,6 +95,12 @@ namespace HotelPOS.Views
             }
         }
 
+        /// <summary>
+        /// Handle the delete button click: confirm deletion, remove the category, show status, and refresh the list.
+        /// </summary>
+        /// <remarks>
+        /// Shows a confirmation dialog; if confirmed, resolves an ICategoryService from a scoped provider, deletes the category identified by the button's Tag, displays a success or error status, and reloads the category grid.
+        /// </remarks>
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button b && b.Tag is int id)

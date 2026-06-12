@@ -22,6 +22,12 @@ namespace HotelPOS
             Loaded += (s, e) => UsernameBox.Focus();
         }
 
+        /// <summary>
+        /// Handles the Log In button click: validates credentials, authenticates the user, enforces a required password reset when applicable, and transitions to the dashboard session.
+        /// </summary>
+        /// <remarks>
+        /// Shows inline error messages for validation or authentication failures and uses short-lived DI scopes for authentication and password-reset operations. If authentication succeeds and no password change is required, sets AppSession.CurrentUser, creates a dashboard scope for the session, shows the dashboard as the application's main window, and disposes the session scope when the dashboard closes. Exceptions are caught and displayed in the UI.
+        /// </remarks>
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
             ErrorText.Visibility = Visibility.Collapsed;

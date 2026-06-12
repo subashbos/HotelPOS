@@ -128,7 +128,7 @@ namespace HotelPOS.Views
 
             try
             {
-                var preview = ReadExcel(dlg.FileName);
+                var preview = await ReadExcelAsync(dlg.FileName);
                 if (preview.Count == 0)
                 {
                     _notificationService.ShowInfo("No valid rows found. Ensure the file has 'Name' and 'Price' columns.");
@@ -193,7 +193,7 @@ namespace HotelPOS.Views
             catch (Exception ex) { ShowStatus($"Export error: {ex.Message}", false); }
         }
 
-        private List<CreateItemDto> ReadExcel(string path)
+        private async Task<List<CreateItemDto>> ReadExcelAsync(string path)
         {
             var result = new List<CreateItemDto>();
             using var wb = new XLWorkbook(path);
@@ -208,8 +208,7 @@ namespace HotelPOS.Views
             headers.TryGetValue("tax", out int taxCol);
             headers.TryGetValue("category", out int catCol);
 
-            // Fetch categories for mapping
-            var categories = _categoryService.GetCategoriesAsync().GetAwaiter().GetResult();
+            var categories = await _categoryService.GetCategoriesAsync();
 
             foreach (var row in ws.RowsUsed().Skip(1))
             {

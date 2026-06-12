@@ -23,6 +23,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<PurchaseItem> PurchaseItems { get; set; }
+        public DbSet<WastageEntry> WastageEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -50,7 +50,10 @@ namespace HotelPOS.Views
             catch { /* silently skip if no printers installed */ }
         }
 
-        // ── Load ─────────────────────────────────────────────────────────────
+        /// <summary>
+        /// Load the current system settings and apply them to the view's UI controls.
+        /// </summary>
+        /// <returns>A task that completes when settings have been loaded and UI controls updated.</returns>
 
         private async Task LoadSettingsAsync()
         {
@@ -81,6 +84,10 @@ namespace HotelPOS.Views
             ShowFooterCheck.IsChecked = _current.ShowThankYouFooter;
             RoundOffCheck.IsChecked = _current.EnableRoundOff;
             CompositionCheck.IsChecked = _current.IsCompositionScheme;
+
+            // Disaster Recovery
+            EnableAutomatedBackupsCheck.IsChecked = _current.EnableAutomatedBackups;
+            OffsiteBackupPathBox.Text = _current.OffsiteBackupPath;
         }
 
         // ── Save Hotel Profile ────────────────────────────────────────────────
@@ -114,6 +121,76 @@ namespace HotelPOS.Views
             await Save();
         }
 
+        // ── Save Backup Configuration ──────────────────────────────────────────
+
+        private async void SaveBackups_Click(object sender, RoutedEventArgs e)
+        {
+            if (_current == null) return;
+            _current.EnableAutomatedBackups = EnableAutomatedBackupsCheck.IsChecked == true;
+            _current.OffsiteBackupPath = string.IsNullOrWhiteSpace(OffsiteBackupPathBox.Text) ? null : OffsiteBackupPathBox.Text.Trim();
+            await Save();
+        }
+
+        private async void BackupNow_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                using (var scope = App.CreateDbScope())
+                {
+                    var backup = scope.ServiceProvider.GetRequiredService<IBackupService>();
+                    await backup.CreateBackupAsync();
+                }
+                _notificationService.ShowSuccess("Database backup completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowError($"Backup failed: {ex.Message}");
+            }
+        }
+
+        private async void RestoreDb_Click(object sender, RoutedEventArgs e)
+        {
+            var confirm = MessageBox.Show(
+                "⚠️ WARNING: Restoring the database will overwrite all current data and reset active tables.\n\nAre you sure you want to continue?",
+                "Confirm Database Restore",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Backup Files (*.db;*.bak)|*.db;*.bak|All Files (*.*)|*.*",
+                Title = "Select Backup File to Restore"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                try
+                {
+                    using (var scope = App.CreateDbScope())
+                    {
+                        var backup = scope.ServiceProvider.GetRequiredService<IBackupService>();
+                        await backup.RestoreBackupAsync(dlg.FileName);
+                    }
+                    MessageBox.Show(
+                        "Database restored successfully!\n\nThe application will now close to reload context. Please restart the application.",
+                        "Restore Success",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+
+                    System.Windows.Application.Current.Shutdown();
+                }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Restore failed: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Persists the currently loaded settings and displays a success or error notification to the user.
+        /// </summary>
         private async Task Save()
         {
             try

@@ -206,7 +206,7 @@ namespace HotelPOS.Tests
 
         public SettingServiceSaveTests()
         {
-            _service = new SettingService(_repoMock.Object);
+            _service = new SettingService(_repoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]
@@ -303,7 +303,7 @@ namespace HotelPOS.Tests
 
         public UserServiceSaveTests()
         {
-            _service = new UserService(_repoMock.Object);
+            _service = new UserService(_repoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

@@ -19,7 +19,7 @@ namespace HotelPOS.Tests
 
         public RoleServiceLoopholeTests()
         {
-            _service = new RoleService(_repo.Object);
+            _service = new RoleService(_repo.Object, TestAuthorization.AllowAll().Object);
         }
 
         // ── AddRoleAsync name validation ─────────────────────────────────────

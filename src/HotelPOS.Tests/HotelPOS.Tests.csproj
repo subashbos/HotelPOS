@@ -29,9 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\API\HotelPOS.Api.csproj" />
     <ProjectReference Include="..\Application\Application.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />
-    <ProjectReference Include="..\HotelPOS\HotelPOS.csproj" />
+    <ProjectReference Include="..\HotelPOS\HotelPOS.WPF.csproj" />
   </ItemGroup>
 
 </Project>

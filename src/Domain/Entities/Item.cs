@@ -28,6 +28,9 @@ namespace HotelPOS.Domain.Entities
         public int StockQuantity { get; set; }
         public bool TrackInventory { get; set; }
 
+        public decimal CostPrice { get; set; }
+        public int MinStockThreshold { get; set; } = 10;
+
         [MaxLength(100)]
         public string? Barcode { get; set; }
     }

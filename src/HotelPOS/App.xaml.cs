@@ -61,6 +61,14 @@ namespace HotelPOS
             }
         }
 
+        /// <summary>
+        /// Configures logging, global exception handlers, dependency injection, and the database, then opens the initial login window.
+        /// </summary>
+        /// <param name="e">Startup event arguments supplied by the WPF runtime.</param>
+        /// <remarks>
+        /// This method sets up Serilog, registers application services, viewmodels, and views into the DI container, initializes or migrates the database schema, and shows the login window in its own DI scope.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">Thrown when a database connection string is not found in configuration (expects 'ConnectionStrings:DefaultConnection' or the HOTELPOS_DEFAULT_CONNECTION environment variable).</exception>
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -128,6 +136,7 @@ namespace HotelPOS
 
             // ── Services ──────────────────────────────────────────────────────
             services.AddSingleton<IUserContext, UserContext>();
+            services.AddScoped<IAuthorizationService, AuthorizationService>();
 
             // ── Repositories (Scoped) ─────────────────────────────────────────
             services.AddInfrastructure();
@@ -137,6 +146,7 @@ namespace HotelPOS
             services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IBIReportService, BIReportService>();
             services.AddScoped<ISettingService, SettingService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuditService, AuditService>();
@@ -177,6 +187,7 @@ namespace HotelPOS
             services.AddTransient<SalesReportView>();
             services.AddTransient<ItemReportView>();
             services.AddTransient<PurchaseReportView>();
+            services.AddTransient<BIReportView>();
             services.AddTransient<TableView>();
             services.AddTransient<RolesView>();
 
@@ -192,11 +203,30 @@ namespace HotelPOS
 
             ServiceProvider = services.BuildServiceProvider();
 
-            // ── Database Initialization ──────────────────────────────────────
-            InitializeDatabase();
-
-            // Show the first login screen in its own scope
+            // Show login immediately; initialize database in the background
             ShowLoginWindow();
+            _ = InitializeDatabaseAsync();
+        }
+
+        private async Task InitializeDatabaseAsync()
+        {
+            try
+            {
+                await Task.Run(InitializeDatabase);
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Database initialization failed on background thread.");
+                await Dispatcher.InvokeAsync(() =>
+                {
+                    MessageBox.Show(
+                        $"Failed to synchronize the database:\n{ex.Message}\n\nPlease ensure SQL Server is running.",
+                        "Database Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    Shutdown();
+                });
+            }
         }
 
         private void InitializeDatabase()
@@ -239,6 +269,80 @@ namespace HotelPOS
                             BEGIN
                                 ALTER TABLE [Tables] ADD [Number] int NOT NULL DEFAULT 0;
                             END
+                        END");
+
+                    // Ensure Items table has CostPrice and MinStockThreshold columns
+                    context.Database.ExecuteSqlRaw(@"
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Items') AND name = 'CostPrice')
+                        BEGIN
+                            ALTER TABLE [Items] ADD [CostPrice] decimal(18,2) NOT NULL DEFAULT 0.00;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Items') AND name = 'MinStockThreshold')
+                        BEGIN
+                            ALTER TABLE [Items] ADD [MinStockThreshold] int NOT NULL DEFAULT 10;
+                        END");
+
+                    // Ensure WastageEntries table exists
+                    context.Database.ExecuteSqlRaw(@"
+                        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'WastageEntries')
+                        BEGIN
+                            CREATE TABLE [WastageEntries] (
+                                [Id] int NOT NULL IDENTITY(1,1),
+                                [ItemId] int NOT NULL,
+                                [Quantity] int NOT NULL,
+                                [Reason] nvarchar(100) NOT NULL,
+                                [WastedAt] datetime2 NOT NULL,
+                                [CostPerUnit] decimal(18,2) NOT NULL,
+                                [Notes] nvarchar(max) NULL,
+                                CONSTRAINT [PK_WastageEntries] PRIMARY KEY ([Id]),
+                                CONSTRAINT [FK_WastageEntries_Items_ItemId] FOREIGN KEY ([ItemId]) REFERENCES [Items] ([Id]) ON DELETE CASCADE
+                            );
+                        END");
+
+                    // Ensure Orders table has new billing columns
+                    context.Database.ExecuteSqlRaw(@"
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'Status')
+                        BEGIN
+                            ALTER TABLE [Orders] ADD [Status] nvarchar(50) NOT NULL DEFAULT 'Paid';
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'AmountPaid')
+                        BEGIN
+                            ALTER TABLE [Orders] ADD [AmountPaid] decimal(18,2) NOT NULL DEFAULT 0.00;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'CashPaid')
+                        BEGIN
+                            ALTER TABLE [Orders] ADD [CashPaid] decimal(18,2) NOT NULL DEFAULT 0.00;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'CardPaid')
+                        BEGIN
+                            ALTER TABLE [Orders] ADD [CardPaid] decimal(18,2) NOT NULL DEFAULT 0.00;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'UpiPaid')
+                        BEGIN
+                            ALTER TABLE [Orders] ADD [UpiPaid] decimal(18,2) NOT NULL DEFAULT 0.00;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'RefundedAmount')
+                        BEGIN
+                            ALTER TABLE [Orders] ADD [RefundedAmount] decimal(18,2) NOT NULL DEFAULT 0.00;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'RefundReason')
+                        BEGIN
+                            ALTER TABLE [Orders] ADD [RefundReason] nvarchar(max) NULL;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'VoidReason')
+                        BEGIN
+                            ALTER TABLE [Orders] ADD [VoidReason] nvarchar(max) NULL;
+                        END");
+
+                    // Ensure SystemSettings table has backup columns
+                    context.Database.ExecuteSqlRaw(@"
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('SystemSettings') AND name = 'EnableAutomatedBackups')
+                        BEGIN
+                            ALTER TABLE [SystemSettings] ADD [EnableAutomatedBackups] bit NOT NULL DEFAULT 1;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('SystemSettings') AND name = 'OffsiteBackupPath')
+                        BEGIN
+                            ALTER TABLE [SystemSettings] ADD [OffsiteBackupPath] nvarchar(max) NULL;
                         END");
 
                     // 2. If 'Orders' table exists, baseline the history to prevent 'Already Exists' errors

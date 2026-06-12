@@ -270,6 +270,12 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Reloads the ViewModel's Tables collection from the table service and updates each TableStatus's occupancy and current flags.
+        /// </summary>
+        /// <remarks>
+        /// If the table service returns no tables, populates a default set of 20 tables. Any error during refresh is reported via the notification service.
+        /// </remarks>
         private async void RefreshTables()
         {
             using (var scope = App.CreateDbScope())
@@ -317,6 +323,12 @@ namespace HotelPOS.ViewModels
 
         private bool _isInitializing;
 
+        /// <summary>
+        /// Loads items, categories, and settings into the view model, initializes filtered item list and cart state, and verifies that a cash shift is open.
+        /// </summary>
+        /// <remarks>
+        /// Populates the internal item cache and the Categories collection (including an "All" category), sets composition-scheme state, applies the active filter, and updates cart totals and UI state. If no cash session is open a user-facing warning is shown; failures during initialization are reported via the notification service.
+        /// </remarks>
         public async Task InitializeAsync()
         {
             if (_isInitializing) return;
@@ -755,6 +767,10 @@ namespace HotelPOS.ViewModels
             else OrderType = "DineIn";
         }
 
+        /// <summary>
+        /// Persists the current cart as an order (updates an existing order when editing or creates a new order), triggers printing if applicable, and clears checkout state on success.
+        /// </summary>
+        /// <returns>A task that completes when the save (or update), any printing, and subsequent cart/state cleanup have finished.</returns>
         [RelayCommand]
         private async Task SaveOrderAsync()
         {
@@ -784,6 +800,11 @@ namespace HotelPOS.ViewModels
                 }
             }
 
+            decimal finalCash = 0;
+            decimal finalCard = 0;
+            decimal finalUpi = 0;
+            string finalPaymentMode = PaymentMode;
+
             // Show Confirm Checkout Dialog if service is available
             if (_dialogService != null)
             {
@@ -801,6 +822,14 @@ namespace HotelPOS.ViewModels
                 {
                     CheckoutCancelled?.Invoke();
                     return;
+                }
+
+                finalPaymentMode = details.PaymentMode;
+                if (finalPaymentMode == "Split")
+                {
+                    finalCash = details.CashAmount;
+                    finalCard = details.CardAmount;
+                    finalUpi = details.UpiAmount;
                 }
             }
 
@@ -825,17 +854,54 @@ namespace HotelPOS.ViewModels
                         _editingOrder.Items = rawItems;
                         _editingOrder.TableNumber = TableNumber;
                         _editingOrder.DiscountAmount = DiscountAmount;
-                        _editingOrder.PaymentMode = PaymentMode;
+                        _editingOrder.PaymentMode = finalPaymentMode;
                         _editingOrder.OrderType = OrderType;
                         _editingOrder.CustomerName = CustomerName;
                         _editingOrder.CustomerPhone = CustomerPhone;
                         _editingOrder.CustomerGstin = CustomerGstin;
 
+                        if (finalPaymentMode == "Split")
+                        {
+                            _editingOrder.CashPaid = finalCash;
+                            _editingOrder.CardPaid = finalCard;
+                            _editingOrder.UpiPaid = finalUpi;
+                            _editingOrder.AmountPaid = finalCash + finalCard + finalUpi;
+                            _editingOrder.Status = _editingOrder.AmountPaid >= _editingOrder.TotalAmount ? "Paid" : "Partial";
+                        }
+                        else
+                        {
+                            _editingOrder.AmountPaid = _editingOrder.TotalAmount;
+                            _editingOrder.CashPaid = finalPaymentMode == "Cash" ? _editingOrder.TotalAmount : 0;
+                            _editingOrder.CardPaid = finalPaymentMode == "Card" ? _editingOrder.TotalAmount : 0;
+                            _editingOrder.UpiPaid = finalPaymentMode == "UPI" ? _editingOrder.TotalAmount : 0;
+                            _editingOrder.Status = "Paid";
+                        }
+
                         await orderService.UpdateOrderAsync(_editingOrder);
                     }
                     else
                     {
-                        int orderId = await orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, PaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType);
+                        int orderId;
+                        if (finalPaymentMode == "Split")
+                        {
+                            // Save order first (initially cash mode to bypass validate, then updates details)
+                            orderId = await orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, "Cash", CustomerName, CustomerPhone, CustomerGstin, OrderType);
+                            var createdOrder = await orderService.GetOrderAsync(orderId);
+                            if (createdOrder != null)
+                            {
+                                createdOrder.PaymentMode = "Split";
+                                createdOrder.CashPaid = finalCash;
+                                createdOrder.CardPaid = finalCard;
+                                createdOrder.UpiPaid = finalUpi;
+                                createdOrder.AmountPaid = finalCash + finalCard + finalUpi;
+                                createdOrder.Status = createdOrder.AmountPaid >= createdOrder.TotalAmount ? "Paid" : "Partial";
+                                await orderService.UpdateOrderAsync(createdOrder);
+                            }
+                        }
+                        else
+                        {
+                            orderId = await orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, finalPaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType);
+                        }
 
                         // Trigger Print
                         await PrintOrderAsync(orderId);
@@ -870,6 +936,12 @@ namespace HotelPOS.ViewModels
             }
         }
 
+        /// <summary>
+        /// Generates a receipt for the specified order and either shows a print preview or sends it to the printer.
+        /// </summary>
+        /// <param name="orderId">The identifier of the order to print if <paramref name="preLoadedOrder"/> is not provided.</param>
+        /// <param name="preLoadedOrder">An optional preloaded <see cref="Order"/> to use instead of loading the order by <paramref name="orderId"/>.</param>
+        /// <param name="skipPreview">When true, bypasses the print preview even if previewing is enabled in settings and prints directly.</param>
         private async Task PrintOrderAsync(int orderId, Order? preLoadedOrder = null, bool skipPreview = false)
         {
             try

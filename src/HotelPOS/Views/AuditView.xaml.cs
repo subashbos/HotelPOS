@@ -30,6 +30,10 @@ namespace HotelPOS.Views
             await RefreshLogsAsync();
         }
 
+        /// <summary>
+        /// Refreshes the audit log list for the selected date range and binds the sorted entries to the grid.
+        /// </summary>
+        /// <returns>A task that completes when audit entries have been loaded and the grid updated.</returns>
         private async Task RefreshLogsAsync()
         {
             using (var scope = App.CreateDbScope())

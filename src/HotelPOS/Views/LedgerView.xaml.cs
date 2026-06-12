@@ -55,6 +55,12 @@ namespace HotelPOS.Views
             };
         }
 
+        /// <summary>
+        /// Loads orders, applies the current From/To date filters, builds the ledger rows, and updates the view state.
+        /// </summary>
+        /// <remarks>
+        /// Coalesces concurrent requests: if a load is already running this method sets a request flag and returns; the active load will re-run while requests remain. The end date filter is treated as inclusive by adding one day to ToDate. Any exception during load is reported via the notification service.
+        /// </remarks>
         private async Task LoadAsync()
         {
             if (!_isLoaded) return;
@@ -71,17 +77,15 @@ namespace HotelPOS.Views
                     DateTime? from = FromDate.SelectedDate;
                     DateTime? to = ToDate.SelectedDate?.AddDays(1);
 
-                    List<Order> allOrders;
+                    List<Order> orders;
                     using (var scope = App.CreateDbScope())
                     {
                         var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                        allOrders = await orderService.GetAllOrdersWithItemsAsync();
+                        var (items, _) = await orderService.GetPagedOrdersAsync(1, 0, from, to);
+                        orders = items;
                     }
 
-                    var orders = allOrders.AsEnumerable();
-                    if (from.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() >= from.Value);
-                    if (to.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() <= to.Value);
-                    BuildLedger(orders.ToList());
+                    BuildLedger(orders);
                 }
             }
             catch (Exception ex)

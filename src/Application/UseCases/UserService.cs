@@ -7,6 +7,7 @@ namespace HotelPOS.Application.UseCases
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IAuthorizationService _authorization;
         private const int MinimumPasswordLength = 10;
 
         // PBKDF2 — same parameters as AuthService for compatibility
@@ -14,15 +15,22 @@ namespace HotelPOS.Application.UseCases
         private const int KeySize = 32;   // 256-bit
         private const int SaltSize = 16;  // 128-bit
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IAuthorizationService authorization)
         {
             _userRepository = userRepository;
+            _authorization = authorization;
         }
 
-        public Task<List<User>> GetAllUsersAsync() => _userRepository.GetAllAsync();
+        public Task<List<User>> GetAllUsersAsync()
+        {
+            _authorization.EnsurePermission("Settings");
+            return _userRepository.GetAllAsync();
+        }
 
         public async Task<(bool Success, string Error)> AddUserAsync(string username, string password, string role, int roleId)
         {
+            _authorization.EnsurePermission("Settings");
+
             if (string.IsNullOrWhiteSpace(username))
                 return (false, "Username cannot be empty.");
             if (string.IsNullOrEmpty(password) || password.Length < MinimumPasswordLength)
@@ -49,6 +57,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task ToggleActiveAsync(int userId, bool isActive)
         {
+            _authorization.EnsurePermission("Settings");
+
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
                 throw new KeyNotFoundException($"User #{userId} not found.");
@@ -58,6 +68,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteUserAsync(int userId, int currentUserId)
         {
+            _authorization.EnsurePermission("Settings");
+
             if (userId == currentUserId)
                 throw new InvalidOperationException("You cannot delete your own account.");
 
@@ -70,6 +82,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<(bool Success, string Error)> ResetPasswordAsync(int userId, string newPassword)
         {
+            _authorization.EnsureSelfOrPermission(userId, "Settings");
+
             if (string.IsNullOrEmpty(newPassword) || newPassword.Length < MinimumPasswordLength)
                 return (false, $"Password must be at least {MinimumPasswordLength} characters.");
 

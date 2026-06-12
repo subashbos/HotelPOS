@@ -12,5 +12,11 @@ namespace HotelPOS.Application.Interfaces
         Task<Order?> GetOrderAsync(int id);
         Task UpdateOrderAsync(Order order);
         Task DeleteOrderAsync(int orderId);
+
+        Task VoidOrderAsync(int orderId, string reason, string authorizedUser);
+        Task RefundOrderAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason);
+        Task ProcessPartialPaymentAsync(int orderId, decimal cash, decimal card, decimal upi);
     }
+
+    public record OrderItemRefundDto(int ItemId, int QuantityToRefund);
 }

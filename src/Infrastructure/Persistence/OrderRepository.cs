@@ -20,6 +20,12 @@ namespace HotelPOS.Infrastructure.Persistence
             return order.Id;
         }
 
+        /// <summary>
+        /// Generates the next invoice identifier for the specified fiscal year using the highest existing invoice number as a base.
+        /// </summary>
+        /// <param name="fiscalYear">Fiscal year segment to include in the invoice (for example, "2026-27").</param>
+        /// <returns>The next invoice number in the format "INV/{fiscalYear}/{sequence:D4}", where {sequence} is a zero-padded 4-digit sequence.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when running against SQL Server without an active transaction, or when acquiring the SQL Server application lock for invoice generation fails.</exception>
         public async Task<string> GetNextInvoiceNumberAsync(string fiscalYear)
         {
             if (_context.Database.IsSqlServer())

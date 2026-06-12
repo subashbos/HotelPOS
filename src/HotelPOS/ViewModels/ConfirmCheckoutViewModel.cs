@@ -21,9 +21,50 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private string _paymentMode = "Cash";
 
+        [ObservableProperty]
+        private decimal _cashAmount;
+
+        [ObservableProperty]
+        private decimal _cardAmount;
+
+        [ObservableProperty]
+        private decimal _upiAmount;
+
+        public decimal OutstandingBalance => Math.Max(0, FinalPayableAmount - (CashAmount + CardAmount + UpiAmount));
+
+        public bool IsSplitPayment => PaymentMode == "Split";
+
+        public bool CanConfirm => !IsSplitPayment || OutstandingBalance == 0;
+
+        partial void OnCashAmountChanged(decimal value) => OnPaymentAmountChanged();
+        partial void OnCardAmountChanged(decimal value) => OnPaymentAmountChanged();
+        partial void OnUpiAmountChanged(decimal value) => OnPaymentAmountChanged();
+        partial void OnPaymentModeChanged(string value)
+        {
+            if (value != "Split")
+            {
+                CashAmount = 0;
+                CardAmount = 0;
+                UpiAmount = 0;
+            }
+            else
+            {
+                CashAmount = FinalPayableAmount;
+            }
+            OnPropertyChanged(nameof(IsSplitPayment));
+            OnPropertyChanged(nameof(CanConfirm));
+        }
+
+        private void OnPaymentAmountChanged()
+        {
+            OnPropertyChanged(nameof(OutstandingBalance));
+            OnPropertyChanged(nameof(CanConfirm));
+            ConfirmCommand.NotifyCanExecuteChanged();
+        }
+
         public bool DialogResult { get; private set; }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanConfirm))]
         private void Confirm(object? windowObj)
         {
             DialogResult = true;
