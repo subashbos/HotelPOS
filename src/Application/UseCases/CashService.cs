@@ -19,6 +19,9 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<int> OpenSessionAsync(decimal openingBalance, string username)
         {
+            if (openingBalance < 0)
+                throw new ArgumentException("Opening balance cannot be negative.", nameof(openingBalance));
+
             var active = await GetCurrentSessionAsync();
             if (active != null)
                 throw new InvalidOperationException("A session is already open.");
@@ -37,6 +40,9 @@ namespace HotelPOS.Application.UseCases
 
         public async Task CloseSessionAsync(decimal actualCash, string? notes, string username)
         {
+            if (actualCash < 0)
+                throw new ArgumentException("Actual cash cannot be negative.", nameof(actualCash));
+
             var session = await GetCurrentSessionAsync();
             if (session == null)
                 throw new InvalidOperationException("No active session to close.");

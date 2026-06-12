@@ -36,6 +36,13 @@ namespace HotelPOS.Tests
         // ── OpenSessionAsync with negative balance ───────────────────────────
 
         [Fact]
+        public async Task OpenSessionAsync_NegativeOpeningBalance_ThrowsArgumentException()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => _service.OpenSessionAsync(-100m, "admin"));
+        }
+
+        [Fact]
         public async Task OpenSessionAsync_ZeroOpeningBalance_Succeeds()
         {
             _repo.Setup(r => r.GetCurrentSessionAsync()).ReturnsAsync((CashSession?)null);
@@ -99,6 +106,13 @@ namespace HotelPOS.Tests
         }
 
         // ── CloseSessionAsync fields ─────────────────────────────────────────
+
+        [Fact]
+        public async Task CloseSessionAsync_NegativeActualCash_ThrowsArgumentException()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => _service.CloseSessionAsync(-50m, "notes", "admin"));
+        }
 
         [Fact]
         public async Task CloseSessionAsync_SetsClosedByAndNotes()
