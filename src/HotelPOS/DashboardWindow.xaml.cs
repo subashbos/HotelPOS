@@ -26,6 +26,7 @@ namespace HotelPOS
         private SessionView? _cachedShift;
         private RolesView? _cachedRoles;
         private SalesReportView? _cachedSales;
+        private BIReportView? _cachedBIReport;
         private ItemReportView? _cachedItemReport;
         private PurchaseReportView? _cachedPurchaseReport;
         private PurchaseEntryView? _cachedPurchase;
@@ -164,8 +165,8 @@ namespace HotelPOS
             var user = AppSession.CurrentUser;
             if (user == null) return;
 
-            // Set visibility for all 13 individual buttons based on module permissions
             NavDash.Visibility = HasPermission("Dashboard") ? Visibility.Visible : Visibility.Collapsed;
+            NavBIReport.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
             NavBilling.Visibility = HasPermission("Billing") ? Visibility.Visible : Visibility.Collapsed;
 
             NavSales.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
@@ -199,6 +200,14 @@ namespace HotelPOS
             _cachedDash ??= _serviceProvider.GetRequiredService<DashboardView>();
             MainContentArea.Content = _cachedDash;
             SetActive(NavDash);
+        }
+
+        private void NavBIReport_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedBIReport ??= _serviceProvider.GetRequiredService<BIReportView>();
+            MainContentArea.Content = _cachedBIReport;
+            SetActive(NavBIReport);
+            _ = _cachedBIReport.LoadDataAsync();
         }
 
         private void NavBilling_Click(object sender, RoutedEventArgs e)
@@ -313,7 +322,7 @@ namespace HotelPOS
             {
                 NavBilling, NavShift,
                 NavMenu, NavCats, NavTables, NavPurchase, NavSuppliers,
-                NavDash, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
+                NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
                 NavSettings, NavRoles, NavAudit
             };
             foreach (var btn in allButtons)

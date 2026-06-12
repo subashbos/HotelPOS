@@ -235,6 +235,10 @@
                                 <Path Data="M9 3H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm0 10H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1zm10-10h-5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm0 10h-5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1z"
                                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
                             </Button>
+                            <Button x:Name="NavBIReport" Style="{StaticResource NavBtn}" Click="NavBIReport_Click" Tag="BI Analytics" ToolTip="BI Analytics">
+                                <Path Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
+                            </Button>
                             <Button x:Name="NavSales" Style="{StaticResource NavBtn}" Click="NavSales_Click" Tag="Sales Report" ToolTip="Sales Report">
                                 <Path Data="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"
                                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>

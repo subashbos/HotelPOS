@@ -145,6 +145,7 @@ namespace HotelPOS
             services.AddScoped<IItemService, ItemService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IBIReportService, BIReportService>();
             services.AddScoped<ISettingService, SettingService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuditService, AuditService>();
@@ -185,6 +186,7 @@ namespace HotelPOS
             services.AddTransient<SalesReportView>();
             services.AddTransient<ItemReportView>();
             services.AddTransient<PurchaseReportView>();
+            services.AddTransient<BIReportView>();
             services.AddTransient<TableView>();
             services.AddTransient<RolesView>();
 
@@ -247,6 +249,34 @@ namespace HotelPOS
                             BEGIN
                                 ALTER TABLE [Tables] ADD [Number] int NOT NULL DEFAULT 0;
                             END
+                        END");
+
+                    // Ensure Items table has CostPrice and MinStockThreshold columns
+                    context.Database.ExecuteSqlRaw(@"
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Items') AND name = 'CostPrice')
+                        BEGIN
+                            ALTER TABLE [Items] ADD [CostPrice] decimal(18,2) NOT NULL DEFAULT 0.00;
+                        END
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Items') AND name = 'MinStockThreshold')
+                        BEGIN
+                            ALTER TABLE [Items] ADD [MinStockThreshold] int NOT NULL DEFAULT 10;
+                        END");
+
+                    // Ensure WastageEntries table exists
+                    context.Database.ExecuteSqlRaw(@"
+                        IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'WastageEntries')
+                        BEGIN
+                            CREATE TABLE [WastageEntries] (
+                                [Id] int NOT NULL IDENTITY(1,1),
+                                [ItemId] int NOT NULL,
+                                [Quantity] int NOT NULL,
+                                [Reason] nvarchar(100) NOT NULL,
+                                [WastedAt] datetime2 NOT NULL,
+                                [CostPerUnit] decimal(18,2) NOT NULL,
+                                [Notes] nvarchar(max) NULL,
+                                CONSTRAINT [PK_WastageEntries] PRIMARY KEY ([Id]),
+                                CONSTRAINT [FK_WastageEntries_Items_ItemId] FOREIGN KEY ([ItemId]) REFERENCES [Items] ([Id]) ON DELETE CASCADE
+                            );
                         END");
 
                     // 2. If 'Orders' table exists, baseline the history to prevent 'Already Exists' errors
