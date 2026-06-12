@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.WPF", "src\HotelPO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Tests", "src\HotelPOS.Tests\HotelPOS.Tests.csproj", "{8F73B0A0-6436-41BA-B22C-0AF212B2E07D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Api", "src\API\API.csproj", "{51B7500E-6DFF-48F0-8EDD-8C94749126A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Api", "src\API\HotelPOS.Api.csproj", "{51B7500E-6DFF-48F0-8EDD-8C94749126A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
