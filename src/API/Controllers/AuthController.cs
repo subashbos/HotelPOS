@@ -33,6 +33,15 @@ namespace HotelPOS.Api.Controllers
                 return Unauthorized(new { Message = "Invalid username or password, or the account is locked/inactive." });
             }
 
+            if (user.MustChangePassword)
+            {
+                return Unauthorized(new
+                {
+                    Message = "Password change required before accessing the API.",
+                    MustChangePassword = true
+                });
+            }
+
             var token = GenerateJwtToken(user);
 
             return Ok(new

@@ -23,6 +23,7 @@ builder.Services.AddDbContext<HotelDbContext>(options =>
 // ── Dependency Injection ──────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, ApiUserContext>();
+builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddInfrastructure();
 
@@ -44,7 +45,10 @@ builder.Services.AddCors(options =>
 
 // ── JWT Authentication ────────────────────────────────────────────────────
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("JWT Key is not configured in appsettings.json.");
+    ?? Environment.GetEnvironmentVariable("HOTELPOS_JWT_KEY");
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException(
+        "JWT Key is not configured. Set Jwt:Key in appsettings or HOTELPOS_JWT_KEY environment variable.");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "HotelPOS";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "HotelPOSClient";
 

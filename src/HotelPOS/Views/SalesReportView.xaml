@@ -40,15 +40,15 @@
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/> <!-- Date -->
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="*"/>    <!-- Search -->
-                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*" MinWidth="180"/>    <!-- Search -->
+                        <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="Auto"/> <!-- Payment Mode -->
-                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="Auto"/> <!-- Category -->
-                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="Auto"/> <!-- Order Type -->
-                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="Auto"/> <!-- Actions -->
                     </Grid.ColumnDefinitions>
 
@@ -135,11 +135,11 @@
 
                 <DataGrid x:Name="SalesGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                        <DataGridTextColumn Header="DATE &amp; TIME" Binding="{Binding CreatedAt, StringFormat=dd MMM yyyy hh:mm tt}" Width="180" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="140" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="CUSTOMER" Binding="{Binding CustomerName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTemplateColumn Header="TYPE" Width="100" HeaderStyle="{StaticResource CenterHeader}">
+                        <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                        <DataGridTextColumn Header="DATE &amp; TIME" Binding="{Binding CreatedAt, StringFormat=dd MMM yyyy hh:mm tt}" Width="150" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="130" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="CUSTOMER" Binding="{Binding CustomerName}" Width="*" MinWidth="130" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTemplateColumn Header="TYPE" Width="85" HeaderStyle="{StaticResource CenterHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Background="#F0F4F8" CornerRadius="6" Padding="8,2" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -148,26 +148,107 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="PAYMENT" Width="100" HeaderStyle="{StaticResource CenterHeader}">
+                        <DataGridTemplateColumn Header="PAYMENT" Width="85" HeaderStyle="{StaticResource CenterHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding PaymentMode}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryBrush}"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="AMOUNT" Width="130" HeaderStyle="{StaticResource RightHeader}">
+                        <DataGridTemplateColumn Header="STATUS" Width="100" HeaderStyle="{StaticResource CenterHeader}">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="6" Padding="8,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#E2E8F0"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Paid">
+                                                        <Setter Property="Background" Value="#D4EDDA"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Partial">
+                                                        <Setter Property="Background" Value="#FFF3CD"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Void">
+                                                        <Setter Property="Background" Value="#F8D7DA"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Refunded">
+                                                        <Setter Property="Background" Value="#CCE5FF"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="PartiallyRefunded">
+                                                        <Setter Property="Background" Value="#E8F4F8"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="Bold">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#495057"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Paid">
+                                                            <Setter Property="Foreground" Value="#155724"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Partial">
+                                                            <Setter Property="Foreground" Value="#856404"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Void">
+                                                            <Setter Property="Foreground" Value="#721C24"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Refunded">
+                                                            <Setter Property="Foreground" Value="#004085"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="PartiallyRefunded">
+                                                            <Setter Property="Foreground" Value="#104F55"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="AMOUNT" Width="110" HeaderStyle="{StaticResource RightHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Total, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-                        <DataGridTemplateColumn Header="ACTIONS" Width="100" HeaderStyle="{StaticResource CenterHeader}">
+                        <DataGridTemplateColumn Header="ACTIONS" Width="150" HeaderStyle="{StaticResource CenterHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <Button Style="{StaticResource ActionBtn}" Content="✎" ToolTip="Edit Order" Click="EditOrder_Click" Tag="{Binding}"/>
                                         <Button Style="{StaticResource ActionBtn}" Content="🖨" ToolTip="Print Receipt" Margin="6,0,0,0" Foreground="{DynamicResource AccentBrush}" Click="PrintOrder_Click" Tag="{Binding}"/>
+                                        <Button Content="🚫" ToolTip="Void Order" Margin="6,0,0,0" Foreground="{DynamicResource DangerBrush}" Click="VoidOrder_Click" Tag="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ActionBtn}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Void">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="↩" ToolTip="Refund/Return Order" Margin="6,0,0,0" Foreground="{DynamicResource SuccessBrush}" Click="RefundOrder_Click" Tag="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ActionBtn}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Void">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Refunded">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

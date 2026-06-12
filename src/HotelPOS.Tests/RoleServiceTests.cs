@@ -18,7 +18,7 @@ namespace HotelPOS.Tests
         public RoleServiceTests()
         {
             _roleRepoMock = new Mock<IRoleRepository>();
-            _service = new RoleService(_roleRepoMock.Object);
+            _service = new RoleService(_roleRepoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

@@ -30,6 +30,15 @@ namespace HotelPOS.Domain.Entities
         public decimal TotalAmount { get; set; }
         public string PaymentMode { get; set; } = "Cash";
 
+        public string Status { get; set; } = "Paid";
+        public decimal AmountPaid { get; set; }
+        public decimal CashPaid { get; set; }
+        public decimal CardPaid { get; set; }
+        public decimal UpiPaid { get; set; }
+        public decimal RefundedAmount { get; set; }
+        public string? RefundReason { get; set; }
+        public string? VoidReason { get; set; }
+
         // Customer Details (B2B/GST)
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }

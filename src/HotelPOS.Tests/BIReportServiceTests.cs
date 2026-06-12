@@ -85,6 +85,25 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task LogWastage_FallsBackToPriceIfCostPriceIsZero()
+        {
+            using var context = GetContext("BI_WastageFallbackDb");
+            var service = new BIReportService(context);
+
+            var item = new Item { Id = 20, Name = "Porotta", StockQuantity = 100, TrackInventory = true, CostPrice = 0, Price = 100 };
+            context.Items.Add(item);
+            await context.SaveChangesAsync();
+
+            await service.LogWastageAsync(20, 5, "Spoilage", "Wasted");
+
+            var wastage = await context.WastageEntries.FirstOrDefaultAsync();
+            Assert.NotNull(wastage);
+            Assert.Equal(20, wastage.ItemId);
+            Assert.Equal(5, wastage.Quantity);
+            Assert.Equal(100, wastage.CostPerUnit); // Base price fallback
+        }
+
+        [Fact]
         public async Task LowStockAlerts_ProvidesAlertLevels()
         {
             using var context = GetContext("BI_LowStockDb");

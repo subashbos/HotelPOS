@@ -9,6 +9,9 @@ namespace HotelPOS.Application.Interfaces
         public decimal DiscountAmount { get; set; }
         public decimal FinalPayableAmount { get; set; }
         public string PaymentMode { get; set; } = "Cash";
+        public decimal CashAmount { get; set; }
+        public decimal CardAmount { get; set; }
+        public decimal UpiAmount { get; set; }
     }
 
     public interface IDialogService

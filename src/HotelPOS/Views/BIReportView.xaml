@@ -340,39 +340,41 @@
 
                     <!-- Left Column: Log Wastage Form -->
                     <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24">
-                        <StackPanel>
-                            <TextBlock Text="Log Inventory Wastage" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
-                            <TextBlock Text="Record damaged, expired, or overproduced stocks to update inventory" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,20"/>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <TextBlock Text="Log Inventory Wastage" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Record damaged, expired, or overproduced stocks to update inventory" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,20"/>
 
-                            <!-- Item Select -->
-                            <TextBlock Text="Select Item *" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                            <ComboBox x:Name="ComboWasteItem" Height="40" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,0,16"/>
+                                <!-- Item Select -->
+                                <TextBlock Text="Select Item *" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                <ComboBox x:Name="ComboWasteItem" Height="40" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,0,16"/>
 
-                            <!-- Quantity -->
-                            <TextBlock Text="Quantity *" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                            <TextBox x:Name="TxtWasteQty" Height="40" VerticalContentAlignment="Center" Margin="0,0,0,16" Tag="Enter wasted units qty..."/>
+                                <!-- Quantity -->
+                                <TextBlock Text="Quantity *" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                <TextBox x:Name="TxtWasteQty" Height="40" VerticalContentAlignment="Center" Margin="0,0,0,16" Tag="Enter wasted units qty..."/>
 
-                            <!-- Reason -->
-                            <TextBlock Text="Reason for Wastage *" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                            <ComboBox x:Name="ComboWasteReason" Height="40" Margin="0,0,0,16">
-                                <ComboBoxItem Content="Spoilage" IsSelected="True"/>
-                                <ComboBoxItem Content="Overproduction"/>
-                                <ComboBoxItem Content="Damage"/>
-                                <ComboBoxItem Content="Manual Adjustment"/>
-                            </ComboBox>
+                                <!-- Reason -->
+                                <TextBlock Text="Reason for Wastage *" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                <ComboBox x:Name="ComboWasteReason" Height="40" Margin="0,0,0,16">
+                                    <ComboBoxItem Content="Spoilage" IsSelected="True"/>
+                                    <ComboBoxItem Content="Overproduction"/>
+                                    <ComboBoxItem Content="Damage"/>
+                                    <ComboBoxItem Content="Manual Adjustment"/>
+                                </ComboBox>
 
-                            <!-- Notes -->
-                            <TextBlock Text="Notes / Description" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
-                            <TextBox x:Name="TxtWasteNotes" Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top" Padding="8" Margin="0,0,0,24" Tag="Provide brief reason detail..."/>
+                                <!-- Notes -->
+                                <TextBlock Text="Notes / Description" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                                <TextBox x:Name="TxtWasteNotes" Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top" Padding="8" Margin="0,0,0,24" Tag="Provide brief reason detail..."/>
 
-                            <Button Click="LogWastage_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" Height="42" Content="Log Wastage Entry" FontWeight="Bold">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="8"/>
-                                    </Style>
-                                </Button.Resources>
-                            </Button>
-                        </StackPanel>
+                                <Button Click="LogWastage_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" Height="42" Content="Log Wastage Entry" FontWeight="Bold">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="8"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Border>
 
                     <!-- Right Column: Recent Wastage DataGrid -->

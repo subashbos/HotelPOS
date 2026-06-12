@@ -127,6 +127,7 @@ namespace HotelPOS.Views
                     ItemCount = o.Items.Count,
                     PaymentMode = o.PaymentMode,
                     OrderType = o.OrderType,
+                    Status = o.Status,
                     CustomerName = o.CustomerName,
                     CustomerPhone = o.CustomerPhone,
                     CustomerGstin = o.CustomerGstin,
@@ -216,6 +217,71 @@ namespace HotelPOS.Views
                 catch (Exception ex)
                 {
                     _notificationService.ShowError($"Could not open print preview: {ex.Message}");
+                }
+            }
+        }
+
+        private async void VoidOrder_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button b && b.Tag is RecentOrderRowDto row)
+            {
+                var confirm = MessageBox.Show($"Are you sure you want to void order invoice {row.InvoiceNumber}?", "Confirm Void", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (confirm == MessageBoxResult.Yes)
+                {
+                    string reason = Microsoft.VisualBasic.Interaction.InputBox("Enter reason for voiding this order:", "Void Reason", "Customer Cancellation");
+                    if (string.IsNullOrWhiteSpace(reason))
+                    {
+                        _notificationService.ShowWarning("Void cancelled: Reason is required.");
+                        return;
+                    }
+
+                    try
+                    {
+                        using (var scope = App.CreateDbScope())
+                        {
+                            var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                            await orderService.VoidOrderAsync(row.OrderId, reason, "Manager");
+                        }
+                        _notificationService.ShowSuccess($"Order {row.InvoiceNumber} voided successfully.");
+                        await LoadDataAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _notificationService.ShowError($"Failed to void order: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        private async void RefundOrder_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button b && b.Tag is RecentOrderRowDto row)
+            {
+                var confirm = MessageBox.Show($"Are you sure you want to refund order invoice {row.InvoiceNumber}?", "Confirm Refund", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (confirm == MessageBoxResult.Yes)
+                {
+                    string reason = Microsoft.VisualBasic.Interaction.InputBox("Enter reason for refunding this order:", "Refund Reason", "Return/Refund");
+                    if (string.IsNullOrWhiteSpace(reason))
+                    {
+                        _notificationService.ShowWarning("Refund cancelled: Reason is required.");
+                        return;
+                    }
+
+                    try
+                    {
+                        using (var scope = App.CreateDbScope())
+                        {
+                            var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                            var fullRefundItems = row.Items.Select(i => new OrderItemRefundDto(i.ItemId, i.Quantity)).ToList();
+                            await orderService.RefundOrderAsync(row.OrderId, fullRefundItems, reason);
+                        }
+                        _notificationService.ShowSuccess($"Order {row.InvoiceNumber} refunded successfully.");
+                        await LoadDataAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        _notificationService.ShowError($"Failed to refund order: {ex.Message}");
+                    }
                 }
             }
         }

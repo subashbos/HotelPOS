@@ -77,17 +77,15 @@ namespace HotelPOS.Views
                     DateTime? from = FromDate.SelectedDate;
                     DateTime? to = ToDate.SelectedDate?.AddDays(1);
 
-                    List<Order> allOrders;
+                    List<Order> orders;
                     using (var scope = App.CreateDbScope())
                     {
                         var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                        allOrders = await orderService.GetAllOrdersWithItemsAsync();
+                        var (items, _) = await orderService.GetPagedOrdersAsync(1, 0, from, to);
+                        orders = items;
                     }
 
-                    var orders = allOrders.AsEnumerable();
-                    if (from.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() >= from.Value);
-                    if (to.HasValue) orders = orders.Where(o => o.CreatedAt.ToLocalTime() <= to.Value);
-                    BuildLedger(orders.ToList());
+                    BuildLedger(orders);
                 }
             }
             catch (Exception ex)

@@ -154,6 +154,34 @@
                 </Border>
             </TabItem>
 
+            <!-- ══ TAB 4: Disaster Recovery ══ -->
+            <TabItem Header="💾  Disaster Recovery">
+                <ScrollViewer>
+                    <Border Padding="32">
+                        <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+                            <TextBlock Text="Automated Backup Configuration" Style="{StaticResource SectionHeader}"/>
+                            
+                            <CheckBox x:Name="EnableAutomatedBackupsCheck" Content="Enable automated database backups on app exit" FontSize="14" Margin="0,0,0,18" Foreground="{DynamicResource TextPrimary}"/>
+
+                            <TextBlock Text="OFF-SITE BACKUP PATH (Network Share or Secondary Drive)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="OffsiteBackupPathBox" Style="{StaticResource InputBox}" Margin="0,0,0,8" Tag="e.g. D:\Backups or \\NetworkShare\Backup"/>
+                            <TextBlock Text="Automated backups will also replicate to this folder if configured." FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,24"/>
+
+                            <Button Content="💾  Save Backup Configuration" Style="{StaticResource SaveBtn}" Click="SaveBackups_Click" Background="{DynamicResource PrimaryBrush}" Margin="0,0,0,32"/>
+
+                            <!-- Separator -->
+                            <Separator Margin="0,0,0,24" Background="{DynamicResource BorderBrush}"/>
+
+                            <TextBlock Text="Manual Actions" Style="{StaticResource SectionHeader}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
+                                <Button Content="🔄  Create Backup Now" Style="{StaticResource SaveBtn}" Click="BackupNow_Click" Background="{DynamicResource SuccessBrush}" Padding="20,12"/>
+                                <Button Content="↩  Restore Database" Style="{StaticResource SaveBtn}" Click="RestoreDb_Click" Background="{DynamicResource DangerBrush}" Padding="20,12" Margin="16,0,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+            </TabItem>
+
         </TabControl>
     </Grid>
 </UserControl>

@@ -53,6 +53,7 @@ namespace HotelPOS.Application.DTOs.Report
         public int ItemCount { get; set; }
         public string PaymentMode { get; set; } = "Cash";
         public string OrderType { get; set; } = "DineIn";
+        public string Status { get; set; } = "Paid";
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }
         public string? CustomerGstin { get; set; }

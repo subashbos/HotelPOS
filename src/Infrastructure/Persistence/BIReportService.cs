@@ -216,7 +216,7 @@ namespace HotelPOS.Infrastructure.Persistence
                     Quantity = quantity,
                     Reason = reason,
                     Notes = notes,
-                    CostPerUnit = item.CostPrice,
+                    CostPerUnit = item.CostPrice > 0 ? item.CostPrice : item.Price,
                     WastedAt = DateTime.UtcNow
                 };
 

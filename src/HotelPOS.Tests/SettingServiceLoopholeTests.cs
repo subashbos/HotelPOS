@@ -19,7 +19,7 @@ namespace HotelPOS.Tests
 
         public SettingServiceLoopholeTests()
         {
-            _service = new SettingService(_repo.Object);
+            _service = new SettingService(_repo.Object, TestAuthorization.AllowAll().Object);
         }
 
         // ── EnableRoundOff persisted ─────────────────────────────────────────

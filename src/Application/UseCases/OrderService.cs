@@ -104,6 +104,11 @@ namespace HotelPOS.Application.UseCases
                 order.CustomerName = customerName;
                 order.CustomerPhone = customerPhone;
                 order.CustomerGstin = customerGstin;
+                order.Status = "Paid";
+                order.AmountPaid = order.TotalAmount;
+                if (paymentMode == "Cash") order.CashPaid = order.TotalAmount;
+                else if (paymentMode == "Card") order.CardPaid = order.TotalAmount;
+                else if (paymentMode == "UPI") order.UpiPaid = order.TotalAmount;
 
                 var orderId = await _repo.AddAsync(order);
 
@@ -210,6 +215,158 @@ namespace HotelPOS.Application.UseCases
 
                 await _repo.DeleteAsync(orderId);
                 await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
+            }
+        }
+
+        public async Task VoidOrderAsync(int orderId, string reason, string authorizedUser)
+        {
+            var order = await _repo.GetByIdWithItemsAsync(orderId);
+            if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
+            if (order.Status == "Void") throw new InvalidOperationException("Order is already void.");
+
+            await _repo.BeginTransactionAsync();
+            try
+            {
+                // Revert stock
+                foreach (var item in order.Items)
+                {
+                    await _itemService.DeductStockAsync(item.ItemId, -item.Quantity);
+                }
+
+                order.Status = "Void";
+                order.VoidReason = reason;
+                order.Subtotal = 0;
+                order.GstAmount = 0;
+                order.CgstAmount = 0;
+                order.SgstAmount = 0;
+                order.IgstAmount = 0;
+                order.TotalAmount = 0;
+                order.AmountPaid = 0;
+                order.CashPaid = 0;
+                order.CardPaid = 0;
+                order.UpiPaid = 0;
+
+                await _repo.UpdateAsync(order);
+                await _repo.CommitTransactionAsync();
+                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
+            }
+            catch
+            {
+                await _repo.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        public async Task RefundOrderAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason)
+        {
+            if (itemsToRefund == null || itemsToRefund.Count == 0)
+                throw new ArgumentException("No items specified for refund.", nameof(itemsToRefund));
+
+            var order = await _repo.GetByIdWithItemsAsync(orderId);
+            if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
+            if (order.Status == "Void") throw new InvalidOperationException("Cannot refund a void order.");
+
+            await _repo.BeginTransactionAsync();
+            try
+            {
+                decimal refundTotal = 0;
+
+                foreach (var rItem in itemsToRefund)
+                {
+                    var orderItem = order.Items.FirstOrDefault(x => x.ItemId == rItem.ItemId);
+                    if (orderItem == null)
+                        throw new ArgumentException($"Item #{rItem.ItemId} not found in Order #{orderId}.");
+
+                    if (rItem.QuantityToRefund <= 0 || rItem.QuantityToRefund > orderItem.Quantity)
+                        throw new ArgumentException($"Invalid refund quantity ({rItem.QuantityToRefund}) for '{orderItem.ItemName}'.");
+
+                    // Restore inventory
+                    await _itemService.DeductStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
+
+                    // Compute refund value for this line
+                    refundTotal += orderItem.Price * rItem.QuantityToRefund;
+
+                    orderItem.Quantity -= rItem.QuantityToRefund;
+                    orderItem.Total = orderItem.Price * orderItem.Quantity;
+                }
+
+                // Remove items completely refunded
+                order.Items.RemoveAll(x => x.Quantity == 0);
+
+                // Recalculate totals
+                CalculateTotals(order, order.Items);
+                
+                decimal oldTotal = order.TotalAmount;
+                order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
+                order.RefundedAmount += refundTotal;
+                order.RefundReason = reason;
+
+                // Adjust payment split values proportionally (defaulting to CashPaid reductions first)
+                order.AmountPaid = Math.Max(0, order.AmountPaid - refundTotal);
+                if (order.CashPaid >= refundTotal) order.CashPaid -= refundTotal;
+                else
+                {
+                    decimal remainder = refundTotal - order.CashPaid;
+                    order.CashPaid = 0;
+                    if (order.UpiPaid >= remainder) order.UpiPaid -= remainder;
+                    else
+                    {
+                        order.UpiPaid = 0;
+                        order.CardPaid = Math.Max(0, order.CardPaid - remainder);
+                    }
+                }
+
+                if (order.Items.Count == 0)
+                {
+                    order.Status = "Refunded";
+                }
+                else
+                {
+                    order.Status = "PartiallyRefunded";
+                }
+
+                await _repo.UpdateAsync(order);
+                await _repo.CommitTransactionAsync();
+                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
+            }
+            catch
+            {
+                await _repo.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        public async Task ProcessPartialPaymentAsync(int orderId, decimal cash, decimal card, decimal upi)
+        {
+            var order = await _repo.GetByIdWithItemsAsync(orderId);
+            if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
+            if (order.Status == "Void") throw new InvalidOperationException("Cannot add payment to a void order.");
+
+            await _repo.BeginTransactionAsync();
+            try
+            {
+                order.CashPaid += cash;
+                order.CardPaid += card;
+                order.UpiPaid += upi;
+                order.AmountPaid = order.CashPaid + order.CardPaid + order.UpiPaid;
+
+                if (order.AmountPaid >= order.TotalAmount)
+                {
+                    order.Status = "Paid";
+                }
+                else
+                {
+                    order.Status = "Partial";
+                }
+
+                await _repo.UpdateAsync(order);
+                await _repo.CommitTransactionAsync();
+                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
+            }
+            catch
+            {
+                await _repo.RollbackTransactionAsync();
+                throw;
             }
         }
     }
