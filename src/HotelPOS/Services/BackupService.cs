@@ -101,12 +101,14 @@ namespace HotelPOS.Services
                 await masterConn.OpenAsync();
 
                 var dbName = conn.Database;
+                var quotedDb = new Microsoft.Data.SqlClient.SqlCommandBuilder().QuoteIdentifier(dbName);
                 var sql = $@"
-                    ALTER DATABASE [{dbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                    RESTORE DATABASE [{dbName}] FROM DISK = '{backupFilePath}' WITH REPLACE;
-                    ALTER DATABASE [{dbName}] SET MULTI_USER;";
+                    ALTER DATABASE {quotedDb} SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                    RESTORE DATABASE {quotedDb} FROM DISK = @backupPath WITH REPLACE;
+                    ALTER DATABASE {quotedDb} SET MULTI_USER;";
 
                 using var cmd = new Microsoft.Data.SqlClient.SqlCommand(sql, masterConn);
+                cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@backupPath", backupFilePath));
                 cmd.CommandTimeout = 120;
                 await cmd.ExecuteNonQueryAsync();
             }
