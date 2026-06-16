@@ -33,19 +33,18 @@ export const routes: Routes = [
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },
-  // auth views
+  // auth views at root
   {
-    path: "auth",
+    path: "",
     component: AuthComponent,
     children: [
+      { path: "", component: LoginComponent },
       { path: "login", component: LoginComponent },
       { path: "register", component: RegisterComponent },
-      { path: "", redirectTo: "login", pathMatch: "full" },
     ],
   },
   // no layout views
   { path: "profile", component: ProfileComponent },
   { path: "landing", component: LandingComponent },
-  { path: "", redirectTo: "auth/login", pathMatch: "full" },
-  { path: "**", redirectTo: "auth/login", pathMatch: "full" },
+  { path: "**", redirectTo: "", pathMatch: "full" },
 ];
