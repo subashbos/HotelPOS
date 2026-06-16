@@ -33,7 +33,7 @@ namespace HotelPOS
 
         public static IServiceScope CreateDbScope()
         {
-            if (System.Windows.Application.Current == null)
+            if (System.Windows.Application.Current == null || CurrentApp?.ServiceProvider == null)
             {
                 return new DummyScope();
             }

@@ -377,6 +377,7 @@ namespace HotelPOS.ViewModels
         [RelayCommand]
         private void ApplyFilter()
         {
+            if (_allItems == null) return;
             var filtered = _allItems.AsEnumerable();
             if (SelectedCategoryId > 0)
                 filtered = filtered.Where(i => i.CategoryId == SelectedCategoryId);
