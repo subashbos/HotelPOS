@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,13 @@ builder.Services.AddInfrastructure();
 builder.Services.AddScoped<HotelPOS.Application.Interfaces.IAuthService, HotelPOS.Application.UseCases.AuthService>();
 
 // ── MediatR Configuration ─────────────────────────────────────────────────
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(HotelPOS.Application.UseCases.ItemService).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(HotelPOS.Application.UseCases.ItemService).Assembly);
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(HotelPOS.Application.Common.Behaviors.ValidationBehavior<,>));
+});
+
+builder.Services.AddValidatorsFromAssembly(typeof(HotelPOS.Application.UseCases.Items.Commands.CreateItemCommandValidator).Assembly);
 
 // ── CORS Configuration ────────────────────────────────────────────────────
 builder.Services.AddCors(options =>

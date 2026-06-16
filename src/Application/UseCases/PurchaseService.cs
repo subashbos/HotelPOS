@@ -52,21 +52,32 @@ namespace HotelPOS.Application.UseCases
                     throw new ArgumentException($"Price for item '{item.ItemName}' cannot be negative.", nameof(purchase));
             }
 
-            // Save purchase header and items
-            await _purchaseRepository.AddAsync(purchase);
-
-            // Increment Stock for each item
-            foreach (var item in purchase.PurchaseItems)
+            await _purchaseRepository.BeginTransactionAsync();
+            try
             {
-                var catalogItem = await _itemRepository.GetByIdAsync(item.ItemId);
-                if (catalogItem != null)
+                // Save purchase header and items
+                await _purchaseRepository.AddAsync(purchase);
+
+                // Increment Stock for each item
+                foreach (var item in purchase.PurchaseItems)
                 {
-                    if (catalogItem.TrackInventory)
+                    var catalogItem = await _itemRepository.GetByIdAsync(item.ItemId);
+                    if (catalogItem != null)
                     {
-                        catalogItem.StockQuantity += item.Quantity;
-                        await _itemRepository.UpdateAsync(catalogItem);
+                        if (catalogItem.TrackInventory)
+                        {
+                            catalogItem.StockQuantity += item.Quantity;
+                            await _itemRepository.UpdateAsync(catalogItem);
+                        }
                     }
                 }
+
+                await _purchaseRepository.CommitTransactionAsync();
+            }
+            catch
+            {
+                await _purchaseRepository.RollbackTransactionAsync();
+                throw;
             }
         }
     }

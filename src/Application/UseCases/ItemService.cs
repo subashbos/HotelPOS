@@ -44,17 +44,24 @@ namespace HotelPOS.Application.UseCases
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ArgumentException("Item name cannot be empty or whitespace.", nameof(dto));
+            var validator = new HotelPOS.Application.UseCases.Items.Commands.CreateItemCommandValidator();
+            var command = new HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand(
+                dto.Name,
+                dto.Price,
+                dto.TaxPercentage,
+                dto.CategoryId,
+                dto.HsnCode,
+                dto.Barcode,
+                dto.StockQuantity,
+                dto.TrackInventory
+            );
 
-            if (dto.Name.Length > 200)
-                throw new ArgumentException("Item name must not exceed 200 characters.", nameof(dto));
-
-            if (dto.Price <= 0)
-                throw new ArgumentException("Item price must be greater than zero.", nameof(dto));
-
-            if (dto.TaxPercentage < 0)
-                throw new ArgumentException("Tax percentage cannot be negative.", nameof(dto));
+            var result = validator.Validate(command);
+            if (!result.IsValid)
+            {
+                var firstError = result.Errors.First();
+                throw new ArgumentException(firstError.ErrorMessage, nameof(dto));
+            }
         }
 
         public async Task<List<Item>> GetItemsAsync()

@@ -73,6 +73,33 @@ namespace HotelPOS.Infrastructure.Persistence
             return (purchases, totalCount);
         }
 
+        private Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction? _currentTransaction;
+
+        public async Task BeginTransactionAsync()
+        {
+            _currentTransaction = await _context.Database.BeginTransactionAsync();
+        }
+
+        public async Task CommitTransactionAsync()
+        {
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.CommitAsync();
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.RollbackAsync();
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+        }
+
         public async Task AddAsync(Purchase purchase)
         {
             _context.Purchases.Add(purchase);
