@@ -154,7 +154,7 @@ namespace HotelPOS
                     var valResult = validator.Validate(command);
                     if (!valResult.IsValid)
                     {
-                        var firstError = valResult.Errors.First();
+                        var firstError = valResult.Errors[0];
                         ShowStatus(firstError.ErrorMessage, isError: true);
                         if (firstError.PropertyName == nameof(CreateItemCommand.Name))
                         {

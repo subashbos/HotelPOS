@@ -119,10 +119,7 @@ namespace HotelPOS.Tests.Integration
                     }
                 }
 
-                if (errors.Count > 0)
-                {
-                    throw new Exception(string.Join(Environment.NewLine, errors));
-                }
+                Assert.Empty(errors);
             }
         }
 
@@ -218,10 +215,7 @@ namespace HotelPOS.Tests.Integration
                     }
                 }
 
-                if (errors.Count > 0)
-                {
-                    throw new Exception(string.Join(Environment.NewLine, errors));
-                }
+                Assert.Empty(errors);
             }
         }
     }

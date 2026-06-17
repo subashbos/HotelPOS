@@ -26,27 +26,18 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedOrdersResponse>> GetPagedOrders(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] DateTime? from = null,
-            [FromQuery] DateTime? to = null,
-            [FromQuery] int? tableNumber = null,
-            [FromQuery] string? search = null,
-            [FromQuery] string? paymentMode = null,
-            [FromQuery] string? orderType = null,
-            [FromQuery] int? categoryId = null)
+        public async Task<ActionResult<PagedOrdersResponse>> GetPagedOrders([FromQuery] GetOrdersQueryRequest request)
         {
             var query = new GetOrdersQuery(
-                pageNumber,
-                pageSize,
-                from,
-                to,
-                tableNumber,
-                search,
-                paymentMode,
-                orderType,
-                categoryId
+                request.PageNumber ?? 1,
+                request.PageSize ?? 10,
+                request.From,
+                request.To,
+                request.TableNumber,
+                request.Search,
+                request.PaymentMode,
+                request.OrderType,
+                request.CategoryId
             );
 
             var (items, totalCount) = await _mediator.Send(query);
@@ -133,5 +124,18 @@ namespace HotelPOS.Api.Controllers
     {
         [System.ComponentModel.DataAnnotations.Required]
         public string Reason { get; set; } = string.Empty;
+    }
+
+    public sealed class GetOrdersQueryRequest
+    {
+        public int? PageNumber { get; set; } = 1;
+        public int? PageSize { get; set; } = 10;
+        public DateTime? From { get; set; }
+        public DateTime? To { get; set; }
+        public int? TableNumber { get; set; }
+        public string? Search { get; set; }
+        public string? PaymentMode { get; set; }
+        public string? OrderType { get; set; }
+        public int? CategoryId { get; set; }
     }
 }
