@@ -14,7 +14,7 @@ namespace HotelPOS.Tests
         public async Task AddUserAsync_WhenUnauthorized_Throws()
         {
             var auth = TestAuthorization.DenyAll();
-            var service = new UserService(_repo.Object, auth.Object);
+            var service = new UserService(_repo.Object, auth.Object, isTest: true);
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 service.AddUserAsync("newuser", "ValidPass123!", "Cashier", 2));
@@ -29,7 +29,7 @@ namespace HotelPOS.Tests
             var user = new User { Id = 5, PasswordHash = "old", Salt = "old" };
             _repo.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(user);
 
-            var service = new UserService(_repo.Object, auth.Object);
+            var service = new UserService(_repo.Object, auth.Object, isTest: true);
             var (success, _) = await service.ResetPasswordAsync(5, "NewPassword1!");
 
             Assert.True(success);
@@ -42,7 +42,7 @@ namespace HotelPOS.Tests
             var auth = TestAuthorization.AllowAll();
             _repo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<User>());
 
-            var service = new UserService(_repo.Object, auth.Object);
+            var service = new UserService(_repo.Object, auth.Object, isTest: true);
             var users = await service.GetAllUsersAsync();
 
             Assert.Empty(users);

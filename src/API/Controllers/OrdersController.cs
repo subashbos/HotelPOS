@@ -16,11 +16,13 @@ namespace HotelPOS.Api.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IUserContext _userContext;
+        private readonly AutoMapper.IMapper _mapper;
 
-        public OrdersController(IMediator mediator, IUserContext userContext)
+        public OrdersController(IMediator mediator, IUserContext userContext, AutoMapper.IMapper mapper)
         {
             _mediator = mediator;
             _userContext = userContext;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -62,16 +64,7 @@ namespace HotelPOS.Api.Controllers
 
             try
             {
-                var command = new CreateOrderCommand(
-                    request.Items,
-                    request.TableNumber,
-                    request.Discount,
-                    request.PaymentMode,
-                    request.CustomerName,
-                    request.CustomerPhone,
-                    request.CustomerGstin,
-                    request.OrderType
-                );
+                var command = _mapper.Map<CreateOrderCommand>(request);
 
                 var orderId = await _mediator.Send(command);
                 return Ok(orderId);

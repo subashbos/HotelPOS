@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using FluentValidation;
+using HotelPOS.Application.UseCases.Items.Commands;
 
 namespace HotelPOS
 {
@@ -122,17 +124,10 @@ namespace HotelPOS
             try
             {
                 var name = ItemNameBox.Text?.Trim() ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(name)) { ShowStatus("Item name is required.", true); return; }
-
-                if (!decimal.TryParse(ItemPriceBox.Text?.Trim(),
+                decimal.TryParse(ItemPriceBox.Text?.Trim(),
                         System.Globalization.NumberStyles.Any,
                         System.Globalization.CultureInfo.InvariantCulture,
-                        out var price))
-                {
-                    ShowStatus("Enter a valid price — e.g. 120.50", isError: true);
-                    ItemPriceBox.Focus();
-                    return;
-                }
+                        out var price);
 
                 int.TryParse(StockQuantityBox.Text?.Trim(), out int stock);
 
@@ -142,19 +137,47 @@ namespace HotelPOS
 
                 var catId = (int?)ItemCategoryCombo.SelectedValue;
 
-                var dto = new CreateItemDto
-                {
-                    Name = name,
-                    Price = price,
-                    TaxPercentage = tax,
-                    CategoryId = catId,
-                    StockQuantity = stock,
-                    TrackInventory = TrackStockCheck.IsChecked ?? false,
-                    Barcode = BarcodeBox.Text?.Trim()
-                };
+                var command = new CreateItemCommand(
+                    name,
+                    price,
+                    tax,
+                    catId,
+                    _editingItem?.HsnCode,
+                    BarcodeBox.Text?.Trim(),
+                    stock,
+                    TrackStockCheck.IsChecked ?? false
+                );
 
                 using (var scope = App.CreateDbScope())
                 {
+                    var validator = scope.ServiceProvider.GetRequiredService<IValidator<CreateItemCommand>>();
+                    var valResult = validator.Validate(command);
+                    if (!valResult.IsValid)
+                    {
+                        var firstError = valResult.Errors.First();
+                        ShowStatus(firstError.ErrorMessage, isError: true);
+                        if (firstError.PropertyName == nameof(CreateItemCommand.Name))
+                        {
+                            ItemNameBox.Focus();
+                        }
+                        else if (firstError.PropertyName == nameof(CreateItemCommand.Price))
+                        {
+                            ItemPriceBox.Focus();
+                        }
+                        return;
+                    }
+
+                    var dto = new CreateItemDto
+                    {
+                        Name = name,
+                        Price = price,
+                        TaxPercentage = tax,
+                        CategoryId = catId,
+                        StockQuantity = stock,
+                        TrackInventory = TrackStockCheck.IsChecked ?? false,
+                        Barcode = BarcodeBox.Text?.Trim()
+                    };
+
                     var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
                     if (_editingItem == null)
                     {

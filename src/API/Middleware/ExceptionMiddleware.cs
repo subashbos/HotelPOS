@@ -23,6 +23,28 @@ namespace HotelPOS.Api.Middleware
             {
                 await _next(context);
             }
+            catch (FluentValidation.ValidationException valEx)
+            {
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+                var errors = valEx.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                var response = new ValidationProblemDetails(errors)
+                {
+                    Status = 400,
+                    Title = "One or more validation errors occurred.",
+                    Detail = "Please refer to the errors property for additional details."
+                };
+
+                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);

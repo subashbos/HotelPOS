@@ -1,16 +1,34 @@
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using FluentValidation;
+using HotelPOS.Application.UseCases.Items.Commands;
+using AutoMapper;
 
 namespace HotelPOS.Application.UseCases
 {
     public class ItemService : IItemService
     {
         private readonly IItemRepository _itemRepository;
+        private readonly IValidator<CreateItemCommand> _validator;
+        private readonly IMapper _mapper;
 
-        public ItemService(IItemRepository itemRepository)
+        public ItemService(IItemRepository itemRepository, IValidator<CreateItemCommand>? validator = null, IMapper? mapper = null)
         {
             _itemRepository = itemRepository;
+            _validator = validator ?? new CreateItemCommandValidator();
+            
+            if (mapper == null)
+            {
+                var cfg = new AutoMapper.MapperConfiguration(
+                    expr => expr.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
+                    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
+                _mapper = cfg.CreateMapper();
+            }
+            else
+            {
+                _mapper = mapper;
+            }
         }
 
         public async Task<int> AddItemAsync(CreateItemDto dto)
@@ -24,17 +42,7 @@ namespace HotelPOS.Application.UseCases
             if (!string.IsNullOrWhiteSpace(dto.Barcode) && existing.Any(i => i.Barcode == dto.Barcode))
                 throw new InvalidOperationException($"Barcode '{dto.Barcode}' is already assigned to another item.");
 
-            var item = new Item
-            {
-                Name = dto.Name.Trim(),
-                Price = dto.Price,
-                TaxPercentage = dto.TaxPercentage,
-                HsnCode = dto.HsnCode,
-                CategoryId = dto.CategoryId,
-                StockQuantity = dto.StockQuantity,
-                TrackInventory = dto.TrackInventory,
-                Barcode = dto.Barcode
-            };
+            var item = _mapper.Map<Item>(dto);
 
             return await _itemRepository.AddAsync(item);
         }
@@ -44,19 +52,9 @@ namespace HotelPOS.Application.UseCases
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            var validator = new HotelPOS.Application.UseCases.Items.Commands.CreateItemCommandValidator();
-            var command = new HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand(
-                dto.Name,
-                dto.Price,
-                dto.TaxPercentage,
-                dto.CategoryId,
-                dto.HsnCode,
-                dto.Barcode,
-                dto.StockQuantity,
-                dto.TrackInventory
-            );
+            var command = _mapper.Map<CreateItemCommand>(dto);
 
-            var result = validator.Validate(command);
+            var result = _validator.Validate(command);
             if (!result.IsValid)
             {
                 var firstError = result.Errors.First();
@@ -83,14 +81,7 @@ namespace HotelPOS.Application.UseCases
             var item = await _itemRepository.GetByIdAsync(id);
             if (item == null) throw new KeyNotFoundException("Item not found");
 
-            item.Name = dto.Name.Trim();
-            item.Price = dto.Price;
-            item.TaxPercentage = dto.TaxPercentage;
-            item.HsnCode = dto.HsnCode;
-            item.CategoryId = dto.CategoryId;
-            item.StockQuantity = dto.StockQuantity;
-            item.TrackInventory = dto.TrackInventory;
-            item.Barcode = dto.Barcode;
+            _mapper.Map(dto, item);
 
             await _itemRepository.UpdateAsync(item);
         }
