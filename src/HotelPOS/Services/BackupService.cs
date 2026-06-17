@@ -136,8 +136,9 @@ namespace HotelPOS.Services
             var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
             var destPath = Path.Combine(backupDir, fileName);
 
-            var sql = $"BACKUP DATABASE [{conn.Database}] TO DISK = '{destPath}' WITH FORMAT, NAME = 'Full Backup of HotelPOS'";
-            await db.Database.ExecuteSqlRawAsync(sql);
+            var quotedDb = new Microsoft.Data.SqlClient.SqlCommandBuilder().QuoteIdentifier(conn.Database);
+            var sql = $"BACKUP DATABASE {quotedDb} TO DISK = {{0}} WITH FORMAT, NAME = 'Full Backup of HotelPOS'";
+            await db.Database.ExecuteSqlRawAsync(sql, destPath);
             return destPath;
         }
 
