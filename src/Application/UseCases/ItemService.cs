@@ -57,7 +57,7 @@ namespace HotelPOS.Application.UseCases
             var result = _validator.Validate(command);
             if (!result.IsValid)
             {
-                var firstError = result.Errors.First();
+                var firstError = result.Errors[0];
                 throw new ArgumentException(firstError.ErrorMessage, nameof(dto));
             }
         }

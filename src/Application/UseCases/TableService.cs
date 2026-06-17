@@ -53,7 +53,7 @@ namespace HotelPOS.Application.UseCases
 
             var result = _validator!.Validate(dto);
             if (!result.IsValid)
-                throw new ArgumentException(result.Errors.First().ErrorMessage);
+                throw new ArgumentException(result.Errors[0].ErrorMessage);
 
             var existing = await _tableRepository!.GetAllAsync() ?? new List<Table>();
             if (existing.Any(t => t.Number == dto.Number && !t.IsDeleted))
@@ -81,7 +81,7 @@ namespace HotelPOS.Application.UseCases
 
             var result = _validator!.Validate(dto);
             if (!result.IsValid)
-                throw new ArgumentException(result.Errors.First().ErrorMessage);
+                throw new ArgumentException(result.Errors[0].ErrorMessage);
 
             var existing = await _tableRepository!.GetAllAsync() ?? new List<Table>();
             if (existing.Any(t => t.Number == dto.Number && t.Id != id && !t.IsDeleted))

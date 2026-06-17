@@ -51,7 +51,7 @@ namespace HotelPOS.Application.UseCases
             var category = new Category { Name = trimmedName, DisplayOrder = displayOrder };
             var result = _validator.Validate(category);
             if (!result.IsValid)
-                throw new ArgumentException(result.Errors.First().ErrorMessage);
+                throw new ArgumentException(result.Errors[0].ErrorMessage);
 
             var existing = await _repo!.GetAllAsync() ?? new List<Category>();
             if (existing.Any(c => c.Name.Trim().Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
@@ -74,7 +74,7 @@ namespace HotelPOS.Application.UseCases
             var category = new Category { Id = id, Name = trimmedName, DisplayOrder = displayOrder };
             var result = _validator.Validate(category);
             if (!result.IsValid)
-                throw new ArgumentException(result.Errors.First().ErrorMessage);
+                throw new ArgumentException(result.Errors[0].ErrorMessage);
 
             var all = await _repo!.GetAllAsync() ?? new List<Category>();
             if (all.Any(c => c.Id != id && c.Name.Trim().Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
