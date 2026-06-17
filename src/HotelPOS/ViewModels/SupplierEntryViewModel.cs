@@ -141,7 +141,7 @@ namespace HotelPOS.ViewModels
                 PhoneError = string.Empty;
                 return true;
             }
-            var cleanPhone = Regex.Replace(Phone, @"[^\d]", "");
+            var cleanPhone = Regex.Replace(Phone, @"[^\d]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
             if (cleanPhone.Length < 10 || cleanPhone.Length > 15)
             {
                 PhoneError = "Invalid phone number (must be 10-15 digits)";
@@ -204,7 +204,7 @@ namespace HotelPOS.ViewModels
                     }
 
                     // Phone formatting
-                    var cleanPhone = Regex.Replace(Phone, @"[^\d\+\-\(\)\s]", "");
+                    var cleanPhone = Regex.Replace(Phone, @"[^\d\+\-\(\)\s]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
 
                     // Map to domain entity
                     var supplier = new Supplier

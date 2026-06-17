@@ -47,6 +47,8 @@ namespace HotelPOS.ViewModels
         public ObservableCollection<Item> CatalogItems { get; } = new();
         public ObservableCollection<PurchaseRow> PurchaseRows { get; } = new();
 
+        public Task InitializationTask { get; }
+
         public PurchaseEntryViewModel(
             IPurchaseService purchaseService,
             IItemService itemService,
@@ -66,7 +68,7 @@ namespace HotelPOS.ViewModels
             PurchaseRows.CollectionChanged += PurchaseRows_CollectionChanged;
 
             // Load suppliers and items in a non-blocking task
-            _ = LoadDataAsync();
+            InitializationTask = LoadDataAsync();
         }
 
         /// <summary>

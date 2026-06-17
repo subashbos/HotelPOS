@@ -2,6 +2,8 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Domain.Events;
 using MediatR;
+using HotelPOS.Application.UseCases.Orders.Commands;
+using FluentValidation;
 
 namespace HotelPOS.Application.UseCases
 {
@@ -10,21 +12,23 @@ namespace HotelPOS.Application.UseCases
         private readonly IOrderRepository _repo;
         private readonly IMediator _mediator;
         private readonly IItemService _itemService;
+        private readonly IValidator<CreateOrderCommand> _validator;
 
-        public OrderService(IOrderRepository repo, IMediator mediator, IItemService itemService)
+        public OrderService(IOrderRepository repo, IMediator mediator, IItemService itemService, IValidator<CreateOrderCommand>? validator = null)
         {
             _repo = repo;
             _mediator = mediator;
             _itemService = itemService;
+            _validator = validator ?? new CreateOrderCommandValidator();
         }
 
         /// <summary>
-        /// Creates and persists a new order with the specified items, computes totals and taxes, deducts stock, and returns the created order's identifier.
+        /// Saves a new sales order transaction in the database, including stock deduction.
         /// </summary>
-        /// <param name="items">List of items to include in the order; each item must have Price &gt;= 0 and Quantity &gt; 0.</param>
-        /// <param name="tableNumber">Table number for the order; required when <paramref name="orderType"/> is "DineIn". For "Takeaway" or "Online", the table number is normalized to 0.</param>
-        /// <param name="discount">Discount amount applied to the order; must be &gt;= 0 and not exceed the pre-tax subtotal.</param>
-        /// <param name="paymentMode">Payment mode; allowed values: "Cash", "Card", "UPI".</param>
+        /// <param name="items">List of order items with quantities and prices.</param>
+        /// <param name="tableNumber">Associated table number; 0 for Takeaway/Online.</param>
+        /// <param name="discount">Discount amount applied to the order.</param>
+        /// <param name="paymentMode">Payment mode: Cash, Card, UPI.</param>
         /// <param name="customerName">Optional customer name.</param>
         /// <param name="customerPhone">Optional customer phone number.</param>
         /// <param name="customerGstin">Optional customer GSTIN.</param>
@@ -33,31 +37,26 @@ namespace HotelPOS.Application.UseCases
         /// <exception cref="ArgumentException">Thrown when input validation fails (empty items, invalid table number, negative discount, discount exceeding subtotal, invalid payment mode/order type, or invalid item price/quantity).</exception>
         public async Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn")
         {
-            if (items == null || items.Count == 0)
-                throw new ArgumentException("Cannot save an empty order.", nameof(items));
+            var command = new CreateOrderCommand(
+                items,
+                tableNumber,
+                discount,
+                paymentMode,
+                customerName,
+                customerPhone,
+                customerGstin,
+                orderType
+            );
 
-            if (discount < 0)
-                throw new ArgumentException("Discount cannot be negative.", nameof(discount));
-
-            // ── Financial guard: discount cannot exceed the pre-tax subtotal ──
-            var preCheckSubtotal = items.Sum(x => x.Price * x.Quantity);
-            if (discount > preCheckSubtotal)
-                throw new ArgumentException(
-                    $"Discount (₹{discount:N2}) cannot exceed order subtotal (₹{preCheckSubtotal:N2}).",
-                    nameof(discount));
-
-            var allowedModes = new[] { "Cash", "Card", "UPI" };
-            if (!allowedModes.Contains(paymentMode))
-                throw new ArgumentException($"Invalid payment mode. Allowed: {string.Join(", ", allowedModes)}", nameof(paymentMode));
-
-            var allowedTypes = new[] { "DineIn", "Takeaway", "Online" };
-            if (!allowedTypes.Contains(orderType))
-                throw new ArgumentException($"Invalid order type. Allowed: {string.Join(", ", allowedTypes)}", nameof(orderType));
+            var valResult = _validator.Validate(command);
+            if (!valResult.IsValid)
+            {
+                var error = valResult.Errors.First();
+                throw new ArgumentException(error.ErrorMessage);
+            }
 
             // DineIn requires a real table; Takeaway/Online use virtual table 0
             bool requiresTable = orderType == "DineIn";
-            if (requiresTable && tableNumber <= 0)
-                throw new ArgumentException("Invalid table number.", nameof(tableNumber));
 
             // For Takeaway/Online, normalise to 0 regardless of what was passed
             int effectiveTableNumber = requiresTable ? tableNumber : 0;
@@ -65,7 +64,6 @@ namespace HotelPOS.Application.UseCases
             var orderItems = items
                 .Select(x =>
                 {
-                    if (x.Price < 0) throw new ArgumentException($"Item '{x.ItemName}' cannot have a negative price.");
                     if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
 
                     return new OrderItem

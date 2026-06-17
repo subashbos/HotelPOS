@@ -15,10 +15,12 @@ namespace HotelPOS.Api.Controllers
     public class ItemsController : BaseApiController
     {
         private readonly IMediator _mediator;
+        private readonly AutoMapper.IMapper _mapper;
 
-        public ItemsController(IMediator mediator)
+        public ItemsController(IMediator mediator, AutoMapper.IMapper mapper)
         {
             _mediator = mediator;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -45,16 +47,7 @@ namespace HotelPOS.Api.Controllers
 
             try
             {
-                var command = new CreateItemCommand(
-                    request.Name,
-                    request.Price,
-                    request.TaxPercentage,
-                    request.CategoryId,
-                    request.HsnCode,
-                    request.Barcode,
-                    request.StockQuantity,
-                    request.TrackInventory
-                );
+                var command = _mapper.Map<CreateItemCommand>(request);
 
                 var item = await _mediator.Send(command);
                 return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,9 +29,39 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddInfrastructure();
 
 builder.Services.AddScoped<HotelPOS.Application.Interfaces.IAuthService, HotelPOS.Application.UseCases.AuthService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IBIReportService, BIReportService>();
+builder.Services.AddScoped<ISettingService, SettingService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICashService, CashService>();
+builder.Services.AddScoped<ICategoryService>(provider => new CategoryService(provider.GetRequiredService<IMediator>()));
+builder.Services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
+builder.Services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>()));
 
 // ── MediatR Configuration ─────────────────────────────────────────────────
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(HotelPOS.Application.UseCases.ItemService).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(HotelPOS.Application.UseCases.ItemService).Assembly);
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(HotelPOS.Application.Common.Behaviors.ValidationBehavior<,>));
+});
+
+builder.Services.AddValidatorsFromAssembly(typeof(HotelPOS.Application.UseCases.Items.Commands.CreateItemCommandValidator).Assembly);
+
+// ── AutoMapper Configuration ──────────────────────────────────────────
+var mapperCfg = new AutoMapper.MapperConfiguration(
+    mc =>
+    {
+        mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile());
+        mc.CreateMap<HotelPOS.Api.Controllers.CreateItemRequest, HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand>();
+        mc.CreateMap<HotelPOS.Api.Controllers.CreateOrderRequest, HotelPOS.Application.UseCases.Orders.Commands.CreateOrderCommand>();
+    },
+    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
+AutoMapper.IMapper mapper = mapperCfg.CreateMapper();
+builder.Services.AddSingleton(mapper);
 
 // ── CORS Configuration ────────────────────────────────────────────────────
 builder.Services.AddCors(options =>

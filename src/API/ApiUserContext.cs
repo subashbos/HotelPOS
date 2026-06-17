@@ -9,10 +9,14 @@ namespace HotelPOS.Api
     public class ApiUserContext : IUserContext
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserRepository _userRepository;
+        private IReadOnlyList<RolePermission>? _cachedPermissions;
+        private bool _permissionsLoaded;
 
-        public ApiUserContext(IHttpContextAccessor httpContextAccessor)
+        public ApiUserContext(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository)
         {
             _httpContextAccessor = httpContextAccessor;
+            _userRepository = userRepository;
         }
 
         private ClaimsPrincipal? User => _httpContextAccessor.HttpContext?.User;
@@ -34,6 +38,22 @@ namespace HotelPOS.Api
 
         public string? CurrentRole => User?.FindFirst(ClaimTypes.Role)?.Value;
 
-        public IReadOnlyList<RolePermission>? Permissions => null;
+        public IReadOnlyList<RolePermission>? Permissions
+        {
+            get
+            {
+                if (!_permissionsLoaded)
+                {
+                    var username = CurrentUsername;
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        var user = Task.Run(async () => await _userRepository.GetUserByUsernameAsync(username)).GetAwaiter().GetResult();
+                        _cachedPermissions = user?.RoleDetails?.Permissions;
+                    }
+                    _permissionsLoaded = true;
+                }
+                return _cachedPermissions;
+            }
+        }
     }
 }
