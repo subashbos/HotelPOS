@@ -15,8 +15,8 @@ namespace HotelPOS.Application.Common.Validators
                 .Must(phone =>
                 {
                     if (string.IsNullOrWhiteSpace(phone)) return true;
-                    var cleanPhone = Regex.Replace(phone, @"[^\d\+\-\(\)\s]", "");
-                    var digitCount = Regex.Replace(cleanPhone, @"[^\d]", "").Length;
+                    var cleanPhone = Regex.Replace(phone, @"[^\d\+\-\(\)\s]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
+                    var digitCount = Regex.Replace(cleanPhone, @"[^\d]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250)).Length;
                     return digitCount >= 10 && digitCount <= 15;
                 })
                 .WithMessage("Phone number must be a valid number between 10 and 15 digits.")

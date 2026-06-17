@@ -27,7 +27,7 @@ namespace HotelPOS.Application.UseCases.Suppliers.Commands
             // Sanitize phone
             string? cleanPhone = null;
             if (!string.IsNullOrWhiteSpace(dto.Phone))
-                cleanPhone = Regex.Replace(dto.Phone, @"[^\d\+\-\(\)\s]", "").Trim();
+                cleanPhone = Regex.Replace(dto.Phone, @"[^\d\+\-\(\)\s]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250)).Trim();
 
             if (dto.Id == 0)
             {
