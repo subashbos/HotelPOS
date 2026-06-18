@@ -3,19 +3,25 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using FluentValidation;
 using HotelPOS.Application.UseCases.Items.Commands;
+using HotelPOS.Application.UseCases.Items.Queries;
 using AutoMapper;
+
+using MediatR;
+
 
 namespace HotelPOS.Application.UseCases
 {
     public class ItemService : IItemService
     {
+        private readonly IMediator? _mediator;
         private readonly IItemRepository _itemRepository;
         private readonly IValidator<CreateItemCommand> _validator;
         private readonly IMapper _mapper;
 
-        public ItemService(IItemRepository itemRepository, IValidator<CreateItemCommand>? validator = null, IMapper? mapper = null)
+        public ItemService(IItemRepository itemRepository, IMediator? mediator = null, IValidator<CreateItemCommand>? validator = null, IMapper? mapper = null)
         {
             _itemRepository = itemRepository;
+            _mediator = mediator;
             _validator = validator ?? new CreateItemCommandValidator();
             
             if (mapper == null)
@@ -33,18 +39,28 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<int> AddItemAsync(CreateItemDto dto)
         {
+            if (_mediator != null)
+            {
+                var command = new CreateItemCommand(
+                    dto.Name, dto.Price, dto.TaxPercentage, dto.CategoryId,
+                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory
+                );
+                var item = await _mediator.Send(command);
+                return item.Id;
+            }
+
             ValidateDto(dto);
 
-            var existing = await _itemRepository.GetAllAsync() ?? new List<Item>();
+            var existing = await _itemRepository!.GetAllAsync() ?? new List<Item>();
             if (existing.Any(i => i.Name.Trim().Equals(dto.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"An item with the name '{dto.Name}' already exists.");
 
             if (!string.IsNullOrWhiteSpace(dto.Barcode) && existing.Any(i => i.Barcode == dto.Barcode))
                 throw new InvalidOperationException($"Barcode '{dto.Barcode}' is already assigned to another item.");
 
-            var item = _mapper.Map<Item>(dto);
+            var itemEntity = _mapper!.Map<Item>(dto);
 
-            return await _itemRepository.AddAsync(item);
+            return await _itemRepository.AddAsync(itemEntity);
         }
 
         private void ValidateDto(CreateItemDto dto)
@@ -52,9 +68,9 @@ namespace HotelPOS.Application.UseCases
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            var command = _mapper.Map<CreateItemCommand>(dto);
+            var command = _mapper!.Map<CreateItemCommand>(dto);
 
-            var result = _validator.Validate(command);
+            var result = _validator!.Validate(command);
             if (!result.IsValid)
             {
                 var firstError = result.Errors[0];
@@ -64,14 +80,29 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<Item>> GetItemsAsync()
         {
-            return await _itemRepository.GetAllAsync() ?? new List<Item>();
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetItemsQuery());
+            }
+
+            return await _itemRepository!.GetAllAsync() ?? new List<Item>();
         }
 
         public async Task UpdateItemAsync(int id, CreateItemDto dto)
         {
+            if (_mediator != null)
+            {
+                var command = new UpdateItemCommand(
+                    id, dto.Name, dto.Price, dto.TaxPercentage, dto.CategoryId,
+                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory
+                );
+                await _mediator.Send(command);
+                return;
+            }
+
             ValidateDto(dto);
 
-            var existingAll = await _itemRepository.GetAllAsync() ?? new List<Item>();
+            var existingAll = await _itemRepository!.GetAllAsync() ?? new List<Item>();
             if (existingAll.Any(i => i.Id != id && i.Name.Trim().Equals(dto.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"An item with the name '{dto.Name}' already exists.");
 
@@ -81,7 +112,7 @@ namespace HotelPOS.Application.UseCases
             var item = await _itemRepository.GetByIdAsync(id);
             if (item == null) throw new KeyNotFoundException("Item not found");
 
-            _mapper.Map(dto, item);
+            _mapper!.Map(dto, item);
 
             await _itemRepository.UpdateAsync(item);
         }
@@ -105,6 +136,12 @@ namespace HotelPOS.Application.UseCases
         {
             if (id <= 0)
                 throw new ArgumentException("Invalid item ID.", nameof(id));
+
+            if (_mediator != null)
+            {
+                await _mediator.Send(new DeleteItemCommand(id));
+                return;
+            }
 
             await _itemRepository.DeleteAsync(id);
         }

@@ -8,6 +8,8 @@ using HotelPOS.Application.UseCases.Settings.Commands;
 using HotelPOS.Application.UseCases.Suppliers.Commands;
 using HotelPOS.Application.UseCases.CashSessions.Commands;
 using HotelPOS.Application.UseCases.Purchases.Commands;
+using HotelPOS.Application.UseCases.Auth.Commands;
+
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Services;
 using HotelPOS.Infrastructure;
@@ -81,6 +83,8 @@ namespace HotelPOS
             services.AddScoped<IValidator<CloseSessionCommand>, CloseSessionCommandValidator>();
             // Purchase validators
             services.AddScoped<IValidator<SavePurchaseCommand>, SavePurchaseCommandValidator>();
+            // Auth validators
+            services.AddScoped<IValidator<LoginCommand>, LoginCommandValidator>();
 
             // ── AutoMapper Configuration ──────────────────────────────────────────
             IMapper mapper = new AutoMapper.MapperConfiguration(
@@ -99,7 +103,7 @@ namespace HotelPOS
             services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
-            services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>()));
+            services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
 
             services.AddSingleton<ICartService, CartService>();
             services.AddSingleton<INotificationService, NotificationService>();

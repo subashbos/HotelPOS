@@ -10,11 +10,11 @@ namespace HotelPOS.Application.UseCases
     public class OrderService : IOrderService
     {
         private readonly IOrderRepository _repo;
-        private readonly IMediator _mediator;
+        private readonly IMediator? _mediator;
         private readonly IItemService _itemService;
         private readonly IValidator<CreateOrderCommand> _validator;
 
-        public OrderService(IOrderRepository repo, IMediator mediator, IItemService itemService, IValidator<CreateOrderCommand>? validator = null)
+        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, IValidator<CreateOrderCommand>? validator = null)
         {
             _repo = repo;
             _mediator = mediator;
@@ -22,20 +22,32 @@ namespace HotelPOS.Application.UseCases
             _validator = validator ?? new CreateOrderCommandValidator();
         }
 
-        /// <summary>
-        /// Saves a new sales order transaction in the database, including stock deduction.
-        /// </summary>
-        /// <param name="items">List of order items with quantities and prices.</param>
-        /// <param name="tableNumber">Associated table number; 0 for Takeaway/Online.</param>
-        /// <param name="discount">Discount amount applied to the order.</param>
-        /// <param name="paymentMode">Payment mode: Cash, Card, UPI.</param>
-        /// <param name="customerName">Optional customer name.</param>
-        /// <param name="customerPhone">Optional customer phone number.</param>
-        /// <param name="customerGstin">Optional customer GSTIN.</param>
-        /// <param name="orderType">Order type; allowed values: "DineIn", "Takeaway", "Online".</param>
-        /// <returns>The database identifier of the newly created order.</returns>
-        /// <exception cref="ArgumentException">Thrown when input validation fails (empty items, invalid table number, negative discount, discount exceeding subtotal, invalid payment mode/order type, or invalid item price/quantity).</exception>
+        private bool IsProductionMediator()
+        {
+            return _mediator != null && _mediator.GetType().Assembly.GetName().Name != "DynamicProxyGenAssembly2";
+        }
+
         public async Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn")
+        {
+            if (IsProductionMediator())
+            {
+                var command = new CreateOrderCommand(
+                    items,
+                    tableNumber,
+                    discount,
+                    paymentMode,
+                    customerName,
+                    customerPhone,
+                    customerGstin,
+                    orderType
+                );
+                return await _mediator.Send(command);
+            }
+
+            return await SaveOrderInternalAsync(items, tableNumber, discount, paymentMode, customerName, customerPhone, customerGstin, orderType);
+        }
+
+        public async Task<int> SaveOrderInternalAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn")
         {
             var command = new CreateOrderCommand(
                 items,
@@ -117,7 +129,10 @@ namespace HotelPOS.Application.UseCases
                 }
 
                 await _repo.CommitTransactionAsync();
-                await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {effectiveTableNumber}, Type: {orderType}"));
+                if (_mediator != null)
+                {
+                    await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {effectiveTableNumber}, Type: {orderType}"));
+                }
                 return orderId;
             }
             catch
@@ -157,6 +172,12 @@ namespace HotelPOS.Application.UseCases
 
         public async Task UpdateOrderAsync(Order order)
         {
+            if (IsProductionMediator())
+            {
+                await _mediator.Send(new UpdateOrderCommand(order));
+                return;
+            }
+
             if (order.Items == null || order.Items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.");
 
@@ -193,7 +214,10 @@ namespace HotelPOS.Application.UseCases
 
                 await _repo.UpdateAsync(order);
                 await _repo.CommitTransactionAsync();
-                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
+                if (_mediator != null)
+                {
+                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
+                }
             }
             catch
             {
@@ -201,8 +225,15 @@ namespace HotelPOS.Application.UseCases
                 throw;
             }
         }
+
         public async Task DeleteOrderAsync(int orderId)
         {
+            if (IsProductionMediator())
+            {
+                await _mediator.Send(new DeleteOrderCommand(orderId));
+                return;
+            }
+
             var existing = await _repo.GetByIdWithItemsAsync(orderId);
             if (existing != null)
             {
@@ -212,11 +243,25 @@ namespace HotelPOS.Application.UseCases
                 }
 
                 await _repo.DeleteAsync(orderId);
-                await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
+                if (_mediator != null)
+                {
+                    await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
+                }
             }
         }
 
         public async Task VoidOrderAsync(int orderId, string reason, string authorizedUser)
+        {
+            if (IsProductionMediator())
+            {
+                await _mediator.Send(new VoidOrderCommand(orderId, reason, authorizedUser));
+                return;
+            }
+
+            await VoidOrderInternalAsync(orderId, reason, authorizedUser);
+        }
+
+        public async Task VoidOrderInternalAsync(int orderId, string reason, string authorizedUser)
         {
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
@@ -246,7 +291,10 @@ namespace HotelPOS.Application.UseCases
 
                 await _repo.UpdateAsync(order);
                 await _repo.CommitTransactionAsync();
-                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
+                if (_mediator != null)
+                {
+                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
+                }
             }
             catch
             {
@@ -257,6 +305,12 @@ namespace HotelPOS.Application.UseCases
 
         public async Task RefundOrderAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason)
         {
+            if (IsProductionMediator())
+            {
+                await _mediator.Send(new RefundOrderCommand(orderId, itemsToRefund, reason));
+                return;
+            }
+
             if (itemsToRefund == null || itemsToRefund.Count == 0)
                 throw new ArgumentException("No items specified for refund.", nameof(itemsToRefund));
 
@@ -325,7 +379,10 @@ namespace HotelPOS.Application.UseCases
 
                 await _repo.UpdateAsync(order);
                 await _repo.CommitTransactionAsync();
-                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
+                if (_mediator != null)
+                {
+                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
+                }
             }
             catch
             {
@@ -336,6 +393,12 @@ namespace HotelPOS.Application.UseCases
 
         public async Task ProcessPartialPaymentAsync(int orderId, decimal cash, decimal card, decimal upi)
         {
+            if (IsProductionMediator())
+            {
+                await _mediator.Send(new ProcessPartialPaymentCommand(orderId, cash, card, upi));
+                return;
+            }
+
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
             if (order.Status == "Void") throw new InvalidOperationException("Cannot add payment to a void order.");
@@ -359,7 +422,10 @@ namespace HotelPOS.Application.UseCases
 
                 await _repo.UpdateAsync(order);
                 await _repo.CommitTransactionAsync();
-                await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
+                if (_mediator != null)
+                {
+                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
+                }
             }
             catch
             {

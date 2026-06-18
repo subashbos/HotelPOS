@@ -1,5 +1,7 @@
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
+using MediatR;
+using HotelPOS.Application.UseCases.Reports.Queries;
 
 namespace HotelPOS.Application.UseCases
 {
@@ -9,16 +11,34 @@ namespace HotelPOS.Application.UseCases
         private readonly IItemRepository _itemRepo;
         private readonly ICategoryRepository _categoryRepo;
         private readonly IPurchaseRepository _purchaseRepo;
+        private readonly IMediator? _mediator;
 
-        public ReportService(IOrderRepository orderRepo, IItemRepository itemRepo, ICategoryRepository categoryRepo, IPurchaseRepository purchaseRepo)
+        public ReportService(
+            IOrderRepository orderRepo,
+            IItemRepository itemRepo,
+            ICategoryRepository categoryRepo,
+            IPurchaseRepository purchaseRepo,
+            IMediator? mediator = null)
         {
             _orderRepo = orderRepo;
             _itemRepo = itemRepo;
             _categoryRepo = categoryRepo;
             _purchaseRepo = purchaseRepo;
+            _mediator = mediator;
         }
 
         public async Task<SalesReportDto> GetSalesReportAsync(
+            DateTime? from = null, DateTime? to = null)
+        {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetSalesReportQuery(from, to));
+            }
+
+            return await GetSalesReportInternalAsync(from, to);
+        }
+
+        public async Task<SalesReportDto> GetSalesReportInternalAsync(
             DateTime? from = null, DateTime? to = null)
         {
             // Standardize bounds to UTC for repository query
@@ -126,6 +146,17 @@ namespace HotelPOS.Application.UseCases
         public async Task<List<ItemReportRowDto>> GetItemReportAsync(
             DateTime? from = null, DateTime? to = null)
         {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetItemReportQuery(from, to));
+            }
+
+            return await GetItemReportInternalAsync(from, to);
+        }
+
+        public async Task<List<ItemReportRowDto>> GetItemReportInternalAsync(
+            DateTime? from = null, DateTime? to = null)
+        {
             var utcFrom = from?.ToUniversalTime();
             var utcTo = to?.ToUniversalTime();
 
@@ -149,6 +180,16 @@ namespace HotelPOS.Application.UseCases
         }
 
         public async Task<List<GstReportRowDto>> GetGstReportAsync(DateTime from, DateTime to)
+        {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetGstReportQuery(from, to));
+            }
+
+            return await GetGstReportInternalAsync(from, to);
+        }
+
+        public async Task<List<GstReportRowDto>> GetGstReportInternalAsync(DateTime from, DateTime to)
         {
             // Standardize bounds to UTC
             var utcFrom = from.ToUniversalTime();
@@ -174,6 +215,16 @@ namespace HotelPOS.Application.UseCases
         }
 
         public async Task<List<MonthlySalesChartDto>> GetMonthlyChartDataAsync()
+        {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetMonthlySalesChartQuery());
+            }
+
+            return await GetMonthlyChartDataInternalAsync();
+        }
+
+        public async Task<List<MonthlySalesChartDto>> GetMonthlyChartDataInternalAsync()
         {
             var now = DateTime.Now;
 
@@ -210,6 +261,17 @@ namespace HotelPOS.Application.UseCases
         }
 
         public async Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportAsync(
+            int page, int pageSize, DateTime? from, DateTime? to, int? supplierId, string? itemName, string? paymentType, string? invoiceNo)
+        {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetPagedPurchaseReportQuery(page, pageSize, from, to, supplierId, itemName, paymentType, invoiceNo));
+            }
+
+            return await GetPagedPurchaseReportInternalAsync(page, pageSize, from, to, supplierId, itemName, paymentType, invoiceNo);
+        }
+
+        public async Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportInternalAsync(
             int page, int pageSize, DateTime? from, DateTime? to, int? supplierId, string? itemName, string? paymentType, string? invoiceNo)
         {
             var utcFrom = from?.ToUniversalTime();

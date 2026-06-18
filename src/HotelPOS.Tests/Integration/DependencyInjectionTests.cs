@@ -15,6 +15,8 @@ using HotelPOS.Api.Controllers;
 using HotelPOS.Api;
 using MediatR;
 using FluentValidation;
+using AutoMapper;
+
 
 namespace HotelPOS.Tests.Integration
 {
@@ -58,7 +60,7 @@ namespace HotelPOS.Tests.Integration
             services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
-            services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>()));
+            services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
 
             services.AddSingleton<ICartService, CartService>();
             services.AddSingleton<INotificationService, NotificationService>();
@@ -76,6 +78,12 @@ namespace HotelPOS.Tests.Integration
 
             // MediatR
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
+
+            // AutoMapper
+            var mapperCfg = new AutoMapper.MapperConfiguration(
+                mc => mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
+                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
+            services.AddSingleton<IMapper>(mapperCfg.CreateMapper());
 
             var provider = services.BuildServiceProvider();
 
@@ -163,7 +171,7 @@ namespace HotelPOS.Tests.Integration
             services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
-            services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>()));
+            services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
 
             // AutoMapper
             var mapperCfg = new AutoMapper.MapperConfiguration(

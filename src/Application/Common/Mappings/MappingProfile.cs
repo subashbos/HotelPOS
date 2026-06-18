@@ -4,6 +4,7 @@ using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application.UseCases.Items.Commands;
+using HotelPOS.Application.UseCases.Users.Commands;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.Common.Mappings
@@ -32,6 +33,13 @@ namespace HotelPOS.Application.Common.Mappings
                 .ForMember(dest => dest.Gstin, opt => opt.MapFrom(src =>
                     string.IsNullOrWhiteSpace(src.Gstin) ? null : src.Gstin.Trim().ToUpperInvariant()));
             CreateMap<Supplier, SaveSupplierDto>();
+
+            // ── User ──────────────────────────────────────────────────────────
+            CreateMap<AddUserCommand, User>()
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username.Trim()))
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+                .ForMember(dest => dest.Salt, opt => opt.Ignore())
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true));
         }
     }
 }

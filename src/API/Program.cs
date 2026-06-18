@@ -5,6 +5,8 @@ using HotelPOS.Application.UseCases;
 using HotelPOS.Infrastructure;
 using HotelPOS.Infrastructure.Persistence;
 using MediatR;
+using AutoMapper;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -40,7 +42,7 @@ builder.Services.AddScoped<ICategoryService>(provider => new CategoryService(pro
 builder.Services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
-builder.Services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>()));
+builder.Services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
 
 // ── MediatR Configuration ─────────────────────────────────────────────────
 builder.Services.AddMediatR(cfg =>

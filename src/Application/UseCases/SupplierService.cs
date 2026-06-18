@@ -4,6 +4,7 @@ using HotelPOS.Application.UseCases.Suppliers.Commands;
 using HotelPOS.Application.UseCases.Suppliers.Queries;
 using HotelPOS.Domain.Entities;
 using MediatR;
+using AutoMapper;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,17 +14,40 @@ namespace HotelPOS.Application.UseCases
     {
         private readonly IMediator? _mediator;
         private readonly ISupplierRepository? _supplierRepository;
+        private readonly IMapper _mapper;
 
         /// <summary>DI constructor — uses MediatR pipeline (validators + handlers).</summary>
-        public SupplierService(IMediator mediator)
+        public SupplierService(IMediator mediator, IMapper? mapper = null)
         {
             _mediator = mediator;
+            if (mapper == null)
+            {
+                var cfg = new AutoMapper.MapperConfiguration(
+                    expr => expr.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
+                    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
+                _mapper = cfg.CreateMapper();
+            }
+            else
+            {
+                _mapper = mapper;
+            }
         }
 
         /// <summary>Legacy constructor for unit tests that inject a repository directly.</summary>
-        public SupplierService(ISupplierRepository supplierRepository)
+        public SupplierService(ISupplierRepository supplierRepository, IMapper? mapper = null)
         {
             _supplierRepository = supplierRepository;
+            if (mapper == null)
+            {
+                var cfg = new AutoMapper.MapperConfiguration(
+                    expr => expr.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
+                    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
+                _mapper = cfg.CreateMapper();
+            }
+            else
+            {
+                _mapper = mapper;
+            }
         }
 
         public async Task<List<Supplier>> GetSuppliersAsync()
@@ -48,22 +72,7 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
-                var dto = new SaveSupplierDto
-                {
-                    Id = supplier.Id,
-                    Name = supplier.Name,
-                    ContactPerson = supplier.ContactPerson,
-                    Phone = supplier.Phone,
-                    Email = supplier.Email,
-                    Address = supplier.Address,
-                    Gstin = supplier.Gstin,
-                    City = supplier.City,
-                    State = supplier.State,
-                    Pincode = supplier.Pincode,
-                    OpeningBalance = supplier.OpeningBalance,
-                    CreditLimit = supplier.CreditLimit,
-                    PaymentTerms = supplier.PaymentTerms
-                };
+                var dto = _mapper.Map<SaveSupplierDto>(supplier);
                 await _mediator.Send(new SaveSupplierCommand(dto));
                 return;
             }
