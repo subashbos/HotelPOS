@@ -11,7 +11,7 @@ namespace HotelPOS.Tests
     /// </summary>
     public class CartServiceUpdateTests
     {
-        private readonly CartService _cart = new();
+        private readonly CartService _cart = new(null, null);
         private const int T1 = 1;
 
         private static Item MakeItem(int id, string name, decimal price, decimal tax = 0m) =>

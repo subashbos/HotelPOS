@@ -97,18 +97,14 @@ namespace HotelPOS
                     }
                     else if (!string.IsNullOrEmpty(AppSession.CurrentUser.Role))
                     {
-                        // Fallback: RoleId is null on the user record — look up role by name
-                        // This handles users created before role linking was enforced.
                         Role? roleByName = null;
                         using (var scope = App.CreateDbScope())
                         {
                             var roleService = scope.ServiceProvider.GetRequiredService<IRoleService>();
-                            roleByName = await roleService
-                                .GetAllRolesAsync()
-                                .ContinueWith(t => t.Result
-                                    .FirstOrDefault(r => string.Equals(r.Name,
-                                        AppSession.CurrentUser.Role,
-                                        StringComparison.OrdinalIgnoreCase)));
+                            var roles = await roleService.GetAllRolesAsync();
+                            roleByName = roles.FirstOrDefault(r => string.Equals(r.Name,
+                                AppSession.CurrentUser.Role,
+                                StringComparison.OrdinalIgnoreCase));
                         }
 
                         if (roleByName != null)
@@ -212,9 +208,17 @@ namespace HotelPOS
 
         private void NavBilling_Click(object sender, RoutedEventArgs e)
         {
-            _cachedBilling ??= _serviceProvider.GetRequiredService<BillingView>();
-            MainContentArea.Content = _cachedBilling;
-            SetActive(NavBilling);
+            try
+            {
+                _cachedBilling ??= _serviceProvider.GetRequiredService<BillingView>();
+                MainContentArea.Content = _cachedBilling;
+                SetActive(NavBilling);
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowError($"Failed to open Billing POS: {ex.Message}");
+                Serilog.Log.Error(ex, "Failed to resolve or open BillingView");
+            }
         }
 
         private void NavMenu_Click(object sender, RoutedEventArgs e)

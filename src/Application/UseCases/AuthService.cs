@@ -37,7 +37,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<User?> AuthenticateAsync(string username, string password)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
                 return null;
 
             var normalizedUsername = username.Trim();

@@ -50,7 +50,7 @@ namespace HotelPOS.Tests
         [Fact]
         public void CartService_HoldOrder_MovesItemsToHeldList()
         {
-            var cart = new CartService();
+            var cart = new CartService(null, null);
             var item = new Item { Id = 1, Name = "Coffee", Price = 50 };
             cart.AddItem(1, item); // Table 1
 
@@ -68,7 +68,7 @@ namespace HotelPOS.Tests
         [Fact]
         public void CartService_ResumeOrder_RestoresItemsToTable()
         {
-            var cart = new CartService();
+            var cart = new CartService(null, null);
             var item = new Item { Id = 1, Name = "Coffee", Price = 50 };
             cart.AddItem(1, item); // Table 1
 

@@ -13,7 +13,7 @@ namespace HotelPOS.Tests
     /// </summary>
     public class CartServiceLoopholeTests
     {
-        private readonly CartService _cart = new();
+        private readonly CartService _cart = new(null, null);
         private const int T1 = 1;
         private const int T2 = 2;
         private const int T3 = 3;

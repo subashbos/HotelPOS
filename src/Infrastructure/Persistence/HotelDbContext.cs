@@ -102,20 +102,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 26, RoleId = 2, ModuleName = "Purchase", CanAccess = false }
             );
 
-            // ── User seed (admin / admin@1234) ─────────────────────────────────────
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = 1,
-                    Username = "admin",
-                    PasswordHash = "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=",
-                    Salt = "jwhVPO8B1u7Hqc4drt45HQ==",
-                    Role = "Admin",
-                    RoleId = 1,
-                    IsActive = true,
-                    MustChangePassword = true
-                }
-            );
+
 
             // ── Default system settings ──────────────────────────────────────
             modelBuilder.Entity<SystemSetting>().HasData(

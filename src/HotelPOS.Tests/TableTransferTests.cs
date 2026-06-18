@@ -11,7 +11,7 @@ namespace HotelPOS.Tests
         public void TransferTable_MovesItemsToEmptyTable()
         {
             // Arrange
-            var service = new CartService();
+            var service = new CartService(null, null);
             service.AddItem(1, new Item { Id = 101, Name = "Item 101", Price = 100 });
             service.AddItem(1, new Item { Id = 101, Name = "Item 101", Price = 100 }); // qty 2
             service.AddItem(1, new Item { Id = 102, Name = "Item 102", Price = 200 });
@@ -33,7 +33,7 @@ namespace HotelPOS.Tests
         public void TransferTable_MergesItemsWithOccupiedTable()
         {
             // Arrange
-            var service = new CartService();
+            var service = new CartService(null, null);
             service.AddItem(1, new Item { Id = 101, Name = "A", Price = 10 });
             service.AddItem(1, new Item { Id = 101, Name = "A", Price = 10 });
 
@@ -56,7 +56,7 @@ namespace HotelPOS.Tests
         public void TransferTable_DoesNothing_WhenSourceIsEmpty()
         {
             // Arrange
-            var service = new CartService();
+            var service = new CartService(null, null);
             service.AddItem(5, new Item { Id = 101, Name = "A", Price = 10 });
 
             // Act
@@ -72,7 +72,7 @@ namespace HotelPOS.Tests
         public void TransferTable_DoesNothing_WhenSourceIsTarget()
         {
             // Arrange
-            var service = new CartService();
+            var service = new CartService(null, null);
             service.AddItem(1, new Item { Id = 101, Name = "A", Price = 10 });
 
             // Act
@@ -88,7 +88,7 @@ namespace HotelPOS.Tests
         public void GetActiveTables_IncludesTablesWithItemsAndHeldOrders()
         {
             // Arrange
-            var service = new CartService();
+            var service = new CartService(null, null);
             service.AddItem(1, new Item { Id = 101, Name = "A", Price = 10 });
             service.AddItem(3, new Item { Id = 102, Name = "B", Price = 20 });
 
