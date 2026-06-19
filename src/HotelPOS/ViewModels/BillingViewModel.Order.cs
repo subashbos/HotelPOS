@@ -2,12 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
-using HotelPOS.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HotelPOS.ViewModels
 {
@@ -296,13 +291,13 @@ namespace HotelPOS.ViewModels
                 }
 
                 var wasEditMode = IsEditMode;
-                
+
                 // Clear cart automatically without prompting the user
                 _cartService.Clear(TableNumber);
                 DiscountAmount = 0;
                 UpdateCart();
                 CartCleared?.Invoke();
-                
+
                 IsEditMode = false;
                 _editingOrder = null;
                 PaymentMode = "Cash";

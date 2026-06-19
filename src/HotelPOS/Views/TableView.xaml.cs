@@ -1,6 +1,4 @@
 using HotelPOS.Application.DTOs.Table;
-using HotelPOS.Application;
-using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;

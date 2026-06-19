@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using ClosedXML.Excel;
+using HotelPOS.Application.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using ClosedXML.Excel;
-using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Entities;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Win32;
 
 namespace HotelPOS.Views
 {
@@ -78,7 +73,8 @@ namespace HotelPOS.Views
             GlobalFrom.SelectedDate = DateTime.Today.AddDays(-30);
             GlobalTo.SelectedDate = DateTime.Today;
 
-            Loaded += async (s, e) => {
+            Loaded += async (s, e) =>
+            {
                 await LoadItemsAsync();
                 await LoadDataAsync();
             };

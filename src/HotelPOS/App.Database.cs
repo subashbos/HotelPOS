@@ -1,11 +1,8 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
+using HotelPOS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using HotelPOS.Infrastructure.Persistence;
+using System.Windows;
 
 namespace HotelPOS
 {

@@ -1,6 +1,6 @@
+using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Items.Queries;
-using HotelPOS.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,24 +24,24 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Item>>> GetItems()
+        public async Task<ActionResult<IEnumerable<ItemDto>>> GetItems()
         {
             var items = await _mediator.Send(new GetItemsQuery());
-            return Ok(items);
+            return Ok(_mapper.Map<IEnumerable<ItemDto>>(items));
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Item>> GetItem(int id)
+        public async Task<ActionResult<ItemDto>> GetItem(int id)
         {
             if (id <= 0) return BadRequest("Invalid item ID.");
             var item = await _mediator.Send(new GetItemByIdQuery(id));
             if (item == null) return NotFound();
-            return Ok(item);
+            return Ok(_mapper.Map<ItemDto>(item));
         }
 
         // POST body uses CreateItemRequest DTO — never the raw domain entity
         [HttpPost]
-        public async Task<ActionResult<Item>> CreateItem([FromBody] CreateItemRequest request)
+        public async Task<ActionResult<ItemDto>> CreateItem([FromBody] CreateItemRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -50,7 +50,7 @@ namespace HotelPOS.Api.Controllers
                 var command = _mapper.Map<CreateItemCommand>(request);
 
                 var item = await _mediator.Send(command);
-                return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
+                return CreatedAtAction(nameof(GetItem), new { id = item.Id }, _mapper.Map<ItemDto>(item));
             }
             catch (System.InvalidOperationException ex)
             {

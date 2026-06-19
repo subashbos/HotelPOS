@@ -454,11 +454,11 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddCategoryAsync_Valid_ReturnsId()
         {
-            _repoMock.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync(5);
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync(new Category { Id = 1 });
 
             var id = await _service.AddCategoryAsync("Desserts");
 
-            Assert.Equal(5, id);
+            Assert.Equal(1, id);
             _repoMock.Verify(r => r.AddAsync(It.Is<Category>(c => c.Name == "Desserts")), Times.Once);
         }
 
@@ -472,7 +472,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddCategoryAsync_TrimsName()
         {
-            _repoMock.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync(3);
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync(new Category { Id = 2 });
 
             await _service.AddCategoryAsync("  Starters  ");
 

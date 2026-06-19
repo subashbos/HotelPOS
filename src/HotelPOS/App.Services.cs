@@ -1,33 +1,30 @@
-using HotelPOS.Application;
+using AutoMapper;
+using FluentValidation;
+using HotelPOS.Application.Common.Validators;
+using HotelPOS.Application.DTOs.Table;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
+using HotelPOS.Application.UseCases.Auth.Commands;
+using HotelPOS.Application.UseCases.CashSessions.Commands;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Orders.Commands;
-using HotelPOS.Application.UseCases.Users.Commands;
+using HotelPOS.Application.UseCases.Purchases.Commands;
 using HotelPOS.Application.UseCases.Roles.Commands;
 using HotelPOS.Application.UseCases.Settings.Commands;
 using HotelPOS.Application.UseCases.Suppliers.Commands;
-using HotelPOS.Application.UseCases.CashSessions.Commands;
-using HotelPOS.Application.UseCases.Purchases.Commands;
-using HotelPOS.Application.UseCases.Auth.Commands;
-
-using HotelPOS.Application.Interfaces;
-using HotelPOS.Services;
+using HotelPOS.Application.UseCases.Users.Commands;
+using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure;
 using HotelPOS.Infrastructure.Persistence;
+using HotelPOS.Services;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MediatR;
 using Microsoft.Extensions.Logging;
-using FluentValidation;
-using AutoMapper;
-using HotelPOS.Domain.Entities;
-using HotelPOS.Application.Common.Validators;
-using HotelPOS.Application.DTOs.Table;
-using System;
 
 namespace HotelPOS
 {

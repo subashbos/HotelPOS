@@ -1,32 +1,9 @@
-using HotelPOS.Application;
-using HotelPOS.Application.UseCases;
-using HotelPOS.Application.UseCases.Items.Commands;
-using HotelPOS.Application.UseCases.Orders.Commands;
-using HotelPOS.Application.UseCases.Users.Commands;
-using HotelPOS.Application.UseCases.Roles.Commands;
-using HotelPOS.Application.UseCases.Settings.Commands;
-using HotelPOS.Application.UseCases.Suppliers.Commands;
-using HotelPOS.Application.UseCases.CashSessions.Commands;
-using HotelPOS.Application.UseCases.Purchases.Commands;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Services;
-using HotelPOS.Infrastructure;
-using HotelPOS.Infrastructure.Persistence;
-using HotelPOS.ViewModels;
-using HotelPOS.Views;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MediatR;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using System.Windows;
-using FluentValidation;
-using AutoMapper;
-using HotelPOS.Domain.Entities;
-using HotelPOS.Application.Common.Validators;
-using HotelPOS.Application.DTOs.Table;
 
 namespace HotelPOS
 {
@@ -57,7 +34,7 @@ namespace HotelPOS
         private sealed class DummyScope : IServiceScope
         {
             public IServiceProvider ServiceProvider => new DummyServiceProvider();
-            public void Dispose() 
+            public void Dispose()
             {
                 GC.SuppressFinalize(this);
             }

@@ -1,3 +1,5 @@
+using AutoMapper;
+using FluentValidation;
 using HotelPOS.Api;
 using HotelPOS.Api.Middleware;
 using HotelPOS.Application.Interfaces;
@@ -5,14 +7,11 @@ using HotelPOS.Application.UseCases;
 using HotelPOS.Infrastructure;
 using HotelPOS.Infrastructure.Persistence;
 using MediatR;
-using AutoMapper;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
-using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 

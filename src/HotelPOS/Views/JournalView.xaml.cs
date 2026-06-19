@@ -2,8 +2,8 @@ using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
-using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -232,7 +232,7 @@ namespace HotelPOS.Views
             {
                 var from = FromDate.SelectedDate ?? DateTime.Today.AddDays(-30);
                 var to = ToDate.SelectedDate ?? DateTime.Today;
-                
+
                 List<GstReportRowDto> data;
                 using (var scope = App.CreateDbScope())
                 {

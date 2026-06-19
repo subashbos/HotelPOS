@@ -1,13 +1,10 @@
+using HotelPOS.Application.DTOs.Order;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Orders.Commands;
 using HotelPOS.Application.UseCases.Orders.Queries;
-using HotelPOS.Domain.Entities;
-using HotelPOS.Application.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace HotelPOS.Api.Controllers
 {
@@ -43,7 +40,7 @@ namespace HotelPOS.Api.Controllers
             var (items, totalCount) = await _mediator.Send(query);
             return Ok(new PagedOrdersResponse
             {
-                Items = items,
+                Items = _mapper.Map<List<OrderDto>>(items),
                 TotalCount = totalCount
             });
         }
@@ -96,27 +93,27 @@ namespace HotelPOS.Api.Controllers
 
     public sealed class PagedOrdersResponse
     {
-        public List<Order> Items { get; set; } = new();
+        public List<OrderDto> Items { get; set; } = new();
         public int TotalCount { get; set; }
     }
 
     public sealed class CreateOrderRequest
     {
         [System.ComponentModel.DataAnnotations.Required]
-        public List<OrderItem> Items { get; set; } = new();
-        
+        public List<OrderItemDto> Items { get; set; } = new();
+
         public int TableNumber { get; set; }
-        
+
         public decimal Discount { get; set; }
-        
+
         public string PaymentMode { get; set; } = "Cash";
-        
+
         public string? CustomerName { get; set; }
-        
+
         public string? CustomerPhone { get; set; }
-        
+
         public string? CustomerGstin { get; set; }
-        
+
         public string OrderType { get; set; } = "DineIn";
     }
 

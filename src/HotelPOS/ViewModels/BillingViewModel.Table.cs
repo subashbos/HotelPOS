@@ -2,9 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace HotelPOS.ViewModels
 {

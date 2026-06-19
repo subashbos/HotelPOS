@@ -1,10 +1,9 @@
 using HotelPOS.Application.Interfaces;
+using System.Windows;
 using ToastNotifications;
 using ToastNotifications.Lifetime;
-using ToastNotifications.Position;
 using ToastNotifications.Messages;
-using System.Linq;
-using System.Windows;
+using ToastNotifications.Position;
 
 namespace HotelPOS.Services
 {
@@ -19,7 +18,7 @@ namespace HotelPOS.Services
                 _notifier = new Notifier(cfg =>
                 {
                     var parent = System.Windows.Application.Current.MainWindow;
-                    
+
                     // Fallback: If MainWindow is null or not yet loaded, find any active window
                     if (parent == null || !parent.IsLoaded)
                     {

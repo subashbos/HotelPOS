@@ -1,7 +1,4 @@
 using HotelPOS.Domain.Entities;
-using HotelPOS.ViewModels;
-using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -25,7 +22,7 @@ namespace HotelPOS.Views
                         return;
                     }
                 }
-                
+
                 if (string.IsNullOrWhiteSpace(SearchBox.Text))
                 {
                     // Empty search box + Enter = move to payment mode

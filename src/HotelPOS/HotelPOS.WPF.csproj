@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <UserSecretsId>d0cd907b-e4ef-4033-81f8-731a590bdc73</UserSecretsId>
   </PropertyGroup>
 
   <!-- Application Branding: Include the icon resource for UI windows -->
@@ -24,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
     <!-- Logging infrastructure -->
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.5" />
     <!-- EF Design-time tools -->

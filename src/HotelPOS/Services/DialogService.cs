@@ -1,8 +1,6 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace HotelPOS.Services
@@ -30,7 +28,7 @@ namespace HotelPOS.Services
                 // Set active window as owner so it centers properly over the parent window
                 var activeWindow = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
                                    ?? System.Windows.Application.Current.MainWindow;
-                
+
                 if (activeWindow != null && activeWindow != window)
                 {
                     window.Owner = activeWindow;
@@ -40,9 +38,9 @@ namespace HotelPOS.Services
                 if (result == true)
                 {
                     details.PaymentMode = viewModel.PaymentMode;
-                    details.CashAmount = viewModel.CashAmount;
-                    details.CardAmount = viewModel.CardAmount;
-                    details.UpiAmount = viewModel.UpiAmount;
+                    details.CashAmount = viewModel.ParsedCash;
+                    details.CardAmount = viewModel.ParsedCard;
+                    details.UpiAmount = viewModel.ParsedUpi;
                 }
                 tcs.SetResult(result ?? false);
             });

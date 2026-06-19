@@ -1,8 +1,6 @@
 using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 

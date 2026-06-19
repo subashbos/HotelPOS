@@ -1,16 +1,10 @@
-using HotelPOS.Application;
-using HotelPOS.Application.UseCases;
+using ClosedXML.Excel;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
-using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
-using ClosedXML.Excel;
 
 namespace HotelPOS.Views
 {
@@ -34,7 +28,8 @@ namespace HotelPOS.Views
                 ReportGrid.ItemsSource = page;
             };
 
-            Loaded += async (s, e) => {
+            Loaded += async (s, e) =>
+            {
                 _isLoading = true;
                 try
                 {

@@ -1,11 +1,8 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -37,18 +34,18 @@ namespace HotelPOS.Views
         // ── Friendly metadata lookup ──────────────────────────────────────────
         private static readonly Dictionary<string, (string Icon, string Display, string Desc)> _meta = new()
         {
-            ["Dashboard"]   = ("📊", "Dashboard",      "View sales summaries and KPI metrics"),
-            ["Billing"]     = ("🖥",  "Billing POS",    "Create and manage customer bills"),
-            ["Items"]       = ("📋", "Items / Menu",    "Add, edit, or delete menu items"),
-            ["Categories"]  = ("🏷",  "Categories",     "Manage item category groups"),
-            ["Tables"]      = ("🪑", "Tables",          "View and manage dining tables"),
-            ["Ledger"]      = ("📒", "Ledger",          "View financial transaction ledger"),
-            ["Journal"]     = ("📓", "Journal",         "View daily accounting journal entries"),
-            ["Settings"]    = ("⚙",  "Settings",        "Configure system-wide settings"),
-            ["Audit"]       = ("🛡",  "Audit Log",       "View system activity and audit trail"),
-            ["Shift"]       = ("💵", "Shift / Session", "Open and close cash sessions"),
-            ["Roles"]       = ("👥", "Roles",           "Manage user roles and permissions"),
-            ["SalesReport"] = ("📈", "Sales Report",    "View and export detailed sales reports"),
+            ["Dashboard"] = ("📊", "Dashboard", "View sales summaries and KPI metrics"),
+            ["Billing"] = ("🖥", "Billing POS", "Create and manage customer bills"),
+            ["Items"] = ("📋", "Items / Menu", "Add, edit, or delete menu items"),
+            ["Categories"] = ("🏷", "Categories", "Manage item category groups"),
+            ["Tables"] = ("🪑", "Tables", "View and manage dining tables"),
+            ["Ledger"] = ("📒", "Ledger", "View financial transaction ledger"),
+            ["Journal"] = ("📓", "Journal", "View daily accounting journal entries"),
+            ["Settings"] = ("⚙", "Settings", "Configure system-wide settings"),
+            ["Audit"] = ("🛡", "Audit Log", "View system activity and audit trail"),
+            ["Shift"] = ("💵", "Shift / Session", "Open and close cash sessions"),
+            ["Roles"] = ("👥", "Roles", "Manage user roles and permissions"),
+            ["SalesReport"] = ("📈", "Sales Report", "View and export detailed sales reports"),
         };
 
         public static PermissionViewModel FromPermission(RolePermission p)
@@ -56,22 +53,22 @@ namespace HotelPOS.Views
             _meta.TryGetValue(p.ModuleName, out var m);
             return new PermissionViewModel
             {
-                Id          = p.Id,
-                RoleId      = p.RoleId,
-                ModuleName  = p.ModuleName,
+                Id = p.Id,
+                RoleId = p.RoleId,
+                ModuleName = p.ModuleName,
                 DisplayName = m.Display ?? p.ModuleName,
-                Icon        = m.Icon ?? "📄",
+                Icon = m.Icon ?? "📄",
                 Description = m.Desc ?? "Toggle access to this module",
-                CanAccess   = p.CanAccess,
+                CanAccess = p.CanAccess,
             };
         }
 
         public RolePermission ToPermission() => new()
         {
-            Id         = Id,
-            RoleId     = RoleId,
+            Id = Id,
+            RoleId = RoleId,
             ModuleName = ModuleName,
-            CanAccess  = CanAccess,
+            CanAccess = CanAccess,
         };
     }
 
@@ -138,16 +135,16 @@ namespace HotelPOS.Views
 
                 // Admin role: disable delete button
                 DeleteRoleBtn.IsEnabled = _selectedRole.Name != "Admin";
-                DeleteRoleBtn.Opacity   = _selectedRole.Name == "Admin" ? 0.4 : 1.0;
+                DeleteRoleBtn.Opacity = _selectedRole.Name == "Admin" ? 0.4 : 1.0;
 
                 // Show editor, hide placeholder
                 NoRolePlaceholder.Visibility = Visibility.Collapsed;
-                PermissionEditor.Visibility  = Visibility.Visible;
+                PermissionEditor.Visibility = Visibility.Visible;
             }
             else
             {
                 NoRolePlaceholder.Visibility = Visibility.Visible;
-                PermissionEditor.Visibility  = Visibility.Collapsed;
+                PermissionEditor.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -278,7 +275,7 @@ namespace HotelPOS.Views
                 _selectedRole = null;
                 _currentPermissions.Clear();
                 NoRolePlaceholder.Visibility = Visibility.Visible;
-                PermissionEditor.Visibility  = Visibility.Collapsed;
+                PermissionEditor.Visibility = Visibility.Collapsed;
                 await LoadDataAsync();
             }
         }

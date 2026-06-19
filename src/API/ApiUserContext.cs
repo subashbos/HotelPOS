@@ -1,6 +1,5 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
-using Microsoft.AspNetCore.Http;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
