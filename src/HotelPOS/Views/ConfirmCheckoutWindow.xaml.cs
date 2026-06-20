@@ -19,7 +19,7 @@ namespace HotelPOS.Views
             if (sender is TextBox textBox)
             {
                 var fullText = textBox.Text.Remove(textBox.SelectionStart, textBox.SelectionLength).Insert(textBox.SelectionStart, e.Text);
-                Regex regex = new Regex(@"^[0-9]*(?:\.[0-9]{0,2})?$");
+                Regex regex = new Regex(@"^[0-9]*(?:\.[0-9]{0,2})?$", RegexOptions.None, TimeSpan.FromMilliseconds(250));
                 e.Handled = !regex.IsMatch(fullText);
             }
         }

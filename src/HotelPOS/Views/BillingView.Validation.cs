@@ -8,7 +8,7 @@ namespace HotelPOS.Views
     {
         private void NumberOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$");
+            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
 
         private void DecimalOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -17,7 +17,7 @@ namespace HotelPOS.Views
             if (textBox == null) return;
 
             string proposedText = textBox.Text.Insert(textBox.SelectionStart, e.Text);
-            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(proposedText, @"^\d*\.?\d*$");
+            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(proposedText, @"^\d*\.?\d*$", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
 
         private void DataObject_OnPasting(object sender, DataObjectPastingEventArgs e)
@@ -25,7 +25,7 @@ namespace HotelPOS.Views
             if (e.DataObject.GetDataPresent(typeof(string)))
             {
                 string text = (string)e.DataObject.GetData(typeof(string));
-                if (!System.Text.RegularExpressions.Regex.IsMatch(text, "^[0-9]+$")) e.CancelCommand();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(text, "^[0-9]+$", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(250))) e.CancelCommand();
             }
             else e.CancelCommand();
         }
@@ -35,7 +35,7 @@ namespace HotelPOS.Views
             if (e.DataObject.GetDataPresent(typeof(string)))
             {
                 string text = (string)e.DataObject.GetData(typeof(string));
-                if (!System.Text.RegularExpressions.Regex.IsMatch(text, @"^\d*\.?\d*$")) e.CancelCommand();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(text, @"^\d*\.?\d*$", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(250))) e.CancelCommand();
             }
             else e.CancelCommand();
         }
