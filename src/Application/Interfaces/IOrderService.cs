@@ -4,19 +4,42 @@ namespace HotelPOS.Application.Interfaces
 {
     public interface IOrderService
     {
-        Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn");
+        Task<int> SaveOrderAsync(SaveOrderRequest request);
+        Task<int> SaveOrderInternalAsync(SaveOrderRequest request);
         Task<List<Order>> GetAllOrdersWithItemsAsync();
-        Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(int pageNumber, int pageSize, 
-            DateTime? from = null, DateTime? to = null, int? tableNumber = null,
-            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null);
+        Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(PagedOrdersRequest request);
         Task<Order?> GetOrderAsync(int id);
         Task UpdateOrderAsync(Order order);
         Task DeleteOrderAsync(int orderId);
 
         Task VoidOrderAsync(int orderId, string reason, string authorizedUser);
+        Task VoidOrderInternalAsync(int orderId, string reason, string authorizedUser);
         Task RefundOrderAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason);
         Task ProcessPartialPaymentAsync(int orderId, decimal cash, decimal card, decimal upi);
     }
 
     public record OrderItemRefundDto(int ItemId, int QuantityToRefund);
+
+    public record SaveOrderRequest(
+        List<OrderItem> Items,
+        int TableNumber,
+        decimal Discount = 0,
+        string PaymentMode = "Cash",
+        string? CustomerName = null,
+        string? CustomerPhone = null,
+        string? CustomerGstin = null,
+        string OrderType = "DineIn"
+    );
+
+    public record PagedOrdersRequest(
+        int PageNumber,
+        int PageSize,
+        DateTime? From = null,
+        DateTime? To = null,
+        int? TableNumber = null,
+        string? Search = null,
+        string? PaymentMode = null,
+        string? OrderType = null,
+        int? CategoryId = null
+    );
 }

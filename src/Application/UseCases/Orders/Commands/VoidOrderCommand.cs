@@ -22,7 +22,7 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
 
         public async Task Handle(VoidOrderCommand request, CancellationToken cancellationToken)
         {
-            await _orderService.VoidOrderAsync(
+            await _orderService.VoidOrderInternalAsync(
                 request.OrderId,
                 request.Reason,
                 request.AuthorizedUser

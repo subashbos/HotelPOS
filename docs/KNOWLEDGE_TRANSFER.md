@@ -23,20 +23,21 @@ Primary startup flow:
 
 ## 2) Architecture Overview
 
-The solution follows a layered structure:
+The solution follows a strict **Clean Architecture** with **CQRS** and **MVVM** patterns:
 
-- `HotelPOS/`: WPF presentation and composition root
-- `HotelPOS.Domain/`: entities and repository contracts
-- `HotelPOS.Application/`: business services and use-case orchestration
-- `HotelPOS.Persistence/`: EF Core `DbContext`, repositories, migrations
-- `HotelPOS.Infrastructure/`: cross-cutting utilities (theme, notifications, backup)
-- `HotelPOS.Tests/`: unit/integration-style tests
+- `HotelPOS/`: WPF presentation (MVVM ViewModels, UI XAML, and DI composition root)
+- `HotelPOS.Domain/`: Core entities (`Item`, `Order`) and repository contracts
+- `HotelPOS.Application/`: Business services, MediatR Commands/Queries, and Data Transfer Objects (DTOs)
+- `HotelPOS.Persistence/`: EF Core `DbContext`, `GenericRepository<T>`, and specific repository implementations
+- `HotelPOS.Infrastructure/`: Cross-cutting utilities (theme, notifications, backup)
+- `HotelPOS.Tests/`: Unit, integration, and loophole-focused tests
 
-Dependency direction:
+Dependency direction and Data Flow:
 
-- UI -> Application -> Domain contracts
-- Persistence implements Domain contracts
-- Infrastructure supports UI/Application concerns
+- UI binds to ViewModels (MVVM)
+- ViewModels dispatch MediatR Commands/Queries or call Application Services
+- Application Services orchestrate logic and map Entities to DTOs before returning to the UI/API
+- Persistence implements Domain contracts using a unified `GenericRepository<T>` base
 
 ## 3) Key Runtime Components
 

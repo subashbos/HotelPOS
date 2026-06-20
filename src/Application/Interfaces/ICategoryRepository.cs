@@ -1,12 +1,10 @@
 using HotelPOS.Domain.Entities;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace HotelPOS.Application.Interfaces
 {
-    public interface ICategoryRepository
+    public interface ICategoryRepository : IRepository<Category>
     {
-        Task<List<Category>> GetAllAsync();
-        Task<Category?> GetByIdAsync(int id);
-        Task<int> AddAsync(Category category);
-        Task UpdateAsync(Category category);
-        Task DeleteAsync(int id);
     }
 }

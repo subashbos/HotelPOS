@@ -1,12 +1,6 @@
 using ClosedXML.Excel;
-using HotelPOS.Application;
-using HotelPOS.Application.UseCases;
-using HotelPOS.Application.Interfaces;
 using HotelPOS.ViewModels;
 using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -24,7 +18,7 @@ namespace HotelPOS.Views
 
             // Wire up pagination control
             Pager.ExternalPageRequested += async (page, pageSize) => await _viewModel.LoadPageAsync(page, pageSize);
-            _viewModel.GetPageSizeRequested = () => 
+            _viewModel.GetPageSizeRequested = () =>
             {
                 // Accessing Pager control's pageSize (combobox) logic
                 // Since PageSize is internal to Pager, we can just use 10 as default or read it

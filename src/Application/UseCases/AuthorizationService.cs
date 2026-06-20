@@ -51,7 +51,7 @@ namespace HotelPOS.Application.UseCases
         public void EnsureSelfOrPermission(int targetUserId, string moduleName)
         {
             if (!_userContext.IsAuthenticated)
-                return;
+                throw new UnauthorizedAccessException("Authentication is required.");
 
             if (_userContext.CurrentUserId == targetUserId)
                 return;

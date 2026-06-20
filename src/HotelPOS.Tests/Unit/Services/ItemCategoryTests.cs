@@ -36,6 +36,7 @@ namespace HotelPOS.Tests
         {
             // Arrange
             var mockRepo = new Mock<ICategoryRepository>();
+            mockRepo.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync((Category c) => { c.Id = 1; return c; });
             var itemRepo = new Mock<IItemRepository>();
             var service = new CategoryService(mockRepo.Object, itemRepo.Object);
 
@@ -63,3 +64,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

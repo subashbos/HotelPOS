@@ -1,14 +1,12 @@
+using FluentValidation;
 using HotelPOS.Application.DTOs.Item;
-using HotelPOS.Application;
-using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using FluentValidation;
-using HotelPOS.Application.UseCases.Items.Commands;
 
 namespace HotelPOS
 {
@@ -183,15 +181,15 @@ namespace HotelPOS
                     {
                         await itemService.AddItemAsync(dto);
                         ItemSaved?.Invoke();
-                        
+
                         _notificationService.ShowSuccess($"'{name}' saved successfully.");
-                        
+
                         // Clear for next item
-                        ItemNameBox.Clear(); 
+                        ItemNameBox.Clear();
                         ItemPriceBox.Clear();
                         BarcodeBox.Clear();
                         StockQuantityBox.Clear();
-                        ItemCategoryCombo.SelectedIndex = -1; 
+                        ItemCategoryCombo.SelectedIndex = -1;
                         TaxCombo.SelectedIndex = 0;
                         ItemNameBox.Focus();
                         StatusBorder.Visibility = Visibility.Collapsed;

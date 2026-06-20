@@ -164,3 +164,4 @@ public class DomainEntityTests
         Assert.Equal(250m, order.TotalAmount);
     }
 }
+

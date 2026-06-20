@@ -16,3 +16,4 @@ namespace HotelPOS.Tests
         // which is handled in specialized UI tests. Here we test the logic.
     }
 }
+

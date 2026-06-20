@@ -41,7 +41,14 @@ All data validation contracts and request models are separated from outer persis
 
 ---
 
-## 4. UI/UX Theming & Dynamic Assets
+## 4. Generic Repository & Data Access
+Reduces code duplication across data access boundaries.
+- **Implementation**: The `GenericRepository<T>` provides baseline CRUD actions over `DbSet<T>`.
+- **Inheritance**: Entity-specific repositories (e.g., `CategoryRepository`) inherit from this base class, adding only domain-specific queries or overrides (like explicit sorting).
+
+---
+
+## 5. UI/UX Theming & Dynamic Assets
 The desktop interface supports instant dark/light themes.
 - **Resource Management**: Dynamic dictionaries are defined in `/Themes/DarkTheme.xaml` and `/Themes/LightTheme.xaml`.
 - **Runtime Swapping**: `ThemeService` clears the first index of `MergedDictionaries` and injects the selected theme URI dynamically.

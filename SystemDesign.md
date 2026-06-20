@@ -61,6 +61,21 @@ Because EF Core DbContext is not thread-safe and WPF view-models are usually res
 - **Remediation**: Implements dynamic scoped service resolution (`App.CreateDbScope()`) across ViewModels and Views to spawn transient, short-lived scopes per database operation (or operation block), isolating the database connection context per task.
 - **Test Compatibility**: ViewModels fall back to constructor-injected dependencies when running within unit test runners where the WPF application environment is not initialized, preserving test isolation.
 
+### 3.4 CQRS & MediatR Pipeline
+The Application layer separates Read operations (Queries) from Write operations (Commands) using the MediatR library.
+- **Commands**: Encapsulate state-changing operations (e.g., `CreateItemCommand`, `DeleteOrderCommand`).
+- **Queries**: Handle data retrieval without side effects (e.g., `GetItemsQuery`).
+- **Decoupling**: Handlers are strictly isolated from the UI, communicating only via DTOs to enforce clean architecture.
+
+### 3.5 Generic Repository Pattern
+Infrastructure data access is standardized through a `GenericRepository<T>`.
+- **DRY Principle**: Centralizes `AddAsync`, `UpdateAsync`, `DeleteAsync`, and `GetByIdAsync` operations.
+- **Extensibility**: Entity-specific repositories (like `CategoryRepository`) inherit from the generic base, shrinking boilerplate while maintaining the ability to override specific methods (e.g., custom sorting).
+
+### 3.6 FluentValidation Integration
+Business rule validation is enforced before execution using FluentValidation.
+- **Command Validation**: Validators exist for CRUD operations (e.g., `DeleteOrderCommandValidator`) to ensure entities meet constraints before hitting the database or domain logic.
+
 ---
 
 ## 4. UI/UX Standards

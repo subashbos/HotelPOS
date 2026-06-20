@@ -45,7 +45,7 @@ namespace HotelPOS.Tests
         public void CartService_UpdatePrice_UpdatesLineTotal()
         {
             // Arrange
-            var cartService = new CartService();
+            var cartService = new CartService(null, null);
             var item = new Item { Id = 1, Name = "Burger", Price = 50, TaxPercentage = 5 };
             cartService.AddItem(1, item); // Initial: 50 * 1 = 50
 
@@ -63,7 +63,7 @@ namespace HotelPOS.Tests
         public void CartService_LoadItems_ClearsOldAndAddsNew()
         {
             // Arrange
-            var cartService = new CartService();
+            var cartService = new CartService(null, null);
             cartService.AddItem(1, new Item { Id = 1, Name = "Old", Price = 10 });
 
             var newItems = new List<OrderItem>
@@ -82,3 +82,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

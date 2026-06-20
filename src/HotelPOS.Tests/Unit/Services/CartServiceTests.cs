@@ -11,7 +11,7 @@ namespace HotelPOS.Tests;
 /// </summary>
 public class CartServiceTests
 {
-    private readonly CartService _cart = new();
+    private readonly CartService _cart = new(null, null);
     private const int Table1 = 1;
     private const int Table2 = 2;
 
@@ -440,3 +440,4 @@ public class CartServiceTests
         Assert.Empty(_cart.GetItems(Table1));
     }
 }
+

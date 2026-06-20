@@ -3,10 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HotelPOS.ViewModels
 {
@@ -126,7 +123,7 @@ namespace HotelPOS.ViewModels
             if (row != null && PurchaseRows.Contains(row))
             {
                 PurchaseRows.Remove(row);
-                
+
                 // Keep at least one empty row for user convenience
                 if (PurchaseRows.Count == 0)
                 {
@@ -289,11 +286,11 @@ namespace HotelPOS.ViewModels
                             row.Total = 0;
                             return;
                         }
-                        
+
                         row.ItemName = item.Name;
                         row.UnitPrice = item.Price;
                         row.TaxPercentage = item.TaxPercentage;
-                        
+
                         // Recalculate row total
                         var sub = row.Quantity * row.UnitPrice;
                         var tax = Math.Round(sub * (row.TaxPercentage / 100m), 2);
@@ -310,7 +307,7 @@ namespace HotelPOS.ViewModels
                     var sub = row.Quantity * row.UnitPrice;
                     var tax = Math.Round(sub * (row.TaxPercentage / 100m), 2);
                     row.Total = sub + tax - row.Discount;
-                    
+
                     RecalculateTotals();
                 }
             }

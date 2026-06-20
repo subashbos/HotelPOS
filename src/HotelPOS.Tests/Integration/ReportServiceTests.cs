@@ -169,8 +169,8 @@ namespace HotelPOS.Tests
                 .ReturnsAsync((new List<Purchase> { purchase }, 1));
 
             // Act
-            var result = await _service.GetPagedPurchaseReportAsync(
-                1, 20, fromDate, toDate, supplierId, itemName, paymentType, invoiceNo);
+            var result = await _service.GetPagedPurchaseReportAsync(new PagedPurchaseReportRequest(
+                1, 20, fromDate, toDate, supplierId, itemName, paymentType, invoiceNo));
 
             // Assert
             Assert.Single(result.items);
@@ -214,3 +214,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

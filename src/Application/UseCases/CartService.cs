@@ -2,6 +2,12 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using System.Collections.Concurrent;
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HotelPOS.Application.UseCases
 {
@@ -10,6 +16,159 @@ namespace HotelPOS.Application.UseCases
         // ConcurrentDictionary for safe outer table-key access across threads
         private readonly ConcurrentDictionary<int, List<OrderItem>> _tableCarts = new();
         private readonly Lock _lock = new();
+        private readonly IServiceScopeFactory? _scopeFactory;
+
+        /// <summary>
+        /// Path to the cart persistence file. Overridable for testing.
+        /// Pass null to disable file-based persistence entirely.
+        /// </summary>
+        private readonly string? _cartsFilePath;
+
+        /// <summary>
+        /// Production constructor: resolves scope factory from DI and uses the
+        /// default carts.json path in the application's base directory.
+        /// </summary>
+        public CartService(IServiceScopeFactory? scopeFactory = null)
+            : this(scopeFactory, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "carts.json"))
+        {
+        }
+
+        /// <summary>
+        /// Testable constructor: callers can supply a custom file path (or null
+        /// to disable persistence) so test runs never share or pollute each
+        /// other's on-disk state.
+        /// </summary>
+        internal CartService(IServiceScopeFactory? scopeFactory, string? cartsFilePath)
+        {
+            _scopeFactory = scopeFactory;
+            _cartsFilePath = cartsFilePath;
+            RestoreCarts();
+            RestoreHeldOrders();
+        }
+
+        // ── Persistence helpers ──────────────────────────────────────────────
+
+        private void SaveCarts()
+        {
+            if (_cartsFilePath == null) return;
+            try
+            {
+                var json = JsonSerializer.Serialize(_tableCarts);
+                File.WriteAllText(_cartsFilePath, json);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to save carts: {ex.Message}");
+            }
+        }
+
+        private void RestoreCarts()
+        {
+            if (_cartsFilePath == null) return;
+            try
+            {
+                if (File.Exists(_cartsFilePath))
+                {
+                    var json = File.ReadAllText(_cartsFilePath);
+                    var data = JsonSerializer.Deserialize<ConcurrentDictionary<int, List<OrderItem>>>(json);
+                    if (data != null)
+                    {
+                        _tableCarts.Clear();
+                        foreach (var kvp in data)
+                        {
+                            _tableCarts[kvp.Key] = kvp.Value;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to restore carts: {ex.Message}");
+            }
+        }
+
+        private void SaveHeldOrderToDb(HeldOrder held)
+        {
+            if (_scopeFactory == null) return;
+            try
+            {
+                Task.Run(async () =>
+                {
+                    using var scope = _scopeFactory.CreateScope();
+                    var repo = scope.ServiceProvider.GetRequiredService<IHeldOrderRepository>();
+                    await repo.SaveAsync(held);
+                }).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to save held order to DB: {ex.Message}");
+            }
+        }
+
+        private void RemoveHeldOrderFromDb(Guid id)
+        {
+            if (_scopeFactory == null) return;
+            try
+            {
+                Task.Run(async () =>
+                {
+                    using var scope = _scopeFactory.CreateScope();
+                    var repo = scope.ServiceProvider.GetRequiredService<IHeldOrderRepository>();
+                    await repo.DeleteAsync(id);
+                }).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to remove held order from DB: {ex.Message}");
+            }
+        }
+
+        private void ClearAllHeldOrdersFromDb()
+        {
+            if (_scopeFactory == null) return;
+            try
+            {
+                Task.Run(async () =>
+                {
+                    using var scope = _scopeFactory.CreateScope();
+                    var repo = scope.ServiceProvider.GetRequiredService<IHeldOrderRepository>();
+                    await repo.ClearAllAsync();
+                }).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to clear held orders from DB: {ex.Message}");
+            }
+        }
+
+        private void RestoreHeldOrders()
+        {
+            if (_scopeFactory == null) return;
+            try
+            {
+                var restored = Task.Run(async () =>
+                {
+                    using var scope = _scopeFactory.CreateScope();
+                    var repo = scope.ServiceProvider.GetRequiredService<IHeldOrderRepository>();
+                    return await repo.GetAllAsync();
+                }).GetAwaiter().GetResult();
+
+                lock (_lock)
+                {
+                    _heldOrders.Clear();
+                    foreach (var h in restored)
+                    {
+                        _heldOrders.Add(h);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to restore held orders from DB: {ex.Message}");
+            }
+        }
+
+        // ── Cart operations ──────────────────────────────────────────────────
 
         public void AddItem(int tableNumber, Item item)
         {
@@ -35,6 +194,7 @@ namespace HotelPOS.Application.UseCases
                         Total = item.Price
                     });
                 }
+                SaveCarts();
             }
         }
 
@@ -50,6 +210,7 @@ namespace HotelPOS.Application.UseCases
                     if (existing.Quantity <= 0) items.Remove(existing);
                     else existing.Total = existing.Price * existing.Quantity;
                 }
+                SaveCarts();
             }
         }
 
@@ -63,6 +224,7 @@ namespace HotelPOS.Application.UseCases
                 {
                     items.Remove(item);
                 }
+                SaveCarts();
             }
         }
 
@@ -83,10 +245,12 @@ namespace HotelPOS.Application.UseCases
                 if (item.Quantity <= 0)
                 {
                     items.Remove(item);
+                    SaveCarts();
                     return;
                 }
 
                 item.Total = item.Price * item.Quantity;
+                SaveCarts();
             }
         }
 
@@ -107,6 +271,7 @@ namespace HotelPOS.Application.UseCases
                     item.Quantity = quantity;
                     item.Total = item.Price * item.Quantity;
                 }
+                SaveCarts();
             }
         }
 
@@ -115,6 +280,7 @@ namespace HotelPOS.Application.UseCases
             lock (_lock)
             {
                 GetOrCreateCart(tableNumber).Clear();
+                SaveCarts();
             }
         }
 
@@ -124,6 +290,8 @@ namespace HotelPOS.Application.UseCases
             {
                 _tableCarts.Clear();
                 _heldOrders.Clear();
+                SaveCarts();
+                ClearAllHeldOrdersFromDb();
             }
         }
 
@@ -150,10 +318,6 @@ namespace HotelPOS.Application.UseCases
             lock (_lock)
             {
                 var items = GetOrCreateCart(tableNumber);
-                // Calculate tax per item. If item tax is 0, we could potentially use the default gstRate,
-                // but usually 0 means tax-free. However, for compatibility with existing tests, 
-                // if we want to support the parameter, we'd need logic here.
-                // Let's assume item.TaxPercentage is the source of truth now.
                 return Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
             }
         }
@@ -187,6 +351,7 @@ namespace HotelPOS.Application.UseCases
                         Total = CalculateLineTotal(item)
                     });
                 }
+                SaveCarts();
             }
         }
 
@@ -200,9 +365,12 @@ namespace HotelPOS.Application.UseCases
                 {
                     item.Price = newPrice;
                     item.Total = item.Price * item.Quantity;
+                    SaveCarts();
                 }
             }
         }
+
+        // ── Held orders ──────────────────────────────────────────────────────
 
         private readonly ConcurrentList<HeldOrder> _heldOrders = new();
 
@@ -210,15 +378,14 @@ namespace HotelPOS.Application.UseCases
         {
             lock (_lock)
             {
-                var items = GetItems(tableNumber);
-                if (items.Count == 0) return;
+                // Get items directly from the internal cart (no lock re-entry)
+                var rawItems = GetOrCreateCart(tableNumber);
+                if (rawItems.Count == 0) return;
 
-                var held = new HeldOrder
-                {
-                    HoldName = string.IsNullOrWhiteSpace(holdName) ? $"Table {tableNumber}" : holdName,
-                    HeldAt = DateTime.UtcNow,
-                    TableNumber = tableNumber,
-                    Items = items.Select(x => new OrderItem
+                // Snapshot the items sorted by name (same projection as GetItems)
+                var snapshot = rawItems
+                    .OrderBy(x => x.ItemName)
+                    .Select(x => new OrderItem
                     {
                         ItemId = x.ItemId,
                         ItemName = x.ItemName,
@@ -226,11 +393,22 @@ namespace HotelPOS.Application.UseCases
                         Price = x.Price,
                         TaxPercentage = x.TaxPercentage,
                         Total = x.Total
-                    }).ToList()
+                    }).ToList();
+
+                var held = new HeldOrder
+                {
+                    HoldName = string.IsNullOrWhiteSpace(holdName) ? $"Table {tableNumber}" : holdName,
+                    HeldAt = DateTime.UtcNow,
+                    TableNumber = tableNumber,
+                    Items = snapshot
                 };
 
                 _heldOrders.Add(held);
-                Clear(tableNumber);
+                SaveHeldOrderToDb(held);
+
+                // Clear the cart directly without re-acquiring the lock
+                rawItems.Clear();
+                SaveCarts();
             }
         }
 
@@ -243,8 +421,25 @@ namespace HotelPOS.Application.UseCases
                 var held = _heldOrders.FirstOrDefault(x => x.Id == heldOrderId);
                 if (held == null) return;
 
-                LoadItems(targetTableNumber, held.Items);
+                // Load items directly without re-acquiring the lock
+                var cart = GetOrCreateCart(targetTableNumber);
+                cart.Clear();
+                foreach (var item in held.Items)
+                {
+                    cart.Add(new OrderItem
+                    {
+                        ItemId = item.ItemId,
+                        ItemName = item.ItemName,
+                        Quantity = item.Quantity,
+                        Price = item.Price,
+                        TaxPercentage = item.TaxPercentage,
+                        Total = CalculateLineTotal(item)
+                    });
+                }
+                SaveCarts();
+
                 _heldOrders.Remove(held);
+                RemoveHeldOrderFromDb(heldOrderId);
             }
         }
 
@@ -254,7 +449,8 @@ namespace HotelPOS.Application.UseCases
 
             lock (_lock)
             {
-                var sourceItems = GetItems(sourceTableNumber);
+                // Access the raw list directly to avoid re-entry on _lock
+                var sourceItems = GetOrCreateCart(sourceTableNumber);
                 if (sourceItems.Count == 0) return;
 
                 var targetItems = GetOrCreateCart(targetTableNumber);
@@ -281,7 +477,9 @@ namespace HotelPOS.Application.UseCases
                     }
                 }
 
-                Clear(sourceTableNumber);
+                // Clear source directly
+                sourceItems.Clear();
+                SaveCarts();
             }
         }
 

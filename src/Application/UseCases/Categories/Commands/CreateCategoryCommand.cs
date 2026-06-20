@@ -27,7 +27,8 @@ namespace HotelPOS.Application.UseCases.Categories.Commands
                 throw new InvalidOperationException($"Category '{request.Name}' already exists.");
 
             var category = new Category { Name = request.Name.Trim(), DisplayOrder = request.DisplayOrder };
-            return await _repo.AddAsync(category);
+            var result = await _repo.AddAsync(category);
+            return result.Id;
         }
     }
 }

@@ -1,10 +1,10 @@
+using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Api.Controllers
 {

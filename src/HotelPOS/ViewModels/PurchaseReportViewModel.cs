@@ -1,16 +1,10 @@
-using HotelPOS.Application.DTOs.Report;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HotelPOS.Application;
-using HotelPOS.Application.UseCases;
+using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HotelPOS.ViewModels
 {
@@ -93,7 +87,7 @@ namespace HotelPOS.ViewModels
                 Suppliers.Add(new Supplier { Id = 0, Name = "All Suppliers" });
                 foreach (var sup in suppliers) Suppliers.Add(sup);
                 SelectedSupplier = Suppliers.First();
-                
+
                 await LoadDataAsync(1, 10);
             }
             catch (Exception ex)
@@ -142,8 +136,8 @@ namespace HotelPOS.ViewModels
                     var to = FilterTo?.AddDays(1);
                     var supplierId = SelectedSupplier?.Id == 0 ? (int?)null : SelectedSupplier?.Id;
 
-                    var result = await reportService.GetPagedPurchaseReportAsync(
-                        page, pageSize, from, to, supplierId, ItemNameSearch, SelectedPaymentType, InvoiceNoSearch);
+                    var result = await reportService.GetPagedPurchaseReportAsync(new PagedPurchaseReportRequest(
+                        page, pageSize, from, to, supplierId, ItemNameSearch, SelectedPaymentType, InvoiceNoSearch));
 
                     ReportRows.Clear();
                     foreach (var row in result.items) ReportRows.Add(row);

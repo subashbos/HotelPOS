@@ -1,5 +1,8 @@
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
+using MediatR;
+using HotelPOS.Application.UseCases.Reports.Queries;
+using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.UseCases
 {
@@ -9,16 +12,34 @@ namespace HotelPOS.Application.UseCases
         private readonly IItemRepository _itemRepo;
         private readonly ICategoryRepository _categoryRepo;
         private readonly IPurchaseRepository _purchaseRepo;
+        private readonly IMediator? _mediator;
 
-        public ReportService(IOrderRepository orderRepo, IItemRepository itemRepo, ICategoryRepository categoryRepo, IPurchaseRepository purchaseRepo)
+        public ReportService(
+            IOrderRepository orderRepo,
+            IItemRepository itemRepo,
+            ICategoryRepository categoryRepo,
+            IPurchaseRepository purchaseRepo,
+            IMediator? mediator = null)
         {
             _orderRepo = orderRepo;
             _itemRepo = itemRepo;
             _categoryRepo = categoryRepo;
             _purchaseRepo = purchaseRepo;
+            _mediator = mediator;
         }
 
         public async Task<SalesReportDto> GetSalesReportAsync(
+            DateTime? from = null, DateTime? to = null)
+        {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetSalesReportQuery(from, to));
+            }
+
+            return await GetSalesReportInternalAsync(from, to);
+        }
+
+        public async Task<SalesReportDto> GetSalesReportInternalAsync(
             DateTime? from = null, DateTime? to = null)
         {
             // Standardize bounds to UTC for repository query
@@ -38,77 +59,14 @@ namespace HotelPOS.Application.UseCases
                 .OrderByDescending(g => g.Sum(i => i.Quantity))
                 .FirstOrDefault()?.Key ?? "N/A";
 
-            var byTable = orders
-                .GroupBy(o => o.TableNumber)
-                .Select(g => new TableSalesRowDto
-                {
-                    TableNumber = g.Key,
-                    OrderCount = g.Count(),
-                    TotalRevenue = g.Sum(o => o.TotalAmount)
-                })
-                .OrderBy(t => t.TableNumber)
-                .ToList();
-            for (int i = 0; i < byTable.Count; i++) byTable[i].SNo = i + 1;
-
-            var recent = orders
-                .OrderByDescending(o => o.CreatedAt)
-                .Take(50)
-                .Select((o, idx) => new RecentOrderRowDto
-                {
-                    SNo = idx + 1,
-                    OrderId = o.Id,
-                    TableNumber = o.TableNumber,
-                    CreatedAt = o.CreatedAt.ToLocalTime(),
-                    Total = o.TotalAmount,
-                    DiscountAmount = o.DiscountAmount,
-                    ItemCount = o.Items.Count,
-                    PaymentMode = string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode,
-                    OrderType = string.IsNullOrWhiteSpace(o.OrderType) ? "DineIn" : o.OrderType,
-                    Status = string.IsNullOrWhiteSpace(o.Status) ? "Paid" : o.Status,
-                    CustomerName = o.CustomerName,
-                    CustomerPhone = o.CustomerPhone,
-                    CustomerGstin = o.CustomerGstin,
-                    Items = o.Items ?? new List<HotelPOS.Domain.Entities.OrderItem>()
-                })
-                .ToList();
+            var byTable = CalculateSalesByTable(orders);
+            var recent = CalculateRecentOrders(orders);
 
             var allItems = await _itemRepo.GetAllAsync();
             var allCats = await _categoryRepo.GetAllAsync();
 
-            var categorySales = orders
-                .SelectMany(o => o.Items)
-                .GroupBy(i => allItems.FirstOrDefault(it => it.Id == i.ItemId)?.CategoryId)
-                .Select(g =>
-                {
-                    var cat = allCats.FirstOrDefault(c => c.Id == g.Key);
-                    var rev = g.Sum(i => i.Total);
-                    return new CategorySalesRowDto
-                    {
-                        CategoryName = cat?.Name ?? "Others",
-                        Revenue = rev,
-                        Percentage = totalRevenue > 0 ? (double)(rev / totalRevenue * 100) : 0
-                    };
-                })
-                .OrderByDescending(c => c.Revenue)
-                .ToList();
-            for (int i = 0; i < categorySales.Count; i++) categorySales[i].SNo = i + 1;
-
-            var paymentModeSales = orders
-                .GroupBy(o => string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode)
-                .Select(g =>
-                {
-                    var rev = g.Sum(o => o.TotalAmount);
-                    return new PaymentModeSalesRowDto
-                    {
-                        PaymentMode = g.Key,
-                        Revenue = rev,
-                        OrderCount = g.Count(),
-                        Percentage = totalRevenue > 0 ? (double)(rev / totalRevenue * 100) : 0
-                    };
-                })
-                .OrderByDescending(p => p.Revenue)
-                .ToList();
-            for (int i = 0; i < paymentModeSales.Count; i++) paymentModeSales[i].SNo = i + 1;
+            var categorySales = CalculateCategorySales(orders, allItems, allCats, totalRevenue);
+            var paymentModeSales = CalculatePaymentModeSales(orders, totalRevenue);
 
             return new SalesReportDto
             {
@@ -124,6 +82,17 @@ namespace HotelPOS.Application.UseCases
         }
 
         public async Task<List<ItemReportRowDto>> GetItemReportAsync(
+            DateTime? from = null, DateTime? to = null)
+        {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetItemReportQuery(from, to));
+            }
+
+            return await GetItemReportInternalAsync(from, to);
+        }
+
+        public async Task<List<ItemReportRowDto>> GetItemReportInternalAsync(
             DateTime? from = null, DateTime? to = null)
         {
             var utcFrom = from?.ToUniversalTime();
@@ -150,6 +119,16 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<GstReportRowDto>> GetGstReportAsync(DateTime from, DateTime to)
         {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetGstReportQuery(from, to));
+            }
+
+            return await GetGstReportInternalAsync(from, to);
+        }
+
+        public async Task<List<GstReportRowDto>> GetGstReportInternalAsync(DateTime from, DateTime to)
+        {
             // Standardize bounds to UTC
             var utcFrom = from.ToUniversalTime();
             var utcTo = to.ToUniversalTime();
@@ -174,6 +153,16 @@ namespace HotelPOS.Application.UseCases
         }
 
         public async Task<List<MonthlySalesChartDto>> GetMonthlyChartDataAsync()
+        {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetMonthlySalesChartQuery());
+            }
+
+            return await GetMonthlyChartDataInternalAsync();
+        }
+
+        public async Task<List<MonthlySalesChartDto>> GetMonthlyChartDataInternalAsync()
         {
             var now = DateTime.Now;
 
@@ -209,9 +198,19 @@ namespace HotelPOS.Application.UseCases
             return result;
         }
 
-        public async Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportAsync(
-            int page, int pageSize, DateTime? from, DateTime? to, int? supplierId, string? itemName, string? paymentType, string? invoiceNo)
+        public async Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportAsync(PagedPurchaseReportRequest request)
         {
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetPagedPurchaseReportQuery(request.Page, request.PageSize, request.From, request.To, request.SupplierId, request.ItemName, request.PaymentType, request.InvoiceNo));
+            }
+
+            return await GetPagedPurchaseReportInternalAsync(request);
+        }
+
+        public async Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportInternalAsync(PagedPurchaseReportRequest request)
+        {
+            var (page, pageSize, from, to, supplierId, itemName, paymentType, invoiceNo) = request;
             var utcFrom = from?.ToUniversalTime();
             var utcTo = to?.ToUniversalTime();
 
@@ -257,6 +256,90 @@ namespace HotelPOS.Application.UseCases
             }
 
             return (rows, totalCount, totalAmountAll, totalTaxAll, totalDiscountAll, totalQtyAll);
+        }
+
+        private List<TableSalesRowDto> CalculateSalesByTable(IEnumerable<Order> orders)
+        {
+            var byTable = orders
+                .GroupBy(o => o.TableNumber)
+                .Select(g => new TableSalesRowDto
+                {
+                    TableNumber = g.Key,
+                    OrderCount = g.Count(),
+                    TotalRevenue = g.Sum(o => o.TotalAmount)
+                })
+                .OrderBy(t => t.TableNumber)
+                .ToList();
+            for (int i = 0; i < byTable.Count; i++) byTable[i].SNo = i + 1;
+            return byTable;
+        }
+
+        private List<RecentOrderRowDto> CalculateRecentOrders(IEnumerable<Order> orders)
+        {
+            return orders
+                .OrderByDescending(o => o.CreatedAt)
+                .Take(50)
+                .Select((o, idx) => new RecentOrderRowDto
+                {
+                    SNo = idx + 1,
+                    OrderId = o.Id,
+                    TableNumber = o.TableNumber,
+                    CreatedAt = o.CreatedAt.ToLocalTime(),
+                    Total = o.TotalAmount,
+                    DiscountAmount = o.DiscountAmount,
+                    ItemCount = o.Items.Count,
+                    PaymentMode = string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode,
+                    OrderType = string.IsNullOrWhiteSpace(o.OrderType) ? "DineIn" : o.OrderType,
+                    Status = string.IsNullOrWhiteSpace(o.Status) ? "Paid" : o.Status,
+                    CustomerName = o.CustomerName,
+                    CustomerPhone = o.CustomerPhone,
+                    CustomerGstin = o.CustomerGstin,
+                    Items = o.Items ?? new List<HotelPOS.Domain.Entities.OrderItem>()
+                })
+                .ToList();
+        }
+
+        private List<CategorySalesRowDto> CalculateCategorySales(IEnumerable<Order> orders, IEnumerable<Item> allItems, IEnumerable<Category> allCats, decimal totalRevenue)
+        {
+            var categorySales = orders
+                .SelectMany(o => o.Items)
+                .GroupBy(i => allItems.FirstOrDefault(it => it.Id == i.ItemId)?.CategoryId)
+                .Select(g =>
+                {
+                    var cat = allCats.FirstOrDefault(c => c.Id == g.Key);
+                    var rev = g.Sum(i => i.Total);
+                    return new CategorySalesRowDto
+                    {
+                        CategoryName = cat?.Name ?? "Others",
+                        Revenue = rev,
+                        Percentage = totalRevenue > 0 ? (double)(rev / totalRevenue * 100) : 0
+                    };
+                })
+                .OrderByDescending(c => c.Revenue)
+                .ToList();
+            for (int i = 0; i < categorySales.Count; i++) categorySales[i].SNo = i + 1;
+            return categorySales;
+        }
+
+        private List<PaymentModeSalesRowDto> CalculatePaymentModeSales(IEnumerable<Order> orders, decimal totalRevenue)
+        {
+            var paymentModeSales = orders
+                .GroupBy(o => string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode)
+                .Select(g =>
+                {
+                    var rev = g.Sum(o => o.TotalAmount);
+                    return new PaymentModeSalesRowDto
+                    {
+                        PaymentMode = g.Key,
+                        Revenue = rev,
+                        OrderCount = g.Count(),
+                        Percentage = totalRevenue > 0 ? (double)(rev / totalRevenue * 100) : 0
+                    };
+                })
+                .OrderByDescending(p => p.Revenue)
+                .ToList();
+            for (int i = 0; i < paymentModeSales.Count; i++) paymentModeSales[i].SNo = i + 1;
+            return paymentModeSales;
         }
     }
 }

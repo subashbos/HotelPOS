@@ -78,7 +78,7 @@ namespace HotelPOS.Tests
             await _vm.SaveOrderCommand.ExecuteAsync(null);
 
             // Assert
-            _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<List<OrderItem>>(), It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()), Times.Never);
             _notificationService.Verify(n => n.ShowError(It.Is<string>(s => s.Contains("Shift is not open"))), Times.Once);
         }
 
@@ -97,3 +97,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

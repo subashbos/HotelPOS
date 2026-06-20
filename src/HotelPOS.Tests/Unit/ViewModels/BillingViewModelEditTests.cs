@@ -164,10 +164,7 @@ namespace HotelPOS.Tests
             await _vm.SaveOrderCommand.ExecuteAsync(null);
 
             _orderService.Verify(s => s.UpdateOrderAsync(It.Is<Order>(o => o.Id == 20)), Times.Once);
-            _orderService.Verify(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(), It.IsAny<int>(), It.IsAny<decimal>(),
-                It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()),
-                Times.Never);
+            _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()), Times.Never);
         }
 
         [Fact]
@@ -272,3 +269,4 @@ namespace HotelPOS.Tests
         };
     }
 }
+

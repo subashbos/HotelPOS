@@ -2,12 +2,15 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
+using MediatR;
+using HotelPOS.Application.UseCases.Auth.Commands;
 
 namespace HotelPOS.Application.UseCases
 {
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IMediator? _mediator;
 
         // PBKDF2 Configurations
         private const int Iterations = 100000;
@@ -30,14 +33,25 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
-        public AuthService(IUserRepository userRepository)
+        public AuthService(IUserRepository userRepository, IMediator? mediator = null)
         {
             _userRepository = userRepository;
+            _mediator = mediator;
         }
 
         public async Task<User?> AuthenticateAsync(string username, string password)
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new LoginCommand(username, password));
+            }
+
+            return await AuthenticateInternalAsync(username, password);
+        }
+
+        public async Task<User?> AuthenticateInternalAsync(string username, string password)
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrEmpty(password))
                 return null;
 
             var normalizedUsername = username.Trim();

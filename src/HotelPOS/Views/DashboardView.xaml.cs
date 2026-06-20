@@ -1,16 +1,9 @@
-using HotelPOS.Application.DTOs.Report;
 using ClosedXML.Excel;
-using HotelPOS.Application;
-using HotelPOS.Application.UseCases;
+using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
-using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -140,7 +133,7 @@ namespace HotelPOS.Views
         public async Task LoadAsync()
         {
             if (_isLoading) return;
-            
+
             using (var scope = App.CreateDbScope())
             {
                 var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();

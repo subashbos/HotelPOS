@@ -131,13 +131,13 @@
                             <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Split Amounts Breakdown" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,10"/>
 
                             <TextBlock Grid.Row="1" Grid.Column="0" Text="Cash Amount Paid:" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CashAmount, UpdateSourceTrigger=PropertyChanged, TargetNullValue=0}" Height="28" Margin="0,2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="13"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CashAmount, UpdateSourceTrigger=PropertyChanged}" Height="28" Padding="4,2" Margin="0,2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="13" PreviewTextInput="NumericOnly_PreviewTextInput" PreviewKeyDown="NumericOnly_PreviewKeyDown"/>
 
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Card Amount Paid:" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CardAmount, UpdateSourceTrigger=PropertyChanged, TargetNullValue=0}" Height="28" Margin="0,2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="13"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding CardAmount, UpdateSourceTrigger=PropertyChanged}" Height="28" Padding="4,2" Margin="0,2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="13" PreviewTextInput="NumericOnly_PreviewTextInput" PreviewKeyDown="NumericOnly_PreviewKeyDown"/>
 
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="UPI Amount Paid:" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextPrimary}"/>
-                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding UpiAmount, UpdateSourceTrigger=PropertyChanged, TargetNullValue=0}" Height="28" Margin="0,2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="13"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding UpiAmount, UpdateSourceTrigger=PropertyChanged}" Height="28" Padding="4,2" Margin="0,2" VerticalContentAlignment="Center" HorizontalContentAlignment="Right" FontSize="13" PreviewTextInput="NumericOnly_PreviewTextInput" PreviewKeyDown="NumericOnly_PreviewKeyDown"/>
 
                             <Border Grid.Row="4" Grid.ColumnSpan="2" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" Margin="0,8"/>
 

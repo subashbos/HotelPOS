@@ -22,34 +22,38 @@ namespace HotelPOS.ViewModels
         private string _paymentMode = "Cash";
 
         [ObservableProperty]
-        private decimal _cashAmount;
+        private string _cashAmount = "0";
 
         [ObservableProperty]
-        private decimal _cardAmount;
+        private string _cardAmount = "0";
 
         [ObservableProperty]
-        private decimal _upiAmount;
+        private string _upiAmount = "0";
 
-        public decimal OutstandingBalance => Math.Max(0, FinalPayableAmount - (CashAmount + CardAmount + UpiAmount));
+        public decimal ParsedCash => decimal.TryParse(CashAmount, out var v) ? v : 0;
+        public decimal ParsedCard => decimal.TryParse(CardAmount, out var v) ? v : 0;
+        public decimal ParsedUpi => decimal.TryParse(UpiAmount, out var v) ? v : 0;
+
+        public decimal OutstandingBalance => Math.Max(0, FinalPayableAmount - (ParsedCash + ParsedCard + ParsedUpi));
 
         public bool IsSplitPayment => PaymentMode == "Split";
 
         public bool CanConfirm => !IsSplitPayment || OutstandingBalance == 0;
 
-        partial void OnCashAmountChanged(decimal value) => OnPaymentAmountChanged();
-        partial void OnCardAmountChanged(decimal value) => OnPaymentAmountChanged();
-        partial void OnUpiAmountChanged(decimal value) => OnPaymentAmountChanged();
+        partial void OnCashAmountChanged(string value) => OnPaymentAmountChanged();
+        partial void OnCardAmountChanged(string value) => OnPaymentAmountChanged();
+        partial void OnUpiAmountChanged(string value) => OnPaymentAmountChanged();
         partial void OnPaymentModeChanged(string value)
         {
             if (value != "Split")
             {
-                CashAmount = 0;
-                CardAmount = 0;
-                UpiAmount = 0;
+                CashAmount = "0";
+                CardAmount = "0";
+                UpiAmount = "0";
             }
             else
             {
-                CashAmount = FinalPayableAmount;
+                CashAmount = FinalPayableAmount.ToString("0.##");
             }
             OnPropertyChanged(nameof(IsSplitPayment));
             OnPropertyChanged(nameof(CanConfirm));

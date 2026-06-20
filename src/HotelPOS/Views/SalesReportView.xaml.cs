@@ -1,16 +1,10 @@
+using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
-using HotelPOS.Application;
-using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using ClosedXML.Excel;
 
 namespace HotelPOS.Views
 {
@@ -34,7 +28,8 @@ namespace HotelPOS.Views
                 SalesGrid.ItemsSource = page;
             };
 
-            Loaded += async (s, e) => {
+            Loaded += async (s, e) =>
+            {
                 _isLoading = true;
                 try
                 {
@@ -64,7 +59,7 @@ namespace HotelPOS.Views
                     var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
                     cats = await categoryService.GetCategoriesAsync();
                 }
-                
+
                 var list = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
                 list.Insert(0, new HotelPOS.Domain.Entities.Category { Id = 0, Name = "All Categories", DisplayOrder = -1 });
                 ComboCategory.ItemsSource = list;
@@ -101,7 +96,7 @@ namespace HotelPOS.Views
                 var search = SearchText.Text;
                 var payment = (ComboPayment.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "All";
                 var categoryId = (int?)ComboCategory.SelectedValue;
-                
+
                 string orderType = "All";
                 if (TypeDine.IsChecked == true) orderType = "DineIn";
                 else if (TypeTake.IsChecked == true) orderType = "Takeaway";
@@ -112,7 +107,7 @@ namespace HotelPOS.Views
                 using (var scope = App.CreateDbScope())
                 {
                     var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                    result = await orderService.GetPagedOrdersAsync(1, 1000, from, to, null, search, payment, orderType, categoryId);
+                    result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(1, 1000, from, to, null, search, payment, orderType, categoryId));
                 }
 
                 var reportRows = result.orders.Select((o, idx) => new RecentOrderRowDto

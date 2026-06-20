@@ -1,3 +1,5 @@
+using AutoMapper;
+using FluentValidation;
 using HotelPOS.Api;
 using HotelPOS.Api.Middleware;
 using HotelPOS.Application.Interfaces;
@@ -10,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
-using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +41,7 @@ builder.Services.AddScoped<ICategoryService>(provider => new CategoryService(pro
 builder.Services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
-builder.Services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>()));
+builder.Services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
 
 // ── MediatR Configuration ─────────────────────────────────────────────────
 builder.Services.AddMediatR(cfg =>

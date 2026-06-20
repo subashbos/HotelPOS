@@ -2,8 +2,8 @@ using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
-using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -80,7 +80,8 @@ namespace HotelPOS.Views
                     int? tbl = GetTableFilter();
 
                     // Get count by requesting a minimal page
-                    var (_, total) = await orderService.GetPagedOrdersAsync(1, 1, from, to, tbl);
+                    var result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(1, 1, from, to, tbl));
+                    var total = result.TotalCount;
 
                     JournalPager.SetExternalSource(total);
                     RowCountText.Text = $"{total} transaction{(total == 1 ? "" : "s")}";
@@ -109,7 +110,8 @@ namespace HotelPOS.Views
                     var to = ToDate.SelectedDate?.AddDays(1);
                     int? tbl = GetTableFilter();
 
-                    var (items, _) = await orderService.GetPagedOrdersAsync(page, size, from, to, tbl);
+                    var result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(page, size, from, to, tbl));
+                    var items = result.Items;
                     int startSno = (page - 1) * size + 1;
 
                     JournalGrid.ItemsSource = items
@@ -232,7 +234,7 @@ namespace HotelPOS.Views
             {
                 var from = FromDate.SelectedDate ?? DateTime.Today.AddDays(-30);
                 var to = ToDate.SelectedDate ?? DateTime.Today;
-                
+
                 List<GstReportRowDto> data;
                 using (var scope = App.CreateDbScope())
                 {

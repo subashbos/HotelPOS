@@ -57,7 +57,8 @@ namespace HotelPOS.Application.UseCases
             if (existing.Any(c => c.Name.Trim().Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"Category '{name}' already exists.");
 
-            return await _repo.AddAsync(category);
+            var addedCategory = await _repo.AddAsync(category);
+            return addedCategory.Id;
         }
 
         public async Task UpdateCategoryAsync(int id, string name, int displayOrder = 0)

@@ -106,3 +106,4 @@ public class StockReconciliationTests
         _mockItemService.Verify(s => s.DeductStockAsync(item2Id, It.IsAny<int>()), Times.Exactly(1)); // Only the return call
     }
 }
+

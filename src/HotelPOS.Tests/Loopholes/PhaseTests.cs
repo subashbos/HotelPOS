@@ -50,7 +50,7 @@ namespace HotelPOS.Tests
         [Fact]
         public void CartService_HoldOrder_MovesItemsToHeldList()
         {
-            var cart = new CartService();
+            var cart = new CartService(null, null);
             var item = new Item { Id = 1, Name = "Coffee", Price = 50 };
             cart.AddItem(1, item); // Table 1
 
@@ -68,7 +68,7 @@ namespace HotelPOS.Tests
         [Fact]
         public void CartService_ResumeOrder_RestoresItemsToTable()
         {
-            var cart = new CartService();
+            var cart = new CartService(null, null);
             var item = new Item { Id = 1, Name = "Coffee", Price = 50 };
             cart.AddItem(1, item); // Table 1
 
@@ -104,7 +104,7 @@ namespace HotelPOS.Tests
 
             mockRepo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
 
-            await service.SaveOrderAsync(items, 1, discount: 10m, paymentMode: "UPI");
+            await service.SaveOrderAsync(new SaveOrderRequest(items, 1, Discount: 10m, PaymentMode: "UPI"));
 
             mockRepo.Verify(r => r.AddAsync(It.Is<Order>(o =>
                 o.DiscountAmount == 10m &&
@@ -156,3 +156,4 @@ namespace HotelPOS.Tests
         #endregion
     }
 }
+

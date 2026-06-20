@@ -454,11 +454,11 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddCategoryAsync_Valid_ReturnsId()
         {
-            _repoMock.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync(5);
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync(new Category { Id = 1 });
 
             var id = await _service.AddCategoryAsync("Desserts");
 
-            Assert.Equal(5, id);
+            Assert.Equal(1, id);
             _repoMock.Verify(r => r.AddAsync(It.Is<Category>(c => c.Name == "Desserts")), Times.Once);
         }
 
@@ -472,7 +472,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddCategoryAsync_TrimsName()
         {
-            _repoMock.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync(3);
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Category>())).ReturnsAsync(new Category { Id = 2 });
 
             await _service.AddCategoryAsync("  Starters  ");
 
@@ -940,10 +940,7 @@ namespace HotelPOS.Tests
             var (vm, orderSvc, cartSvc, _) = BuildVm();
 
             // New save (not edit mode): save should work but NOT fire OrderUpdated
-            orderSvc.Setup(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(), It.IsAny<int>(),
-                It.IsAny<decimal>(), It.IsAny<string>(),
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            orderSvc.Setup(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()))
                 .ReturnsAsync(99);
 
             bool fired = false;
@@ -1103,3 +1100,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

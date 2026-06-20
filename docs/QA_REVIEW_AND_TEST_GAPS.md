@@ -28,10 +28,10 @@ Scope: Fast review of core POS risk areas: authentication, billing, orders, stoc
    - This may be intentional for backorders, but POS inventory usually needs a policy.
    - Recommended fix: reject oversell, allow admin override, or explicitly document negative stock as supported.
 
-4. Update item path bypasses create validation.
-   - `AddItemAsync` validates null DTO, empty name, long name, and price > 0.
-   - `UpdateItemAsync` does not call the same validation and can accept invalid data.
-   - Recommended fix: call `ValidateDto(dto)` at the start of `UpdateItemAsync`.
+4. Missing Delete/Update Validation (MITIGATED via FluentValidation)
+   - Previously, `UpdateItemAsync` bypassed the `AddItemAsync` validation rules.
+   - Deletion commands across entities lacked validation checks.
+   - Fix applied: Integrated `FluentValidation` pipelines for all Commands (Update and Delete), ensuring that business rule constraints are uniformly enforced prior to database writes.
 
 5. Order input validation is too weak.
    - Orders currently accept zero/negative table numbers, negative discounts, negative quantities, negative prices, and arbitrary payment modes.
