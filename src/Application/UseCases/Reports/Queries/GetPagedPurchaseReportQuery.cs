@@ -34,7 +34,7 @@ namespace HotelPOS.Application.UseCases.Reports.Queries
         public async Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> Handle(
             GetPagedPurchaseReportQuery request, CancellationToken cancellationToken)
         {
-            return await _reportService.GetPagedPurchaseReportInternalAsync(
+            return await _reportService.GetPagedPurchaseReportInternalAsync(new PagedPurchaseReportRequest(
                 request.Page,
                 request.PageSize,
                 request.From,
@@ -43,7 +43,7 @@ namespace HotelPOS.Application.UseCases.Reports.Queries
                 request.ItemName,
                 request.PaymentType,
                 request.InvoiceNo
-            );
+            ));
         }
     }
 }

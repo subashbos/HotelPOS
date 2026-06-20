@@ -143,3 +143,4 @@ namespace HotelPOS.Tests.Unit.Services
         }
     }
 }
+

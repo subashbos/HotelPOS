@@ -29,7 +29,7 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
 
         public async Task<int> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            return await _orderService.SaveOrderInternalAsync(
+            return await _orderService.SaveOrderInternalAsync(new SaveOrderRequest(
                 request.Items,
                 request.TableNumber,
                 request.Discount,
@@ -38,7 +38,7 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
                 request.CustomerPhone,
                 request.CustomerGstin,
                 request.OrderType
-            );
+            ));
         }
     }
 }

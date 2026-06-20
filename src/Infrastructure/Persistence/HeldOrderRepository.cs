@@ -26,12 +26,12 @@ namespace HotelPOS.Infrastructure.Persistence
 
             if (isSqlite)
             {
-                var count = _context.Database.SqlQueryRaw<int>("SELECT COUNT(1) FROM HeldOrders WHERE Id = {0}", held.Id.ToString()).FirstOrDefault();
+                var count = await _context.Database.SqlQueryRaw<int>("SELECT COUNT(1) FROM HeldOrders WHERE Id = {0}", held.Id.ToString()).FirstOrDefaultAsync();
                 exists = count > 0;
             }
             else
             {
-                var count = _context.Database.SqlQueryRaw<int>("SELECT COUNT(1) FROM HeldOrders WHERE Id = {0}", held.Id).FirstOrDefault();
+                var count = await _context.Database.SqlQueryRaw<int>("SELECT COUNT(1) FROM HeldOrders WHERE Id = {0}", held.Id).FirstOrDefaultAsync();
                 exists = count > 0;
             }
 
@@ -71,7 +71,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
             var restored = new List<HeldOrder>();
             using var reader = await cmd.ExecuteReaderAsync();
-            while (reader.Read())
+            while (await reader.ReadAsync())
             {
                 var idVal = reader.GetValue(0);
                 var id = idVal is Guid g ? g : Guid.Parse(idVal.ToString()!);

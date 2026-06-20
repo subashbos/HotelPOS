@@ -52,9 +52,7 @@ namespace HotelPOS.Tests
             };
 
             _purchaseServiceMock.Setup(s => s.GetSuppliersAsync()).ReturnsAsync(suppliers);
-            _reportServiceMock.Setup(r => r.GetPagedPurchaseReportAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _reportServiceMock.Setup(r => r.GetPagedPurchaseReportAsync(It.IsAny<PagedPurchaseReportRequest>()))
                 .ReturnsAsync((reportRows, 1, 253m, 5m, 2m, 10));
 
             var vm = new PurchaseReportViewModel(_reportServiceMock.Object, _purchaseServiceMock.Object, _notificationServiceMock.Object);
@@ -83,9 +81,7 @@ namespace HotelPOS.Tests
             _purchaseServiceMock.Setup(s => s.GetSuppliersAsync()).ReturnsAsync(suppliers);
 
             var reportRows = new List<PurchaseReportRowDto>();
-            _reportServiceMock.Setup(r => r.GetPagedPurchaseReportAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _reportServiceMock.Setup(r => r.GetPagedPurchaseReportAsync(It.IsAny<PagedPurchaseReportRequest>()))
                 .ReturnsAsync((reportRows, 0, 0m, 0m, 0m, 0));
 
             var vm = new PurchaseReportViewModel(_reportServiceMock.Object, _purchaseServiceMock.Object, _notificationServiceMock.Object);
@@ -105,8 +101,9 @@ namespace HotelPOS.Tests
             await vm.ApplyFilterAsync();
 
             // Assert
-            _reportServiceMock.Verify(r => r.GetPagedPurchaseReportAsync(
-                1, 10, targetFrom, targetTo.AddDays(1), 1, "Onions", "Credit", "INV123"), Times.Once);
+            _reportServiceMock.Verify(r => r.GetPagedPurchaseReportAsync(It.Is<PagedPurchaseReportRequest>(req => 
+                req.Page == 1 && req.PageSize == 10 && req.From == targetFrom && req.To == targetTo.AddDays(1) &&
+                req.SupplierId == 1 && req.ItemName == "Onions" && req.PaymentType == "Credit" && req.InvoiceNo == "INV123")), Times.Once);
         }
 
         [Fact]
@@ -116,9 +113,7 @@ namespace HotelPOS.Tests
             var suppliers = new List<Supplier> { new Supplier { Id = 1, Name = "Supplier A" } };
             _purchaseServiceMock.Setup(s => s.GetSuppliersAsync()).ReturnsAsync(suppliers);
 
-            _reportServiceMock.Setup(r => r.GetPagedPurchaseReportAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _reportServiceMock.Setup(r => r.GetPagedPurchaseReportAsync(It.IsAny<PagedPurchaseReportRequest>()))
                 .ReturnsAsync((new List<PurchaseReportRowDto>(), 0, 0m, 0m, 0m, 0));
 
             var vm = new PurchaseReportViewModel(_reportServiceMock.Object, _purchaseServiceMock.Object, _notificationServiceMock.Object);
@@ -163,9 +158,7 @@ namespace HotelPOS.Tests
             };
 
             _purchaseServiceMock.Setup(s => s.GetSuppliersAsync()).ReturnsAsync(new List<Supplier>());
-            _reportServiceMock.Setup(r => r.GetPagedPurchaseReportAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            _reportServiceMock.Setup(r => r.GetPagedPurchaseReportAsync(It.IsAny<PagedPurchaseReportRequest>()))
                 .ReturnsAsync((new List<PurchaseReportRowDto> { row }, 1, 630.25m, 6.25m, 1.0m, 50));
 
             var vm = new PurchaseReportViewModel(_reportServiceMock.Object, _purchaseServiceMock.Object, _notificationServiceMock.Object);
@@ -202,3 +195,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

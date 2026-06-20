@@ -80,3 +80,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

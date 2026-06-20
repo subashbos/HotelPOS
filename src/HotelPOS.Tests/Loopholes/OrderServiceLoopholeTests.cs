@@ -35,35 +35,35 @@ namespace HotelPOS.Tests
         public async Task SaveOrderAsync_TableNumberZero_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 0));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0)));
         }
 
         [Fact]
         public async Task SaveOrderAsync_NegativeTableNumber_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: -1));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), -1)));
         }
 
         [Fact]
         public async Task SaveOrderAsync_NegativeDiscount_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, discount: -10m));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1, Discount: -10m)));
         }
 
         [Fact]
         public async Task SaveOrderAsync_InvalidPaymentMode_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, paymentMode: "Bitcoin"));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1, PaymentMode: "Bitcoin")));
         }
 
         [Fact]
         public async Task SaveOrderAsync_NullPaymentMode_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, paymentMode: null!));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1, PaymentMode: null!)));
         }
 
         [Theory]
@@ -76,7 +76,7 @@ namespace HotelPOS.Tests
             _repo.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(1);
 
             var ex = await Record.ExceptionAsync(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, paymentMode: mode));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1, PaymentMode: mode)));
             Assert.Null(ex);
         }
 
@@ -87,7 +87,7 @@ namespace HotelPOS.Tests
         {
             // Subtotal of OneItem() = 100. Discount of 9999 must now be rejected.
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, discount: 9999m));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1, Discount: 9999m)));
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace HotelPOS.Tests
                 new OrderItem { ItemId = 1, ItemName = "Pizza", Quantity = 1, Price = 200, TaxPercentage = 5, Total = 200 }
             };
 
-            await _service.SaveOrderAsync(items, tableNumber: 1, discount: 0m);
+            await _service.SaveOrderAsync(new SaveOrderRequest(items, 1, Discount: 0m));
 
             Assert.Equal(200m, saved!.Subtotal);
             Assert.Equal(10m, saved.GstAmount);
@@ -181,11 +181,11 @@ namespace HotelPOS.Tests
                  .Callback<Order>(o => saved = o)
                  .ReturnsAsync(1);
 
-            await _service.SaveOrderAsync(
-                OneItem(), tableNumber: 1,
-                customerName: "Ravi Kumar",
-                customerPhone: "9876543210",
-                customerGstin: "27AABCU9603R1ZX");
+            await _service.SaveOrderAsync(new SaveOrderRequest(
+                OneItem(), 1,
+                CustomerName: "Ravi Kumar",
+                CustomerPhone: "9876543210",
+                CustomerGstin: "27AABCU9603R1ZX"));
 
             Assert.Equal("Ravi Kumar", saved!.CustomerName);
             Assert.Equal("9876543210", saved.CustomerPhone);
@@ -201,7 +201,7 @@ namespace HotelPOS.Tests
                  .Callback<Order>(o => saved = o)
                  .ReturnsAsync(1);
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 1);
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1));
 
             Assert.Null(saved!.CustomerName);
             Assert.Null(saved.CustomerPhone);
@@ -224,7 +224,7 @@ namespace HotelPOS.Tests
                 new OrderItem { ItemId = 1, ItemName = "Biryani", Quantity = 1, Price = 100, TaxPercentage = 18, Total = 100 }
             };
 
-            await _service.SaveOrderAsync(items, tableNumber: 1);
+            await _service.SaveOrderAsync(new SaveOrderRequest(items, 1));
 
             Assert.Equal(18m, saved!.GstAmount);
             Assert.Equal(9m, saved.CgstAmount);
@@ -240,7 +240,7 @@ namespace HotelPOS.Tests
             _repo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV/2526/0001");
             _repo.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(42);
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 1);
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1));
 
             _mediator.Verify(
                 m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "Order" && e.Action == "Create"), default),
@@ -283,3 +283,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

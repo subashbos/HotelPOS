@@ -45,7 +45,7 @@ namespace HotelPOS.Tests
         {
             SetupSave();
             var ex = await Record.ExceptionAsync(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 3, orderType: "DineIn"));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 3, OrderType: "DineIn")));
             Assert.Null(ex);
         }
 
@@ -53,14 +53,14 @@ namespace HotelPOS.Tests
         public async Task SaveOrder_DineIn_TableZero_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 0, orderType: "DineIn"));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: "DineIn")));
         }
 
         [Fact]
         public async Task SaveOrder_DineIn_NegativeTable_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: -1, orderType: "DineIn"));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), -1, OrderType: "DineIn")));
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace HotelPOS.Tests
             _repo.Setup(r => r.AddAsync(It.IsAny<Order>()))
                  .Callback<Order>(o => saved = o).ReturnsAsync(1);
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 5, orderType: "DineIn");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 5, OrderType: "DineIn"));
 
             Assert.Equal(5, saved!.TableNumber);
         }
@@ -83,7 +83,7 @@ namespace HotelPOS.Tests
         {
             SetupSave();
             var ex = await Record.ExceptionAsync(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 0, orderType: "Takeaway"));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: "Takeaway")));
             Assert.Null(ex);
         }
 
@@ -96,7 +96,7 @@ namespace HotelPOS.Tests
                  .Callback<Order>(o => saved = o).ReturnsAsync(1);
 
             // Even if caller passes a table number, it must be normalised to 0
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 7, orderType: "Takeaway");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 7, OrderType: "Takeaway"));
 
             Assert.Equal(0, saved!.TableNumber);
         }
@@ -109,7 +109,7 @@ namespace HotelPOS.Tests
             _repo.Setup(r => r.AddAsync(It.IsAny<Order>()))
                  .Callback<Order>(o => saved = o).ReturnsAsync(1);
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 0, orderType: "Takeaway");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: "Takeaway"));
 
             Assert.Equal("Takeaway", saved!.OrderType);
         }
@@ -122,7 +122,7 @@ namespace HotelPOS.Tests
             _repo.Setup(r => r.AddAsync(It.IsAny<Order>()))
                  .Callback<Order>(o => saved = o).ReturnsAsync(1);
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: -5, orderType: "Takeaway");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), -5, OrderType: "Takeaway"));
 
             Assert.Equal(0, saved!.TableNumber);
         }
@@ -134,7 +134,7 @@ namespace HotelPOS.Tests
         {
             SetupSave();
             var ex = await Record.ExceptionAsync(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 0, orderType: "Online"));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: "Online")));
             Assert.Null(ex);
         }
 
@@ -146,7 +146,7 @@ namespace HotelPOS.Tests
             _repo.Setup(r => r.AddAsync(It.IsAny<Order>()))
                  .Callback<Order>(o => saved = o).ReturnsAsync(1);
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 99, orderType: "Online");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 99, OrderType: "Online"));
 
             Assert.Equal(0, saved!.TableNumber);
         }
@@ -159,7 +159,7 @@ namespace HotelPOS.Tests
             _repo.Setup(r => r.AddAsync(It.IsAny<Order>()))
                  .Callback<Order>(o => saved = o).ReturnsAsync(1);
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 0, orderType: "Online");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: "Online"));
 
             Assert.Equal("Online", saved!.OrderType);
         }
@@ -170,21 +170,21 @@ namespace HotelPOS.Tests
         public async Task SaveOrder_InvalidOrderType_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, orderType: "DriveThru"));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1, OrderType: "DriveThru")));
         }
 
         [Fact]
         public async Task SaveOrder_EmptyOrderType_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, orderType: ""));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1, OrderType: "")));
         }
 
         [Fact]
         public async Task SaveOrder_NullOrderType_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(OneItem(), tableNumber: 1, orderType: null!));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 1, OrderType: null!)));
         }
 
         // ── UpdateOrderAsync: normalises TableNumber for non-DineIn ──────────
@@ -277,7 +277,7 @@ namespace HotelPOS.Tests
                          if (n is EntityActionEvent e) auditDetails = e.Details;
                      });
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 0, orderType: "Takeaway");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: "Takeaway"));
 
             Assert.Contains("Takeaway", auditDetails);
         }
@@ -293,7 +293,7 @@ namespace HotelPOS.Tests
                          if (n is EntityActionEvent e) auditDetails = e.Details;
                      });
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 0, orderType: "Online");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: "Online"));
 
             Assert.Contains("Online", auditDetails);
         }
@@ -309,7 +309,7 @@ namespace HotelPOS.Tests
                          if (n is EntityActionEvent e) auditDetails = e.Details;
                      });
 
-            await _service.SaveOrderAsync(OneItem(), tableNumber: 0, orderType: "Takeaway");
+            await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: "Takeaway"));
 
             Assert.Contains("Table: 0", auditDetails);
         }
@@ -321,9 +321,9 @@ namespace HotelPOS.Tests
         {
             SetupSave();
 
-            await _service.SaveOrderAsync(
+            await _service.SaveOrderAsync(new SaveOrderRequest(
                 new List<OrderItem> { new OrderItem { ItemId = 5, ItemName = "Burger", Quantity = 3, Price = 100, TaxPercentage = 0, Total = 300 } },
-                tableNumber: 0, orderType: "Takeaway");
+                0, OrderType: "Takeaway"));
 
             _itemService.Verify(s => s.DeductStockAsync(5, 3), Times.Once);
         }
@@ -333,9 +333,9 @@ namespace HotelPOS.Tests
         {
             SetupSave();
 
-            await _service.SaveOrderAsync(
+            await _service.SaveOrderAsync(new SaveOrderRequest(
                 new List<OrderItem> { new OrderItem { ItemId = 6, ItemName = "Pizza", Quantity = 2, Price = 200, TaxPercentage = 5, Total = 400 } },
-                tableNumber: 0, orderType: "Online");
+                0, OrderType: "Online"));
 
             _itemService.Verify(s => s.DeductStockAsync(6, 2), Times.Once);
         }
@@ -355,7 +355,7 @@ namespace HotelPOS.Tests
                 new OrderItem { ItemId = 1, ItemName = "Biryani", Quantity = 2, Price = 150, TaxPercentage = 5, Total = 300 }
             };
 
-            await _service.SaveOrderAsync(items, tableNumber: 0, orderType: "Takeaway");
+            await _service.SaveOrderAsync(new SaveOrderRequest(items, 0, OrderType: "Takeaway"));
 
             Assert.Equal(300m, saved!.Subtotal);
             Assert.Equal(15m, saved.GstAmount);   // 5% of 300
@@ -375,7 +375,7 @@ namespace HotelPOS.Tests
                 new OrderItem { ItemId = 1, ItemName = "Pasta", Quantity = 1, Price = 200, TaxPercentage = 0, Total = 200 }
             };
 
-            await _service.SaveOrderAsync(items, tableNumber: 0, discount: 20m, orderType: "Online");
+            await _service.SaveOrderAsync(new SaveOrderRequest(items, 0, Discount: 20m, OrderType: "Online"));
 
             Assert.Equal(200m, saved!.Subtotal);
             Assert.Equal(0m, saved.GstAmount);
@@ -411,11 +411,7 @@ namespace HotelPOS.Tests
             cartSvc.Setup(s => s.GetActiveTables()).Returns(new List<int>());
 
             settSvc.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting());
-            orderSvc.Setup(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(), It.IsAny<int>(),
-                It.IsAny<decimal>(), It.IsAny<string>(),
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<string>())).ReturnsAsync(1);
+            orderSvc.Setup(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>())).ReturnsAsync(1);
             cashSvc.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
 
             var vm = new HotelPOS.ViewModels.BillingViewModel(
@@ -524,16 +520,7 @@ namespace HotelPOS.Tests
 
             await vm.SaveOrderCommand.ExecuteAsync(null);
 
-            orderSvc.Verify(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(),
-                0,                          // tableNumber must be 0
-                It.IsAny<decimal>(),
-                It.IsAny<string>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                "Takeaway"),
-                Times.Once);
+            orderSvc.Verify(s => s.SaveOrderAsync(It.Is<SaveOrderRequest>(r => r.TableNumber == 0 && r.OrderType == "Takeaway")), Times.Once);
         }
 
         [Fact]
@@ -549,16 +536,7 @@ namespace HotelPOS.Tests
 
             await vm.SaveOrderCommand.ExecuteAsync(null);
 
-            orderSvc.Verify(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(),
-                0,
-                It.IsAny<decimal>(),
-                It.IsAny<string>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                "Online"),
-                Times.Once);
+            orderSvc.Verify(s => s.SaveOrderAsync(It.Is<SaveOrderRequest>(r => r.TableNumber == 0 && r.OrderType == "Online")), Times.Once);
         }
 
         [Fact]
@@ -575,16 +553,7 @@ namespace HotelPOS.Tests
 
             await vm.SaveOrderCommand.ExecuteAsync(null);
 
-            orderSvc.Verify(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(),
-                4,                          // real table number
-                It.IsAny<decimal>(),
-                It.IsAny<string>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                It.IsAny<string?>(),
-                "DineIn"),
-                Times.Once);
+            orderSvc.Verify(s => s.SaveOrderAsync(It.Is<SaveOrderRequest>(r => r.TableNumber == 4 && r.OrderType == "DineIn")), Times.Once);
         }
 
         // ── LoadOrderForEdit restores tableless state correctly ───────────────
@@ -692,11 +661,8 @@ namespace HotelPOS.Tests
 
             await vm.SaveOrderCommand.ExecuteAsync(null);
 
-            orderSvc.Verify(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(), It.IsAny<int>(),
-                It.IsAny<decimal>(), It.IsAny<string>(),
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<string>()), Times.Never);
+            orderSvc.Verify(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()), Times.Never);
         }
     }
 }
+

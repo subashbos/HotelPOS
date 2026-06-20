@@ -108,7 +108,7 @@ namespace HotelPOS
             }
 
             var services = new ServiceCollection();
-            ConfigureServices(services, config, connectionString);
+            ConfigureServices(services, connectionString);
 
             ServiceProvider = services.BuildServiceProvider();
 

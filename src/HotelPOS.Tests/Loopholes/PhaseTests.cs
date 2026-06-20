@@ -104,7 +104,7 @@ namespace HotelPOS.Tests
 
             mockRepo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
 
-            await service.SaveOrderAsync(items, 1, discount: 10m, paymentMode: "UPI");
+            await service.SaveOrderAsync(new SaveOrderRequest(items, 1, Discount: 10m, PaymentMode: "UPI"));
 
             mockRepo.Verify(r => r.AddAsync(It.Is<Order>(o =>
                 o.DiscountAmount == 10m &&
@@ -156,3 +156,4 @@ namespace HotelPOS.Tests
         #endregion
     }
 }
+

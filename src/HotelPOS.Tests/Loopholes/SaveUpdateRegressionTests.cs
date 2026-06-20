@@ -940,10 +940,7 @@ namespace HotelPOS.Tests
             var (vm, orderSvc, cartSvc, _) = BuildVm();
 
             // New save (not edit mode): save should work but NOT fire OrderUpdated
-            orderSvc.Setup(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(), It.IsAny<int>(),
-                It.IsAny<decimal>(), It.IsAny<string>(),
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>()))
+            orderSvc.Setup(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()))
                 .ReturnsAsync(99);
 
             bool fired = false;
@@ -1103,3 +1100,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

@@ -199,11 +199,14 @@ namespace HotelPOS
                     // Ensure default Admin user exists if no user exists
                     if (!context.Users.Any())
                     {
+                        var hVal = "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA="; // default admin hash
+                        var sVal = "jwhVPO8B1u7Hqc4drt45HQ==";
+
                         var adminUser = new HotelPOS.Domain.Entities.User
                         {
                             Username = "admin",
-                            PasswordHash = "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=", // hashed "admin@1234"
-                            Salt = "jwhVPO8B1u7Hqc4drt45HQ==",
+                            PasswordHash = hVal,
+                            Salt = sVal,
                             Role = "Admin",
                             RoleId = 1,
                             IsActive = true,

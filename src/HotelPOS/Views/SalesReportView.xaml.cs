@@ -107,7 +107,7 @@ namespace HotelPOS.Views
                 using (var scope = App.CreateDbScope())
                 {
                     var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                    result = await orderService.GetPagedOrdersAsync(1, 1000, from, to, null, search, payment, orderType, categoryId);
+                    result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(1, 1000, from, to, null, search, payment, orderType, categoryId));
                 }
 
                 var reportRows = result.orders.Select((o, idx) => new RecentOrderRowDto

@@ -136,8 +136,8 @@ namespace HotelPOS.ViewModels
                     var to = FilterTo?.AddDays(1);
                     var supplierId = SelectedSupplier?.Id == 0 ? (int?)null : SelectedSupplier?.Id;
 
-                    var result = await reportService.GetPagedPurchaseReportAsync(
-                        page, pageSize, from, to, supplierId, ItemNameSearch, SelectedPaymentType, InvoiceNoSearch);
+                    var result = await reportService.GetPagedPurchaseReportAsync(new PagedPurchaseReportRequest(
+                        page, pageSize, from, to, supplierId, ItemNameSearch, SelectedPaymentType, InvoiceNoSearch));
 
                     ReportRows.Clear();
                     foreach (var row in result.items) ReportRows.Add(row);

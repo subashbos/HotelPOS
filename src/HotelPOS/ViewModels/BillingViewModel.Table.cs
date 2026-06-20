@@ -15,7 +15,7 @@ namespace HotelPOS.ViewModels
         private bool _isTableLayoutOpen;
 
         [RelayCommand]
-        private void OpenTableLayout(object? parameter)
+        private async Task OpenTableLayout(object? parameter)
         {
             // Table layout is irrelevant for Takeaway / Online orders
             if (IsTableless) return;
@@ -24,7 +24,7 @@ namespace HotelPOS.ViewModels
             if (parameter is bool b) open = b;
             else if (parameter is string s && bool.TryParse(s, out bool b2)) open = b2;
 
-            if (open) RefreshTables();
+            if (open) await RefreshTables();
             IsTableLayoutOpen = open;
 
             if (open && !IsTransferMode) IsTransferMode = false;
@@ -50,7 +50,7 @@ namespace HotelPOS.ViewModels
         }
 
         [RelayCommand]
-        private void ToggleTransferMode()
+        private async Task ToggleTransferMode()
         {
             // Move Items is only meaningful for DineIn
             if (IsTableless) return;
@@ -60,7 +60,7 @@ namespace HotelPOS.ViewModels
             if (IsTransferMode)
             {
                 StatusMessage = "MOVE MODE: Select target table from the Table menu";
-                OpenTableLayout(true);
+                await OpenTableLayout(true);
             }
             else
             {
@@ -75,7 +75,7 @@ namespace HotelPOS.ViewModels
         /// <remarks>
         /// If the table service returns no tables, populates a default set of 20 tables. Any error during refresh is reported via the notification service.
         /// </remarks>
-        private async void RefreshTables()
+        private async Task RefreshTables()
         {
             using (var scope = App.CreateDbScope())
             {

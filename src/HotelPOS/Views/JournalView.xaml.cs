@@ -80,7 +80,8 @@ namespace HotelPOS.Views
                     int? tbl = GetTableFilter();
 
                     // Get count by requesting a minimal page
-                    var (_, total) = await orderService.GetPagedOrdersAsync(1, 1, from, to, tbl);
+                    var result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(1, 1, from, to, tbl));
+                    var total = result.TotalCount;
 
                     JournalPager.SetExternalSource(total);
                     RowCountText.Text = $"{total} transaction{(total == 1 ? "" : "s")}";
@@ -109,7 +110,8 @@ namespace HotelPOS.Views
                     var to = ToDate.SelectedDate?.AddDays(1);
                     int? tbl = GetTableFilter();
 
-                    var (items, _) = await orderService.GetPagedOrdersAsync(page, size, from, to, tbl);
+                    var result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(page, size, from, to, tbl));
+                    var items = result.Items;
                     int startSno = (page - 1) * size + 1;
 
                     JournalGrid.ItemsSource = items

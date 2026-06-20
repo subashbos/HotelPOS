@@ -231,3 +231,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

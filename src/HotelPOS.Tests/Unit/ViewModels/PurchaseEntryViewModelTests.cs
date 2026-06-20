@@ -139,3 +139,4 @@ namespace HotelPOS.Tests.Unit.ViewModels
         }
     }
 }
+

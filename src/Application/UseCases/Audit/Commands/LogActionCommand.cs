@@ -23,10 +23,10 @@ namespace HotelPOS.Application.UseCases.Audit.Commands
         public async Task Handle(LogActionCommand request, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.EntityName))
-                throw new ArgumentException("Entity name cannot be empty or whitespace.", nameof(request.EntityName));
+                throw new ArgumentException("Entity name cannot be empty or whitespace.", nameof(request));
 
             if (string.IsNullOrWhiteSpace(request.Action))
-                throw new ArgumentException("Action cannot be empty or whitespace.", nameof(request.Action));
+                throw new ArgumentException("Action cannot be empty or whitespace.", nameof(request));
 
             var log = new AuditLog
             {

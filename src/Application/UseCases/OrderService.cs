@@ -27,28 +27,30 @@ namespace HotelPOS.Application.UseCases
             return _mediator != null && _mediator.GetType().Assembly.GetName().Name != "DynamicProxyGenAssembly2";
         }
 
-        public async Task<int> SaveOrderAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn")
+        public async Task<int> SaveOrderAsync(SaveOrderRequest request)
         {
             if (IsProductionMediator())
             {
                 var command = new CreateOrderCommand(
-                    items,
-                    tableNumber,
-                    discount,
-                    paymentMode,
-                    customerName,
-                    customerPhone,
-                    customerGstin,
-                    orderType
+                    request.Items,
+                    request.TableNumber,
+                    request.Discount,
+                    request.PaymentMode,
+                    request.CustomerName,
+                    request.CustomerPhone,
+                    request.CustomerGstin,
+                    request.OrderType
                 );
                 return await _mediator.Send(command);
             }
 
-            return await SaveOrderInternalAsync(items, tableNumber, discount, paymentMode, customerName, customerPhone, customerGstin, orderType);
+            return await SaveOrderInternalAsync(request);
         }
 
-        public async Task<int> SaveOrderInternalAsync(List<OrderItem> items, int tableNumber, decimal discount = 0, string paymentMode = "Cash", string? customerName = null, string? customerPhone = null, string? customerGstin = null, string orderType = "DineIn")
+        public async Task<int> SaveOrderInternalAsync(SaveOrderRequest request)
         {
+            var (items, tableNumber, discount, paymentMode, customerName, customerPhone, customerGstin, orderType) = request;
+
             var command = new CreateOrderCommand(
                 items,
                 tableNumber,
@@ -163,10 +165,8 @@ namespace HotelPOS.Application.UseCases
         public Task<List<Order>> GetAllOrdersWithItemsAsync()
             => _repo.GetAllWithItemsAsync();
 
-        public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(int pageNumber, int pageSize, 
-            DateTime? from = null, DateTime? to = null, int? tableNumber = null,
-            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null)
-            => _repo.GetPagedWithItemsAsync(pageNumber, pageSize, from, to, tableNumber, search, paymentMode, orderType, categoryId);
+        public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(PagedOrdersRequest request)
+            => _repo.GetPagedWithItemsAsync(request.PageNumber, request.PageSize, request.From, request.To, request.TableNumber, request.Search, request.PaymentMode, request.OrderType, request.CategoryId);
 
         public Task<Order?> GetOrderAsync(int id) => _repo.GetByIdWithItemsAsync(id);
 

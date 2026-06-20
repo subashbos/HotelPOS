@@ -30,7 +30,7 @@ namespace HotelPOS
 {
     public partial class App
     {
-        private void ConfigureServices(IServiceCollection services, IConfiguration config, string connectionString)
+        private static void ConfigureServices(IServiceCollection services, string connectionString)
         {
             services.AddLogging(logging =>
             {

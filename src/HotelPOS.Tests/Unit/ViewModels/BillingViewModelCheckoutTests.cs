@@ -37,7 +37,7 @@ namespace HotelPOS.Tests
             await vm.SaveOrderCommand.ExecuteAsync(null);
 
             _notificationService.Verify(n => n.ShowInfo(It.Is<string>(s => s.Contains("empty"))), Times.Once);
-            _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<List<OrderItem>>(), It.IsAny<int>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()), Times.Never);
         }
 
         [Fact]
@@ -60,10 +60,7 @@ namespace HotelPOS.Tests
             await localVm.SaveOrderCommand.ExecuteAsync(null);
 
             mockDialogService.Verify(s => s.ShowConfirmCheckoutAsync(It.Is<ConfirmCheckoutDetails>(d => d.TotalItems == 2 && d.PaymentMode == "Cash")), Times.Once);
-            _orderService.Verify(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(), It.IsAny<int>(), It.IsAny<decimal>(), 
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 
-                It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()), Times.Once);
         }
 
         [Fact]
@@ -86,10 +83,8 @@ namespace HotelPOS.Tests
             await localVm.SaveOrderCommand.ExecuteAsync(null);
 
             mockDialogService.Verify(s => s.ShowConfirmCheckoutAsync(It.IsAny<ConfirmCheckoutDetails>()), Times.Once);
-            _orderService.Verify(s => s.SaveOrderAsync(
-                It.IsAny<List<OrderItem>>(), It.IsAny<int>(), It.IsAny<decimal>(), 
-                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), 
-                It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()), Times.Never);
         }
     }
 }
+

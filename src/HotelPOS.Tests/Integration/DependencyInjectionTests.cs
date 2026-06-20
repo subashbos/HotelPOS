@@ -228,3 +228,4 @@ namespace HotelPOS.Tests.Integration
         }
     }
 }
+

@@ -131,8 +131,20 @@ namespace HotelPOS.ViewModels
         private void UpdateCart()
         {
             var items = _cartService.GetItems(TableNumber);
+            SyncCartItems(items);
 
-            // 1. Remove rows that are no longer in the cart
+            Subtotal = _cartService.GetSubtotal(TableNumber);
+            GstAmount = IsCompositionScheme ? 0 : _cartService.GetGstAmount(TableNumber);
+            TotalAmount = Math.Max(0, Subtotal + GstAmount - DiscountAmount);
+
+            if (!IsTableless)
+            {
+                SyncActiveTabs();
+            }
+        }
+
+        private void SyncCartItems(List<OrderItem> items)
+        {
             var toRemove = Cart.Where(row => !items.Any(i => i.ItemId == row.ItemId)).ToList();
             foreach (var row in toRemove) Cart.Remove(row);
 
@@ -162,11 +174,7 @@ namespace HotelPOS.ViewModels
                 }
             }
 
-            // Sort the collection to match the service's order (alphabetical by name)
-            // This ensures S.No 1, 2, 3 always follows a consistent visual order.
             var sortedList = Cart.OrderBy(r => r.ItemName).ToList();
-
-            // If the order changed, we need to re-arrange the ObservableCollection
             for (int i = 0; i < sortedList.Count; i++)
             {
                 var row = sortedList[i];
@@ -177,33 +185,27 @@ namespace HotelPOS.ViewModels
                 }
                 row.SNo = i + 1;
             }
+        }
 
-            Subtotal = _cartService.GetSubtotal(TableNumber);
-            GstAmount = IsCompositionScheme ? 0 : _cartService.GetGstAmount(TableNumber);
-            TotalAmount = Math.Max(0, Subtotal + GstAmount - DiscountAmount);
+        private void SyncActiveTabs()
+        {
+            var currentActive = _cartService.GetActiveTables() ?? new List<int>();
+            currentActive = currentActive.Where(t => t > 0).ToList();
 
-            // Sync Active Tabs — only for DineIn (tableless orders use virtual table 0)
-            if (!IsTableless)
+            foreach (var t in currentActive)
+                if (!ActiveTabs.Contains(t)) ActiveTabs.Add(t);
+
+            var toRemoveTabs = ActiveTabs.Where(t => !currentActive.Contains(t) && t != TableNumber).ToList();
+            foreach (var t in toRemoveTabs) ActiveTabs.Remove(t);
+
+            if (Cart.Count > 0 && TableNumber > 0 && !ActiveTabs.Contains(TableNumber))
+                ActiveTabs.Add(TableNumber);
+
+            var sorted = ActiveTabs.OrderBy(t => t).ToList();
+            for (int i = 0; i < sorted.Count; i++)
             {
-                var currentActive = _cartService.GetActiveTables() ?? new List<int>();
-                // Exclude virtual table 0 from the tab strip
-                currentActive = currentActive.Where(t => t > 0).ToList();
-
-                foreach (var t in currentActive)
-                    if (!ActiveTabs.Contains(t)) ActiveTabs.Add(t);
-
-                var toRemoveTabs = ActiveTabs.Where(t => !currentActive.Contains(t) && t != TableNumber).ToList();
-                foreach (var t in toRemoveTabs) ActiveTabs.Remove(t);
-
-                if (Cart.Count > 0 && TableNumber > 0 && !ActiveTabs.Contains(TableNumber))
-                    ActiveTabs.Add(TableNumber);
-
-                var sorted = ActiveTabs.OrderBy(t => t).ToList();
-                for (int i = 0; i < sorted.Count; i++)
-                {
-                    int oldIndex = ActiveTabs.IndexOf(sorted[i]);
-                    if (oldIndex != i) ActiveTabs.Move(oldIndex, i);
-                }
+                int oldIndex = ActiveTabs.IndexOf(sorted[i]);
+                if (oldIndex != i) ActiveTabs.Move(oldIndex, i);
             }
         }
 

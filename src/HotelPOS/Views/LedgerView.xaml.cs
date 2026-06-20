@@ -81,8 +81,8 @@ namespace HotelPOS.Views
                     using (var scope = App.CreateDbScope())
                     {
                         var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                        var (items, _) = await orderService.GetPagedOrdersAsync(1, 0, from, to);
-                        orders = items;
+                        var result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(1, 0, from, to));
+                        orders = result.Items;
                     }
 
                     BuildLedger(orders);

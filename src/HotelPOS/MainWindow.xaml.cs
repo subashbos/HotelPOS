@@ -178,7 +178,7 @@ namespace HotelPOS
                 using (var scope = App.CreateDbScope())
                 {
                     var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                    orderId = await orderService.SaveOrderAsync(items, tableNumber);
+                    orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(items, tableNumber));
                 }
 
                 var subtotal = _cartService.GetSubtotal(tableNumber);

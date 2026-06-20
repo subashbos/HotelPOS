@@ -36,7 +36,7 @@ namespace HotelPOS.Tests
             _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(10);
 
             // Act
-            var orderId = await _service.SaveOrderAsync(items, 1);
+            var orderId = await _service.SaveOrderAsync(new SaveOrderRequest(items, 1));
 
             // Assert
             Assert.Equal(10, orderId);
@@ -49,7 +49,7 @@ namespace HotelPOS.Tests
         public async Task SaveOrderAsync_EmptyItems_ShouldThrowException()
         {
             // Act & Assert
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new List<OrderItem>(), 1));
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(new List<OrderItem>(), 1)));
         }
 
         [Fact]
@@ -112,7 +112,7 @@ namespace HotelPOS.Tests
             _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(10);
 
             // Act
-            await _service.SaveOrderAsync(items, 1);
+            await _service.SaveOrderAsync(new SaveOrderRequest(items, 1));
 
             // Assert
             _repoMock.Verify(r => r.BeginTransactionAsync(), Times.Once);
@@ -136,7 +136,7 @@ namespace HotelPOS.Tests
                              .ThrowsAsync(new Exception("Stock deduction error"));
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<Exception>(() => _service.SaveOrderAsync(items, 1));
+            var ex = await Assert.ThrowsAsync<Exception>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 1)));
             Assert.Equal("Stock deduction error", ex.Message);
 
             _repoMock.Verify(r => r.BeginTransactionAsync(), Times.Once);
@@ -145,3 +145,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

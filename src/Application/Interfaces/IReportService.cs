@@ -24,9 +24,18 @@ namespace HotelPOS.Application.Interfaces
         Task<List<MonthlySalesChartDto>> GetMonthlyChartDataInternalAsync();
 
         /// <summary>Returns paged purchase report with totals.</summary>
-        Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportAsync(
-            int page, int pageSize, DateTime? from, DateTime? to, int? supplierId, string? itemName, string? paymentType, string? invoiceNo);
-        Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportInternalAsync(
-            int page, int pageSize, DateTime? from, DateTime? to, int? supplierId, string? itemName, string? paymentType, string? invoiceNo);
+        Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportAsync(PagedPurchaseReportRequest request);
+        Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportInternalAsync(PagedPurchaseReportRequest request);
     }
+
+    public record PagedPurchaseReportRequest(
+        int Page,
+        int PageSize,
+        DateTime? From = null,
+        DateTime? To = null,
+        int? SupplierId = null,
+        string? ItemName = null,
+        string? PaymentType = null,
+        string? InvoiceNo = null
+    );
 }

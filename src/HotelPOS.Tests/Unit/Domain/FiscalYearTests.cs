@@ -50,7 +50,7 @@ namespace HotelPOS.Tests
             _orderRepo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>()))
                 .ReturnsAsync("INV/2024-25/0001");
 
-            await _service.SaveOrderAsync(items, 1);
+            await _service.SaveOrderAsync(new SaveOrderRequest(items, 1));
 
             _orderRepo.Verify(r => r.GetNextInvoiceNumberAsync(It.Is<string>(s => s.Contains("-"))), Times.Once);
         }
@@ -62,3 +62,4 @@ namespace HotelPOS.Tests
         }
     }
 }
+

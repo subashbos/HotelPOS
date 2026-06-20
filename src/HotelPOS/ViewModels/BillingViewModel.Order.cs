@@ -267,7 +267,7 @@ namespace HotelPOS.ViewModels
                         if (finalPaymentMode == "Split")
                         {
                             // Save order first (initially cash mode to bypass validate, then updates details)
-                            orderId = await orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, "Cash", CustomerName, CustomerPhone, CustomerGstin, OrderType);
+                            orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, "Cash", CustomerName, CustomerPhone, CustomerGstin, OrderType));
                             var createdOrder = await orderService.GetOrderAsync(orderId);
                             if (createdOrder != null)
                             {
@@ -282,7 +282,7 @@ namespace HotelPOS.ViewModels
                         }
                         else
                         {
-                            orderId = await orderService.SaveOrderAsync(rawItems, TableNumber, DiscountAmount, finalPaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType);
+                            orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, finalPaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType));
                         }
 
                         // Trigger Print

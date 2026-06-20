@@ -31,7 +31,7 @@ namespace HotelPOS.Application.UseCases.Orders.Queries
 
         public async Task<(List<Order> Items, int TotalCount)> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
         {
-            return await _orderService.GetPagedOrdersAsync(
+            return await _orderService.GetPagedOrdersAsync(new PagedOrdersRequest(
                 request.PageNumber,
                 request.PageSize,
                 request.From,
@@ -41,7 +41,7 @@ namespace HotelPOS.Application.UseCases.Orders.Queries
                 request.PaymentMode,
                 request.OrderType,
                 request.CategoryId
-            );
+            ));
         }
     }
 }

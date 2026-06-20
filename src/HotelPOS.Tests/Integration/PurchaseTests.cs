@@ -345,3 +345,4 @@ namespace HotelPOS.Tests
         #endregion
     }
 }
+
