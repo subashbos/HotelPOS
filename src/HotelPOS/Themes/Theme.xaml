@@ -1,0 +1,17 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <!-- 1. Core Tokens -->
+        <ResourceDictionary Source="Core/Typography.xaml"/>
+        <ResourceDictionary Source="Core/Spacing.xaml"/>
+        <ResourceDictionary Source="Core/Colors.Light.xaml"/>
+
+        <!-- 2. Control Styles -->
+        <ResourceDictionary Source="Controls/Buttons.xaml"/>
+        <ResourceDictionary Source="Controls/Inputs.xaml"/>
+        <ResourceDictionary Source="Controls/DataGrids.xaml"/>
+        
+        <!-- 3. Legacy GlobalStyles (to be dismantled over time) -->
+        <ResourceDictionary Source="GlobalStyles.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

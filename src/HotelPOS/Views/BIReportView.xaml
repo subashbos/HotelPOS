@@ -48,14 +48,14 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="Reporting &amp; Business Intelligence" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Eliminate blind spots, monitor margins, track wastage, and plan inventory" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
+                    <TextBlock Text="Reporting &amp; Business Intelligence" Style="{StaticResource HeroTextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Eliminate blind spots, monitor margins, track wastage, and plan inventory" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <!-- Global Date Filter -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <StackPanel Margin="0,0,16,0">
-                        <TextBlock Text="Analysis Period" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Analysis Period" Style="{StaticResource FieldLabel}"/>
                         <Border Background="{DynamicResource AppBackground}" CornerRadius="8" Padding="12,0" Height="36" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <DatePicker x:Name="GlobalFrom" Style="{StaticResource DateBoxStyle}" Width="100" SelectedDateChanged="Filter_Changed"/>
@@ -65,12 +65,7 @@
                         </Border>
                     </StackPanel>
                     
-                    <Button Click="Refresh_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" Width="36" Height="36" Margin="0,15,0,0" ToolTip="Refresh BI Analytics">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="8"/>
-                            </Style>
-                        </Button.Resources>
+                    <Button Click="Refresh_Click" Style="{StaticResource PrimaryBtn}" Width="36" Height="36" Padding="0" Margin="0,15,0,0" ToolTip="Refresh BI Analytics">
                         <TextBlock Text="↻" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>

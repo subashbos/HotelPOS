@@ -55,7 +55,7 @@
                 <StackPanel>
                     <!-- Bonus: Sublabel -->
                     <TextBlock Text="CREATE / EDIT SUPPLIER" FontSize="10" FontWeight="Bold" Foreground="#14B8A6" Margin="0,0,0,4"/>
-                    <TextBlock x:Name="BannerTitle" Text="🏢  Supplier Entry" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock x:Name="BannerTitle" Text="🏢  Supplier Entry" Style="{StaticResource H3TextBlockStyle}" Foreground="White"/>
                 </StackPanel>
                 <Button Grid.Column="1" Content="✕" Click="Cancel_Click" 
                         Background="Transparent" BorderThickness="0" Foreground="White" FontSize="18" FontWeight="Light" 

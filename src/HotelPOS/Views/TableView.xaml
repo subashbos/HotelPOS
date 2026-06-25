@@ -5,21 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="1000">
 
-    <UserControl.Resources>
-        <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="FontSize"   Value="11"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Margin"     Value="0,0,0,6"/>
-        </Style>
-        <Style x:Key="InputField" TargetType="TextBox">
-            <Setter Property="Padding"         Value="12,10"/>
-            <Setter Property="FontSize"        Value="14"/>
-            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Margin"          Value="0,0,0,16"/>
-        </Style>
-    </UserControl.Resources>
+
 
     <Grid Background="{DynamicResource AppBackground}">
         <Grid.RowDefinitions>
@@ -30,9 +16,9 @@
         <!-- ══ HEADER ══ -->
         <Border Background="{DynamicResource HeaderBrush}" Padding="32,22">
             <StackPanel>
-                <TextBlock Text="🪑  Tables" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="🪑  Tables" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                 <TextBlock Text="Manage your restaurant tables, their capacity, and availability."
-                           Margin="0,6,0,0" FontSize="13" Foreground="#BDD5E7"/>
+                           Margin="0,6,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
             </StackPanel>
         </Border>
 
@@ -58,22 +44,22 @@
                             <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,0,0,20">
                                 <StackPanel>
                                     <TextBlock x:Name="FormTitle" Text="Add New Table"
-                                               FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                               Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
                                 </StackPanel>
                             </Border>
 
                             <StackPanel Grid.Row="1" Margin="0,24">
                                 <TextBlock Text="TABLE NAME / LABEL" Style="{StaticResource FieldLabel}"/>
-                                <TextBox x:Name="NameBox" Style="{StaticResource InputField}"/>
+                                <TextBox x:Name="NameBox" Margin="0,0,0,16"/>
 
                                 <TextBlock Text="TABLE NUMBER (NUMERIC)" Style="{StaticResource FieldLabel}"/>
-                                <TextBox x:Name="NumberBox" Style="{StaticResource InputField}" Text="1"/>
+                                <TextBox x:Name="NumberBox" Margin="0,0,0,16" Text="1"/>
 
                                 <TextBlock Text="CAPACITY (PERSONS)" Style="{StaticResource FieldLabel}"/>
-                                <TextBox x:Name="CapacityBox" Style="{StaticResource InputField}" Text="4"/>
+                                <TextBox x:Name="CapacityBox" Margin="0,0,0,16" Text="4"/>
 
                                 <CheckBox x:Name="IsActiveBox" IsChecked="True" Content="Active and available for billing" 
-                                          FontSize="13" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
+                                          Style="{StaticResource ToggleSwitchStyle}" Margin="0,0,0,16"/>
 
                                 <Border x:Name="StatusBorder" CornerRadius="8" Padding="14,10" Margin="0,8,0,0" Visibility="Collapsed">
                                     <TextBlock x:Name="StatusText" TextWrapping="Wrap" FontSize="13"/>
@@ -83,14 +69,7 @@
                             <StackPanel Grid.Row="2">
                                 <Button x:Name="SubmitButton" Content="＋  Add Table"
                                         Click="Add_Click"
-                                        Background="{DynamicResource PrimaryBrush}" Foreground="White" 
-                                        Padding="0,14" FontWeight="Bold" Cursor="Hand" BorderThickness="0">
-                                    <Button.Resources>
-                                        <Style TargetType="Border">
-                                            <Setter Property="CornerRadius" Value="10"/>
-                                        </Style>
-                                    </Button.Resources>
-                                </Button>
+                                        Style="{StaticResource PrimaryBtn}" Padding="0,14" Margin="0,0,0,8"/>
                                 
                                 <Button x:Name="CancelEditButton" Content="✕  Cancel Edit"
                                         Click="CancelEdit_Click"
@@ -113,7 +92,7 @@
                     </Grid.RowDefinitions>
 
                     <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,16">
-                        <TextBlock Text="Existing Tables" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Existing Tables" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
                     </Border>
 
                     <DataGrid x:Name="TableGrid" Grid.Row="1"
@@ -166,23 +145,11 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0">
                                             <Button Content="✏ Edit" Click="Edit_Click" Tag="{Binding}"
-                                                    Background="{DynamicResource SecondaryBrush}" Foreground="White" BorderThickness="0" 
-                                                    Padding="12,6" FontSize="12" Margin="0,0,8,0" Cursor="Hand">
-                                                <Button.Resources>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="CornerRadius" Value="6"/>
-                                                    </Style>
-                                                </Button.Resources>
-                                            </Button>
+                                                    Style="{StaticResource SecondaryBtn}" 
+                                                    Padding="12,6" FontSize="12" Margin="0,0,8,0"/>
                                             <Button Content="🗑 Del" Click="Delete_Click" Tag="{Binding Id}"
-                                                    Background="{DynamicResource DangerBrush}" Foreground="White" BorderThickness="0" 
-                                                    Padding="12,6" FontSize="12" Cursor="Hand">
-                                                <Button.Resources>
-                                                    <Style TargetType="Border">
-                                                        <Setter Property="CornerRadius" Value="6"/>
-                                                    </Style>
-                                                </Button.Resources>
-                                            </Button>
+                                                    Style="{StaticResource DangerBtn}" 
+                                                    Padding="12,6" FontSize="12"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

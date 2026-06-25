@@ -25,31 +25,16 @@
             </Grid.ColumnDefinitions>
             
             <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                <TextBlock Text="Purchase Report" Style="{StaticResource H1}"/>
-                <TextBlock Text="Analyze purchases, vendor expenses, and stock inflow." Style="{StaticResource MutedText}"/>
+                <TextBlock Text="Purchase Report" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                <TextBlock Text="Analyze purchases, vendor expenses, and stock inflow." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                 <Button Content="⟳ Refresh" Command="{Binding ApplyFilterCommand}" 
-                        Background="White" Foreground="{DynamicResource TextPrimary}" 
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" 
-                        Padding="16,8" FontWeight="SemiBold" Cursor="Hand" Margin="0,0,8,0">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                        Style="{StaticResource SecondaryBtn}" Margin="0,0,8,0" Padding="16,8"/>
                 
                 <Button Content="📥 Export Excel" Click="ExportExcel_Click" 
-                        Background="{DynamicResource SuccessBrush}" Foreground="White" 
-                        BorderThickness="0" Padding="16,8" FontWeight="SemiBold" Cursor="Hand">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="6"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                        Style="{StaticResource PrimaryBtn}" Background="{DynamicResource SuccessBrush}" Padding="16,8"/>
             </StackPanel>
         </Grid>
 
@@ -66,7 +51,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                    <TextBlock Text="DATE RANGE" Style="{StaticResource Label}"/>
+                    <TextBlock Text="DATE RANGE" Style="{StaticResource FieldLabel}"/>
                     <StackPanel Orientation="Horizontal">
                         <DatePicker SelectedDate="{Binding FilterFrom}" Width="110"/>
                         <TextBlock Text=" to " VerticalAlignment="Center" Margin="8,0" Foreground="{DynamicResource TextMuted}"/>
@@ -75,13 +60,13 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="0,0,16,0">
-                    <TextBlock Text="SUPPLIER" Style="{StaticResource Label}"/>
+                    <TextBlock Text="SUPPLIER" Style="{StaticResource FieldLabel}"/>
                     <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding SelectedSupplier}" 
                               DisplayMemberPath="Name" Width="160"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Margin="0,0,16,0">
-                    <TextBlock Text="PAYMENT" Style="{StaticResource Label}"/>
+                    <TextBlock Text="PAYMENT" Style="{StaticResource FieldLabel}"/>
                     <ComboBox SelectedValuePath="Content" SelectedValue="{Binding SelectedPaymentType}" Width="100">
                         <ComboBoxItem Content="All"/>
                         <ComboBoxItem Content="Cash"/>
@@ -92,34 +77,20 @@
                 </StackPanel>
                 
                 <StackPanel Grid.Column="3" Margin="0,0,16,0">
-                    <TextBlock Text="INVOICE NO." Style="{StaticResource Label}"/>
+                    <TextBlock Text="INVOICE NO." Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding InvoiceNoSearch, UpdateSourceTrigger=PropertyChanged}" Width="120" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="4" Margin="0,0,16,0">
-                    <TextBlock Text="ITEM NAME" Style="{StaticResource Label}"/>
+                    <TextBlock Text="ITEM NAME" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding ItemNameSearch, UpdateSourceTrigger=PropertyChanged}" Width="140" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
                     <Button Content="Reset" Command="{Binding ResetFilterCommand}" 
-                            Background="Transparent" Foreground="{DynamicResource TextMuted}" 
-                            BorderThickness="0" Padding="12,8" Cursor="Hand" Margin="0,0,8,0">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
+                            Style="{StaticResource SecondaryBtn}" BorderThickness="0" Background="Transparent" Padding="12,8" Margin="0,0,8,0"/>
                     <Button Content="Apply Filters" Command="{Binding ApplyFilterCommand}" 
-                            Background="{DynamicResource PrimaryBrush}" Foreground="White" 
-                            BorderThickness="0" Padding="16,8" FontWeight="Bold" Cursor="Hand">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
+                            Style="{StaticResource PrimaryBtn}" Padding="16,8"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -166,23 +137,23 @@
                     BorderThickness="1" CornerRadius="8" Padding="20,12" HorizontalAlignment="Right">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Margin="0,0,24,0">
-                        <TextBlock Text="Total Purchases" Style="{StaticResource Label}"/>
+                        <TextBlock Text="Total Purchases" Style="{StaticResource FieldLabel}"/>
                         <TextBlock Text="{Binding TotalPurchasesCount}" FontSize="16" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,24,0">
-                        <TextBlock Text="Total Qty" Style="{StaticResource Label}"/>
+                        <TextBlock Text="Total Qty" Style="{StaticResource FieldLabel}"/>
                         <TextBlock Text="{Binding TotalQuantity}" FontSize="16" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,24,0">
-                        <TextBlock Text="Total Tax" Style="{StaticResource Label}"/>
+                        <TextBlock Text="Total Tax" Style="{StaticResource FieldLabel}"/>
                         <TextBlock Text="{Binding TotalTax, StringFormat=Rs. \{0:N2\}}" FontSize="16" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,24,0">
-                        <TextBlock Text="Total Discount" Style="{StaticResource Label}"/>
+                        <TextBlock Text="Total Discount" Style="{StaticResource FieldLabel}"/>
                         <TextBlock Text="{Binding TotalDiscount, StringFormat=Rs. \{0:N2\}}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}"/>
                     </StackPanel>
                     <StackPanel>
-                        <TextBlock Text="Grand Total" Style="{StaticResource Label}"/>
+                        <TextBlock Text="Grand Total" Style="{StaticResource FieldLabel}"/>
                         <TextBlock Text="{Binding TotalPurchaseAmount, StringFormat=Rs. \{0:N2\}}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                     </StackPanel>
                 </StackPanel>

@@ -19,9 +19,9 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="👥  Supplier &amp; Vendor Management" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="👥  Supplier &amp; Vendor Management" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                     <TextBlock Text="Manage your trade suppliers, contact details, outstanding opening balances, and credit term parameters."
-                               Margin="0,4,0,0" FontSize="13" Foreground="#BDD5E7"/>
+                               Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -59,13 +59,7 @@
 
                     <!-- Add Supplier Button -->
                     <Button Grid.Column="1" Command="{Binding AddSupplierCommand}"
-                            Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0"
-                            Padding="18,10" FontWeight="Bold" Cursor="Hand" VerticalAlignment="Center">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="6"/>
-                            </Style>
-                        </Button.Resources>
+                            Style="{StaticResource PrimaryBtn}" Padding="18,10" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="＋ " FontWeight="ExtraBold" FontSize="14"/>
                             <TextBlock Text="Add New Supplier"/>
@@ -171,27 +165,13 @@
                                         <Button Content="✏ Edit" 
                                                 Command="{Binding DataContext.EditSupplierCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
-                                                Background="{DynamicResource SecondaryBrush}" Foreground="White" BorderThickness="0"
-                                                Padding="12,5" FontSize="11" Margin="0,0,6,0" Cursor="Hand">
-                                            <Button.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="4"/>
-                                                </Style>
-                                            </Button.Resources>
-                                        </Button>
+                                                Style="{StaticResource SecondaryBtn}" Padding="12,6" FontSize="12" Margin="0,0,6,0"/>
 
                                         <!-- Delete -->
                                         <Button Content="🗑 Del"
                                                 Command="{Binding DataContext.DeleteSupplierCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"
-                                                Background="{DynamicResource DangerBrush}" Foreground="White" BorderThickness="0"
-                                                Padding="12,5" FontSize="11" Cursor="Hand">
-                                            <Button.Resources>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="CornerRadius" Value="4"/>
-                                                </Style>
-                                            </Button.Resources>
-                                        </Button>
+                                                Style="{StaticResource DangerBtn}" Padding="12,6" FontSize="12"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

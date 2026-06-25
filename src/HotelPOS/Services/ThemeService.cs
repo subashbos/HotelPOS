@@ -18,17 +18,18 @@ namespace HotelPOS.Services
             var app = System.Windows.Application.Current;
             var dicts = app.Resources.MergedDictionaries;
 
-            var themeUri = isDark
-                ? new Uri("Themes/DarkTheme.xaml", UriKind.Relative)
-                : new Uri("Themes/LightTheme.xaml", UriKind.Relative);
+            var colorsUri = isDark
+                ? new Uri("Themes/Core/Colors.Dark.xaml", UriKind.Relative)
+                : new Uri("Themes/Core/Colors.Light.xaml", UriKind.Relative);
 
-            // Find and replace the theme dictionary
-            var existingTheme = dicts.FirstOrDefault(d => d.Source != null && d.Source.OriginalString.Contains("Theme.xaml"));
-            if (existingTheme != null) dicts.Remove(existingTheme);
+            // Find and remove any previously injected color override dictionary at the application level
+            var existingOverride = dicts.FirstOrDefault(d => d.Source != null && d.Source.OriginalString.Contains("Colors."));
+            if (existingOverride != null) dicts.Remove(existingOverride);
 
             try
             {
-                dicts.Insert(0, new ResourceDictionary { Source = themeUri });
+                // Adding to the end of the list overrides any identical keys from the base Theme.xaml
+                dicts.Add(new ResourceDictionary { Source = colorsUri });
             }
             catch (Exception)
             {
