@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities; // Domain entities for binding
 using HotelPOS.ViewModels; // Main ViewModels for DataContext
 using System.Windows;
@@ -28,7 +30,7 @@ namespace HotelPOS.Views
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error initializing BillingView: {ex.Message}\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Error initializing BillingView: {ex.Message}\n{ex.StackTrace}", "Error", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Error);
                 }
             };
 

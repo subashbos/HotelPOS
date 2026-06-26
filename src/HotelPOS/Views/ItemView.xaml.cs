@@ -4,6 +4,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -17,6 +18,10 @@ namespace HotelPOS.Views
         private readonly INotificationService _notificationService;
         private List<Item> _allItems = new();
         private List<Item> _filtered = new();
+        private ObservableCollection<Item> _items = new();
+        private int _currentPage = 1;
+        private const int PageSize = 20;
+        private bool _isLoading = false;
 
         private static readonly SolidColorBrush SuccessBg = new(Color.FromRgb(0xD4, 0xED, 0xDA));
         private static readonly SolidColorBrush SuccessFg = new(Color.FromRgb(0x15, 0x57, 0x24));
@@ -29,7 +34,7 @@ namespace HotelPOS.Views
             _itemService = itemService;
             _categoryService = categoryService;
             _notificationService = notificationService;
-            ItemPager.PageChanged += page => ItemGrid.ItemsSource = page;
+            ItemGrid.ItemsSource = _items;
             Loaded += async (s, e) => await LoadDataAsync();
         }
 
@@ -57,9 +62,38 @@ namespace HotelPOS.Views
 
             for (int i = 0; i < _filtered.Count; i++) _filtered[i].SNo = i + 1;
 
-            ItemPager.SetSource(_filtered);
+            _items.Clear();
+            _currentPage = 1;
+            LoadMore();
+
             FilteredCountBadge.Text = _filtered.Count.ToString();
             ClearSearch.Visibility = string.IsNullOrWhiteSpace(q) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void LoadMore()
+        {
+            if (_isLoading) return;
+            _isLoading = true;
+
+            var itemsToLoad = _filtered.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+            if (itemsToLoad.Any())
+            {
+                foreach (var i in itemsToLoad) _items.Add(i);
+                _currentPage++;
+            }
+
+            _isLoading = false;
+        }
+
+        private void ItemGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var sv = e.OriginalSource as ScrollViewer;
+            if (sv == null) return;
+
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
+            {
+                LoadMore();
+            }
         }
 
         private void Search_Changed(object sender, TextChangedEventArgs e) => ApplyFilter();
@@ -103,8 +137,8 @@ namespace HotelPOS.Views
             if (sender is Button b && b.Tag is int id)
             {
                 var item = _allItems.FirstOrDefault(i => i.Id == id);
-                if (MessageBox.Show($"Delete '{item?.Name}'?\nThis cannot be undone.",
-                    "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Delete '{item?.Name}'?\nThis cannot be undone.",
+                    "Confirm Delete", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     await _itemService.DeleteItemAsync(id);
                     await LoadDataAsync();
@@ -138,8 +172,8 @@ namespace HotelPOS.Views
                           (preview.Count > 10 ? $"\n  … and {preview.Count - 10} more" : "") +
                           "\n\nProceed with import?";
 
-                if (MessageBox.Show(msg, "Preview Import", MessageBoxButton.YesNo, MessageBoxImage.Question)
-                    != MessageBoxResult.Yes) return;
+                if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(msg, "Preview Import", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question)
+                    != HotelPOS.Application.Interfaces.DialogResult.Yes) return;
 
                 var (added, skipped) = await _itemService.BulkAddAsync(preview);
                 await LoadDataAsync();

@@ -259,11 +259,11 @@ namespace HotelPOS.Views
                 return;
             }
 
-            if (MessageBox.Show(
+            if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
                     $"Delete role '{_selectedRole.Name}'?\nUsers assigned this role will lose all access.",
                     "Confirm Delete",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                    HotelPOS.Application.Interfaces.DialogButton.YesNo,
+                    HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
             {
                 using (var scope = App.CreateDbScope())
                 {

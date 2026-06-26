@@ -165,8 +165,8 @@ namespace HotelPOS.Application.UseCases
         public Task<List<Order>> GetAllOrdersWithItemsAsync()
             => _repo.GetAllWithItemsAsync();
 
-        public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(PagedOrdersRequest request)
-            => _repo.GetPagedWithItemsAsync(request.PageNumber, request.PageSize, request.From, request.To, request.TableNumber, request.Search, request.PaymentMode, request.OrderType, request.CategoryId);
+        public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(PagedOrdersRequest request, CancellationToken cancellationToken = default)
+            => _repo.GetPagedWithItemsAsync(request.PageNumber, request.PageSize, request.From, request.To, request.TableNumber, request.Search, request.PaymentMode, request.OrderType, request.CategoryId, cancellationToken);
 
         public Task<Order?> GetOrderAsync(int id) => _repo.GetByIdWithItemsAsync(id);
 

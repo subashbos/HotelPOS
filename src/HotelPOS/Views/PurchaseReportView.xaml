@@ -96,8 +96,8 @@
         </Border>
 
         <!-- DATAGRID -->
-        <Border Grid.Row="2" Style="{StaticResource PremiumCard}" Padding="0" Margin="0,0,0,16">
-            <DataGrid x:Name="ReportGrid" ItemsSource="{Binding ReportRows}" Style="{StaticResource PremiumGrid}" IsReadOnly="True" Margin="0">
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,16">
+            <DataGrid x:Name="ReportGrid" ItemsSource="{Binding ReportRows}" Style="{StaticResource PremiumGrid}" IsReadOnly="True" Margin="0" ScrollViewer.ScrollChanged="ReportGrid_ScrollChanged">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="50" ElementStyle="{StaticResource CenterCell}"/>
                     <DataGridTextColumn Header="Date" Binding="{Binding PurchaseDate, StringFormat=dd MMM yyyy HH:mm}" Width="140"/>
@@ -129,8 +129,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Pager -->
-            <ctrl:PaginationControl x:Name="Pager" Grid.Column="0" VerticalAlignment="Center"/>
+            <!-- Pager removed -->
 
             <!-- Summary Block -->
             <Border Grid.Column="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" 

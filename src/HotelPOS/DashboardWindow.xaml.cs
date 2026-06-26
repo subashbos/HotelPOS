@@ -453,8 +453,8 @@ namespace HotelPOS
 
         private void Window_Closing(object? sender, CancelEventArgs e)
         {
-            if (MessageBox.Show("Logout and close workspace?", "Exit",
-                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage("Logout and close workspace?", "Exit",
+                HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question) == HotelPOS.Application.Interfaces.DialogResult.Yes)
             {
                 try
                 {

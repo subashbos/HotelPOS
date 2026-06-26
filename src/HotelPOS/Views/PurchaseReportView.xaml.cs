@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+using HotelPOS.Application.Interfaces;
 using ClosedXML.Excel;
 using HotelPOS.ViewModels;
 using Microsoft.Win32;
@@ -16,18 +18,8 @@ namespace HotelPOS.Views
             _viewModel = viewModel;
             DataContext = _viewModel;
 
-            // Wire up pagination control
-            Pager.ExternalPageRequested += async (page, pageSize) => await _viewModel.LoadPageAsync(page, pageSize);
-            _viewModel.GetPageSizeRequested = () =>
-            {
-                // Accessing Pager control's pageSize (combobox) logic
-                // Since PageSize is internal to Pager, we can just use 10 as default or read it
-                // Actually, the Pager passes pageSize in ExternalPageRequested, so we just use that.
-                // Let's assume default 10 for Apply Filters
-                return 10;
-            };
-
-            _viewModel.SetPagerTotalCount = (total) => Pager.SetExternalSource(total);
+            // Pager removed.
+            // _viewModel.GetPageSizeRequested and _viewModel.SetPagerTotalCount are removed from ViewModel.
 
             Loaded += async (s, e) =>
             {
@@ -35,12 +27,23 @@ namespace HotelPOS.Views
             };
         }
 
+        private void ReportGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var sv = e.OriginalSource as ScrollViewer;
+            if (sv == null) return;
+
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
+            {
+                _ = _viewModel.LoadMoreAsync();
+            }
+        }
+
         private void ExportExcel_Click(object sender, RoutedEventArgs e)
         {
             var items = _viewModel.ReportRows;
             if (items == null || !items.Any())
             {
-                MessageBox.Show("No data to export.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage("No data to export.", "Warning", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Warning);
                 return;
             }
 
@@ -92,11 +95,11 @@ namespace HotelPOS.Views
 
                     ws.Columns().AdjustToContents();
                     wb.SaveAs(dlg.FileName);
-                    MessageBox.Show("Purchase report exported successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage("Purchase report exported successfully.", "Success", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Export failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Export failed: {ex.Message}", "Error", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Error);
                 }
             }
         }

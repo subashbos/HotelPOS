@@ -41,8 +41,8 @@ namespace HotelPOS
             // If they are a Cashier, they started here, so closing means logout.
             if (!AppSession.IsAdmin)
             {
-                var result = MessageBox.Show("Log out and return to Login screen?", "Shifting Shifts", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
+                var result = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage("Log out and return to Login screen?", "Shifting Shifts", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question);
+                if (result == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     AppSession.Logout();
                     var loginWindow = ((App)System.Windows.Application.Current).ServiceProvider.GetRequiredService<LoginWindow>();

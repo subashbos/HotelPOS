@@ -128,7 +128,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <DataGrid x:Name="SalesGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
+                <DataGrid x:Name="SalesGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True" ScrollViewer.ScrollChanged="SalesGrid_ScrollChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                         <DataGridTextColumn Header="DATE &amp; TIME" Binding="{Binding CreatedAt, StringFormat=dd MMM yyyy hh:mm tt}" Width="150" ElementStyle="{StaticResource LeftCell}"/>
@@ -255,7 +255,6 @@
                 <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,12" Margin="0,16,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
@@ -268,9 +267,7 @@
                             <TextBlock x:Name="TotalRevenueSum" Text="Rs. 0.00" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="8,0,0,0"/>
                         </StackPanel>
 
-                        <ctrl:PaginationControl x:Name="Pager" Grid.Column="1" HorizontalAlignment="Center"/>
-
-                        <Button Grid.Column="2" Click="Export_Click" Style="{StaticResource ActionBtn}" Foreground="{DynamicResource PrimaryBrush}">
+                        <Button Grid.Column="1" Click="Export_Click" Style="{StaticResource ActionBtn}" Foreground="{DynamicResource PrimaryBrush}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📥" Margin="0,0,8,0"/>
                                 <TextBlock Text="Export to Excel" FontWeight="SemiBold"/>

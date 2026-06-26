@@ -102,7 +102,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <DataGrid x:Name="ReportGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
+                <DataGrid x:Name="ReportGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True" ScrollViewer.ScrollChanged="ReportGrid_ScrollChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                         <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
@@ -113,11 +113,9 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- Pagination & Summary Footer -->
-                <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="20,12" Margin="0,16,0,0">
+                <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,12">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
@@ -130,12 +128,10 @@
                             <TextBlock x:Name="TotalRevenueSum" Text="Rs. 0.00" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="8,0,0,0"/>
                         </StackPanel>
 
-                        <ctrl:PaginationControl x:Name="Pager" Grid.Column="1" HorizontalAlignment="Center"/>
-
-                        <Button Grid.Column="2" Click="Export_Click" Style="{StaticResource ActionBtn}" Foreground="{DynamicResource PrimaryBrush}">
+                        <Button Grid.Column="1" Click="Export_Click" Style="{StaticResource ActionBtn}" Foreground="{DynamicResource PrimaryBrush}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📥" Margin="0,0,8,0"/>
-                                <TextBlock Text="Export to Excel" FontWeight="SemiBold"/>
+                                <TextBlock Text="Export CSV" FontWeight="SemiBold"/>
                             </StackPanel>
                         </Button>
                     </Grid>

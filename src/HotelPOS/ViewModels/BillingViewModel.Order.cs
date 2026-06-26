@@ -23,13 +23,13 @@ namespace HotelPOS.ViewModels
             if (Cart.Count == 0) return;
 
             // LOOPHOLE FIX: Confirm before moving to hold/kitchen
-            var result = System.Windows.MessageBox.Show(
+            var result = await _dialogService.ShowMessageAsync(
                 "Send this order to Kitchen / Hold?",
                 "Hold Order",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+                DialogButton.YesNo,
+                DialogIcon.Question);
 
-            if (result != System.Windows.MessageBoxResult.Yes) return;
+            if (result != DialogResult.Yes) return;
 
             _cartService.HoldOrder(TableNumber, $"Table {TableNumber} - {DateTime.Now:hh:mm tt}");
 

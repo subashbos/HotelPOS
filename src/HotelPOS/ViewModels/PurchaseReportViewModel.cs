@@ -47,11 +47,13 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private int _totalQuantity;
 
+        private int _currentPage = 1;
+        private const int PageSize = 20;
+        private bool _isLoading = false;
+        private bool _hasMoreData = true;
+
         public ObservableCollection<Supplier> Suppliers { get; } = new();
         public ObservableCollection<PurchaseReportRowDto> ReportRows { get; } = new();
-
-        public Func<int>? GetPageSizeRequested { get; set; }
-        public Action<int>? SetPagerTotalCount { get; set; }
 
         public PurchaseReportViewModel(IReportService reportService, IPurchaseService purchaseService, INotificationService notificationService)
         {
@@ -88,7 +90,7 @@ namespace HotelPOS.ViewModels
                 foreach (var sup in suppliers) Suppliers.Add(sup);
                 SelectedSupplier = Suppliers.First();
 
-                await LoadDataAsync(1, 10);
+                await ApplyFilterAsync();
             }
             catch (Exception ex)
             {
@@ -96,10 +98,12 @@ namespace HotelPOS.ViewModels
             }
         }
 
-        [RelayCommand]
         public async Task ApplyFilterAsync()
         {
-            await LoadDataAsync(1, GetPageSizeRequested?.Invoke() ?? 10);
+            _currentPage = 1;
+            _hasMoreData = true;
+            ReportRows.Clear();
+            await LoadMoreAsync();
         }
 
         [RelayCommand]
@@ -111,22 +115,14 @@ namespace HotelPOS.ViewModels
             ItemNameSearch = string.Empty;
             InvoiceNoSearch = string.Empty;
             SelectedPaymentType = "All";
-            await LoadDataAsync(1, GetPageSizeRequested?.Invoke() ?? 10);
+            await ApplyFilterAsync();
         }
 
-        public async Task LoadPageAsync(int page, int pageSize)
+        public async Task LoadMoreAsync()
         {
-            await LoadDataAsync(page, pageSize);
-        }
+            if (_isLoading || !_hasMoreData) return;
+            _isLoading = true;
 
-        /// <summary>
-        /// Loads the specified page of purchase report data using current filters, replaces ReportRows with the returned items, updates aggregated totals, and reports the total count to the pager.
-        /// </summary>
-        /// <param name="page">The 1-based page number to load.</param>
-        /// <param name="pageSize">The number of items to request for the page.</param>
-        /// <remarks>On failure, displays an error notification via the notification service.</remarks>
-        private async Task LoadDataAsync(int page, int pageSize)
-        {
             using (var scope = App.CreateDbScope())
             {
                 var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
@@ -137,22 +133,29 @@ namespace HotelPOS.ViewModels
                     var supplierId = SelectedSupplier?.Id == 0 ? (int?)null : SelectedSupplier?.Id;
 
                     var result = await reportService.GetPagedPurchaseReportAsync(new PagedPurchaseReportRequest(
-                        page, pageSize, from, to, supplierId, ItemNameSearch, SelectedPaymentType, InvoiceNoSearch));
+                        _currentPage, PageSize, from, to, supplierId, ItemNameSearch, SelectedPaymentType, InvoiceNoSearch));
 
-                    ReportRows.Clear();
+                    if (result.items.Count < PageSize)
+                    {
+                        _hasMoreData = false;
+                    }
+
                     foreach (var row in result.items) ReportRows.Add(row);
+                    _currentPage++;
 
                     TotalPurchasesCount = result.totalCount;
                     TotalPurchaseAmount = result.totalPurchases;
                     TotalTax = result.totalTax;
                     TotalDiscount = result.totalDiscount;
                     TotalQuantity = result.totalQty;
-
-                    SetPagerTotalCount?.Invoke(result.totalCount);
                 }
                 catch (Exception ex)
                 {
                     _notificationService.ShowError($"Failed to load report: {ex.Message}");
+                }
+                finally
+                {
+                    _isLoading = false;
                 }
             }
         }

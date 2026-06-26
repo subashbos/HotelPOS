@@ -3,6 +3,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -11,6 +12,10 @@ namespace HotelPOS.Views
     public partial class ItemReportView : UserControl
     {
         private readonly INotificationService _notificationService;
+        private ObservableCollection<ItemSalesReportRowDto> _items = new();
+        private List<ItemSalesReportRowDto> _allRows = new();
+        private int _currentPage = 1;
+        private const int PageSize = 20;
         private bool _isLoading;
 
         public ItemReportView(INotificationService notificationService)
@@ -23,10 +28,7 @@ namespace HotelPOS.Views
                 App.RegisterTestService(notificationService);
             }
 
-            Pager.PageChanged += page =>
-            {
-                ReportGrid.ItemsSource = page;
-            };
+            ReportGrid.ItemsSource = _items;
 
             Loaded += async (s, e) =>
             {
@@ -163,7 +165,10 @@ namespace HotelPOS.Views
                 }
 
                 // 8. Bind and update totals
-                Pager.SetSource(grouped);
+                _allRows = grouped;
+                _items.Clear();
+                _currentPage = 1;
+                LoadMore();
                 TotalQtySold.Text = grouped.Sum(x => x.QuantitySold).ToString();
                 TotalRevenueSum.Text = $"Rs. {grouped.Sum(x => x.TotalRevenue):N2}";
             }
@@ -177,9 +182,30 @@ namespace HotelPOS.Views
             }
         }
 
+        private void LoadMore()
+        {
+            var itemsToLoad = _allRows.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+            if (itemsToLoad.Any())
+            {
+                foreach (var i in itemsToLoad) _items.Add(i);
+                _currentPage++;
+            }
+        }
+
+        private void ReportGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var sv = e.OriginalSource as ScrollViewer;
+            if (sv == null) return;
+
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
+            {
+                LoadMore();
+            }
+        }
+
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            var items = ReportGrid.ItemsSource as IEnumerable<ItemSalesReportRowDto>;
+            var items = _allRows;
             if (items == null || !items.Any())
             {
                 _notificationService.ShowWarning("No data to export.");

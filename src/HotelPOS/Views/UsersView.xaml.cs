@@ -144,10 +144,10 @@ namespace HotelPOS.Views
         {
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
 
-            var result = MessageBox.Show(
+            var result = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
                 $"Permanently delete user '{u.Username}'?\nThis cannot be undone.",
-                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result != MessageBoxResult.Yes) return;
+                "Confirm Delete", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning);
+            if (result != HotelPOS.Application.Interfaces.DialogResult.Yes) return;
 
             try
             {

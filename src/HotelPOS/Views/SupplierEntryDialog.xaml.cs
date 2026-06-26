@@ -1,3 +1,4 @@
+using HotelPOS.Application.Interfaces;
 using HotelPOS.ViewModels;
 using System.Windows;
 using System.Windows.Controls;

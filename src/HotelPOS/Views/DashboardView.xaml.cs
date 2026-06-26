@@ -4,6 +4,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -39,10 +40,17 @@ namespace HotelPOS.Views
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
-        // Expose for shell-level export (kept for backward compat)
         public SalesReportDto? LastSalesReport { get; private set; }
         public List<ItemReportRowDto>? LastItemReport { get; private set; }
         public List<DailyRow>? LastDailyReport { get; private set; }
+
+        private ObservableCollection<TableSalesRowDto> _tableItems = new();
+        private int _tablePage = 1;
+        private ObservableCollection<ItemReportRowDto> _itemItems = new();
+        private int _itemPage = 1;
+        private ObservableCollection<DailyRow> _dateItems = new();
+        private int _datePage = 1;
+        private const int PageSize = 20;
 
         private readonly string[] _pieColors = { "#4facfe", "#00f2fe", "#f093fb", "#f5576c", "#48c6ef", "#6B8DD6", "#8E37D7", "#3B2667", "#BC78EC" };
 
@@ -60,26 +68,9 @@ namespace HotelPOS.Views
                 App.RegisterTestService(notificationService);
             }
 
-            // Wire pagination and calculate subtotals on page change
-            TablePager.PageChanged += page =>
-            {
-                TableGrid.ItemsSource = page;
-                var list = page?.Cast<TableSalesRowDto>() ?? Enumerable.Empty<TableSalesRowDto>();
-                TablePageSubtotalText.Text = $"Rs. {list.Sum(x => x.TotalRevenue):N2}";
-            };
-
-            ItemPager.PageChanged += page =>
-            {
-                ItemGrid.ItemsSource = page;
-                var list = page?.Cast<ItemReportRowDto>() ?? Enumerable.Empty<ItemReportRowDto>();
-                ItemPageSubtotalText.Text = $"Rs. {list.Sum(x => x.TotalRevenue):N2}";
-            };
-            DatePager.PageChanged += page =>
-            {
-                DateGrid.ItemsSource = page;
-                var list = page?.Cast<DailyRow>() ?? Enumerable.Empty<DailyRow>();
-                DatePageSubtotalText.Text = $"Rs. {list.Sum(x => x.NetIncome):N2}";
-            };
+            TableGrid.ItemsSource = _tableItems;
+            ItemGrid.ItemsSource = _itemItems;
+            DateGrid.ItemsSource = _dateItems;
 
             Loaded += async (s, e) => await LoadAsync();
         }
@@ -154,9 +145,14 @@ namespace HotelPOS.Views
                     AvgValueText.Text = $"Rs. {sales.AverageOrderValue:N2}";
                     TopItemText.Text = sales.MostPopularItem ?? "—";
 
-                    TablePager.SetSource(sales.SalesByTable);
+                    _tablePage = 1;
+                    _tableItems.Clear();
+                    LoadMoreTable();
 
-                    ItemPager.SetSource(items);
+                    _itemPage = 1;
+                    _itemItems.Clear();
+                    LoadMoreItem();
+
                     PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
 
                     // Update Range Totals for the entire filtered period
@@ -232,9 +228,78 @@ namespace HotelPOS.Views
 
                 // Calculate total net income for the date-wise range
                 DateRangeTotalText.Text = $"Rs. {LastDailyReport.Sum(x => x.NetIncome):N2}";
-                DatePager.SetSource(LastDailyReport);
+                
+                _datePage = 1;
+                _dateItems.Clear();
+                LoadMoreDate();
             }
             catch { /* silently skip if orders aren't loaded */ }
+        }
+
+        private void LoadMoreTable()
+        {
+            if (LastSalesReport?.SalesByTable == null) return;
+            var itemsToLoad = LastSalesReport.SalesByTable.Skip((_tablePage - 1) * PageSize).Take(PageSize).ToList();
+            if (itemsToLoad.Any())
+            {
+                foreach (var i in itemsToLoad) _tableItems.Add(i);
+                _tablePage++;
+                TablePageSubtotalText.Text = $"Rs. {_tableItems.Sum(x => x.TotalRevenue):N2}";
+            }
+        }
+
+        private void TableGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var sv = e.OriginalSource as ScrollViewer;
+            if (sv == null) return;
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
+            {
+                LoadMoreTable();
+            }
+        }
+
+        private void LoadMoreItem()
+        {
+            if (LastItemReport == null) return;
+            var itemsToLoad = LastItemReport.Skip((_itemPage - 1) * PageSize).Take(PageSize).ToList();
+            if (itemsToLoad.Any())
+            {
+                foreach (var i in itemsToLoad) _itemItems.Add(i);
+                _itemPage++;
+                ItemPageSubtotalText.Text = $"Rs. {_itemItems.Sum(x => x.TotalRevenue):N2}";
+            }
+        }
+
+        private void ItemGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var sv = e.OriginalSource as ScrollViewer;
+            if (sv == null) return;
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
+            {
+                LoadMoreItem();
+            }
+        }
+
+        private void LoadMoreDate()
+        {
+            if (LastDailyReport == null) return;
+            var itemsToLoad = LastDailyReport.Skip((_datePage - 1) * PageSize).Take(PageSize).ToList();
+            if (itemsToLoad.Any())
+            {
+                foreach (var i in itemsToLoad) _dateItems.Add(i);
+                _datePage++;
+                DatePageSubtotalText.Text = $"Rs. {_dateItems.Sum(x => x.NetIncome):N2}";
+            }
+        }
+
+        private void DateGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var sv = e.OriginalSource as ScrollViewer;
+            if (sv == null) return;
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
+            {
+                LoadMoreDate();
+            }
         }
 
         // ── Export ────────────────────────────────────────────────────────────
@@ -424,8 +489,8 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is int orderId)
             {
-                if (MessageBox.Show($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
-                    MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
+                    HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     try
                     {

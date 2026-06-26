@@ -3,6 +3,7 @@ using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -11,6 +12,10 @@ namespace HotelPOS.Views
     public partial class SalesReportView : UserControl
     {
         private readonly INotificationService _notificationService;
+        private ObservableCollection<RecentOrderRowDto> _items = new();
+        private List<RecentOrderRowDto> _allRows = new();
+        private int _currentPage = 1;
+        private const int PageSize = 20;
         private bool _isLoading;
 
         public SalesReportView(INotificationService notificationService)
@@ -23,10 +28,7 @@ namespace HotelPOS.Views
                 App.RegisterTestService(notificationService);
             }
 
-            Pager.PageChanged += page =>
-            {
-                SalesGrid.ItemsSource = page;
-            };
+            SalesGrid.ItemsSource = _items;
 
             Loaded += async (s, e) =>
             {
@@ -129,7 +131,11 @@ namespace HotelPOS.Views
                     Items = o.Items
                 }).ToList();
 
-                Pager.SetSource(reportRows);
+                _allRows = reportRows;
+                _items.Clear();
+                _currentPage = 1;
+                LoadMore();
+
                 TotalOrdersCount.Text = result.totalCount.ToString();
                 TotalRevenueSum.Text = $"Rs. {reportRows.Sum(x => x.Total):N2}";
             }
@@ -140,6 +146,27 @@ namespace HotelPOS.Views
             finally
             {
                 _isLoading = false;
+            }
+        }
+
+        private void LoadMore()
+        {
+            var itemsToLoad = _allRows.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+            if (itemsToLoad.Any())
+            {
+                foreach (var i in itemsToLoad) _items.Add(i);
+                _currentPage++;
+            }
+        }
+
+        private void SalesGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var sv = e.OriginalSource as ScrollViewer;
+            if (sv == null) return;
+
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
+            {
+                LoadMore();
             }
         }
 
@@ -220,8 +247,8 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is RecentOrderRowDto row)
             {
-                var confirm = MessageBox.Show($"Are you sure you want to void order invoice {row.InvoiceNumber}?", "Confirm Void", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if (confirm == MessageBoxResult.Yes)
+                var confirm = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Are you sure you want to void order invoice {row.InvoiceNumber}?", "Confirm Void", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning);
+                if (confirm == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     string reason = Microsoft.VisualBasic.Interaction.InputBox("Enter reason for voiding this order:", "Void Reason", "Customer Cancellation");
                     if (string.IsNullOrWhiteSpace(reason))
@@ -252,8 +279,8 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is RecentOrderRowDto row)
             {
-                var confirm = MessageBox.Show($"Are you sure you want to refund order invoice {row.InvoiceNumber}?", "Confirm Refund", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (confirm == MessageBoxResult.Yes)
+                var confirm = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Are you sure you want to refund order invoice {row.InvoiceNumber}?", "Confirm Refund", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question);
+                if (confirm == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     string reason = Microsoft.VisualBasic.Interaction.InputBox("Enter reason for refunding this order:", "Refund Reason", "Return/Refund");
                     if (string.IsNullOrWhiteSpace(reason))
@@ -283,7 +310,7 @@ namespace HotelPOS.Views
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            var items = SalesGrid.ItemsSource as IEnumerable<RecentOrderRowDto>;
+            var items = _allRows;
             if (items == null || !items.Any())
             {
                 _notificationService.ShowWarning("No data to export.");

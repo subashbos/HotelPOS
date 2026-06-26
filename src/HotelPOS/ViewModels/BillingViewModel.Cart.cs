@@ -1,3 +1,4 @@
+using HotelPOS.Application.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Domain.Entities;
@@ -109,18 +110,18 @@ namespace HotelPOS.ViewModels
         }
 
         [RelayCommand]
-        private void ClearCart()
+        private async Task ClearCart()
         {
             if (Cart.Count == 0) return;
 
             // Confirm before wiping the entire bill
-            var result = System.Windows.MessageBox.Show(
+            var result = await _dialogService.ShowMessageAsync(
                 "Clear all items from the current bill?",
                 "Clear Cart",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Warning);
+                DialogButton.YesNo,
+                DialogIcon.Warning);
 
-            if (result != System.Windows.MessageBoxResult.Yes) return;
+            if (result != DialogResult.Yes) return;
 
             _cartService.Clear(TableNumber);
             DiscountAmount = 0;   // LOOPHOLE FIX: reset discount when cart is cleared

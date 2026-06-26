@@ -14,8 +14,14 @@ namespace HotelPOS.Application.Interfaces
         public decimal UpiAmount { get; set; }
     }
 
+    public enum DialogButton { OK, OKCancel, YesNo, YesNoCancel }
+    public enum DialogIcon { None, Information, Question, Warning, Error }
+    public enum DialogResult { None, OK, Cancel, Yes, No }
+
     public interface IDialogService
     {
         Task<bool> ShowConfirmCheckoutAsync(ConfirmCheckoutDetails details);
+        Task<DialogResult> ShowMessageAsync(string message, string title, DialogButton button, DialogIcon icon);
+        DialogResult ShowMessage(string message, string title, DialogButton button, DialogIcon icon);
     }
 }

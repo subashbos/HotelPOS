@@ -13,7 +13,7 @@ namespace HotelPOS.Application.Interfaces
         /// <summary>Returns a paged list of orders with advanced filtering.</summary>
         Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, 
             DateTime? from = null, DateTime? to = null, int? tableNumber = null, 
-            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null);
+            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null, CancellationToken cancellationToken = default);
 
         Task UpdateAsync(Order order);
         Task<Order?> GetByIdWithItemsAsync(int id);

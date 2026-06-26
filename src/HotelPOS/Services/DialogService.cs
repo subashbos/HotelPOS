@@ -47,5 +47,56 @@ namespace HotelPOS.Services
 
             return tcs.Task;
         }
+
+        public Task<DialogResult> ShowMessageAsync(string message, string title, DialogButton button, DialogIcon icon)
+        {
+            var tcs = new TaskCompletionSource<DialogResult>();
+
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                var viewModel = new CustomMessageBoxViewModel();
+                viewModel.Setup(message, title, button, icon);
+
+                var window = new CustomMessageBoxWindow(viewModel);
+
+                var activeWindow = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                                   ?? System.Windows.Application.Current.MainWindow;
+
+                if (activeWindow != null && activeWindow != window)
+                {
+                    window.Owner = activeWindow;
+                }
+
+                window.ShowDialog();
+                tcs.SetResult(viewModel.Result);
+            });
+
+            return tcs.Task;
+        }
+
+        public DialogResult ShowMessage(string message, string title, DialogButton button, DialogIcon icon)
+        {
+            DialogResult result = DialogResult.None;
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                var viewModel = new CustomMessageBoxViewModel();
+                viewModel.Setup(message, title, button, icon);
+
+                var window = new CustomMessageBoxWindow(viewModel);
+
+                var activeWindow = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive)
+                                   ?? System.Windows.Application.Current.MainWindow;
+
+                if (activeWindow != null && activeWindow != window)
+                {
+                    window.Owner = activeWindow;
+                }
+
+                window.ShowDialog();
+                result = viewModel.Result;
+            });
+
+            return result;
+        }
     }
 }

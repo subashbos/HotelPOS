@@ -7,7 +7,7 @@ namespace HotelPOS.Application.Interfaces
         Task<int> SaveOrderAsync(SaveOrderRequest request);
         Task<int> SaveOrderInternalAsync(SaveOrderRequest request);
         Task<List<Order>> GetAllOrdersWithItemsAsync();
-        Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(PagedOrdersRequest request);
+        Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(PagedOrdersRequest request, CancellationToken cancellationToken = default);
         Task<Order?> GetOrderAsync(int id);
         Task UpdateOrderAsync(Order order);
         Task DeleteOrderAsync(int orderId);
