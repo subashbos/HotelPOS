@@ -4,48 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="900">
-    <UserControl.Resources>
-        <Style x:Key="Label" TargetType="TextBlock">
-            <Setter Property="FontSize"     Value="11"/>
-            <Setter Property="FontWeight"   Value="Bold"/>
-            <Setter Property="Margin"       Value="0,0,0,6"/>
-        </Style>
-        <Style x:Key="Field" TargetType="TextBox">
-            <Setter Property="Padding"      Value="12,9"/>
-            <Setter Property="FontSize"     Value="14"/>
-            <Setter Property="BorderBrush"  Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
-        </Style>
-        <Style x:Key="PrimaryBtn" TargetType="Button">
-            <Setter Property="Background"      Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="Foreground"      Value="White"/>
-            <Setter Property="FontWeight"      Value="SemiBold"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding"         Value="20,10"/>
-            <Setter Property="Cursor"          Value="Hand"/>
-            <Style.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="8"/>
-                </Style>
-            </Style.Resources>
-        </Style>
-        <Style x:Key="SmallBtn" TargetType="Button">
-            <Setter Property="Background"      Value="Transparent"/>
-            <Setter Property="Foreground"      Value="{DynamicResource TextMuted}"/>
-            <Setter Property="FontWeight"      Value="SemiBold"/>
-            <Setter Property="FontSize"        Value="11"/>
-            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding"         Value="10,5"/>
-            <Setter Property="Cursor"          Value="Hand"/>
-            <Style.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="5"/>
-                </Style>
-            </Style.Resources>
-        </Style>
-    </UserControl.Resources>
+
 
     <Grid Background="{DynamicResource AppBackground}">
         <Grid.ColumnDefinitions>
@@ -65,8 +24,8 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="Roles" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Define access levels for your team." FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
+                    <TextBlock Text="Roles" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Define access levels for your team." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <DataGrid x:Name="RolesGrid" Grid.Row="2"
@@ -95,8 +54,8 @@
                 </DataGrid>
 
                 <StackPanel Grid.Row="3" Margin="0,12,0,0">
-                    <TextBlock Text="NEW ROLE NAME" Style="{StaticResource Label}"/>
-                    <TextBox x:Name="NewRoleNameBox" Style="{StaticResource Field}" Margin="0,0,0,10"/>
+                    <TextBlock Text="NEW ROLE NAME" Style="{StaticResource FieldLabel}"/>
+                    <TextBox x:Name="NewRoleNameBox" Style="{StaticResource InputField}" Margin="0,0,0,10"/>
                     <Button Content="➕ Add Role" Style="{StaticResource PrimaryBtn}" Click="AddRole_Click"/>
                 </StackPanel>
             </Grid>
@@ -108,7 +67,7 @@
                 <!-- Placeholder: shown when no role is selected -->
                 <StackPanel x:Name="NoRolePlaceholder" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Visible">
                     <TextBlock Text="👥" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
-                    <TextBlock Text="Select a role to manage permissions" FontSize="14" Foreground="{DynamicResource TextMuted}"
+                    <TextBlock Text="Select a role to manage permissions" Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource TextMuted}"
                                HorizontalAlignment="Center" Margin="0,12,0,0"/>
                 </StackPanel>
 
@@ -125,8 +84,8 @@
 
                     <!-- Header -->
                     <StackPanel>
-                        <TextBlock x:Name="EditingRoleTitle" Text="Role Permissions" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Control window-wise access for this role." FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="EditingRoleTitle" Text="Role Permissions" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Control window-wise access for this role." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                     </StackPanel>
 
                     <!-- Select All / Clear All shortcuts -->
@@ -134,8 +93,8 @@
                         <Grid>
                             <TextBlock Text="QUICK ACTIONS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button Content="✅  Grant All" Style="{StaticResource SmallBtn}" Click="GrantAll_Click" Margin="0,0,8,0"/>
-                                <Button Content="🚫  Revoke All" Style="{StaticResource SmallBtn}" Click="RevokeAll_Click"/>
+                                <Button Content="✅  Grant All" Style="{StaticResource SecondaryBtn}" Padding="10,5" FontSize="11" Click="GrantAll_Click" Margin="0,0,8,0"/>
+                                <Button Content="🚫  Revoke All" Style="{StaticResource SecondaryBtn}" Padding="10,5" FontSize="11" Click="RevokeAll_Click"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -173,15 +132,7 @@
                     <!-- Action Buttons -->
                     <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                         <Button Content="💾  Save Permissions" Style="{StaticResource PrimaryBtn}" Click="SavePermissions_Click" Margin="0,0,12,0"/>
-                        <Button x:Name="DeleteRoleBtn" Content="🗑  Delete Role" Background="{DynamicResource DangerBrush}" Foreground="White" Padding="14,10" Click="DeleteRole_Click">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
+                        <Button x:Name="DeleteRoleBtn" Content="🗑  Delete Role" Style="{StaticResource DangerBtn}" Click="DeleteRole_Click"/>
                     </StackPanel>
                 </Grid>
             </Grid>

@@ -21,7 +21,7 @@
         -->
         <Style x:Key="NavBtn" TargetType="Button">
             <Setter Property="Background"      Value="Transparent"/>
-            <Setter Property="Foreground"      Value="#94A3B8"/> <!-- slate-400 -->
+            <Setter Property="Foreground"      Value="{DynamicResource TextMuted}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="Height"          Value="48"/>
@@ -52,7 +52,7 @@
  
                                         <!-- Label Text -->
                                         <TextBlock Grid.Column="1" x:Name="LabelText" Text="{TemplateBinding Tag}"
-                                                   FontSize="13" FontWeight="SemiBold"
+                                                   Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightSemiBold}"
                                                    VerticalAlignment="Center" Margin="12,0,0,0"
                                                    Foreground="{TemplateBinding Foreground}" Visibility="Collapsed"/>
                                     </Grid>
@@ -62,12 +62,12 @@
                         <ControlTemplate.Triggers>
                             <!-- Hover state: slate-800 background -->
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#1E293B"/>
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource SidebarHoverBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                             <!-- Active state (IsEnabled = False): Teal background + Cyan indicator -->
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="bd" Property="Background" Value="#0D9488"/>
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource SidebarActiveBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible"/>
                             </Trigger>
@@ -87,7 +87,7 @@
         <!-- SubNavBtn Style: For child submenu links under parent categories -->
         <Style x:Key="SubNavBtn" TargetType="Button">
             <Setter Property="Background"      Value="Transparent"/>
-            <Setter Property="Foreground"      Value="#64748B"/> <!-- slate-500 -->
+            <Setter Property="Foreground"      Value="{DynamicResource TextMuted}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="Height"          Value="28"/>
@@ -98,7 +98,7 @@
                     <ControlTemplate TargetType="Button">
                         <Grid Margin="0,1">
                             <TextBlock x:Name="tb" Text="{TemplateBinding Content}"
-                                       FontSize="12" FontWeight="SemiBold"
+                                       Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightSemiBold}"
                                        Foreground="{TemplateBinding Foreground}"/>
                         </Grid>
                         <ControlTemplate.Triggers>
@@ -116,10 +116,10 @@
         </Style>
 
         <!-- ModuleHeaderStyle: For slate-500 uppercase headers in expanded sidebar -->
-        <Style x:Key="ModuleHeaderStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="#64748B"/> <!-- slate-500 -->
+        <Style x:Key="ModuleHeaderStyle" TargetType="TextBlock" BasedOn="{StaticResource BaseTextBlockStyle}">
+            <Setter Property="FontSize" Value="{StaticResource FontSizeSmall}"/>
+            <Setter Property="FontWeight" Value="{StaticResource FontWeightBold}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
             <Setter Property="Margin" Value="16,12,0,4"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
         </Style>
@@ -133,8 +133,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- ══ FLOATING SIDEBAR ══ -->
-        <!-- Background: Dark Navy #0F172A, default Width: 70px, floating with CornerRadius and margin -->
-        <Border x:Name="SidebarBorder" Background="#0F172A" Grid.Column="0" Tag="compact" Width="70"
+        <Border x:Name="SidebarBorder" Background="{DynamicResource SidebarBrush}" Grid.Column="0" Tag="compact" Width="70"
                 Margin="12,12,6,12" CornerRadius="16">
             <Grid>
                 <Grid.RowDefinitions>
@@ -144,7 +143,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- ─── Header: App Logo row ─── -->
-                <Border BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="12,12">
+                <Border BorderBrush="{DynamicResource SidebarHoverBrush}" BorderThickness="0,0,0,1" Padding="12,12">
                     <Grid>
                         <!-- COMPACT: Centered Logo Card -->
                         <Border x:Name="HeaderCompact" CornerRadius="8" Background="White" Width="36" Height="36" 
@@ -169,18 +168,18 @@
 
                             <!-- App Title -->
                             <TextBlock Grid.Column="1" Text="Hotel POS"
-                                       FontSize="16" FontWeight="Bold" Foreground="White"
+                                       Style="{StaticResource BodyLargeTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="White"
                                        VerticalAlignment="Center" Margin="10,0,0,0"/>
 
                             <!-- Collapse Button (< chevron in small square) -->
                             <Button Grid.Column="2" Click="ToggleSidebar_Click" Background="Transparent" Width="28" Height="28"
-                                    BorderBrush="#1E293B" BorderThickness="1" Cursor="Hand" ToolTip="Collapse Sidebar" VerticalAlignment="Center">
+                                    BorderBrush="{DynamicResource SidebarHoverBrush}" BorderThickness="1" Cursor="Hand" ToolTip="Collapse Sidebar" VerticalAlignment="Center">
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="6"/>
                                     </Style>
                                 </Button.Resources>
-                                <TextBlock Text="‹" FontSize="18" FontWeight="Bold" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
+                                <TextBlock Text="‹" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
                             </Button>
                         </Grid>
                     </Grid>
@@ -282,14 +281,14 @@
                 </ScrollViewer>
 
                 <!-- ─── Bottom: Theme + User + Logout ─── -->
-                <Border Grid.Row="2" Background="#0F172A" BorderBrush="#1E293B"
+                <Border Grid.Row="2" Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource SidebarHoverBrush}"
                         BorderThickness="0,1,0,0" Padding="12,12">
                     <Grid>
                         <!-- COMPACT bottom -->
                         <StackPanel x:Name="BottomCompact" HorizontalAlignment="Center">
                             <Button Click="ThemeToggle_Click" Background="Transparent" BorderThickness="0"
                                     Cursor="Hand" ToolTip="Toggle Theme" HorizontalAlignment="Center" Margin="0,0,0,10">
-                                <TextBlock Text="🌓" FontSize="18" Foreground="#64748B"/>
+                                <TextBlock Text="🌓" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextMuted}"/>
                             </Button>
                             
                             <!-- Logout (Power Button Icon) -->
@@ -299,11 +298,11 @@
                                     <ControlTemplate TargetType="Button">
                                         <Border x:Name="bd" Background="Transparent" CornerRadius="8" Width="36" Height="36">
                                             <Path Data="M12 2c-5.52 0-10 4.48-10 10 0 4.75 3.31 8.72 7.75 9.7v-2.07C6.54 18.66 4 15.62 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 3.62-2.54 6.66-5.75 7.63v2.07c4.44-.98 7.75-4.95 7.75-9.7 0-5.52-4.48-10-10-10zm-1 10V4h2v8h-2z"
-                                                  Fill="#EF4444" Stretch="Uniform" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                  Fill="{DynamicResource DangerBrush}" Stretch="Uniform" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="bd" Property="Background" Value="#1E293B"/>
+                                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource SidebarHoverBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -312,13 +311,13 @@
 
                             <!-- Expand Toggle Button (>) in compact mode -->
                             <Button Click="ToggleSidebar_Click" Background="Transparent" Width="28" Height="28"
-                                    BorderBrush="#1E293B" BorderThickness="1" Cursor="Hand" ToolTip="Expand Sidebar" HorizontalAlignment="Center">
+                                    BorderBrush="{DynamicResource SidebarHoverBrush}" BorderThickness="1" Cursor="Hand" ToolTip="Expand Sidebar" HorizontalAlignment="Center">
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="6"/>
                                     </Style>
                                 </Button.Resources>
-                                <TextBlock Text="›" FontSize="18" FontWeight="Bold" Foreground="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
+                                <TextBlock Text="›" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
                             </Button>
                         </StackPanel>
 
@@ -348,19 +347,19 @@
                                 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
                                     <TextBlock x:Name="UserNameTextExp" Text="Admin"
-                                               Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                                               Foreground="White" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightSemiBold}"/>
                                     <TextBlock x:Name="UserRoleText" Text="Administrator"
-                                               Foreground="#64748B" FontSize="9" Margin="0,1,0,0"/>
+                                               Foreground="{DynamicResource TextMuted}" FontSize="{StaticResource FontSizeSmall}" Margin="0,1,0,0"/>
                                 </StackPanel>
                                 
                                 <Button Grid.Column="2" Click="ThemeToggle_Click" Background="Transparent" BorderThickness="0"
                                         Cursor="Hand" ToolTip="Toggle Theme" VerticalAlignment="Center">
-                                    <TextBlock Text="🌓" FontSize="16" Foreground="#64748B"/>
+                                    <TextBlock Text="🌓" Style="{StaticResource BodyLargeTextBlockStyle}" Foreground="{DynamicResource TextMuted}"/>
                                 </Button>
                             </Grid>
 
                             <!-- Horizontal divider -->
-                            <Border Grid.Row="2" Height="1" Background="#1E293B"/>
+                            <Border Grid.Row="2" Height="1" Background="{DynamicResource SidebarHoverBrush}"/>
 
                             <!-- Red Logout card -->
                             <Button Grid.Row="4" Click="Logout_Click" Cursor="Hand" ToolTip="Logout"
@@ -370,13 +369,13 @@
                                         <Border x:Name="bd" Background="Transparent" CornerRadius="8" Padding="12,8">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <Path Data="M12 2c-5.52 0-10 4.48-10 10 0 4.75 3.31 8.72 7.75 9.7v-2.07C6.54 18.66 4 15.62 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 3.62-2.54 6.66-5.75 7.63v2.07c4.44-.98 7.75-4.95 7.75-9.7 0-5.52-4.48-10-10-10zm-1 10V4h2v8h-2z"
-                                                      Fill="#EF4444" Stretch="Uniform" Width="24" Height="24" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Logout" Foreground="#EF4444" FontSize="13" FontWeight="Bold" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                                                      Fill="{DynamicResource DangerBrush}" Stretch="Uniform" Width="24" Height="24" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Logout" Foreground="{DynamicResource DangerBrush}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Margin="12,0,0,0" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="bd" Property="Background" Value="#1E293B"/>
+                                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource SidebarHoverBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -405,23 +404,23 @@
                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="24,0">
                     <Grid>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Workspace" Foreground="{DynamicResource TextMuted}" FontSize="13"/>
-                            <TextBlock Text="  /  " Foreground="{DynamicResource BorderBrush}" FontSize="13"/>
+                            <TextBlock Text="Workspace" Style="{StaticResource BodySmallTextBlockStyle}"/>
+                            <TextBlock Text="  /  " Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource BorderBrush}"/>
                             <TextBlock x:Name="PageTitleText" Text="Dashboard"
-                                       Foreground="{DynamicResource TextPrimary}" FontSize="14" FontWeight="Bold"/>
+                                       Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <Border Background="{DynamicResource AppBackground}" CornerRadius="16" Padding="14,7" Margin="0,0,16,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="🔍" FontSize="12" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="🔍" Style="{StaticResource CaptionTextBlockStyle}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                     <TextBox Width="160" Background="Transparent" BorderThickness="0"
-                                             VerticalContentAlignment="Center" FontSize="12" Tag="Quick search..."/>
+                                             VerticalContentAlignment="Center" FontSize="{StaticResource FontSizeCaption}" Tag="Quick search..."/>
                                 </StackPanel>
                             </Border>
-                            <TextBlock Text="🔔" FontSize="18" Foreground="{DynamicResource TextMuted}"
+                            <TextBlock Text="🔔" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextMuted}"
                                        Margin="0,0,16,0" VerticalAlignment="Center" Cursor="Hand"/>
                             <Border Width="34" Height="34" CornerRadius="17" Background="{DynamicResource SecondaryBrush}">
-                                <TextBlock Text="A" Foreground="White" FontWeight="Bold"
+                                <TextBlock Text="A" Foreground="White" FontWeight="{StaticResource FontWeightBold}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </StackPanel>

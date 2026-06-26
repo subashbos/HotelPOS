@@ -6,23 +6,6 @@
              xmlns:ctrl="clr-namespace:HotelPOS.Controls"
              mc:Ignorable="d" d:DesignHeight="900" d:DesignWidth="1400">
 
-    <UserControl.Resources>
-        <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="FontSize"   Value="11"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            
-            <Setter Property="Margin"     Value="0,0,0,6"/>
-        </Style>
-        <Style x:Key="InputField" TargetType="TextBox">
-            <Setter Property="Padding"         Value="12,10"/>
-            <Setter Property="FontSize"        Value="14"/>
-            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
-            
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Margin"          Value="0,0,0,16"/>
-        </Style>
-    </UserControl.Resources>
 
     <Grid Background="{DynamicResource AppBackground}">
         <Grid.RowDefinitions>
@@ -38,24 +21,24 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="📋  Menu Items" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="📋  Menu Items" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                     <TextBlock Text="Manage your restaurant catalog — add, edit, delete and bulk import items."
-                               Margin="0,6,0,0" FontSize="13" Foreground="#BDD5E7"/>
+                               Margin="0,6,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
                 </StackPanel>
                 <!-- Stats badges -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="{DynamicResource SecondaryBrush}" CornerRadius="20" Padding="18,10" Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="TotalCountBadge" Text="0" FontSize="20" FontWeight="Bold"
+                            <TextBlock x:Name="TotalCountBadge" Text="0" Style="{StaticResource H2TextBlockStyle}"
                                        Foreground="White" Margin="0,0,6,0"/>
-                            <TextBlock Text="Items" FontSize="13" Foreground="#BDD5E7" VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+                            <TextBlock Text="Items" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" VerticalAlignment="Bottom" Margin="0,0,0,2"/>
                         </StackPanel>
                     </Border>
                     <Border Background="{DynamicResource SuccessBrush}" CornerRadius="20" Padding="18,10">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock x:Name="FilteredCountBadge" Text="0" FontSize="20" FontWeight="Bold"
+                            <TextBlock x:Name="FilteredCountBadge" Text="0" Style="{StaticResource H2TextBlockStyle}"
                                        Foreground="White" Margin="0,0,6,0"/>
-                            <TextBlock Text="Shown" FontSize="13" Foreground="#A0DDD4" VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+                            <TextBlock Text="Shown" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" VerticalAlignment="Bottom" Margin="0,0,0,2"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -86,20 +69,13 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Orientation="Horizontal">
                                 <StackPanel>
-                                    <TextBlock Text="Item Catalog" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                                    <TextBlock Text="Click Edit to modify • Click row to select" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,3,0,0"/>
+                                    <TextBlock Text="Item Catalog" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="Click Edit to modify • Click row to select" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,3,0,0"/>
                                 </StackPanel>
                                 <Button Content="➕  Add Item" 
                                          Click="AddItem_Click"
-                                         Background="{DynamicResource PrimaryBrush}" Foreground="White" 
-                                         Padding="16,8" FontWeight="Bold" Margin="32,0,0,0"
-                                         VerticalAlignment="Center" Cursor="Hand" BorderThickness="0">
-                                     <Button.Resources>
-                                         <Style TargetType="Border">
-                                             <Setter Property="CornerRadius" Value="8"/>
-                                         </Style>
-                                     </Button.Resources>
-                                </Button>
+                                         Style="{StaticResource PrimaryBtn}" Margin="32,0,0,0"
+                                         VerticalAlignment="Center"/>
                             </StackPanel>
 
                             <!-- Right Side Tools -->
@@ -107,7 +83,7 @@
                                 <!-- Search Box -->
                                 <Border Background="{DynamicResource AppBackground}" CornerRadius="20" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="14,2">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="🔍" Padding="10,0,0,0" VerticalAlignment="Center" FontSize="14" Foreground="{DynamicResource TextMuted}"/>
+                                        <TextBlock Text="🔍" Padding="10,0,0,0" VerticalAlignment="Center" Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource TextMuted}"/>
                                         <TextBox x:Name="SearchBox" Width="220" Padding="10,8"
                                                  Background="Transparent" BorderThickness="0"
                                                  VerticalContentAlignment="Center"
@@ -121,16 +97,7 @@
                                 </Border>
 
                                 <Button Content="📤  Import Excel" Click="Import_Click" 
-                                        Background="Transparent" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                                        Foreground="{DynamicResource TextPrimary}"
-                                        Padding="16,8" FontWeight="SemiBold" Margin="16,0,0,0"
-                                        Cursor="Hand">
-                                     <Button.Resources>
-                                         <Style TargetType="Border">
-                                             <Setter Property="CornerRadius" Value="20"/>
-                                         </Style>
-                                     </Button.Resources>
-                                </Button>
+                                        Style="{StaticResource SecondaryBtn}" Margin="16,0,0,0"/>
                             </StackPanel>
                         </Grid>
                     </Border>
@@ -162,7 +129,7 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Padding="12,5" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="16" Background="{DynamicResource SecondaryBrush}" Margin="0,0,14,0">
-                                            <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" FontSize="13" Foreground="White"/>
+                                            <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="White"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -172,7 +139,7 @@
                                     <DataTemplate>
                                         <TextBlock Text="{Binding TaxPercentage, StringFormat={}{0}%}" 
                                                    VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                   Foreground="{DynamicResource TextMuted}" FontSize="13"/>
+                                                   Foreground="{DynamicResource TextMuted}" Style="{StaticResource BodySmallTextBlockStyle}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

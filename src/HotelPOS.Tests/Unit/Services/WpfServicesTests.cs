@@ -69,9 +69,9 @@ namespace HotelPOS.Tests.Unit.Services
                         .Build();
 
                     var method = typeof(App).GetMethod("ConfigureServices",
-                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
                     Assert.NotNull(method);
-                    method.Invoke(app, new object[] { services, config, "Server=(localdb)\\mssqllocaldb;Database=HotelPOS_DI_Test;Trusted_Connection=True;" });
+                    method.Invoke(null, new object[] { services, "Server=(localdb)\\mssqllocaldb;Database=HotelPOS_DI_Test;Trusted_Connection=True;" });
 
                     var provider = services.BuildServiceProvider();
                     using (var scope = provider.CreateScope())

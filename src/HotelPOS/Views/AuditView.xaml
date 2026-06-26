@@ -16,9 +16,9 @@
         <!-- Header -->
         <Border Background="{DynamicResource HeaderBrush}" Padding="28,20" CornerRadius="14">
             <StackPanel>
-                <TextBlock Text="🛡  System Audit Logs" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="🛡  System Audit Logs" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                 <TextBlock Text="Track every change made to orders, inventory and settings."
-                           Margin="0,6,0,0" FontSize="13" Foreground="#BDD5E7"/>
+                           Margin="0,6,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
             </StackPanel>
         </Border>
 
@@ -27,15 +27,15 @@
                 BorderThickness="1" CornerRadius="10" Padding="16">
             <StackPanel Orientation="Horizontal">
                 <StackPanel Margin="0,0,20,0">
-                    <TextBlock Text="FROM DATE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,4"/>
+                    <TextBlock Text="FROM DATE" Style="{StaticResource FieldLabel}"/>
                     <DatePicker x:Name="FromDate" Width="150"/>
                 </StackPanel>
                 <StackPanel Margin="0,0,20,0">
-                    <TextBlock Text="TO DATE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,4"/>
+                    <TextBlock Text="TO DATE" Style="{StaticResource FieldLabel}"/>
                     <DatePicker x:Name="ToDate" Width="150"/>
                 </StackPanel>
                 <Button Content="🔍  Refresh Logs" Click="Refresh_Click" 
-                        Style="{StaticResource TouchButton}" Padding="24,10" VerticalAlignment="Bottom"/>
+                        Style="{StaticResource PrimaryBtn}" Padding="24,10" VerticalAlignment="Bottom"/>
             </StackPanel>
         </Border>
 

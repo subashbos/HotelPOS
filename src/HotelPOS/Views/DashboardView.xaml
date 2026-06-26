@@ -38,8 +38,8 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel>
-                        <TextBlock Text="Executive Dashboard" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Real-time business performance analytics" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
+                        <TextBlock Text="Executive Dashboard" Style="{StaticResource H1TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Real-time business performance analytics" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
@@ -48,9 +48,9 @@
                                 <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.05"/>
                             </Border.Effect>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="From:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="From:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightSemiBold}"/>
                                 <DatePicker x:Name="CustomFrom" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="CustomDate_Changed" Margin="0,0,12,0" BorderThickness="0" Background="Transparent" Width="110"/>
-                                <TextBlock Text="To:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="To:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextMuted}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightSemiBold}"/>
                                 <DatePicker x:Name="CustomTo" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="CustomDate_Changed" BorderThickness="0" Background="Transparent" Width="110"/>
                             </StackPanel>
                         </Border>
@@ -63,19 +63,19 @@
                         <Button Click="Refresh_Click" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Cursor="Hand" Width="42" Height="42">
                             <Button.Resources>
                                 <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="10"/>
+                                    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
                                 </Style>
                             </Button.Resources>
-                            <TextBlock Text="↻" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
+                            <TextBlock Text="↻" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
                         </Button>
                         
                         <Button Click="Export_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" Cursor="Hand" Width="42" Height="42" Margin="12,0,0,0">
                             <Button.Resources>
                                 <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="10"/>
+                                    <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}"/>
                                 </Style>
                             </Button.Resources>
-                            <TextBlock Text="📥" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="📥" Style="{StaticResource H3TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Button>
                     </StackPanel>
                 </Grid>
@@ -95,10 +95,7 @@
                     <!-- Revenue Card -->
                     <Border Grid.Column="0" BorderThickness="0" CornerRadius="15" Padding="24">
                         <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#00B4DB" Offset="0"/>
-                                <GradientStop Color="#0083B0" Offset="1"/>
-                            </LinearGradientBrush>
+                            <StaticResource ResourceKey="RevenueGradient"/>
                         </Border.Background>
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="#0083B0"/>
@@ -109,11 +106,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="TOTAL REVENUE" FontSize="11" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="RevenueValueText" Text="Rs. 0.00" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="TOTAL REVENUE" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="RevenueValueText" Text="Rs. 0.00" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                             </StackPanel>
                             <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="#25FFFFFF" VerticalAlignment="Center">
-                                <TextBlock Text="💰" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="💰" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
                     </Border>
@@ -121,10 +118,7 @@
                     <!-- Orders Card -->
                     <Border Grid.Column="2" BorderThickness="0" CornerRadius="15" Padding="24">
                         <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#7028E4" Offset="0"/>
-                                <GradientStop Color="#E5B2CA" Offset="1"/>
-                            </LinearGradientBrush>
+                            <StaticResource ResourceKey="OrdersGradient"/>
                         </Border.Background>
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="#7028E4"/>
@@ -135,11 +129,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="ORDERS PLACED" FontSize="11" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="OrdersValueText" Text="0" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="ORDERS PLACED" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="OrdersValueText" Text="0" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                             </StackPanel>
                             <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="#25FFFFFF" VerticalAlignment="Center">
-                                <TextBlock Text="🧾" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="🧾" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
                     </Border>
@@ -147,10 +141,7 @@
                     <!-- Avg Ticket Card -->
                     <Border Grid.Column="4" BorderThickness="0" CornerRadius="15" Padding="24">
                         <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#11998E" Offset="0"/>
-                                <GradientStop Color="#38EF7D" Offset="1"/>
-                            </LinearGradientBrush>
+                            <StaticResource ResourceKey="AvgTicketGradient"/>
                         </Border.Background>
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="#11998E"/>
@@ -161,11 +152,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="AVG. TICKET" FontSize="11" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="AvgValueText" Text="Rs. 0.00" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock Text="AVG. TICKET" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="AvgValueText" Text="Rs. 0.00" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                             </StackPanel>
                             <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="#25FFFFFF" VerticalAlignment="Center">
-                                <TextBlock Text="📈" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="📈" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
                     </Border>
@@ -173,10 +164,7 @@
                     <!-- Top Item Card -->
                     <Border Grid.Column="6" BorderThickness="0" CornerRadius="15" Padding="24">
                         <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#EB3349" Offset="0"/>
-                                <GradientStop Color="#F45C43" Offset="1"/>
-                            </LinearGradientBrush>
+                            <StaticResource ResourceKey="TopItemGradient"/>
                         </Border.Background>
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="#EB3349"/>
@@ -187,11 +175,11 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="TOP ITEM" FontSize="11" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="TopItemText" Text="—" FontSize="20" FontWeight="Bold" Foreground="White" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="TOP ITEM" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="TopItemText" Text="—" Style="{StaticResource H2TextBlockStyle}" Foreground="White" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                             <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="#25FFFFFF" VerticalAlignment="Center">
-                                <TextBlock Text="⭐" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Text="⭐" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
                     </Border>
@@ -216,7 +204,7 @@
                                 <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05"/>
                             </Border.Effect>
                             <StackPanel>
-                                <TextBlock Text="Revenue Performance" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,20"/>
+                                <TextBlock Text="Revenue Performance" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,20"/>
                                 <ItemsControl x:Name="SalesChart" Height="220" Background="Transparent">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
@@ -229,10 +217,7 @@
                                                         ToolTip="{Binding ToolTipText}"
                                                         VerticalAlignment="Bottom">
                                                     <Border.Background>
-                                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                            <GradientStop Color="#00C6FB" Offset="0"/>
-                                                            <GradientStop Color="#005BEA" Offset="1"/>
-                                                        </LinearGradientBrush>
+                                                        <StaticResource ResourceKey="ChartBarGradient"/>
                                                     </Border.Background>
                                                     <Border.Style>
                                                         <Style TargetType="Border">
@@ -249,7 +234,7 @@
                                                         </Style>
                                                     </Border.Style>
                                                 </Border>
-                                                <TextBlock Text="{Binding MonthName}" FontSize="10" FontWeight="SemiBold"
+                                                <TextBlock Text="{Binding MonthName}" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightSemiBold}"
                                                            HorizontalAlignment="Center" Margin="0,0,0,-22"
                                                            VerticalAlignment="Bottom"
                                                            Foreground="{DynamicResource TextMuted}"/>
@@ -266,7 +251,7 @@
                                 <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05"/>
                             </Border.Effect>
                             <StackPanel>
-                                <TextBlock Text="Sales Mix (By Category)" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,20"/>
+                                <TextBlock Text="Sales Mix (By Category)" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,20"/>
                                 <Grid Height="220">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -305,8 +290,8 @@
                                         <!-- Inner Circle for Donut effect -->
                                         <Ellipse Width="110" Height="110" Fill="{DynamicResource SurfaceBrush}"/>
                                         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                            <TextBlock Text="TOTAL" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center"/>
-                                            <TextBlock x:Name="PieTotalText" Text="100%" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="TOTAL" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center"/>
+                                            <TextBlock x:Name="PieTotalText" Text="100%" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center"/>
                                         </StackPanel>
                                     </Grid>
 
@@ -326,8 +311,8 @@
                                                             </Border.Effect>
                                                         </Border>
                                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                            <TextBlock Text="{Binding CategoryName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
-                                                            <TextBlock Text="{Binding Percentage, StringFormat={}{0:N1}%}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                                                            <TextBlock Text="{Binding CategoryName}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightSemiBold}" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Text="{Binding Percentage, StringFormat={}{0:N1}%}" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}"/>
                                                         </StackPanel>
                                                     </Grid>
                                                 </DataTemplate>
@@ -358,7 +343,7 @@
                                 </Border.Effect>
                                 <StackPanel>
                                     <Grid Margin="0,0,0,12">
-                                        <TextBlock Text="Date-wise Summary" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Date-wise Summary" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     </Grid>
                                     <DataGrid x:Name="DateGrid" MinHeight="300" MaxHeight="500" Style="{StaticResource PremiumGrid}">
                                         <DataGrid.Columns>
@@ -384,12 +369,12 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="PAGE SUBTOTAL (NET):" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="DatePageSubtotalText" Text="Rs. 0.00" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="PAGE SUBTOTAL (NET):" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="DatePageSubtotalText" Text="Rs. 0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                <TextBlock Text="RANGE TOTAL (NET):" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="DateRangeTotalText" Text="Rs. 0.00" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="RANGE TOTAL (NET):" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="DateRangeTotalText" Text="Rs. 0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -405,7 +390,7 @@
                             </Border.Effect>
                             <StackPanel>
                                 <Grid Margin="0,0,0,12">
-                                    <TextBlock Text="Revenue by Table" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Revenue by Table" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                 </Grid>
                                 <DataGrid x:Name="TableGrid" Height="580" Style="{StaticResource PremiumGrid}">
                                     <DataGrid.Columns>
@@ -429,12 +414,12 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="PAGE SUBTOTAL:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="TablePageSubtotalText" Text="Rs. 0.00" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="PAGE SUBTOTAL:" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="TablePageSubtotalText" Text="Rs. 0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                <TextBlock Text="TOTAL:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="TableRangeTotalText" Text="Rs. 0.00" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="TOTAL:" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="TableRangeTotalText" Text="Rs. 0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -458,7 +443,7 @@
                             </Border.Effect>
                             <StackPanel>
                                 <Grid Margin="0,0,0,12">
-                                    <TextBlock Text="Top Selling Items" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Top Selling Items" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                 </Grid>
                                 <DataGrid x:Name="ItemGrid" Height="400" Style="{StaticResource PremiumGrid}">
                                     <DataGrid.Columns>
@@ -483,12 +468,12 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="PAGE REVENUE:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="ItemPageSubtotalText" Text="Rs. 0.00" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="PAGE REVENUE:" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="ItemPageSubtotalText" Text="Rs. 0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                <TextBlock Text="TOTAL REVENUE:" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="ItemRangeTotalText" Text="Rs. 0.00" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock Text="TOTAL REVENUE:" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                                <TextBlock x:Name="ItemRangeTotalText" Text="Rs. 0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -502,7 +487,7 @@
                                 <DropShadowEffect BlurRadius="15" ShadowDepth="2" Opacity="0.05"/>
                             </Border.Effect>
                             <StackPanel>
-                                <TextBlock Text="Payment Summary" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
+                                <TextBlock Text="Payment Summary" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
                                 <DataGrid x:Name="PaymentModeGrid" Style="{StaticResource PremiumGrid}" RowHeight="50">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
@@ -510,7 +495,7 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Border Background="{DynamicResource AppBackground}" CornerRadius="8" Padding="10,4" HorizontalAlignment="Center" Margin="4,0">
-                                                        <TextBlock Text="{Binding PaymentMode}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextPrimary}"/>
+                                                        <TextBlock Text="{Binding PaymentMode}" FontWeight="Bold" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
                                                     </Border>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>

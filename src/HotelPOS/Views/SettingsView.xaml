@@ -4,43 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" d:DesignHeight="800" d:DesignWidth="1200">
-    <UserControl.Resources>
-        <Style x:Key="FieldLabel" TargetType="TextBlock">
-            <Setter Property="FontSize"   Value="11"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            
-            <Setter Property="Margin"     Value="0,0,0,6"/>
-        </Style>
-        <Style x:Key="InputBox" TargetType="TextBox">
-            <Setter Property="Padding"         Value="12,10"/>
-            <Setter Property="FontSize"        Value="14"/>
-            <Setter Property="Margin"          Value="0,0,0,18"/>
-            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
-            
-        </Style>
-        <Style x:Key="SectionHeader" TargetType="TextBlock">
-            <Setter Property="FontSize"   Value="15"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            
-            <Setter Property="Margin"     Value="0,0,0,16"/>
-        </Style>
-        <Style x:Key="SaveBtn" TargetType="Button">
-            <Setter Property="Background"      Value="{DynamicResource SuccessBrush}"/>
-            <Setter Property="Foreground"      Value="White"/>
-            <Setter Property="FontWeight"      Value="SemiBold"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding"         Value="28,12"/>
-            <Setter Property="Cursor"          Value="Hand"/>
-            <Setter Property="FontSize"        Value="14"/>
-            <Style.Resources>
-                <Style TargetType="Border">
-                    <Setter Property="CornerRadius" Value="10"/>
-                </Style>
-            </Style.Resources>
-        </Style>
-    </UserControl.Resources>
+
 
     <Grid Margin="24" Background="{DynamicResource AppBackground}">
         <Grid.RowDefinitions>
@@ -52,9 +16,9 @@
         <!-- Page Header -->
         <Border Background="{DynamicResource HeaderBrush}" Padding="28,20" CornerRadius="14">
             <StackPanel>
-                <TextBlock Text="⚙️  System Settings" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="⚙️  System Settings" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                 <TextBlock Text="Hotel profile, receipt display options, printer configuration and user management."
-                           Margin="0,6,0,0" FontSize="13" Foreground="#BDD5E7"/>
+                           Margin="0,6,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
             </StackPanel>
         </Border>
 
@@ -73,21 +37,21 @@
                 <ScrollViewer>
                     <Border Padding="32">
                         <StackPanel MaxWidth="620" HorizontalAlignment="Left">
-                            <TextBlock Text="Business Information" Style="{StaticResource SectionHeader}"/>
+                            <TextBlock Text="Business Information" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
 
                             <TextBlock Text="HOTEL NAME" Style="{StaticResource FieldLabel}"/>
-                            <TextBox x:Name="HotelNameBox" Style="{StaticResource InputBox}"/>
+                            <TextBox x:Name="HotelNameBox" Margin="0,0,0,18"/>
 
                             <TextBlock Text="FULL ADDRESS" Style="{StaticResource FieldLabel}"/>
-                            <TextBox x:Name="HotelAddressBox" Style="{StaticResource InputBox}" Height="80" TextWrapping="Wrap" AcceptsReturn="True"/>
+                            <TextBox x:Name="HotelAddressBox" Margin="0,0,0,18" Height="80" TextWrapping="Wrap" AcceptsReturn="True"/>
 
                             <TextBlock Text="GSTIN (India Compliance)" Style="{StaticResource FieldLabel}"/>
-                            <TextBox x:Name="HotelGstBox" Style="{StaticResource InputBox}" MaxLength="15" CharacterCasing="Upper"/>
+                            <TextBox x:Name="HotelGstBox" Margin="0,0,0,18" MaxLength="15" CharacterCasing="Upper"/>
 
                             <TextBlock Text="PHONE NUMBER" Style="{StaticResource FieldLabel}"/>
-                            <TextBox x:Name="HotelPhoneBox" Style="{StaticResource InputBox}"/>
+                            <TextBox x:Name="HotelPhoneBox" Margin="0,0,0,18"/>
 
-                            <Button Content="💾  Save Hotel Profile" Style="{StaticResource SaveBtn}" Click="SaveHotel_Click" Background="{DynamicResource PrimaryBrush}"/>
+                            <Button Content="💾  Save Hotel Profile" Style="{StaticResource PrimaryBtn}" Click="SaveHotel_Click" Padding="28,12" HorizontalAlignment="Left"/>
                         </StackPanel>
                     </Border>
                 </ScrollViewer>
@@ -100,7 +64,7 @@
                         <StackPanel MaxWidth="680" HorizontalAlignment="Left">
 
                             <!-- Printer Hardware -->
-                            <TextBlock Text="Hardware Configuration" Style="{StaticResource SectionHeader}"/>
+                            <TextBlock Text="Hardware Configuration" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
 
                             <TextBlock Text="TARGET PRINTER" Style="{StaticResource FieldLabel}"/>
                             <ComboBox x:Name="PrinterList" Padding="10,9" FontSize="14" Margin="0,0,0,18"
@@ -118,8 +82,8 @@
                             <Separator Margin="0,0,0,24" Background="{DynamicResource BorderBrush}"/>
 
                             <!-- Receipt Display Toggles -->
-                            <TextBlock Text="Receipt Display Options" Style="{StaticResource SectionHeader}"/>
-                            <TextBlock Text="Choose which sections appear on the printed bill." FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="0,-10,0,20"/>
+                            <TextBlock Text="Receipt Display Options" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
+                            <TextBlock Text="Choose which sections appear on the printed bill." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,-10,0,20"/>
 
                             <Border Background="{DynamicResource AppBackground}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,8">
                                 <StackPanel>
@@ -133,7 +97,7 @@
                                 </StackPanel>
                             </Border>
 
-                            <Button Content="💾  Save Printer &amp; Display" Style="{StaticResource SaveBtn}" Click="SavePrinter_Click" Margin="0,24,0,0"/>
+                            <Button Content="💾  Save Printer &amp; Display" Style="{StaticResource PrimaryBtn}" Click="SavePrinter_Click" Margin="0,24,0,0" Padding="28,12" HorizontalAlignment="Left"/>
                         </StackPanel>
                     </Border>
                 </ScrollViewer>
@@ -148,7 +112,7 @@
                             <RowDefinition Height="16"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="User Management" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="User Management" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
                         <ContentControl x:Name="UsersHost" Grid.Row="2"/>
                     </Grid>
                 </Border>
@@ -159,23 +123,23 @@
                 <ScrollViewer>
                     <Border Padding="32">
                         <StackPanel MaxWidth="620" HorizontalAlignment="Left">
-                            <TextBlock Text="Automated Backup Configuration" Style="{StaticResource SectionHeader}"/>
+                            <TextBlock Text="Automated Backup Configuration" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
                             
                             <CheckBox x:Name="EnableAutomatedBackupsCheck" Content="Enable automated database backups on app exit" FontSize="14" Margin="0,0,0,18" Foreground="{DynamicResource TextPrimary}"/>
 
                             <TextBlock Text="OFF-SITE BACKUP PATH (Network Share or Secondary Drive)" Style="{StaticResource FieldLabel}"/>
-                            <TextBox x:Name="OffsiteBackupPathBox" Style="{StaticResource InputBox}" Margin="0,0,0,8" Tag="e.g. D:\Backups or \\NetworkShare\Backup"/>
-                            <TextBlock Text="Automated backups will also replicate to this folder if configured." FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,24"/>
+                            <TextBox x:Name="OffsiteBackupPathBox" Margin="0,0,0,8" Tag="e.g. D:\Backups or \\NetworkShare\Backup"/>
+                            <TextBlock Text="Automated backups will also replicate to this folder if configured." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,24"/>
 
-                            <Button Content="💾  Save Backup Configuration" Style="{StaticResource SaveBtn}" Click="SaveBackups_Click" Background="{DynamicResource PrimaryBrush}" Margin="0,0,0,32"/>
+                            <Button Content="💾  Save Backup Configuration" Style="{StaticResource PrimaryBtn}" Click="SaveBackups_Click" Margin="0,0,0,32" Padding="28,12" HorizontalAlignment="Left"/>
 
                             <!-- Separator -->
                             <Separator Margin="0,0,0,24" Background="{DynamicResource BorderBrush}"/>
 
-                            <TextBlock Text="Manual Actions" Style="{StaticResource SectionHeader}"/>
+                            <TextBlock Text="Manual Actions" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,16"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
-                                <Button Content="🔄  Create Backup Now" Style="{StaticResource SaveBtn}" Click="BackupNow_Click" Background="{DynamicResource SuccessBrush}" Padding="20,12"/>
-                                <Button Content="↩  Restore Database" Style="{StaticResource SaveBtn}" Click="RestoreDb_Click" Background="{DynamicResource DangerBrush}" Padding="20,12" Margin="16,0,0,0"/>
+                                <Button Content="🔄  Create Backup Now" Style="{StaticResource PrimaryBtn}" Click="BackupNow_Click" Padding="20,12"/>
+                                <Button Content="↩  Restore Database" Style="{StaticResource DangerBtn}" Click="RestoreDb_Click" Padding="20,12" Margin="16,0,0,0"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>

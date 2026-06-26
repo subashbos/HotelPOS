@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:HotelPOS"
              mc:Ignorable="d"
              d:DesignHeight="800" d:DesignWidth="1280"
+             TextElement.Foreground="{DynamicResource TextPrimary}"
              PreviewKeyDown="UserControl_PreviewKeyDown">
     <UserControl.Resources>
         <Style x:Key="NavPillStyle" TargetType="Button">
@@ -15,6 +16,7 @@
             <Setter Property="Margin"          Value="0,0,8,0"/>
             <Setter Property="FontSize"        Value="12"/>
             <Setter Property="FontWeight"      Value="SemiBold"/>
+            <Setter Property="Foreground"      Value="{DynamicResource TextPrimary}"/>
             <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
@@ -63,11 +65,11 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="🧾  POS Billing" FontSize="18" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="F1: Search • F4: Checkout • Esc: Close" FontSize="11" Foreground="#BDD5E7" Margin="0,2,0,0"/>
+                    <TextBlock Text="🧾  POS Billing" Style="{StaticResource H3TextBlockStyle}" Foreground="White"/>
+                    <TextBlock Text="F1: Search • F4: Checkout • Esc: Close" Style="{StaticResource CaptionTextBlockStyle}" Foreground="#BDD5E7" Margin="0,2,0,0"/>
                 </StackPanel>
                 <Border Grid.Column="1" Background="{DynamicResource SecondaryBrush}" Padding="12,6" CornerRadius="6" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding StatusMessage, StringFormat='Status: {0}'}" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                    <TextBlock Text="{Binding StatusMessage, StringFormat='Status: {0}'}" Foreground="White" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="SemiBold"/>
                 </Border>
             </Grid>
         </Border>
@@ -121,12 +123,12 @@
                         <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="15" Width="320">
                             <Border.Effect><DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.2"/></Border.Effect>
                             <StackPanel>
-                                <TextBlock Text="Select Table" FontWeight="Bold" FontSize="18" Margin="0,0,0,10" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Select Table" Style="{StaticResource H3TextBlockStyle}" Margin="0,0,0,10" Foreground="{DynamicResource TextPrimary}"/>
                                 
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,15" HorizontalAlignment="Center">
-                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource SuccessBrush}" Margin="0,0,5,0"/><TextBlock Text="Empty" FontSize="11" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
-                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource DangerBrush}" Margin="0,0,5,0"/><TextBlock Text="Occupied" FontSize="11" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
-                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource PrimaryBrush}" Margin="0,0,5,0"/><TextBlock Text="Current" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource SuccessBrush}" Margin="0,0,5,0"/><TextBlock Text="Empty" Style="{StaticResource CaptionTextBlockStyle}" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource DangerBrush}" Margin="0,0,5,0"/><TextBlock Text="Occupied" Style="{StaticResource CaptionTextBlockStyle}" Margin="0,0,15,0" Foreground="{DynamicResource TextMuted}"/>
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource PrimaryBrush}" Margin="0,0,5,0"/><TextBlock Text="Current" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{DynamicResource TextMuted}"/>
                                 </StackPanel>
                                 
                                 <ItemsControl ItemsSource="{Binding Tables}">
@@ -160,7 +162,7 @@
                                                         </Style.Triggers>
                                                     </Style>
                                                 </Button.Style>
-                                                <TextBlock Text="{Binding TableName}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding TableName}" Style="{StaticResource BodyLargeTextBlockStyle}" FontWeight="Bold" HorizontalAlignment="Center"/>
                                             </Button>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
@@ -187,15 +189,15 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0">
-                        <TextBlock Text="Menu Items" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                        <TextBlock Text="Type to search or browse by category" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,2,0,0"/>
+                        <TextBlock Text="Menu Items" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Type to search or browse by category" Foreground="{DynamicResource TextMuted}" Style="{StaticResource BodySmallTextBlockStyle}" Margin="0,2,0,0"/>
                     </StackPanel>
 
                     <Border Grid.Row="1" Margin="0,10,0,0" CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" ClipToBounds="True">
                         <UniformGrid Columns="3">
-                            <Button x:Name="BtnDineIn" Content="🍽 Dine In" Tag="DineIn" Click="OrderTypeBtn_Click" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}" Cursor="Hand"/>
-                            <Button x:Name="BtnTakeaway" Content="🥡 Takeaway" Tag="Takeaway" Click="OrderTypeBtn_Click" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}" Cursor="Hand"/>
-                            <Button x:Name="BtnOnline" Content="🌐 Online" Tag="Online" Click="OrderTypeBtn_Click" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand"/>
+                            <Button x:Name="BtnDineIn" Content="🍽 Dine In" Tag="DineIn" Click="OrderTypeBtn_Click" Style="{StaticResource BaseButton}" Background="Transparent" Foreground="{DynamicResource TextPrimary}" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}" Cursor="Hand"/>
+                            <Button x:Name="BtnTakeaway" Content="🥡 Takeaway" Tag="Takeaway" Click="OrderTypeBtn_Click" Style="{StaticResource BaseButton}" Background="Transparent" Foreground="{DynamicResource TextPrimary}" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource BorderBrush}" Cursor="Hand"/>
+                            <Button x:Name="BtnOnline" Content="🌐 Online" Tag="Online" Click="OrderTypeBtn_Click" Style="{StaticResource BaseButton}" Background="Transparent" Foreground="{DynamicResource TextPrimary}" Padding="0,9" FontSize="12" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand"/>
                         </UniformGrid>
                     </Border>
 
@@ -224,10 +226,8 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Border BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="2" CornerRadius="8">
-                            <TextBox x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" TextChanged="SearchBox_TextChanged" Padding="12,10" FontSize="15" BorderThickness="0" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimary}" PreviewKeyDown="SearchBox_PreviewKeyDown" GotFocus="SearchBox_GotFocus" LostFocus="SearchBox_LostFocus"/>
-                        </Border>
-                        <Button Grid.Column="1" Content="➕  Add" Margin="10,0,0,0" Click="AddItem_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" Padding="16,10" BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+                        <TextBox x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" TextChanged="SearchBox_TextChanged" Padding="12,10" FontSize="15" PreviewKeyDown="SearchBox_PreviewKeyDown" GotFocus="SearchBox_GotFocus" LostFocus="SearchBox_LostFocus"/>
+                        <Button Grid.Column="1" Content="➕  Add" Margin="10,0,0,0" Click="AddItem_Click" Style="{StaticResource PrimaryBtn}" Padding="16,10" Cursor="Hand"/>
 
                         <Popup x:Name="AutoPopup" PlacementTarget="{Binding ElementName=SearchBox}" Placement="Bottom" StaysOpen="True" AllowsTransparency="True">
                             <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource PrimaryBrush}" BorderThickness="2" CornerRadius="0,0,10,10" MinWidth="320">
@@ -253,13 +253,13 @@
                                         <DataTemplate>
                                             <Grid>
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource BodyTextBlockStyle}" FontWeight="SemiBold"/>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                    <Border Padding="12,4" Background="{DynamicResource SecondaryBrush}" CornerRadius="16" Margin="8,0,0,0"><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Foreground="White" FontWeight="Bold" FontSize="13"/></Border>
-                                                    <TextBlock Text="{Binding TaxPercentage, StringFormat={}({0}% GST)}" Foreground="#E67E22" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                    <Border Padding="12,4" Background="{DynamicResource SecondaryBrush}" CornerRadius="16" Margin="8,0,0,0"><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Foreground="White" FontWeight="Bold" Style="{StaticResource BodySmallTextBlockStyle}"/></Border>
+                                                    <TextBlock Text="{Binding TaxPercentage, StringFormat={}({0}% GST)}" Foreground="#E67E22" Style="{StaticResource CaptionTextBlockStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                                     <Border Padding="8,2" Background="{Binding StockQuantity, Converter={StaticResource StockToColorConverter}}" CornerRadius="10" Margin="8,0,0,0" 
                                                             Visibility="{Binding TrackInventory, Converter={StaticResource BoolToVisibilityConverter}}">
-                                                        <TextBlock Text="{Binding StockQuantity, StringFormat='Stock: {0}'}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                                        <TextBlock Text="{Binding StockQuantity, StringFormat='Stock: {0}'}" Foreground="White" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="Bold"/>
                                                     </Border>
                                                 </StackPanel>
                                             </Grid>
@@ -280,12 +280,12 @@
                                         <Grid>
                                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                             <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource BodyTextBlockStyle}" FontWeight="SemiBold"/>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Category.Name}" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
-                                                    <TextBlock Text=" • OUT OF STOCK" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" Margin="8,0,0,0">
+                                                    <TextBlock Text="{Binding Category.Name}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{DynamicResource TextMuted}"/>
+                                                    <TextBlock Text=" • OUT OF STOCK" FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" Margin="8,0,0,0">
                                                         <TextBlock.Style>
-                                                            <Style TargetType="TextBlock">
+                                                            <Style TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                                                 <Style.Triggers>
                                                                     <MultiDataTrigger>
@@ -301,9 +301,8 @@
                                                     </TextBlock>
                                                 </StackPanel>
                                             </StackPanel>
-                                            <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" FontSize="10" Foreground="#E67E22"/></StackPanel></Border>
-                                            <Button Grid.Column="2" Content="＋" Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Width="38" Height="38" Background="{DynamicResource PrimaryBrush}" Foreground="White" BorderThickness="0" FontSize="18" FontWeight="Bold">
-                                                <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style></Button.Resources>
+                                            <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="#E67E22"/></StackPanel></Border>
+                                            <Button Grid.Column="2" Content="＋" Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource PrimaryBtn}" Width="38" Height="38" FontSize="18" FontWeight="Bold">
                                                 <Button.IsEnabled>
                                                     <MultiBinding Converter="{StaticResource IdToEnabledConverter}" ConverterParameter="StockCheck">
                                                         <Binding Path="StockQuantity"/>
@@ -365,16 +364,16 @@
 
                 <StackPanel Grid.Row="2" Margin="0,4,0,0">
                     <UniformGrid Columns="4" Height="26">
-                        <Button Content="＋" Command="{Binding AddToCartCommand}" CommandParameter="{Binding SelectedCartRow}" Padding="1" FontSize="12" Margin="0,0,2,0"/>
-                        <Button Content="－" Command="{Binding DecreaseQuantityCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="1" FontSize="12" Margin="0,0,2,0"/>
-                        <Button Content="🗑 Rem" Command="{Binding RemoveFromCartCommand}" CommandParameter="{Binding SelectedCartRow}" Background="{DynamicResource DangerBrush}" Foreground="White" Padding="1" FontSize="10" Margin="0,0,2,0"/>
-                        <Button Content="✖ Clr" Command="{Binding ClearCartCommand}" Background="#E74C3C" Foreground="White" Padding="1" FontSize="10"/>
+                        <Button Content="＋" Command="{Binding AddToCartCommand}" CommandParameter="{Binding SelectedCartRow}" Style="{StaticResource BaseButton}" Background="{DynamicResource SurfaceBrush}" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Padding="1" FontSize="12" Margin="0,0,2,0"/>
+                        <Button Content="－" Command="{Binding DecreaseQuantityCommand}" CommandParameter="{Binding SelectedCartRow}" Style="{StaticResource SecondaryBtn}" Padding="1" FontSize="12" Margin="0,0,2,0"/>
+                        <Button Content="🗑 Rem" Command="{Binding RemoveFromCartCommand}" CommandParameter="{Binding SelectedCartRow}" Style="{StaticResource DangerBtn}" Padding="1" FontSize="10" Margin="0,0,2,0"/>
+                        <Button Content="✖ Clr" Command="{Binding ClearCartCommand}" Style="{StaticResource DangerBtn}" Padding="1" FontSize="10"/>
                     </UniformGrid>
                     
                     <Grid Margin="0,4,0,0" Height="26">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                        <Button Content="🍽 Kitchen" Command="{Binding HoldOrderCommand}" Background="#F39C12" Foreground="White" Padding="1" FontSize="11" Margin="0,0,4,0"/>
-                        <Button Grid.Column="1" Content="{Binding HeldOrders.Count, StringFormat='Held ({0})'}" Command="{Binding ToggleHeldOrdersCommand}" Background="{DynamicResource SecondaryBrush}" Foreground="White" Padding="1" FontSize="11"/>
+                        <Button Content="🍽 Kitchen" Command="{Binding HoldOrderCommand}" Style="{StaticResource BaseButton}" Background="#F39C12" Foreground="White" Padding="1" FontSize="11" Margin="0,0,4,0"/>
+                        <Button Grid.Column="1" Content="{Binding HeldOrders.Count, StringFormat='Held ({0})'}" Command="{Binding ToggleHeldOrdersCommand}" Style="{StaticResource SecondaryBtn}" Padding="1" FontSize="11"/>
                     </Grid>
 
                     <Popup IsOpen="{Binding IsHeldOrdersPopupOpen}" StaysOpen="False" Placement="Top" HorizontalOffset="-100">
@@ -416,11 +415,6 @@
                                 <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
                                     <TextBlock Text="PAY" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <ComboBox x:Name="PaymentModeCombo" SelectedValue="{Binding PaymentMode}" SelectedValuePath="Content" Width="100" Height="28" Padding="10,2" FontSize="12" VerticalContentAlignment="Center" DropDownClosed="PaymentModeCombo_DropDownClosed">
-                                        <ComboBox.Resources>
-                                            <Style TargetType="Border">
-                                                <Setter Property="CornerRadius" Value="6"/>
-                                            </Style>
-                                        </ComboBox.Resources>
                                         <ComboBoxItem Content="Cash"/>
                                         <ComboBoxItem Content="Card"/>
                                         <ComboBoxItem Content="UPI"/>

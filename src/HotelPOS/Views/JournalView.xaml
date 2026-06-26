@@ -18,8 +18,8 @@
         <!-- Hero Header -->
         <Border Background="{DynamicResource HeaderBrush}" Padding="32,22">
             <StackPanel>
-                <TextBlock Text="📓  Transaction Journal" FontSize="26" FontWeight="Bold" Foreground="White"/>
-                <TextBlock Text="Full transaction log with itemized order detail." Margin="0,6,0,0" FontSize="13" Foreground="#BDD5E7"/>
+                <TextBlock Text="📓  Transaction Journal" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Full transaction log with itemized order detail." Margin="0,6,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
             </StackPanel>
         </Border>
 
@@ -40,18 +40,12 @@
                     <ComboBoxItem Content="Table 5" Tag="5"/>
                 </ComboBox>
                 <Button Content="↻  Refresh" Click="Refresh_Click"
-                        Background="{DynamicResource PrimaryBrush}" Foreground="White"
-                        BorderThickness="0" Padding="16,8"
-                        FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="20,0,0,0"/>
+                        Style="{StaticResource PrimaryBtn}" Padding="16,8" Margin="20,0,0,0"/>
                 <Button Content="📤  Export Excel" Click="Export_Click"
-                        Background="{DynamicResource SuccessBrush}" Foreground="White"
-                        BorderThickness="0" Padding="16,8"
-                        FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="10,0,0,0"/>
+                        Style="{StaticResource PrimaryBtn}" Background="{DynamicResource SuccessBrush}" Padding="16,8" Margin="10,0,0,0"/>
                 <Button Content="📄  GST Report" Click="ExportGst_Click"
-                        Background="#E67E22" Foreground="White"
-                        BorderThickness="0" Padding="16,8"
-                        FontSize="13" FontWeight="SemiBold" Cursor="Hand" Margin="10,0,0,0"/>
-                <TextBlock x:Name="RowCountText" FontSize="13" Foreground="{DynamicResource TextMuted}"
+                        Style="{StaticResource PrimaryBtn}" Background="#E67E22" Padding="16,8" Margin="10,0,0,0"/>
+                <TextBlock x:Name="RowCountText" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}"
                            VerticalAlignment="Center" Margin="20,0,0,0"/>
             </StackPanel>
         </Border>
@@ -77,7 +71,7 @@
                             <Border Background="{DynamicResource AppBackground}" Padding="20,12" Margin="0,0,0,4" MaxHeight="300">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel>
-                                    <TextBlock Text="ORDER ITEMS" FontSize="11" FontWeight="Bold"
+                                    <TextBlock Text="ORDER ITEMS" Style="{StaticResource FieldLabel}"
                                                Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
                                     <ItemsControl ItemsSource="{Binding Items}">
                                         <ItemsControl.ItemTemplate>

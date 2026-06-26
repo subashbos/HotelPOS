@@ -11,7 +11,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Shift Management (Cash Register)" FontSize="22" FontWeight="Bold" Margin="20,20,20,10" Foreground="{DynamicResource TextPrimary}"/>
+        <TextBlock Text="Shift Management (Cash Register)" Style="{StaticResource H2TextBlockStyle}" Margin="20,20,20,10" Foreground="{DynamicResource TextPrimary}"/>
 
         <Grid Grid.Row="1" Margin="20,0,20,20">
             <Grid.ColumnDefinitions>
@@ -23,14 +23,14 @@
             <!-- Active Session Card -->
             <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="12" Padding="20" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                 <StackPanel>
-                    <TextBlock Text="Current Status" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                    <TextBlock Text="Current Status" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,15"/>
 
                     <!-- Not Open State -->
                     <StackPanel Visibility="{Binding IsSessionOpen, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}">
-                        <TextBlock Text="No active shift found. Start a new shift to begin billing." TextWrapping="Wrap" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,20"/>
-                        <TextBlock Text="Opening Balance (Cash in hand):" FontSize="12" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding OpeningBalance, UpdateSourceTrigger=PropertyChanged}" Height="40" VerticalContentAlignment="Center" Padding="10,0" Margin="0,0,0,15"/>
-                        <Button Content="Start New Shift" Command="{Binding OpenSessionCommand}" Height="45" Background="{DynamicResource PrimaryBrush}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                        <TextBlock Text="No active shift found. Start a new shift to begin billing." TextWrapping="Wrap" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,20"/>
+                        <TextBlock Text="Opening Balance (Cash in hand):" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding OpeningBalance, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,15"/>
+                        <Button Content="Start New Shift" Command="{Binding OpenSessionCommand}" Style="{StaticResource PrimaryBtn}" HorizontalAlignment="Stretch"/>
                     </StackPanel>
 
                     <!-- Open State -->
@@ -54,12 +54,12 @@
 
                         <Separator Margin="0,0,0,20"/>
                         
-                        <TextBlock Text="Close Shift" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                        <TextBlock Text="Actual Cash in Drawer:" FontSize="12" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding ActualCash, UpdateSourceTrigger=PropertyChanged}" Height="40" VerticalContentAlignment="Center" Padding="10,0" Margin="0,0,0,10"/>
-                        <TextBlock Text="Notes:" FontSize="12" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding Notes}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Padding="5" Margin="0,0,0,15"/>
-                        <Button Content="Close Shift &amp; Reconcile" Command="{Binding CloseSessionCommand}" Height="45" Background="{DynamicResource DangerBrush}" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                        <TextBlock Text="Close Shift" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10"/>
+                        <TextBlock Text="Actual Cash in Drawer:" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding ActualCash, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                        <TextBlock Text="Notes:" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding Notes}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,15"/>
+                        <Button Content="Close Shift &amp; Reconcile" Command="{Binding CloseSessionCommand}" Style="{StaticResource DangerBtn}" Padding="12,12" HorizontalAlignment="Stretch"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -67,7 +67,7 @@
             <!-- History -->
             <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" CornerRadius="12" Padding="20" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                 <StackPanel>
-                    <TextBlock Text="Shift History" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,15"/>
+                    <TextBlock Text="Shift History" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,15"/>
                     <DataGrid ItemsSource="{Binding SessionHistory}" Style="{StaticResource PremiumGrid}" MaxHeight="500">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50"/>

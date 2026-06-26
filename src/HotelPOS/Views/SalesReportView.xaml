@@ -32,8 +32,8 @@
 
                 <!-- Title -->
                 <StackPanel>
-                    <TextBlock Text="Detailed Sales Report" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Analyze your transaction history with granular filters" FontSize="13" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
+                    <TextBlock Text="Detailed Sales Report" Style="{StaticResource HeroTextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Analyze your transaction history with granular filters" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                 </StackPanel>
 
                 <!-- Filters Grid -->
@@ -54,7 +54,7 @@
 
                     <!-- Date Range -->
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Date Range" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Date Range" Style="{StaticResource FieldLabel}"/>
                         <Border Background="{DynamicResource AppBackground}" CornerRadius="10" Padding="12,0" Height="38" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <DatePicker x:Name="FilterFrom" Style="{StaticResource DateBoxStyle}" SelectedDateChanged="Filter_Changed" Width="100"/>
@@ -66,7 +66,7 @@
 
                     <!-- Search Bar -->
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="Search" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Search" Style="{StaticResource FieldLabel}"/>
                         <Border Background="{DynamicResource AppBackground}" CornerRadius="10" Padding="12,0" Height="38" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -83,7 +83,7 @@
 
                     <!-- Payment Mode -->
                     <StackPanel Grid.Column="4">
-                        <TextBlock Text="Payment Mode" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Payment Mode" Style="{StaticResource FieldLabel}"/>
                         <ComboBox x:Name="ComboPayment" Width="120" Height="38" SelectionChanged="Filter_Changed">
                             <ComboBoxItem Content="All" IsSelected="True"/>
                             <ComboBoxItem Content="Cash"/>
@@ -94,13 +94,13 @@
 
                     <!-- Category -->
                     <StackPanel Grid.Column="6">
-                        <TextBlock Text="Category" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Category" Style="{StaticResource FieldLabel}"/>
                         <ComboBox x:Name="ComboCategory" Width="150" Height="38" DisplayMemberPath="Name" SelectedValuePath="Id" SelectionChanged="Filter_Changed"/>
                     </StackPanel>
 
                     <!-- Order Type (Pills) -->
                     <StackPanel Grid.Column="8">
-                        <TextBlock Text="Order Type" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Order Type" Style="{StaticResource FieldLabel}"/>
                         <StackPanel Orientation="Horizontal" Height="38" VerticalAlignment="Center">
                             <RadioButton x:Name="TypeAll" Content="All" IsChecked="True" Style="{StaticResource FilterPill}" Click="Filter_Changed" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <RadioButton x:Name="TypeDine" Content="Dine-In" Style="{StaticResource FilterPill}" Click="Filter_Changed" Margin="0,0,8,0" VerticalAlignment="Center"/>
@@ -111,13 +111,8 @@
 
                     <!-- Refresh Button -->
                     <StackPanel Grid.Column="10" VerticalAlignment="Bottom">
-                        <TextBlock Text=" " FontSize="11" Margin="0,0,0,6"/>
-                        <Button Click="Refresh_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" Width="38" Height="38">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="10"/>
-                                </Style>
-                            </Button.Resources>
+                        <TextBlock Text=" " Style="{StaticResource FieldLabel}"/>
+                        <Button Click="Refresh_Click" Style="{StaticResource PrimaryBtn}" Width="38" Height="38" Padding="0">
                             <TextBlock Text="↻" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
                         </Button>
                     </StackPanel>
