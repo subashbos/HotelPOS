@@ -6,6 +6,7 @@ using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace HotelPOS
@@ -209,6 +210,14 @@ namespace HotelPOS
         }
 
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+        // The window has no native title bar (WindowStyle="None"), so dragging is
+        // wired up from the custom header instead.
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
 
         private static readonly SolidColorBrush _errorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
         private static readonly SolidColorBrush _errorFg = new(Color.FromRgb(0x72, 0x1C, 0x24));

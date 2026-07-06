@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
@@ -21,7 +22,7 @@ namespace HotelPOS.Views
         public DateTime CreatedAt { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal DiscountAmount { get; set; }
-        public string PaymentMode { get; set; } = "Cash";
+        public string PaymentMode { get; set; } = PaymentModes.Cash;
         public List<OrderItem> Items { get; set; } = new();
         public int ItemCount => Items?.Count ?? 0;
     }

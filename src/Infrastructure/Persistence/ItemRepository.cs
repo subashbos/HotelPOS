@@ -20,6 +20,12 @@ namespace HotelPOS.Infrastructure.Persistence
             return item.Id;
         }
 
+        public async Task AddRangeAsync(List<Item> items)
+        {
+            _context.Items.AddRange(items);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<List<Item>> GetAllAsync()
         {
             return await _context.Items.AsNoTracking().Include(i => i.Category).ToListAsync();
@@ -30,9 +36,20 @@ namespace HotelPOS.Infrastructure.Persistence
             return await _context.Items.Include(i => i.Category).FirstOrDefaultAsync(i => i.Id == id);
         }
 
+        public async Task<List<Item>> GetByIdsAsync(List<int> ids)
+        {
+            return await _context.Items.Where(i => ids.Contains(i.Id)).ToListAsync();
+        }
+
         public async Task UpdateAsync(Item item)
         {
             _context.Items.Update(item);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateRangeAsync(List<Item> items)
+        {
+            _context.Items.UpdateRange(items);
             await _context.SaveChangesAsync();
         }
 

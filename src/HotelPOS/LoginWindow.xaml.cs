@@ -62,6 +62,13 @@ namespace HotelPOS
                 {
                     if (user.MustChangePassword)
                     {
+                        // ResetPasswordAsync authorizes "resetting your own account" via AppSession —
+                        // but AppSession isn't set until after this block. Establish it temporarily
+                        // (the primary credentials were already verified above) so the self-service
+                        // check passes, then clear it again on every exit path below since the user
+                        // hasn't actually completed login yet.
+                        AppSession.CurrentUser = user;
+
                         var dialog = new Views.PasswordResetDialog(user.Username) { Owner = this };
                         if (dialog.ShowDialog() == true)
                         {
@@ -75,6 +82,8 @@ namespace HotelPOS
                                 err = res.Error;
                             }
 
+                            AppSession.CurrentUser = null;
+
                             if (!ok)
                             {
                                 _notificationService.ShowError($"Failed to update password: {err}");
@@ -86,6 +95,7 @@ namespace HotelPOS
                         }
                         else
                         {
+                            AppSession.CurrentUser = null;
                             return; // User cancelled password change, don't log in
                         }
                     }

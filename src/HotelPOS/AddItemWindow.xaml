@@ -3,9 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Menu Item Management — Hotel POS"
         Height="580" Width="680"
-        MinHeight="580" MinWidth="680"
         WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
         Background="{DynamicResource AppBackground}"
+        BorderThickness="1"
+        BorderBrush="{DynamicResource BorderBrush}"
+        WindowStyle="None"
+        AllowsTransparency="True"
         Loaded="Window_Loaded"
         Icon="/Resources/app_icon.png">
 
@@ -13,6 +18,8 @@
         <!-- Resources moved to global dictionaries -->
     </Window.Resources>
 
+    <Border CornerRadius="16" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"
+            Background="{DynamicResource SurfaceBrush}" Margin="1">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -21,7 +28,7 @@
         </Grid.RowDefinitions>
 
         <!-- ══ HEADER ══ -->
-        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="24,20">
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" CornerRadius="15,15,0,0" Padding="24,20" MouseLeftButtonDown="Header_MouseLeftButtonDown">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -36,7 +43,7 @@
                                    Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
                     </StackPanel>
                 </StackPanel>
-                <Button Grid.Column="1" Content="✕" Click="Close_Click" 
+                <Button Grid.Column="1" Content="✕" Click="Close_Click"
                         Background="Transparent" Foreground="White" FontSize="18" FontWeight="Bold"
                         Padding="10" VerticalAlignment="Center" BorderThickness="0" Cursor="Hand"/>
             </Grid>
@@ -124,7 +131,7 @@
         </ScrollViewer>
 
         <!-- ══ STICKY FOOTER ══ -->
-        <Border Grid.Row="2" Background="{DynamicResource AppBackground}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,16">
+        <Border Grid.Row="2" Background="{DynamicResource AppBackground}" CornerRadius="0,0,15,15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -136,4 +143,5 @@
             </Grid>
         </Border>
     </Grid>
+    </Border>
 </Window>

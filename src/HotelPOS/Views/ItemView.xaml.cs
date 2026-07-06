@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
@@ -168,8 +169,8 @@ namespace HotelPOS.Views
                 }
 
                 var msg = $"Found {preview.Count} item(s) to import:\n\n" +
-                          string.Join("\n", preview.Take(10).Select(p => $"  • {p.Name}  —  Rs. {p.Price:N2}")) +
-                          (preview.Count > 10 ? $"\n  … and {preview.Count - 10} more" : "") +
+                          string.Join("\n", preview.Take(ReportingLimits.ItemPreviewLimit).Select(p => $"  • {p.Name}  —  Rs. {p.Price:N2}")) +
+                          (preview.Count > ReportingLimits.ItemPreviewLimit ? $"\n  … and {preview.Count - ReportingLimits.ItemPreviewLimit} more" : "") +
                           "\n\nProceed with import?";
 
                 if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(msg, "Preview Import", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question)

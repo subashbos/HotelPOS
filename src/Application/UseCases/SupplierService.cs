@@ -2,6 +2,7 @@ using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Suppliers.Commands;
 using HotelPOS.Application.UseCases.Suppliers.Queries;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 using AutoMapper;
@@ -83,8 +84,8 @@ namespace HotelPOS.Application.UseCases
             if (!string.IsNullOrWhiteSpace(supplier.Phone))
             {
                 var p = supplier.Phone.Trim();
-                if (p.Length < 10 || p.Length > 15)
-                    throw new ArgumentException("Phone number must be a valid number between 10 and 15 digits.");
+                if (p.Length < ValidationLimits.MinPhoneLength || p.Length > ValidationLimits.MaxPhoneLength)
+                    throw new ArgumentException($"Phone number must be a valid number between {ValidationLimits.MinPhoneLength} and {ValidationLimits.MaxPhoneLength} digits.");
             }
             if (!string.IsNullOrWhiteSpace(supplier.Email) && !supplier.Email.Contains("@"))
                 throw new ArgumentException("Email ID is invalid.");

@@ -7,6 +7,7 @@
     <Color x:Key="SecondaryColor">#3D5A80</Color>
     <Color x:Key="HeaderColor">#173F5F</Color>
     <Color x:Key="SuccessColor">#27AE60</Color>
+    <Color x:Key="WarningColor">#F39C12</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="AppBackground" Color="#F3F5F9"/>
@@ -19,6 +20,7 @@
     <SolidColorBrush x:Key="BorderBrush"    Color="#E0E9F2"/>
     <SolidColorBrush x:Key="DangerBrush"    Color="#C0392B"/>
     <SolidColorBrush x:Key="SuccessBrush"   Color="#27AE60"/>
+    <SolidColorBrush x:Key="WarningBrush"   Color="{StaticResource WarningColor}"/>
     
     <!-- Glassmorphism / Transparency effects for Light Mode -->
     <SolidColorBrush x:Key="GlassSurface" Color="#CCFFFFFF"/>
@@ -27,6 +29,7 @@
     <SolidColorBrush x:Key="SidebarBrush" Color="#0F172A"/>
     <SolidColorBrush x:Key="SidebarHoverBrush" Color="#1E293B"/>
     <SolidColorBrush x:Key="SidebarActiveBrush" Color="#0D9488"/>
+    <SolidColorBrush x:Key="ActiveIndicatorBrush" Color="#0DF0D8"/>
     
     <!-- Analytics Card Gradients -->
     <LinearGradientBrush x:Key="RevenueGradient" StartPoint="0,0" EndPoint="1,1">

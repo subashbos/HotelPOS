@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using System.Windows;
 using System.Windows.Documents;
@@ -76,8 +77,8 @@ namespace HotelPOS
             if (isThermal)
             {
                 // S.No | Item Name | Rate | Qty | Total
-                table.Columns.Add(new TableColumn { Width = new GridLength(0.3, GridUnitType.Star) }); // S.No
-                table.Columns.Add(new TableColumn { Width = new GridLength(3.2, GridUnitType.Star) }); // Name
+                table.Columns.Add(new TableColumn { Width = new GridLength(0.6, GridUnitType.Star) }); // S.No
+                table.Columns.Add(new TableColumn { Width = new GridLength(2.9, GridUnitType.Star) }); // Name
                 table.Columns.Add(new TableColumn { Width = new GridLength(1.0, GridUnitType.Star) }); // Rate
                 table.Columns.Add(new TableColumn { Width = new GridLength(0.9, GridUnitType.Star) }); // Qty
                 table.Columns.Add(new TableColumn { Width = new GridLength(1.3, GridUnitType.Star) }); // Total
@@ -169,8 +170,8 @@ namespace HotelPOS
                 grandTotal = rounded;
             }
             AddTotalsRow(tg, "Grand Total:", grandTotal.ToString("N2"), true, headSz);
-            string pmText = order.PaymentMode ?? "Cash";
-            if (pmText.Contains("UPI", StringComparison.OrdinalIgnoreCase)) pmText = "UPI";
+            string pmText = order.PaymentMode ?? PaymentModes.Cash;
+            if (pmText.Contains(PaymentModes.Upi, StringComparison.OrdinalIgnoreCase)) pmText = PaymentModes.Upi;
 
             AddTotalsRow(tg, "Payment Mode:", pmText, false, smallSz);
             doc.Blocks.Add(totals);

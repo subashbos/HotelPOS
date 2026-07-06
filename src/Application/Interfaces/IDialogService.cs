@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using HotelPOS.Domain.Common.Constants;
 
 namespace HotelPOS.Application.Interfaces
 {
@@ -8,7 +9,7 @@ namespace HotelPOS.Application.Interfaces
         public decimal TotalAmount { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal FinalPayableAmount { get; set; }
-        public string PaymentMode { get; set; } = "Cash";
+        public string PaymentMode { get; set; } = PaymentModes.Cash;
         public decimal CashAmount { get; set; }
         public decimal CardAmount { get; set; }
         public decimal UpiAmount { get; set; }

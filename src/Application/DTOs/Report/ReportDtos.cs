@@ -1,3 +1,5 @@
+using HotelPOS.Domain.Common.Constants;
+
 namespace HotelPOS.Application.DTOs.Report
 {
     /// <summary>Top-level aggregated numbers shown in the dashboard header cards.</summary>
@@ -51,9 +53,9 @@ namespace HotelPOS.Application.DTOs.Report
         public decimal Total { get; set; }
         public decimal DiscountAmount { get; set; }
         public int ItemCount { get; set; }
-        public string PaymentMode { get; set; } = "Cash";
-        public string OrderType { get; set; } = "DineIn";
-        public string Status { get; set; } = "Paid";
+        public string PaymentMode { get; set; } = PaymentModes.Cash;
+        public string OrderType { get; set; } = OrderTypes.DineIn;
+        public string Status { get; set; } = OrderStatuses.Paid;
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }
         public string? CustomerGstin { get; set; }
@@ -101,6 +103,6 @@ namespace HotelPOS.Application.DTOs.Report
         public decimal TaxAmount { get; set; }
         public decimal Discount { get; set; }
         public decimal TotalAmount { get; set; }
-        public string PaymentType { get; set; } = "Cash";
+        public string PaymentType { get; set; } = PaymentModes.Cash;
     }
 }

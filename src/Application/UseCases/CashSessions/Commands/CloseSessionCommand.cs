@@ -1,5 +1,6 @@
 using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using MediatR;
 
 namespace HotelPOS.Application.UseCases.CashSessions.Commands
@@ -27,7 +28,7 @@ namespace HotelPOS.Application.UseCases.CashSessions.Commands
             session.ClosingBalance = session.OpeningBalance + sales;
             session.ActualCash = request.Dto.ActualCash;
             session.Notes = request.Dto.Notes;
-            session.Status = "Closed";
+            session.Status = CashSessionStatuses.Closed;
 
             await _repository.UpdateAsync(session);
         }

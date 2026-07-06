@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using HotelPOS.Domain.Common.Constants;
 
 namespace HotelPOS.Domain.Entities
 {
@@ -28,7 +29,7 @@ namespace HotelPOS.Domain.Entities
         public string? ClosedBy { get; set; }
 
         [MaxLength(20)]
-        public string Status { get; set; } = "Open"; // Open, Closed
+        public string Status { get; set; } = CashSessionStatuses.Open; // Open, Closed
 
         public string? Notes { get; set; }
     }

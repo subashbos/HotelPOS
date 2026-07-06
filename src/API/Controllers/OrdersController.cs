@@ -2,6 +2,7 @@ using HotelPOS.Application.DTOs.Order;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Orders.Commands;
 using HotelPOS.Application.UseCases.Orders.Queries;
+using HotelPOS.Domain.Common.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -106,7 +107,7 @@ namespace HotelPOS.Api.Controllers
 
         public decimal Discount { get; set; }
 
-        public string PaymentMode { get; set; } = "Cash";
+        public string PaymentMode { get; set; } = PaymentModes.Cash;
 
         public string? CustomerName { get; set; }
 
@@ -114,7 +115,7 @@ namespace HotelPOS.Api.Controllers
 
         public string? CustomerGstin { get; set; }
 
-        public string OrderType { get; set; } = "DineIn";
+        public string OrderType { get; set; } = OrderTypes.DineIn;
     }
 
     public sealed class VoidOrderRequest

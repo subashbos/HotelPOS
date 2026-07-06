@@ -71,6 +71,14 @@ namespace HotelPOS.Views
             Close();
         }
 
+        // The window has no native title bar (WindowStyle="None"), so dragging is
+        // wired up from the custom header instead.
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
         private void Input_GotFocus(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox tb)

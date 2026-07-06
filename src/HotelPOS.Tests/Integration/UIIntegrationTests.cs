@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
@@ -19,7 +20,7 @@ namespace HotelPOS.Tests
         public void DashboardWindow_AdminLogin_CheckIdentity()
         {
             // Arrange
-            AppSession.CurrentUser = new User { Role = "Admin", Username = "admin" };
+            AppSession.CurrentUser = new User { Role = RoleNames.Admin, Username = "admin" };
 
             // Assert
             Assert.True(AppSession.IsAdmin);
@@ -30,7 +31,7 @@ namespace HotelPOS.Tests
         public void DashboardWindow_CashierLogin_CheckIdentity()
         {
             // Arrange
-            AppSession.CurrentUser = new User { Role = "Cashier", Username = "cashier1" };
+            AppSession.CurrentUser = new User { Role = RoleNames.Cashier, Username = "cashier1" };
 
             // Assert
             Assert.False(AppSession.IsAdmin);

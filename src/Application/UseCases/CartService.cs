@@ -1,5 +1,6 @@
 
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using System.Collections.Concurrent;
 using System;
@@ -318,7 +319,7 @@ namespace HotelPOS.Application.UseCases
             lock (_lock)
             {
                 var items = GetOrCreateCart(tableNumber);
-                return Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
+                return Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / MoneyPrecision.PercentDivisor)), MoneyPrecision.CurrencyDecimals);
             }
         }
 

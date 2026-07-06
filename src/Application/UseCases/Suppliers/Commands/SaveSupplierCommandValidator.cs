@@ -1,5 +1,6 @@
 using FluentValidation;
 using HotelPOS.Application.DTOs.Supplier;
+using HotelPOS.Domain.Common.Constants;
 
 namespace HotelPOS.Application.UseCases.Suppliers.Commands
 {
@@ -15,8 +16,8 @@ namespace HotelPOS.Application.UseCases.Suppliers.Commands
                 .When(x => x.Dto != null);
 
             RuleFor(x => x.Dto.Phone)
-                .Must(p => string.IsNullOrWhiteSpace(p) || (p.Length >= 6 && p.Length <= 15))
-                .WithMessage("Phone number must be between 6 and 15 characters.")
+                .Must(p => string.IsNullOrWhiteSpace(p) || (p.Length >= ValidationLimits.MinPhoneLength && p.Length <= ValidationLimits.MaxPhoneLength))
+                .WithMessage($"Phone number must be between {ValidationLimits.MinPhoneLength} and {ValidationLimits.MaxPhoneLength} characters.")
                 .When(x => x.Dto != null);
 
             RuleFor(x => x.Dto.Email)

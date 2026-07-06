@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 
@@ -9,12 +10,6 @@ namespace HotelPOS.Application.UseCases.Roles.Commands
     public class AddRoleCommandHandler : IRequestHandler<AddRoleCommand, bool>
     {
         private readonly IRoleRepository _roleRepository;
-
-        private static readonly string[] DefaultModules =
-        {
-            "Dashboard", "Billing", "Items", "Categories", "Tables",
-            "Ledger", "Journal", "Settings", "Audit", "Shift", "Roles", "SalesReport"
-        };
 
         public AddRoleCommandHandler(IRoleRepository roleRepository)
         {
@@ -28,7 +23,7 @@ namespace HotelPOS.Application.UseCases.Roles.Commands
 
             var role = new Role { Name = request.Name.Trim(), Description = request.Description };
 
-            foreach (var mod in DefaultModules)
+            foreach (var mod in PermissionModules.All)
                 role.Permissions.Add(new RolePermission { ModuleName = mod, CanAccess = false });
 
             await _roleRepository.AddRoleAsync(role);

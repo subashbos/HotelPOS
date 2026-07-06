@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
 using Moq;
@@ -52,24 +53,24 @@ namespace HotelPOS.Tests
             _cartService.Verify(s => s.Clear(5), Times.Once);
             Assert.False(_vm.IsEditMode);
             Assert.True(eventFired);
-            Assert.Equal("DineIn", _vm.OrderType);
+            Assert.Equal(OrderTypes.DineIn, _vm.OrderType);
         }
 
         [Fact]
         public void ToggleOrderType_CyclesThroughTypes()
         {
             // Arrange
-            _vm.OrderType = "DineIn";
+            _vm.OrderType = OrderTypes.DineIn;
 
             // Act & Assert cycle
             _vm.ToggleOrderTypeCommand.Execute(null);
-            Assert.Equal("Takeaway", _vm.OrderType);
+            Assert.Equal(OrderTypes.Takeaway, _vm.OrderType);
 
             _vm.ToggleOrderTypeCommand.Execute(null);
-            Assert.Equal("Online", _vm.OrderType);
+            Assert.Equal(OrderTypes.Online, _vm.OrderType);
 
             _vm.ToggleOrderTypeCommand.Execute(null);
-            Assert.Equal("DineIn", _vm.OrderType);
+            Assert.Equal(OrderTypes.DineIn, _vm.OrderType);
         }
 
         [Fact]
@@ -77,14 +78,14 @@ namespace HotelPOS.Tests
         {
             // Arrange
             _vm.TableNumber = 8;
-            _vm.OrderType = "DineIn";
+            _vm.OrderType = OrderTypes.DineIn;
 
             // Act: Switch to Takeaway
-            _vm.OrderType = "Takeaway";
+            _vm.OrderType = OrderTypes.Takeaway;
             Assert.Equal(0, _vm.TableNumber); // Should be virtual table 0
 
             // Act: Switch back to DineIn
-            _vm.OrderType = "DineIn";
+            _vm.OrderType = OrderTypes.DineIn;
             Assert.Equal(8, _vm.TableNumber); // Should restore previous table 8
         }
 

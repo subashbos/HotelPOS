@@ -27,6 +27,7 @@
     <SolidColorBrush x:Key="SidebarBrush" Color="#0F172A"/>
     <SolidColorBrush x:Key="SidebarHoverBrush" Color="#1E293B"/>
     <SolidColorBrush x:Key="SidebarActiveBrush" Color="#0D9488"/>
+    <SolidColorBrush x:Key="ActiveIndicatorBrush" Color="#0DF0D8"/>
 
     <!-- Analytics Card Gradients -->
     <LinearGradientBrush x:Key="RevenueGradient" StartPoint="0,0" EndPoint="1,1">

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using HotelPOS.Domain.Common.Constants;
 
 namespace HotelPOS.Domain.Entities
 {
@@ -25,7 +26,7 @@ namespace HotelPOS.Domain.Entities
 
         [Required]
         [MaxLength(50)]
-        public string Role { get; set; } = "Cashier";
+        public string Role { get; set; } = RoleNames.Cashier;
 
         public int? RoleId { get; set; }
         

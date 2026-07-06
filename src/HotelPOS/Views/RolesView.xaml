@@ -55,7 +55,7 @@
 
                 <StackPanel Grid.Row="3" Margin="0,12,0,0">
                     <TextBlock Text="NEW ROLE NAME" Style="{StaticResource FieldLabel}"/>
-                    <TextBox x:Name="NewRoleNameBox" Style="{StaticResource InputField}" Margin="0,0,0,10"/>
+                    <TextBox x:Name="NewRoleNameBox" Margin="0,0,0,10"/>
                     <Button Content="➕ Add Role" Style="{StaticResource PrimaryBtn}" Click="AddRole_Click"/>
                 </StackPanel>
             </Grid>

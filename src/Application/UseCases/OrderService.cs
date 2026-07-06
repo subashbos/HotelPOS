@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Domain.Events;
 using MediatR;
@@ -13,13 +14,15 @@ namespace HotelPOS.Application.UseCases
         private readonly IMediator? _mediator;
         private readonly IItemService _itemService;
         private readonly IValidator<CreateOrderCommand> _validator;
+        private readonly IBomService? _bomService;
 
-        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, IValidator<CreateOrderCommand>? validator = null)
+        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null)
         {
             _repo = repo;
             _mediator = mediator;
             _itemService = itemService;
             _validator = validator ?? new CreateOrderCommandValidator();
+            _bomService = bomService;
         }
 
         private bool IsProductionMediator()
@@ -70,7 +73,7 @@ namespace HotelPOS.Application.UseCases
             }
 
             // DineIn requires a real table; Takeaway/Online use virtual table 0
-            bool requiresTable = orderType == "DineIn";
+            bool requiresTable = orderType == OrderTypes.DineIn;
 
             // For Takeaway/Online, normalise to 0 regardless of what was passed
             int effectiveTableNumber = requiresTable ? tableNumber : 0;
@@ -116,11 +119,11 @@ namespace HotelPOS.Application.UseCases
                 order.CustomerName = customerName;
                 order.CustomerPhone = customerPhone;
                 order.CustomerGstin = customerGstin;
-                order.Status = "Paid";
+                order.Status = OrderStatuses.Paid;
                 order.AmountPaid = order.TotalAmount;
-                if (paymentMode == "Cash") order.CashPaid = order.TotalAmount;
-                else if (paymentMode == "Card") order.CardPaid = order.TotalAmount;
-                else if (paymentMode == "UPI") order.UpiPaid = order.TotalAmount;
+                if (paymentMode == PaymentModes.Cash) order.CashPaid = order.TotalAmount;
+                else if (paymentMode == PaymentModes.Card) order.CardPaid = order.TotalAmount;
+                else if (paymentMode == PaymentModes.Upi) order.UpiPaid = order.TotalAmount;
 
                 var orderId = await _repo.AddAsync(order);
 
@@ -128,6 +131,7 @@ namespace HotelPOS.Application.UseCases
                 foreach (var item in orderItems)
                 {
                     await _itemService.DeductStockAsync(item.ItemId, item.Quantity);
+                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(item.ItemId, item.Quantity);
                 }
 
                 await _repo.CommitTransactionAsync();
@@ -147,10 +151,10 @@ namespace HotelPOS.Application.UseCases
         private void CalculateTotals(Order order, List<OrderItem> items)
         {
             order.Subtotal = items.Sum(x => x.Total);
-            order.GstAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / 100m)), 2);
+            order.GstAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / MoneyPrecision.PercentDivisor)), MoneyPrecision.CurrencyDecimals);
 
             // Assume Intrastate default for Hotel POS (CGST = 50%, SGST = 50%)
-            order.CgstAmount = Math.Round(order.GstAmount / 2m, 2);
+            order.CgstAmount = Math.Round(order.GstAmount / 2m, MoneyPrecision.CurrencyDecimals);
             order.SgstAmount = order.GstAmount - order.CgstAmount;
             order.IgstAmount = 0m;
         }
@@ -178,6 +182,11 @@ namespace HotelPOS.Application.UseCases
                 return;
             }
 
+            await UpdateOrderInternalAsync(order);
+        }
+
+        public async Task UpdateOrderInternalAsync(Order order)
+        {
             if (order.Items == null || order.Items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.");
 
@@ -185,7 +194,7 @@ namespace HotelPOS.Application.UseCases
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
 
             // Normalise table number: Takeaway/Online always store 0
-            if (order.OrderType == "Takeaway" || order.OrderType == "Online")
+            if (order.OrderType == OrderTypes.Takeaway || order.OrderType == OrderTypes.Online)
                 order.TableNumber = 0;
 
             await _repo.BeginTransactionAsync();
@@ -199,12 +208,14 @@ namespace HotelPOS.Application.UseCases
                 foreach (var kvp in oldMap)
                 {
                     await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
+                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, -kvp.Value);
                 }
 
                 // Deduct all new stock
                 foreach (var kvp in newMap)
                 {
                     await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
+                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, kvp.Value);
                 }
 
                 var oldTotal = oldOrder.TotalAmount;
@@ -234,12 +245,18 @@ namespace HotelPOS.Application.UseCases
                 return;
             }
 
+            await DeleteOrderInternalAsync(orderId);
+        }
+
+        public async Task DeleteOrderInternalAsync(int orderId)
+        {
             var existing = await _repo.GetByIdWithItemsAsync(orderId);
             if (existing != null)
             {
                 foreach (var item in existing.Items)
                 {
                     await _itemService.DeductStockAsync(item.ItemId, -item.Quantity);
+                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(item.ItemId, -item.Quantity);
                 }
 
                 await _repo.DeleteAsync(orderId);
@@ -265,7 +282,7 @@ namespace HotelPOS.Application.UseCases
         {
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
-            if (order.Status == "Void") throw new InvalidOperationException("Order is already void.");
+            if (order.Status == OrderStatuses.Void) throw new InvalidOperationException("Order is already void.");
 
             await _repo.BeginTransactionAsync();
             try
@@ -274,9 +291,10 @@ namespace HotelPOS.Application.UseCases
                 foreach (var item in order.Items)
                 {
                     await _itemService.DeductStockAsync(item.ItemId, -item.Quantity);
+                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(item.ItemId, -item.Quantity);
                 }
 
-                order.Status = "Void";
+                order.Status = OrderStatuses.Void;
                 order.VoidReason = reason;
                 order.Subtotal = 0;
                 order.GstAmount = 0;
@@ -311,12 +329,17 @@ namespace HotelPOS.Application.UseCases
                 return;
             }
 
+            await RefundOrderInternalAsync(orderId, itemsToRefund, reason);
+        }
+
+        public async Task RefundOrderInternalAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason)
+        {
             if (itemsToRefund == null || itemsToRefund.Count == 0)
                 throw new ArgumentException("No items specified for refund.", nameof(itemsToRefund));
 
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
-            if (order.Status == "Void") throw new InvalidOperationException("Cannot refund a void order.");
+            if (order.Status == OrderStatuses.Void) throw new InvalidOperationException("Cannot refund a void order.");
 
             await _repo.BeginTransactionAsync();
             try
@@ -334,6 +357,7 @@ namespace HotelPOS.Application.UseCases
 
                     // Restore inventory
                     await _itemService.DeductStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
+                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
 
                     // Compute refund value for this line
                     refundTotal += orderItem.Price * rItem.QuantityToRefund;
@@ -370,11 +394,11 @@ namespace HotelPOS.Application.UseCases
 
                 if (order.Items.Count == 0)
                 {
-                    order.Status = "Refunded";
+                    order.Status = OrderStatuses.Refunded;
                 }
                 else
                 {
-                    order.Status = "PartiallyRefunded";
+                    order.Status = OrderStatuses.PartiallyRefunded;
                 }
 
                 await _repo.UpdateAsync(order);
@@ -399,9 +423,14 @@ namespace HotelPOS.Application.UseCases
                 return;
             }
 
+            await ProcessPartialPaymentInternalAsync(orderId, cash, card, upi);
+        }
+
+        public async Task ProcessPartialPaymentInternalAsync(int orderId, decimal cash, decimal card, decimal upi)
+        {
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
-            if (order.Status == "Void") throw new InvalidOperationException("Cannot add payment to a void order.");
+            if (order.Status == OrderStatuses.Void) throw new InvalidOperationException("Cannot add payment to a void order.");
 
             await _repo.BeginTransactionAsync();
             try
@@ -413,11 +442,11 @@ namespace HotelPOS.Application.UseCases
 
                 if (order.AmountPaid >= order.TotalAmount)
                 {
-                    order.Status = "Paid";
+                    order.Status = OrderStatuses.Paid;
                 }
                 else
                 {
-                    order.Status = "Partial";
+                    order.Status = OrderStatuses.Partial;
                 }
 
                 await _repo.UpdateAsync(order);

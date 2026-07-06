@@ -117,7 +117,8 @@ namespace HotelPOS.Tests
             // Assert
             Assert.Equal(1, result.Added);
             Assert.Equal(1, result.Skipped);
-            _repoMock.Verify(r => r.AddAsync(It.Is<Item>(i => i.Name == "Pasta")), Times.Once);
+            _repoMock.Verify(r => r.AddRangeAsync(It.Is<List<Item>>(l => l.Count == 1 && l[0].Name == "Pasta")), Times.Once);
+            _repoMock.Verify(r => r.AddAsync(It.IsAny<Item>()), Times.Never);
         }
 
         [Fact]
@@ -143,9 +144,7 @@ namespace HotelPOS.Tests
             // Assert
             Assert.Equal(1, result.Added); // Only Burger added
             Assert.Equal(2, result.Skipped); // Pasta and Fries skipped
-            _repoMock.Verify(r => r.AddAsync(It.Is<Item>(i => i.Name == "Burger")), Times.Once);
-            _repoMock.Verify(r => r.AddAsync(It.Is<Item>(i => i.Name == "Pasta")), Times.Never);
-            _repoMock.Verify(r => r.AddAsync(It.Is<Item>(i => i.Name == "Fries")), Times.Never);
+            _repoMock.Verify(r => r.AddRangeAsync(It.Is<List<Item>>(l => l.Count == 1 && l[0].Name == "Burger")), Times.Once);
         }
     }
 }

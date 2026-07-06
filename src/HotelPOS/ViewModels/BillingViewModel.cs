@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using System.Collections.ObjectModel;
 
@@ -44,10 +45,10 @@ namespace HotelPOS.ViewModels
         private decimal _discountAmount;
 
         [ObservableProperty]
-        private string _paymentMode = "Cash";
+        private string _paymentMode = PaymentModes.Cash;
 
         [ObservableProperty]
-        private string _orderType = "DineIn";
+        private string _orderType = OrderTypes.DineIn;
 
         // Customer Details
         [ObservableProperty]
@@ -65,7 +66,7 @@ namespace HotelPOS.ViewModels
         public ObservableCollection<int> ActiveTabs { get; } = new();
 
         /// <summary>True when the current order type does not require a table (Takeaway or Online).</summary>
-        public bool IsTableless => OrderType == "Takeaway" || OrderType == "Online";
+        public bool IsTableless => OrderType == OrderTypes.Takeaway || OrderType == OrderTypes.Online;
 
         partial void OnOrderTypeChanged(string value)
         {

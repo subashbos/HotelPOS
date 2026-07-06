@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
@@ -23,7 +24,7 @@ namespace HotelPOS.ViewModels
         private DateTime _purchaseDate = DateTime.Now;
 
         [ObservableProperty]
-        private string _paymentType = "Cash"; // Cash, Credit, UPI
+        private string _paymentType = PaymentModes.Cash; // Cash, Credit, UPI
 
         [ObservableProperty]
         private string? _notes;
@@ -238,7 +239,7 @@ namespace HotelPOS.ViewModels
             SelectedSupplier = null;
             InvoiceNumber = string.Empty;
             PurchaseDate = DateTime.Now;
-            PaymentType = "Cash";
+            PaymentType = PaymentModes.Cash;
             Notes = string.Empty;
             PurchaseRows.Clear();
             AddRow(); // Pre-fill with a single empty row

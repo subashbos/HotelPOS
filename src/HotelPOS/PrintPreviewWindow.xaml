@@ -5,43 +5,20 @@
         Height="760" Width="600"
         MinHeight="600" MinWidth="480"
         WindowStartupLocation="CenterOwner"
-        Background="#F3F5F9"
+        Background="{DynamicResource AppBackground}"
         Loaded="Window_Loaded"
         WindowState="Maximized"
         PreviewKeyDown="Window_PreviewKeyDown"
         Icon="/Resources/app_icon.png">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="HeaderBrush"  Color="#173F5F"/>
-        <SolidColorBrush x:Key="AccentBrush"  Color="#00A896"/>
-        <SolidColorBrush x:Key="BorderBrush"  Color="#D8DFEA"/>
-
-        <Style TargetType="Button">
-            <Setter Property="Background"      Value="{StaticResource HeaderBrush}"/>
-            <Setter Property="Foreground"      Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding"         Value="16,10"/>
-            <Setter Property="FontSize"        Value="14"/>
-            <Setter Property="FontWeight"      Value="SemiBold"/>
-            <Setter Property="Cursor"          Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <Style x:Key="FormatToggleButton" TargetType="RadioButton">
-            <Setter Property="Foreground"      Value="#5F6B7A"/>
-            <Setter Property="Background"      Value="White"/>
-            <Setter Property="BorderBrush"     Value="#C8D4E0"/>
+            <Setter Property="Foreground"      Value="{DynamicResource TextMuted}"/>
+            <Setter Property="Background"      Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding"         Value="12,8"/>
-            <Setter Property="FontSize"        Value="13"/>
+            <Setter Property="FontSize"        Value="{StaticResource FontSizeBodySmall}"/>
             <Setter Property="Cursor"          Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -50,15 +27,15 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4"
+                                CornerRadius="{DynamicResource ControlCornerRadius}"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="#E8F5F0"/>
-                                <Setter TargetName="bd" Property="BorderBrush" Value="#00A896"/>
-                                <Setter Property="Foreground" Value="#006B57"/>
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource AppBackground}"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -76,7 +53,7 @@
         </Grid.RowDefinitions>
 
         <!-- HEADER -->
-        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16">
+        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -85,12 +62,12 @@
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Image Source="/Resources/app_icon.png" Width="24" Height="24" Margin="0,0,12,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    <TextBlock Text="Receipt Preview" FontSize="18" FontWeight="Bold" Foreground="#1A2533" VerticalAlignment="Center"/>
+                    <TextBlock Text="Receipt Preview" Style="{StaticResource H3TextBlockStyle}" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Format toggles -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Layout:" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="#5F6B7A" FontSize="13"/>
+                    <TextBlock Text="Layout:" Style="{StaticResource BodySmallTextBlockStyle}" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <RadioButton x:Name="ThermalToggle" Content="Thermal (80mm)" Style="{StaticResource FormatToggleButton}" GroupName="LayoutFormat" Checked="Format_Checked"/>
                     <RadioButton x:Name="A4Toggle" Content="Standard (A4)" Style="{StaticResource FormatToggleButton}" GroupName="LayoutFormat" Margin="8,0,0,0" Checked="Format_Checked"/>
                 </StackPanel>
@@ -98,13 +75,13 @@
         </Border>
 
         <!-- DOCUMENT PREVIEWER -->
-        <FlowDocumentScrollViewer x:Name="DocViewer" Grid.Row="1" Margin="0" Background="#E9EDF2" VerticalScrollBarVisibility="Auto"/>
+        <FlowDocumentScrollViewer x:Name="DocViewer" Grid.Row="1" Margin="0" Background="{DynamicResource AppBackground}" VerticalScrollBarVisibility="Auto"/>
 
         <!-- BOTTOM ACTION BAR -->
-        <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16">
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16">
             <Grid>
-                <Button Content="✕  Cancel" HorizontalAlignment="Left" Background="Transparent" Foreground="#5F6B7A" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Click="Cancel_Click"/>
-                <Button Content="🖨  Print Receipt" HorizontalAlignment="Right" Background="{StaticResource AccentBrush}" Click="Print_Click"/>
+                <Button Content="✕  Cancel" HorizontalAlignment="Left" Style="{StaticResource SecondaryBtn}" Click="Cancel_Click"/>
+                <Button Content="🖨  Print Receipt" HorizontalAlignment="Right" Style="{StaticResource PrimaryBtn}" Click="Print_Click"/>
             </Grid>
         </Border>
 

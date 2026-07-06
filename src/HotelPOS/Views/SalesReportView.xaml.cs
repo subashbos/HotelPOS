@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -100,9 +101,9 @@ namespace HotelPOS.Views
                 var categoryId = (int?)ComboCategory.SelectedValue;
 
                 string orderType = "All";
-                if (TypeDine.IsChecked == true) orderType = "DineIn";
-                else if (TypeTake.IsChecked == true) orderType = "Takeaway";
-                else if (TypeOnline.IsChecked == true) orderType = "Online";
+                if (TypeDine.IsChecked == true) orderType = OrderTypes.DineIn;
+                else if (TypeTake.IsChecked == true) orderType = OrderTypes.Takeaway;
+                else if (TypeOnline.IsChecked == true) orderType = OrderTypes.Online;
 
                 // We use a large page size for the report or handle pagination
                 (IEnumerable<HotelPOS.Domain.Entities.Order> orders, int totalCount) result;
@@ -262,7 +263,7 @@ namespace HotelPOS.Views
                         using (var scope = App.CreateDbScope())
                         {
                             var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                            await orderService.VoidOrderAsync(row.OrderId, reason, "Manager");
+                            await orderService.VoidOrderAsync(row.OrderId, reason, RoleNames.Manager);
                         }
                         _notificationService.ShowSuccess($"Order {row.InvoiceNumber} voided successfully.");
                         await LoadDataAsync();

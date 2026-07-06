@@ -174,7 +174,17 @@ namespace HotelPOS.Infrastructure.Persistence
             _context.OrderItems.RemoveRange(existing.Items);
             existing.Items = order.Items;
 
-            await _context.SaveChangesAsync();
+            existing.Version++;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException(
+                    $"Order #{order.Id} was modified by another user. Please reload the order and try again.");
+            }
         }
         public async Task<Order?> GetByIdWithItemsAsync(int id)
         {

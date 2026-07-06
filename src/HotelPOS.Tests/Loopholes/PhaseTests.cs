@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
@@ -22,7 +23,7 @@ namespace HotelPOS.Tests
             mockRepo.Verify(r => r.AddAsync(It.Is<CashSession>(s =>
                 s.OpeningBalance == 1500.50m &&
                 s.OpenedBy == "admin" &&
-                s.Status == "Open")), Times.Once);
+                s.Status == CashSessionStatuses.Open)), Times.Once);
         }
 
         [Fact]
@@ -30,7 +31,7 @@ namespace HotelPOS.Tests
         {
             var mockRepo = new Mock<ICashRepository>();
             var service = new CashService(mockRepo.Object);
-            var session = new CashSession { Id = 1, OpeningBalance = 1000, Status = "Open", OpenedAt = DateTime.UtcNow.AddHours(-5) };
+            var session = new CashSession { Id = 1, OpeningBalance = 1000, Status = CashSessionStatuses.Open, OpenedAt = DateTime.UtcNow.AddHours(-5) };
 
             mockRepo.Setup(r => r.GetCurrentSessionAsync()).ReturnsAsync(session);
             mockRepo.Setup(r => r.GetSalesTotalAsync(It.IsAny<DateTime>())).ReturnsAsync(500m);
@@ -38,7 +39,7 @@ namespace HotelPOS.Tests
             await service.CloseSessionAsync(1500m, "Perfect match", "admin");
 
             mockRepo.Verify(r => r.UpdateAsync(It.Is<CashSession>(s =>
-                s.Status == "Closed" &&
+                s.Status == CashSessionStatuses.Closed &&
                 s.ClosingBalance == 1500m &&
                 s.ActualCash == 1500m)), Times.Once);
         }
@@ -104,11 +105,11 @@ namespace HotelPOS.Tests
 
             mockRepo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
 
-            await service.SaveOrderAsync(new SaveOrderRequest(items, 1, Discount: 10m, PaymentMode: "UPI"));
+            await service.SaveOrderAsync(new SaveOrderRequest(items, 1, Discount: 10m, PaymentMode: PaymentModes.Upi));
 
             mockRepo.Verify(r => r.AddAsync(It.Is<Order>(o =>
                 o.DiscountAmount == 10m &&
-                o.PaymentMode == "UPI" &&
+                o.PaymentMode == PaymentModes.Upi &&
                 o.TotalAmount == 90m)), Times.Once); // 100 - 10 + 0 Tax
         }
 

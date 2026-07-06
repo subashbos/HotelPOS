@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -48,14 +49,14 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddRoleAsync_TrimsName_BeforeSaving()
         {
-            _repo.Setup(r => r.GetRoleByNameAsync("Manager")).ReturnsAsync((Role?)null);
+            _repo.Setup(r => r.GetRoleByNameAsync(RoleNames.Manager)).ReturnsAsync((Role?)null);
             Role? captured = null;
             _repo.Setup(r => r.AddRoleAsync(It.IsAny<Role>()))
                  .Callback<Role>(r => captured = r);
 
             await _service.AddRoleAsync("  Manager  ", "desc");
 
-            Assert.Equal("Manager", captured!.Name);
+            Assert.Equal(RoleNames.Manager, captured!.Name);
         }
 
         // ── AddRoleAsync creates exactly 12 modules (including "Roles") ──────
@@ -148,13 +149,13 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task GetRoleByIdAsync_KnownId_ReturnsRole()
         {
-            var role = new Role { Id = 1, Name = "Admin" };
+            var role = new Role { Id = 1, Name = RoleNames.Admin };
             _repo.Setup(r => r.GetRoleByIdAsync(1)).ReturnsAsync(role);
 
             var result = await _service.GetRoleByIdAsync(1);
 
             Assert.NotNull(result);
-            Assert.Equal("Admin", result!.Name);
+            Assert.Equal(RoleNames.Admin, result!.Name);
         }
 
         // ── UpdateRolePermissionsAsync ───────────────────────────────────────

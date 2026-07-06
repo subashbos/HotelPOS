@@ -196,25 +196,35 @@ namespace HotelPOS
                     // 3. Now run Migrate() normally. It will only apply NEW migrations.
                     context.Database.Migrate();
 
-                    // Ensure default Admin user exists if no user exists
-                    if (!context.Users.Any())
+                    // Ensure 'admin' user exists in the database with password 'admin'
+                    var adminUser = context.Users.FirstOrDefault(u => u.Username == "admin");
+                    if (adminUser == null)
                     {
-                        var hVal = "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA="; // default admin hash
-                        var sVal = "jwhVPO8B1u7Hqc4drt45HQ==";
+                        var hVal = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc="; // default admin hash (password: admin)
+                        var sVal = "cUDnxEUZDYmisbvUU2zu1Q==";
 
-                        var adminUser = new HotelPOS.Domain.Entities.User
+                        adminUser = new HotelPOS.Domain.Entities.User
                         {
                             Username = "admin",
                             PasswordHash = hVal,
                             Salt = sVal,
-                            Role = "Admin",
+                            Role = HotelPOS.Domain.Common.Constants.RoleNames.Admin,
                             RoleId = 1,
                             IsActive = true,
                             MustChangePassword = true
                         };
                         context.Users.Add(adminUser);
                         context.SaveChanges();
-                        Log.Information("Default Admin user seeded dynamically.");
+                        Log.Information("Default Admin user was missing; seeded 'admin' with password 'admin'.");
+                    }
+                    else if (adminUser.PasswordHash == "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=")
+                    {
+                        adminUser.PasswordHash = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc=";
+                        adminUser.Salt = "cUDnxEUZDYmisbvUU2zu1Q==";
+                        adminUser.MustChangePassword = true;
+                        adminUser.IsActive = true;
+                        context.SaveChanges();
+                        Log.Information("Detected unknown default admin password; reset to 'admin'.");
                     }
 
                     // Ensure HeldOrders table exists (database-agnostic approach)
@@ -247,12 +257,7 @@ namespace HotelPOS
                 catch (Exception ex)
                 {
                     Log.Fatal(ex, "Database synchronization failed.");
-                    MessageBox.Show(
-                        $"Failed to synchronize the database:\n{ex.Message}\n\nPlease ensure SQL Server is running.",
-                        "Database Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    Shutdown();
+                    throw;
                 }
             }
         }

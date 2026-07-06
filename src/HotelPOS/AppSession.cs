@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS
@@ -26,8 +27,8 @@ namespace HotelPOS
         }
 
         public static bool IsLoggedIn => CurrentUser != null;
-        public static bool IsAdmin => string.Equals(CurrentUser?.Role, "Admin", StringComparison.OrdinalIgnoreCase);
-        public static bool IsManager => string.Equals(CurrentUser?.Role, "Manager", StringComparison.OrdinalIgnoreCase) || IsAdmin;
+        public static bool IsAdmin => string.Equals(CurrentUser?.Role, RoleNames.Admin, StringComparison.OrdinalIgnoreCase);
+        public static bool IsManager => string.Equals(CurrentUser?.Role, RoleNames.Manager, StringComparison.OrdinalIgnoreCase) || IsAdmin;
 
         public static void Logout()
         {

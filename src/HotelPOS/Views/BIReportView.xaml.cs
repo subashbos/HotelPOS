@@ -1,5 +1,6 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Windows;
@@ -14,8 +15,8 @@ namespace HotelPOS.Views
         {
             if (value is double margin)
             {
-                if (margin < 10) return "Low";
-                if (margin < 25) return "Mid";
+                if (margin < StockAlertThresholds.CriticalMarginPercent) return "Low";
+                if (margin < StockAlertThresholds.WarningMarginPercent) return "Mid";
                 return "High";
             }
             return "High";

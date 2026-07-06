@@ -216,7 +216,7 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <Button Style="{StaticResource ActionBtn}" Content="✎" ToolTip="Edit Order" Click="EditOrder_Click" Tag="{Binding}"/>
-                                        <Button Style="{StaticResource ActionBtn}" Content="🖨" ToolTip="Print Receipt" Margin="6,0,0,0" Foreground="{DynamicResource AccentBrush}" Click="PrintOrder_Click" Tag="{Binding}"/>
+                                        <Button Style="{StaticResource ActionBtn}" Content="🖨" ToolTip="Print Receipt" Margin="6,0,0,0" Foreground="{DynamicResource PrimaryBrush}" Click="PrintOrder_Click" Tag="{Binding}"/>
                                         <Button Content="🚫" ToolTip="Void Order" Margin="6,0,0,0" Foreground="{DynamicResource DangerBrush}" Click="VoidOrder_Click" Tag="{Binding}">
                                             <Button.Style>
                                                 <Style TargetType="Button" BasedOn="{StaticResource ActionBtn}">

@@ -1,5 +1,4 @@
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Events;
 using MediatR;
 
 namespace HotelPOS.Application.UseCases.Orders.Commands
@@ -8,27 +7,16 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
 
     public class DeleteOrderCommandHandler : IRequestHandler<DeleteOrderCommand>
     {
-        private readonly IOrderRepository _repo;
-        private readonly IItemService _itemService;
-        private readonly IMediator _mediator;
+        private readonly IOrderService _orderService;
 
-        public DeleteOrderCommandHandler(IOrderRepository repo, IItemService itemService, IMediator mediator)
+        public DeleteOrderCommandHandler(IOrderService orderService)
         {
-            _repo = repo;
-            _itemService = itemService;
-            _mediator = mediator;
+            _orderService = orderService;
         }
 
         public async Task Handle(DeleteOrderCommand request, CancellationToken cancellationToken)
         {
-            var existing = await _repo.GetByIdWithItemsAsync(request.OrderId);
-            if (existing == null) return;   // idempotent
-
-            foreach (var item in existing.Items)
-                await _itemService.DeductStockAsync(item.ItemId, -item.Quantity);
-
-            await _repo.DeleteAsync(request.OrderId);
-            await _mediator.Publish(new EntityActionEvent("Order", request.OrderId, "Delete", "Soft Deleted"), cancellationToken);
+            await _orderService.DeleteOrderInternalAsync(request.OrderId);
         }
     }
 }

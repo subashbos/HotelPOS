@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -181,7 +182,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddUserAsync_UsernameWithOnlySpaces_ReturnsError()
         {
-            var (success, error) = await _service.AddUserAsync("   ", "ValidPass123!", "Cashier", 2);
+            var (success, error) = await _service.AddUserAsync("   ", "ValidPass123!", RoleNames.Cashier, 2);
             Assert.False(success);
             Assert.Contains("empty", error, StringComparison.OrdinalIgnoreCase);
         }
@@ -192,7 +193,7 @@ namespace HotelPOS.Tests
             _repo.Setup(r => r.GetUserByUsernameAsync("newuser")).ReturnsAsync((User?)null);
 
             // Exactly 10 characters
-            var (success, _) = await _service.AddUserAsync("newuser", "1234567890", "Cashier", 2);
+            var (success, _) = await _service.AddUserAsync("newuser", "1234567890", RoleNames.Cashier, 2);
             Assert.True(success);
         }
 
@@ -200,7 +201,7 @@ namespace HotelPOS.Tests
         public async Task AddUserAsync_PasswordOneLessThanMin_ReturnsError()
         {
             // 9 characters — one short
-            var (success, error) = await _service.AddUserAsync("newuser", "123456789", "Cashier", 2);
+            var (success, error) = await _service.AddUserAsync("newuser", "123456789", RoleNames.Cashier, 2);
             Assert.False(success);
             Assert.Contains("10", error);
         }

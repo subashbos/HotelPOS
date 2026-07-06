@@ -61,26 +61,24 @@
                         <DataGridTemplateColumn Header="STATUS" Width="100">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border CornerRadius="12" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <Border CornerRadius="{DynamicResource ControlCornerRadius}" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
                                         <Border.Style>
                                             <Style TargetType="Border">
-                                                <Setter Property="Background" Value="#D4EDDA"/>
+                                                <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                                        <Setter Property="Background" Value="#F8D7DA"/>
+                                                        <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <TextBlock VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold">
+                                        <TextBlock VerticalAlignment="Center" FontSize="{StaticResource FontSizeCaption}" FontWeight="SemiBold" Foreground="White">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
-                                                    <Setter Property="Text"       Value="Active"/>
-                                                    <Setter Property="Foreground" Value="#155724"/>
+                                                    <Setter Property="Text" Value="Active"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsActive}" Value="False">
-                                                            <Setter Property="Text"       Value="Disabled"/>
-                                                            <Setter Property="Foreground" Value="#721C24"/>
+                                                            <Setter Property="Text" Value="Disabled"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>

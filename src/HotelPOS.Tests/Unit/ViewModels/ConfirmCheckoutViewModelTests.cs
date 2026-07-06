@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.ViewModels;
 using Xunit;
 
@@ -16,14 +17,14 @@ namespace HotelPOS.Tests
             vm.TotalAmount = 150.50m;
             vm.DiscountAmount = 10.00m;
             vm.FinalPayableAmount = 140.50m;
-            vm.PaymentMode = "Card";
+            vm.PaymentMode = PaymentModes.Card;
 
             // Assert
             Assert.Equal(5, vm.TotalItems);
             Assert.Equal(150.50m, vm.TotalAmount);
             Assert.Equal(10.00m, vm.DiscountAmount);
             Assert.Equal(140.50m, vm.FinalPayableAmount);
-            Assert.Equal("Card", vm.PaymentMode);
+            Assert.Equal(PaymentModes.Card, vm.PaymentMode);
         }
 
         [Fact]
@@ -59,7 +60,7 @@ namespace HotelPOS.Tests
             var vm = new ConfirmCheckoutViewModel();
 
             // Assert
-            Assert.Equal("Cash", vm.PaymentMode);
+            Assert.Equal(PaymentModes.Cash, vm.PaymentMode);
         }
     }
 }

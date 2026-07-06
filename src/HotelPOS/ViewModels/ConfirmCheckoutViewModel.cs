@@ -1,6 +1,7 @@
 using HotelPOS.Application.Interfaces;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HotelPOS.Domain.Common.Constants;
 using System.Windows;
 
 namespace HotelPOS.ViewModels
@@ -20,7 +21,7 @@ namespace HotelPOS.ViewModels
         private decimal _finalPayableAmount;
 
         [ObservableProperty]
-        private string _paymentMode = "Cash";
+        private string _paymentMode = PaymentModes.Cash;
 
         [ObservableProperty]
         private string _cashAmount = "0";

@@ -46,9 +46,8 @@ namespace HotelPOS.Tests
             var item2 = new Item { Id = 11, Name = "Cheese Slices", StockQuantity = 5, TrackInventory = true };
             var item3 = new Item { Id = 12, Name = "Paper Cups", StockQuantity = 100, TrackInventory = false }; // track inventory false
 
-            _itemRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(item1);
-            _itemRepoMock.Setup(r => r.GetByIdAsync(11)).ReturnsAsync(item2);
-            _itemRepoMock.Setup(r => r.GetByIdAsync(12)).ReturnsAsync(item3);
+            _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync(new List<Item> { item1, item2, item3 });
 
             var purchase = new Purchase
             {
@@ -78,10 +77,11 @@ namespace HotelPOS.Tests
             // 3. Verify stock did NOT increment for TrackInventory = false
             Assert.Equal(100, item3.StockQuantity); // remains 100
 
-            // 4. Verify repo updates were called
-            _itemRepoMock.Verify(r => r.UpdateAsync(item1), Times.Once);
-            _itemRepoMock.Verify(r => r.UpdateAsync(item2), Times.Once);
-            _itemRepoMock.Verify(r => r.UpdateAsync(item3), Times.Never);
+            // 4. Verify the stock updates were batched into a single UpdateRangeAsync call
+            // rather than one UpdateAsync call per item (avoids an N+1 write pattern).
+            _itemRepoMock.Verify(r => r.UpdateRangeAsync(It.Is<List<Item>>(l =>
+                l.Count == 2 && l.Contains(item1) && l.Contains(item2) && !l.Contains(item3))), Times.Once);
+            _itemRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
         }
 
         [Fact]
@@ -306,7 +306,7 @@ namespace HotelPOS.Tests
                 }
             };
 
-            _itemRepoMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Item?)null);
+            _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item>());
 
             // Act
             var exception = await Record.ExceptionAsync(() => _purchaseService.SavePurchaseAsync(purchase));
@@ -314,7 +314,7 @@ namespace HotelPOS.Tests
             // Assert
             Assert.Null(exception);
             _purchaseRepoMock.Verify(r => r.AddAsync(purchase), Times.Once);
-            _itemRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
+            _itemRepoMock.Verify(r => r.UpdateRangeAsync(It.IsAny<List<Item>>()), Times.Never);
         }
 
         [Fact]
@@ -332,8 +332,8 @@ namespace HotelPOS.Tests
                 }
             };
 
-            _itemRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(catalogItem);
-            _itemRepoMock.Setup(r => r.UpdateAsync(catalogItem)).ThrowsAsync(new Exception("Database connection failure"));
+            _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item> { catalogItem });
+            _itemRepoMock.Setup(r => r.UpdateRangeAsync(It.IsAny<List<Item>>())).ThrowsAsync(new Exception("Database connection failure"));
 
             // Act & Assert
             await Assert.ThrowsAsync<Exception>(() => _purchaseService.SavePurchaseAsync(purchase));

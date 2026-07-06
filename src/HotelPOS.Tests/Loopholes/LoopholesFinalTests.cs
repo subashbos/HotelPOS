@@ -1,5 +1,6 @@
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Application.Interfaces;
 using Moq;
@@ -54,7 +55,7 @@ namespace HotelPOS.Tests
         public async Task SaveOrderAsync_DineInWithoutTable_ThrowsArgumentException()
         {
             var items = new List<OrderItem> { new OrderItem { ItemName = "Valid", Price = 10, Quantity = 1 } };
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 0, OrderType: "DineIn")));
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 0, OrderType: OrderTypes.DineIn)));
         }
     }
 }

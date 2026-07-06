@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
@@ -51,7 +52,7 @@ namespace HotelPOS.ViewModels
         private decimal _creditLimit = 50000; // sensible default limit
 
         [ObservableProperty]
-        private string? _paymentTerms = "Cash"; // Cash / Credit / Days
+        private string? _paymentTerms = PaymentModes.Cash; // Cash / Credit / Days
 
         [ObservableProperty]
         private bool _isEditMode;
@@ -97,7 +98,7 @@ namespace HotelPOS.ViewModels
             Pincode = supplier.Pincode;
             OpeningBalance = supplier.OpeningBalance;
             CreditLimit = supplier.CreditLimit;
-            PaymentTerms = supplier.PaymentTerms ?? "Cash";
+            PaymentTerms = supplier.PaymentTerms ?? PaymentModes.Cash;
             IsEditMode = Id > 0;
 
             // Clear errors on initial load
