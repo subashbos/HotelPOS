@@ -398,6 +398,10 @@ backups/
 .DS_Store
 Thumbs.db
 
+# Claude Code local/runtime state (launch.json is shared config, keep that tracked)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
 # ==========================================
 # Angular & Node.js
 # ==========================================
