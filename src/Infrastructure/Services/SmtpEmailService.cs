@@ -30,7 +30,7 @@ namespace HotelPOS.Infrastructure.Services
 
             using var client = new SmtpClient(smtpSettings.SmtpHost, smtpSettings.SmtpPort)
             {
-                EnableSsl = smtpSettings.SmtpUseSsl,
+                EnableSsl = smtpSettings.SmtpUseSsl, // NOSONAR - admin-configurable via Settings > Security; some on-prem/local SMTP relays don't support TLS.
                 Credentials = string.IsNullOrEmpty(smtpSettings.SmtpUsername)
                     ? null
                     : new NetworkCredential(smtpSettings.SmtpUsername, smtpSettings.SmtpPassword)

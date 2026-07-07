@@ -59,7 +59,7 @@ namespace HotelPOS.Domain.Common
             var stepBytes = BitConverter.GetBytes(step);
             if (BitConverter.IsLittleEndian) Array.Reverse(stepBytes);
 
-            using var hmac = new HMACSHA1(secret);
+            using var hmac = new HMACSHA1(secret); // NOSONAR - RFC 6238 mandates HMAC-SHA1; authenticator apps (e.g. Google Authenticator) hardcode SHA1 and ignore other algorithms.
             var hash = hmac.ComputeHash(stepBytes);
 
             int offset = hash[^1] & 0x0F;
