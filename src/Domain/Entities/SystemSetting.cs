@@ -51,5 +51,33 @@ namespace HotelPOS.Domain.Entities
         public string? SmtpPassword { get; set; }
         public bool SmtpUseSsl { get; set; } = true;
         public string? SmtpFromAddress { get; set; }
+
+        /// <summary>Copies all editable fields from <paramref name="source"/> onto this instance (Id is left untouched).</summary>
+        public void UpdateFrom(SystemSetting source)
+        {
+            HotelName = source.HotelName;
+            HotelAddress = source.HotelAddress;
+            HotelPhone = source.HotelPhone;
+            HotelGst = source.HotelGst;
+            DefaultPrinter = source.DefaultPrinter;
+            ShowPrintPreview = source.ShowPrintPreview;
+            ReceiptFormat = source.ReceiptFormat;
+            ShowGstBreakdown = source.ShowGstBreakdown;
+            ShowItemsOnBill = source.ShowItemsOnBill;
+            ShowDiscountLine = source.ShowDiscountLine;
+            ShowPhoneOnReceipt = source.ShowPhoneOnReceipt;
+            ShowThankYouFooter = source.ShowThankYouFooter;
+            EnableRoundOff = source.EnableRoundOff;
+            IsCompositionScheme = source.IsCompositionScheme;
+            EnableAutomatedBackups = source.EnableAutomatedBackups;
+            OffsiteBackupPath = source.OffsiteBackupPath;
+            IdleTimeoutMinutes = source.IdleTimeoutMinutes;
+            SmtpHost = source.SmtpHost;
+            SmtpPort = source.SmtpPort;
+            SmtpUsername = source.SmtpUsername;
+            SmtpPassword = source.SmtpPassword;
+            SmtpUseSsl = source.SmtpUseSsl;
+            SmtpFromAddress = source.SmtpFromAddress;
+        }
     }
 }

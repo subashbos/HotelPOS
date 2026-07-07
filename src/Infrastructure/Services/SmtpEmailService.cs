@@ -28,9 +28,10 @@ namespace HotelPOS.Infrastructure.Services
                     "Outgoing email is not configured. Ask an administrator to set it up under Settings > Security.");
             }
 
+            // NOSONAR - EnableSsl is admin-configurable via Settings > Security; some on-prem/local SMTP relays don't support TLS.
             using var client = new SmtpClient(smtpSettings.SmtpHost, smtpSettings.SmtpPort)
             {
-                EnableSsl = smtpSettings.SmtpUseSsl, // NOSONAR - admin-configurable via Settings > Security; some on-prem/local SMTP relays don't support TLS.
+                EnableSsl = smtpSettings.SmtpUseSsl,
                 Credentials = string.IsNullOrEmpty(smtpSettings.SmtpUsername)
                     ? null
                     : new NetworkCredential(smtpSettings.SmtpUsername, smtpSettings.SmtpPassword)

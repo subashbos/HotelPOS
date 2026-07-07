@@ -22,30 +22,7 @@ namespace HotelPOS.Application.UseCases.Settings.Commands
 
             if (existing != null)
             {
-                existing.HotelName = settings.HotelName;
-                existing.HotelAddress = settings.HotelAddress;
-                existing.HotelPhone = settings.HotelPhone;
-                existing.HotelGst = settings.HotelGst;
-                existing.DefaultPrinter = settings.DefaultPrinter;
-                existing.ShowPrintPreview = settings.ShowPrintPreview;
-                existing.ReceiptFormat = settings.ReceiptFormat;
-                existing.ShowGstBreakdown = settings.ShowGstBreakdown;
-                existing.ShowItemsOnBill = settings.ShowItemsOnBill;
-                existing.ShowDiscountLine = settings.ShowDiscountLine;
-                existing.ShowPhoneOnReceipt = settings.ShowPhoneOnReceipt;
-                existing.ShowThankYouFooter = settings.ShowThankYouFooter;
-                existing.EnableRoundOff = settings.EnableRoundOff;
-                existing.IsCompositionScheme = settings.IsCompositionScheme;
-                existing.EnableAutomatedBackups = settings.EnableAutomatedBackups;
-                existing.OffsiteBackupPath = settings.OffsiteBackupPath;
-                existing.IdleTimeoutMinutes = settings.IdleTimeoutMinutes;
-                existing.SmtpHost = settings.SmtpHost;
-                existing.SmtpPort = settings.SmtpPort;
-                existing.SmtpUsername = settings.SmtpUsername;
-                existing.SmtpPassword = settings.SmtpPassword;
-                existing.SmtpUseSsl = settings.SmtpUseSsl;
-                existing.SmtpFromAddress = settings.SmtpFromAddress;
-
+                existing.UpdateFrom(settings);
                 await _repository.UpdateAsync(existing);
             }
             else
