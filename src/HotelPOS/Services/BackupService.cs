@@ -148,7 +148,7 @@ namespace HotelPOS.Services
         // Database/table names can't be bound as SQL parameters, so validate before interpolating into DDL.
         private static void EnsureSafeIdentifier(string identifier)
         {
-            if (string.IsNullOrEmpty(identifier) || !Regex.IsMatch(identifier, "^[A-Za-z0-9_]+$"))
+            if (string.IsNullOrEmpty(identifier) || !Regex.IsMatch(identifier, "^[A-Za-z0-9_]+$", RegexOptions.None, TimeSpan.FromSeconds(1)))
             {
                 throw new InvalidOperationException($"Refusing to use unsafe database identifier: '{identifier}'.");
             }
