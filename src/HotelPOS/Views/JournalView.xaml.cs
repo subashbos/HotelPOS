@@ -59,6 +59,7 @@ namespace HotelPOS.Views
                 _viewModel.ToDate = ToDate.SelectedDate;
                 _viewModel.TableFilter = GetTableFilter();
             };
+            Unloaded += (s, e) => _viewModel.Dispose();
         }
 
         private int? GetTableFilter()

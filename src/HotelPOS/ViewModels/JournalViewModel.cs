@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace HotelPOS.ViewModels
 {
-    public partial class JournalViewModel : ObservableObject
+    public partial class JournalViewModel : ObservableObject, IDisposable
     {
         private readonly IOrderService _orderService;
         private readonly INotificationService _notificationService;
@@ -63,6 +63,7 @@ namespace HotelPOS.ViewModels
 
             // Cancel any ongoing request if multiple scrolls happen quickly
             _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
             var token = _cancellationTokenSource.Token;
 
@@ -109,6 +110,13 @@ namespace HotelPOS.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource?.Cancel();
+            _cancellationTokenSource?.Dispose();
+            _cancellationTokenSource = null;
         }
     }
 }
