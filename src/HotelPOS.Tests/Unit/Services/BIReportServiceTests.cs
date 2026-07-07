@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,10 +120,10 @@ namespace HotelPOS.Tests
             Assert.Equal(2, alerts.Count);
             
             var itemAAlert = alerts.First(a => a.ItemId == 1);
-            Assert.Equal("Critical", itemAAlert.AlertLevel); // Since 5 <= 10 (Warning/Critical depending on daily sales) and 5 is very low.
+            Assert.Equal(AlertLevels.Critical, itemAAlert.AlertLevel); // Since 5 <= 10 (Warning/Critical depending on daily sales) and 5 is very low.
 
             var itemBAlert = alerts.First(a => a.ItemId == 2);
-            Assert.Equal("Normal", itemBAlert.AlertLevel);
+            Assert.Equal(AlertLevels.Normal, itemBAlert.AlertLevel);
         }
     }
 }

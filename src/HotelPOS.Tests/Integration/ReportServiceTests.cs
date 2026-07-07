@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -141,7 +142,7 @@ namespace HotelPOS.Tests
             var toDate = DateTime.UtcNow;
             var supplierId = 12;
             var itemName = "Rice";
-            var paymentType = "UPI";
+            var paymentType = PaymentModes.Upi;
             var invoiceNo = "INV-99";
 
             var item = new PurchaseItem
@@ -160,7 +161,7 @@ namespace HotelPOS.Tests
                 PurchaseDate = DateTime.UtcNow,
                 InvoiceNumber = "INV-99",
                 Supplier = new Supplier { Name = "Global Supplier" },
-                PaymentType = "UPI",
+                PaymentType = PaymentModes.Upi,
                 PurchaseItems = new List<PurchaseItem> { item }
             };
 
@@ -183,7 +184,7 @@ namespace HotelPOS.Tests
             var firstRow = result.items[0];
             Assert.Equal("INV-99", firstRow.InvoiceNumber);
             Assert.Equal("Global Supplier", firstRow.SupplierName);
-            Assert.Equal("UPI", firstRow.PaymentType);
+            Assert.Equal(PaymentModes.Upi, firstRow.PaymentType);
         }
 
         [Fact]

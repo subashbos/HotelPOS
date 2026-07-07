@@ -2,6 +2,7 @@ using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.CashSessions.Commands;
 using HotelPOS.Application.UseCases.CashSessions.Queries;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 
@@ -54,7 +55,7 @@ namespace HotelPOS.Application.UseCases
                 OpenedAt = DateTime.UtcNow,
                 OpeningBalance = openingBalance,
                 OpenedBy = username,
-                Status = "Open"
+                Status = CashSessionStatuses.Open
             };
             await _repo.AddAsync(session);
             return session.Id;
@@ -85,7 +86,7 @@ namespace HotelPOS.Application.UseCases
             session.ClosingBalance = session.OpeningBalance + sales;
             session.ActualCash = actualCash;
             session.Notes = notes;
-            session.Status = "Closed";
+            session.Status = CashSessionStatuses.Closed;
             await _repo.UpdateAsync(session);
         }
 

@@ -93,6 +93,66 @@ namespace HotelPOS.Tests.Unit.Services
         }
 
 
+        [Fact]
+        public void Verify_RolesView_CanBeResolved_STA()
+        {
+            try
+            {
+                var threadEx = ExceptionCheck(() =>
+                {
+                    if (!IsApplicationCreated())
+                    {
+                        var appInstance = new HotelPOS.App();
+                        appInstance.InitializeComponent();
+                    }
+
+                    var notificationService = new Moq.Mock<HotelPOS.Application.Interfaces.INotificationService>();
+                    var view = new RolesView(notificationService.Object);
+                    Assert.NotNull(view);
+                });
+
+                if (threadEx != null)
+                {
+                    throw threadEx;
+                }
+            }
+            finally
+            {
+                ClearApplicationSingleton();
+            }
+        }
+
+        [Fact]
+        public void Verify_SupplierEntryDialog_CanBeResolved_STA()
+        {
+            try
+            {
+                var threadEx = ExceptionCheck(() =>
+                {
+                    if (!IsApplicationCreated())
+                    {
+                        var appInstance = new HotelPOS.App();
+                        appInstance.InitializeComponent();
+                    }
+
+                    var supplierService = new Moq.Mock<HotelPOS.Application.Interfaces.ISupplierService>();
+                    var notificationService = new Moq.Mock<HotelPOS.Application.Interfaces.INotificationService>();
+                    var viewModel = new SupplierEntryViewModel(supplierService.Object, notificationService.Object);
+                    var dialog = new SupplierEntryDialog(viewModel);
+                    Assert.NotNull(dialog);
+                });
+
+                if (threadEx != null)
+                {
+                    throw threadEx;
+                }
+            }
+            finally
+            {
+                ClearApplicationSingleton();
+            }
+        }
+
         private static bool IsApplicationCreated()
         {
             if (System.Windows.Application.Current != null)

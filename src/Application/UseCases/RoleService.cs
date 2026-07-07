@@ -1,6 +1,7 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Roles.Commands;
 using HotelPOS.Application.UseCases.Roles.Queries;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 
@@ -28,7 +29,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<Role>> GetAllRolesAsync()
         {
-            _authorization.EnsurePermission("Roles");
+            _authorization.EnsurePermission(PermissionModules.Roles);
 
             if (_mediator != null)
                 return await _mediator.Send(new GetAllRolesQuery());
@@ -38,7 +39,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<Role?> GetRoleByIdAsync(int id)
         {
-            _authorization.EnsurePermission("Roles");
+            _authorization.EnsurePermission(PermissionModules.Roles);
 
             if (_mediator != null)
                 return await _mediator.Send(new GetRoleByIdQuery(id));
@@ -48,7 +49,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<bool> AddRoleAsync(string name, string description)
         {
-            _authorization.EnsurePermission("Roles");
+            _authorization.EnsurePermission(PermissionModules.Roles);
 
             if (_mediator != null)
                 return await _mediator.Send(new AddRoleCommand(name, description));
@@ -61,8 +62,7 @@ namespace HotelPOS.Application.UseCases
             if (existing != null) return false;
 
             var role = new Role { Name = trimmedName, Description = description };
-            string[] modules = { "Dashboard", "Billing", "Items", "Categories", "Tables", "Ledger", "Journal", "Settings", "Audit", "Shift", "Roles", "SalesReport" };
-            foreach (var mod in modules)
+            foreach (var mod in PermissionModules.All)
                 role.Permissions.Add(new RolePermission { ModuleName = mod, CanAccess = false });
 
             await _roleRepository.AddRoleAsync(role);
@@ -71,7 +71,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task UpdateRolePermissionsAsync(int roleId, List<RolePermission> permissions)
         {
-            _authorization.EnsurePermission("Roles");
+            _authorization.EnsurePermission(PermissionModules.Roles);
 
             if (_mediator != null)
             {
@@ -84,7 +84,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteRoleAsync(int id)
         {
-            _authorization.EnsurePermission("Roles");
+            _authorization.EnsurePermission(PermissionModules.Roles);
 
             if (_mediator != null)
             {

@@ -3,6 +3,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -33,6 +34,9 @@ namespace HotelPOS.Views
     {
         private readonly INotificationService _notificationService;
         private List<LedgerRow> _allRows = new();
+        private ObservableCollection<LedgerRow> _items = new();
+        private int _currentPage = 1;
+        private const int PageSize = 20;
         private bool _isLoaded = false;
         private bool _isLoading = false;
         private bool _loadRequested = false;
@@ -46,7 +50,7 @@ namespace HotelPOS.Views
             {
                 App.RegisterTestService(notificationService);
             }
-            LedgerPager.PageChanged += page => LedgerGrid.ItemsSource = page;
+            LedgerGrid.ItemsSource = _items;
 
             Loaded += async (s, e) =>
             {
@@ -119,7 +123,31 @@ namespace HotelPOS.Views
 
             TotalRevBadge.Text = $"Rs. {_allRows.Sum(r => r.GrossRevenue):N2}";
             TotalOrdersBadge.Text = _allRows.Sum(r => r.OrderCount).ToString();
-            LedgerPager.SetSource(_allRows);
+            
+            _items.Clear();
+            _currentPage = 1;
+            LoadMore();
+        }
+
+        private void LoadMore()
+        {
+            var itemsToLoad = _allRows.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
+            if (itemsToLoad.Any())
+            {
+                foreach (var i in itemsToLoad) _items.Add(i);
+                _currentPage++;
+            }
+        }
+
+        private void LedgerGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var sv = e.OriginalSource as ScrollViewer;
+            if (sv == null) return;
+
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
+            {
+                LoadMore();
+            }
         }
 
         // ── Toolbar events ────────────────────────────────────────────────────

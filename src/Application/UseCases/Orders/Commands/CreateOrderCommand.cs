@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 using HotelPOS.Application.Interfaces;
@@ -11,11 +12,11 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
         List<OrderItem> Items,
         int TableNumber,
         decimal Discount = 0,
-        string PaymentMode = "Cash",
+        string PaymentMode = PaymentModes.Cash,
         string? CustomerName = null,
         string? CustomerPhone = null,
         string? CustomerGstin = null,
-        string OrderType = "DineIn"
+        string OrderType = OrderTypes.DineIn
     ) : IRequest<int>;
 
     public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int>

@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
@@ -107,7 +108,7 @@ namespace HotelPOS.Views
 
                 if (roles != null && roles.Any())
                 {
-                    var adminRole = roles.FirstOrDefault(r => r.Name == "Admin");
+                    var adminRole = roles.FirstOrDefault(r => r.Name == RoleNames.Admin);
                     RolesGrid.SelectedItem = adminRole ?? roles.First();
                 }
             }
@@ -134,8 +135,8 @@ namespace HotelPOS.Views
                 PermissionsList.ItemsSource = _currentPermissions;
 
                 // Admin role: disable delete button
-                DeleteRoleBtn.IsEnabled = _selectedRole.Name != "Admin";
-                DeleteRoleBtn.Opacity = _selectedRole.Name == "Admin" ? 0.4 : 1.0;
+                DeleteRoleBtn.IsEnabled = _selectedRole.Name != RoleNames.Admin;
+                DeleteRoleBtn.Opacity = _selectedRole.Name == RoleNames.Admin ? 0.4 : 1.0;
 
                 // Show editor, hide placeholder
                 NoRolePlaceholder.Visibility = Visibility.Collapsed;
@@ -253,17 +254,17 @@ namespace HotelPOS.Views
         {
             if (_selectedRole == null) return;
 
-            if (_selectedRole.Name == "Admin")
+            if (_selectedRole.Name == RoleNames.Admin)
             {
                 _notificationService.ShowError("Cannot delete the Admin role.");
                 return;
             }
 
-            if (MessageBox.Show(
+            if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
                     $"Delete role '{_selectedRole.Name}'?\nUsers assigned this role will lose all access.",
                     "Confirm Delete",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                    HotelPOS.Application.Interfaces.DialogButton.YesNo,
+                    HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
             {
                 using (var scope = App.CreateDbScope())
                 {

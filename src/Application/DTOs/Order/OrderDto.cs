@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HotelPOS.Domain.Common.Constants;
 
 namespace HotelPOS.Application.DTOs.Order
 {
@@ -19,8 +20,8 @@ namespace HotelPOS.Application.DTOs.Order
         public decimal IgstAmount { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal TotalAmount { get; set; }
-        public string PaymentMode { get; set; } = "Cash";
-        public string Status { get; set; } = "Paid";
+        public string PaymentMode { get; set; } = PaymentModes.Cash;
+        public string Status { get; set; } = OrderStatuses.Paid;
         public decimal AmountPaid { get; set; }
         public decimal CashPaid { get; set; }
         public decimal CardPaid { get; set; }
@@ -34,7 +35,7 @@ namespace HotelPOS.Application.DTOs.Order
         public bool IsDeleted { get; set; }
         public DateTime? DeletedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public string OrderType { get; set; } = "DineIn";
+        public string OrderType { get; set; } = OrderTypes.DineIn;
     }
 
     public class OrderItemDto

@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.UseCases
@@ -30,11 +31,11 @@ namespace HotelPOS.Application.UseCases
             if (string.IsNullOrWhiteSpace(role))
                 return false;
 
-            if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(role, RoleNames.Admin, StringComparison.OrdinalIgnoreCase))
                 return true;
 
-            if (string.Equals(role, "Cashier", StringComparison.OrdinalIgnoreCase))
-                return moduleName is "Billing" or "Shift";
+            if (string.Equals(role, RoleNames.Cashier, StringComparison.OrdinalIgnoreCase))
+                return moduleName is PermissionModules.Billing or PermissionModules.Shift;
 
             return false;
         }

@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -128,8 +129,8 @@ namespace HotelPOS.Tests
         {
             var orders = new List<Order>
             {
-                new Order { Id = 1, TotalAmount = 100, PaymentMode = "Cash", CreatedAt = DateTime.UtcNow, Items = new() },
-                new Order { Id = 2, TotalAmount = 100, PaymentMode = "UPI",  CreatedAt = DateTime.UtcNow, Items = new() }
+                new Order { Id = 1, TotalAmount = 100, PaymentMode = PaymentModes.Cash, CreatedAt = DateTime.UtcNow, Items = new() },
+                new Order { Id = 2, TotalAmount = 100, PaymentMode = PaymentModes.Upi,  CreatedAt = DateTime.UtcNow, Items = new() }
             };
             SetupOrders(orders);
             _itemRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());

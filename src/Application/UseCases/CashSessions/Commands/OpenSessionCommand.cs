@@ -1,5 +1,6 @@
 using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 
@@ -27,7 +28,7 @@ namespace HotelPOS.Application.UseCases.CashSessions.Commands
                 OpenedAt = DateTime.UtcNow,
                 OpeningBalance = request.Dto.OpeningBalance,
                 OpenedBy = request.Dto.OpenedBy,
-                Status = "Open"
+                Status = CashSessionStatuses.Open
             };
 
             await _repository.AddAsync(session);

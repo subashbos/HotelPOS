@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -59,7 +60,7 @@ namespace HotelPOS.Tests
                         cashService.Object,
                         tableService.Object);
 
-                    vm.PaymentMode = "Cash";
+                    vm.PaymentMode = PaymentModes.Cash;
                     vm.Cart.Add(new CartRow { ItemId = 1, ItemName = "Item 1", Quantity = 1 });
 
                     // Bypassing XAML loading and constructor using modern RuntimeHelpers to avoid Application.Current resource resolution issues

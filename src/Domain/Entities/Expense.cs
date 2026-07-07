@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using HotelPOS.Domain.Common.Constants;
 
 namespace HotelPOS.Domain.Entities
 {
@@ -24,7 +25,7 @@ namespace HotelPOS.Domain.Entities
         public string Category { get; set; } = "General"; // e.g., Salary, Rent, Raw Material, Utilities
 
         [MaxLength(50)]
-        public string? PaymentMode { get; set; } = "Cash";
+        public string? PaymentMode { get; set; } = PaymentModes.Cash;
 
         public int? CreatedBy { get; set; }
         public User? User { get; set; }

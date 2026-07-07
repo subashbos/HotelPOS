@@ -2,6 +2,7 @@ using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using MediatR;
 using HotelPOS.Application.UseCases.Reports.Queries;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.UseCases
@@ -51,7 +52,7 @@ namespace HotelPOS.Application.UseCases
 
             var totalRevenue = orders.Sum(o => o.TotalAmount);
             var count = orders.Count;
-            var avg = count > 0 ? Math.Round(totalRevenue / count, 2) : 0m;
+            var avg = count > 0 ? Math.Round(totalRevenue / count, MoneyPrecision.CurrencyDecimals) : 0m;
 
             var mostPopular = orders
                 .SelectMany(o => o.Items)
@@ -183,7 +184,7 @@ namespace HotelPOS.Application.UseCases
                 .ToList();
 
             var result = new List<MonthlySalesChartDto>();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < ReportingLimits.TrailingHistoryMonths; i++)
             {
                 var target = startDateLocal.AddMonths(i);
                 var data = monthlyData.FirstOrDefault(m => m.Year == target.Year && m.Month == target.Month);
@@ -241,10 +242,10 @@ namespace HotelPOS.Application.UseCases
                         ItemName = item.ItemName,
                         Quantity = item.Quantity,
                         UnitPrice = item.UnitPrice,
-                        TaxAmount = item.Total * (item.TaxPercentage / 100m),
+                        TaxAmount = item.Total * (item.TaxPercentage / MoneyPrecision.PercentDivisor),
                         Discount = item.Discount,
                         TotalAmount = item.Total,
-                        PaymentType = string.IsNullOrWhiteSpace(p.PaymentType) ? "Cash" : p.PaymentType
+                        PaymentType = string.IsNullOrWhiteSpace(p.PaymentType) ? PaymentModes.Cash : p.PaymentType
                     };
                     rows.Add(row);
 
@@ -278,7 +279,7 @@ namespace HotelPOS.Application.UseCases
         {
             return orders
                 .OrderByDescending(o => o.CreatedAt)
-                .Take(50)
+                .Take(ReportingLimits.RecentEntriesLimit)
                 .Select((o, idx) => new RecentOrderRowDto
                 {
                     SNo = idx + 1,
@@ -288,9 +289,9 @@ namespace HotelPOS.Application.UseCases
                     Total = o.TotalAmount,
                     DiscountAmount = o.DiscountAmount,
                     ItemCount = o.Items.Count,
-                    PaymentMode = string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode,
-                    OrderType = string.IsNullOrWhiteSpace(o.OrderType) ? "DineIn" : o.OrderType,
-                    Status = string.IsNullOrWhiteSpace(o.Status) ? "Paid" : o.Status,
+                    PaymentMode = string.IsNullOrWhiteSpace(o.PaymentMode) ? PaymentModes.Cash : o.PaymentMode,
+                    OrderType = string.IsNullOrWhiteSpace(o.OrderType) ? OrderTypes.DineIn : o.OrderType,
+                    Status = string.IsNullOrWhiteSpace(o.Status) ? OrderStatuses.Paid : o.Status,
                     CustomerName = o.CustomerName,
                     CustomerPhone = o.CustomerPhone,
                     CustomerGstin = o.CustomerGstin,
@@ -324,7 +325,7 @@ namespace HotelPOS.Application.UseCases
         private List<PaymentModeSalesRowDto> CalculatePaymentModeSales(IEnumerable<Order> orders, decimal totalRevenue)
         {
             var paymentModeSales = orders
-                .GroupBy(o => string.IsNullOrWhiteSpace(o.PaymentMode) ? "Cash" : o.PaymentMode)
+                .GroupBy(o => string.IsNullOrWhiteSpace(o.PaymentMode) ? PaymentModes.Cash : o.PaymentMode)
                 .Select(g =>
                 {
                     var rev = g.Sum(o => o.TotalAmount);

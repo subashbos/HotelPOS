@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -63,7 +64,7 @@ namespace HotelPOS.Tests
             await _service.OpenSessionAsync(1000m, "cashier1");
 
             Assert.NotNull(captured);
-            Assert.Equal("Open", captured!.Status);
+            Assert.Equal(CashSessionStatuses.Open, captured!.Status);
             Assert.Equal("cashier1", captured.OpenedBy);
         }
 
@@ -125,7 +126,7 @@ namespace HotelPOS.Tests
 
             Assert.Equal("manager1", session.ClosedBy);
             Assert.Equal("End of day", session.Notes);
-            Assert.Equal("Closed", session.Status);
+            Assert.Equal(CashSessionStatuses.Closed, session.Status);
         }
 
         [Fact]
@@ -196,8 +197,8 @@ namespace HotelPOS.Tests
         {
             var sessions = new List<CashSession>
             {
-                new CashSession { Id = 1, Status = "Closed" },
-                new CashSession { Id = 2, Status = "Closed" }
+                new CashSession { Id = 1, Status = CashSessionStatuses.Closed },
+                new CashSession { Id = 2, Status = CashSessionStatuses.Closed }
             };
             _repo.Setup(r => r.GetHistoryAsync(It.IsAny<int>())).ReturnsAsync(sessions);
 
@@ -221,7 +222,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task GetCurrentSessionAsync_WithSession_ReturnsSession()
         {
-            var session = new CashSession { Id = 7, Status = "Open" };
+            var session = new CashSession { Id = 7, Status = CashSessionStatuses.Open };
             _repo.Setup(r => r.GetCurrentSessionAsync()).ReturnsAsync(session);
 
             var result = await _service.GetCurrentSessionAsync();

@@ -69,7 +69,8 @@
                 </Grid.RowDefinitions>
                 <DataGrid x:Name="LedgerGrid"
                           Style="{StaticResource PremiumGrid}"
-                          ItemsSource="{Binding LedgerEntries}">
+                          ItemsSource="{Binding LedgerEntries}"
+                          ScrollViewer.ScrollChanged="LedgerGrid_ScrollChanged">
                     <DataGrid.Columns>
                     <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60"/>
                         <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM yyyy}" Width="130">
@@ -122,7 +123,6 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
-                <ctrl:PaginationControl x:Name="LedgerPager" Grid.Row="1"/>
             </Grid>
         </Border>
     </Grid>

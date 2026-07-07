@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelPOS.Domain.Common.Constants;
 using System.Linq;
 
 namespace HotelPOS.Application.UseCases.Orders.Commands
@@ -27,15 +28,15 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
                 .WithMessage("Discount cannot exceed order subtotal.");
 
             RuleFor(x => x.PaymentMode)
-                .Must(x => new[] { "Cash", "Card", "UPI" }.Contains(x))
+                .Must(x => PaymentModes.All.Contains(x))
                 .WithMessage("Invalid payment mode. Allowed: Cash, Card, UPI");
 
             RuleFor(x => x.OrderType)
-                .Must(x => new[] { "DineIn", "Takeaway", "Online" }.Contains(x))
+                .Must(x => OrderTypes.All.Contains(x))
                 .WithMessage("Invalid order type. Allowed: DineIn, Takeaway, Online");
 
             RuleFor(x => x)
-                .Must(x => x.OrderType != "DineIn" || x.TableNumber > 0)
+                .Must(x => x.OrderType != OrderTypes.DineIn || x.TableNumber > 0)
                 .WithMessage("Invalid table number.");
         }
     }

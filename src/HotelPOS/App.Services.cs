@@ -101,6 +101,7 @@ namespace HotelPOS
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
+            services.AddScoped<IBomService, Services.BomService>();
 
             services.AddSingleton<ICartService, CartService>();
             services.AddSingleton<INotificationService, NotificationService>();
@@ -115,6 +116,8 @@ namespace HotelPOS
             services.AddTransient<SupplierViewModel>();
             services.AddTransient<SupplierEntryViewModel>();
             services.AddTransient<PurchaseReportViewModel>();
+            services.AddTransient<RawMaterialViewModel>();
+            services.AddTransient<BomViewModel>();
 
             // ── Views & Windows ───────────────────────────────────────────────
             services.AddTransient<SessionView>();
@@ -134,6 +137,8 @@ namespace HotelPOS
             services.AddTransient<BIReportView>();
             services.AddTransient<TableView>();
             services.AddTransient<RolesView>();
+            services.AddTransient<RawMaterialView>();
+            services.AddTransient<BomView>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
 
@@ -143,7 +148,6 @@ namespace HotelPOS
             services.AddScoped<LoginWindow>();
             services.AddScoped<DashboardWindow>();
             services.AddTransient<AddItemWindow>();
-            services.AddTransient<MainWindow>();
         }
     }
 }

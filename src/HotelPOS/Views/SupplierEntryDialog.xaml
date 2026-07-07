@@ -11,7 +11,9 @@
         ShowInTaskbar="False"
         Background="{DynamicResource AppBackground}"
         BorderBrush="{DynamicResource BorderBrush}"
-        BorderThickness="1">
+        BorderThickness="1"
+        WindowStyle="None"
+        AllowsTransparency="True">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -38,6 +40,8 @@
         </Style>
     </Window.Resources>
 
+    <Border CornerRadius="16" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"
+            Background="{DynamicResource SurfaceBrush}" Margin="1">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>  <!-- Header Banner -->
@@ -46,7 +50,7 @@
         </Grid.RowDefinitions>
 
         <!-- ══ HEADER BANNER ══ -->
-        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="24,14">
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" CornerRadius="15,15,0,0" Padding="24,14" MouseLeftButtonDown="Header_MouseLeftButtonDown">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -57,8 +61,8 @@
                     <TextBlock Text="CREATE / EDIT SUPPLIER" FontSize="10" FontWeight="Bold" Foreground="#14B8A6" Margin="0,0,0,4"/>
                     <TextBlock x:Name="BannerTitle" Text="🏢  Supplier Entry" Style="{StaticResource H3TextBlockStyle}" Foreground="White"/>
                 </StackPanel>
-                <Button Grid.Column="1" Content="✕" Click="Cancel_Click" 
-                        Background="Transparent" BorderThickness="0" Foreground="White" FontSize="18" FontWeight="Light" 
+                <Button Grid.Column="1" Content="✕" Click="Cancel_Click"
+                        Background="Transparent" BorderThickness="0" Foreground="White" FontSize="18" FontWeight="Light"
                         Cursor="Hand" VerticalAlignment="Center"/>
             </Grid>
         </Border>
@@ -184,7 +188,7 @@
                         <TextBox Text="{Binding OpeningBalance, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:0.00}}" 
                                  Style="{StaticResource CurrencyInputField}" Padding="24,8,12,8" Tag="0.00"/>
                         <TextBlock Text="₹" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" 
-                                   Foreground="{DynamicResource TextSecondary}" FontSize="13" IsHitTestVisible="False"/>
+                                   Foreground="{DynamicResource TextMuted}" FontSize="13" IsHitTestVisible="False"/>
                     </Grid>
                 </StackPanel>
 
@@ -202,7 +206,7 @@
                         <TextBox Text="{Binding CreditLimit, UpdateSourceTrigger=PropertyChanged, StringFormat={}{0:0.00}}" 
                                  Style="{StaticResource CurrencyInputField}" Padding="24,8,12,8" Tag="50000.00"/>
                         <TextBlock Text="₹" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" 
-                                   Foreground="{DynamicResource TextSecondary}" FontSize="13" IsHitTestVisible="False"/>
+                                   Foreground="{DynamicResource TextMuted}" FontSize="13" IsHitTestVisible="False"/>
                     </Grid>
                 </StackPanel>
 
@@ -228,7 +232,7 @@
         </ScrollViewer>
 
         <!-- ══ ACTION FOOTER ══ -->
-        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,14">
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" CornerRadius="0,0,15,15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,14">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <!-- Cancel Button -->
                 <Button Content="✕  Cancel" Click="Cancel_Click" Style="{StaticResource SecondaryBtn}" Margin="0,0,12,0"/>
@@ -260,4 +264,5 @@
             </StackPanel>
         </Border>
     </Grid>
+    </Border>
 </Window>

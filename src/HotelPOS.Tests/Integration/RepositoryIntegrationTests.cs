@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,8 +45,8 @@ namespace HotelPOS.Tests
             using var context = GetContext("CashRepoDb");
             var repo = new CashRepository(context);
 
-            var session1 = new CashSession { Id = 1, OpenedBy = "admin", OpenedAt = DateTime.UtcNow.AddHours(-2), Status = "Closed", OpeningBalance = 1000 };
-            var session2 = new CashSession { Id = 2, OpenedBy = "cashier", OpenedAt = DateTime.UtcNow, Status = "Open", OpeningBalance = 2000 };
+            var session1 = new CashSession { Id = 1, OpenedBy = "admin", OpenedAt = DateTime.UtcNow.AddHours(-2), Status = CashSessionStatuses.Closed, OpeningBalance = 1000 };
+            var session2 = new CashSession { Id = 2, OpenedBy = "cashier", OpenedAt = DateTime.UtcNow, Status = CashSessionStatuses.Open, OpeningBalance = 2000 };
 
             await repo.AddAsync(session1);
             await repo.AddAsync(session2);
@@ -54,7 +55,7 @@ namespace HotelPOS.Tests
             Assert.NotNull(current);
             Assert.Equal(2, current.Id);
 
-            current.Status = "Closed";
+            current.Status = CashSessionStatuses.Closed;
             current.ClosedAt = DateTime.UtcNow;
             await repo.UpdateAsync(current);
 
@@ -189,7 +190,7 @@ namespace HotelPOS.Tests
                 InvoiceNumber = "PUR123",
                 PurchaseDate = DateTime.UtcNow,
                 GrandTotal = 5000,
-                PaymentType = "Cash",
+                PaymentType = PaymentModes.Cash,
                 PurchaseItems = new List<PurchaseItem> { new PurchaseItem { Id = 1, ItemName = "Onions", Quantity = 100, UnitPrice = 50 } }
             };
 
@@ -213,16 +214,16 @@ namespace HotelPOS.Tests
             using var context = GetContext("RoleRepoDb");
             var repo = new RoleRepository(context);
 
-            var role = new Role { Id = 10, Name = "Manager", Description = "Store Manager" };
+            var role = new Role { Id = 10, Name = RoleNames.Manager, Description = "Store Manager" };
             await repo.AddRoleAsync(role);
 
             var all = await repo.GetAllRolesAsync();
-            Assert.Contains(all, r => r.Name == "Manager");
+            Assert.Contains(all, r => r.Name == RoleNames.Manager);
 
             var found = await repo.GetRoleByIdAsync(10);
             Assert.NotNull(found);
 
-            var foundByName = await repo.GetRoleByNameAsync("Manager");
+            var foundByName = await repo.GetRoleByNameAsync(RoleNames.Manager);
             Assert.NotNull(foundByName);
 
             found.Description = "Updated Manager";
@@ -321,7 +322,7 @@ namespace HotelPOS.Tests
             using var context = GetContext("UserRepoDb");
             var repo = new UserRepository(context);
 
-            var user = new User { Id = 1, Username = "john", Role = "Cashier", IsActive = true, PasswordHash = "hash", Salt = "salt" };
+            var user = new User { Id = 1, Username = "john", Role = RoleNames.Cashier, IsActive = true, PasswordHash = "hash", Salt = "salt" };
             await repo.AddAsync(user);
 
             var all = await repo.GetAllAsync();

@@ -16,7 +16,14 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<int> AddAsync(Table table)
         {
             _context.Tables.Add(table);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException($"Table number {table.Number} is already in use.");
+            }
             return table.Id;
         }
 
@@ -35,7 +42,14 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task UpdateAsync(Table table)
         {
             _context.Tables.Update(table);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException($"Table number {table.Number} is already in use.");
+            }
         }
 
         public async Task DeleteAsync(int id)

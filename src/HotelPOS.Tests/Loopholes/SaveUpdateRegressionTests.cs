@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
@@ -41,7 +42,7 @@ namespace HotelPOS.Tests
                 SgstAmount = 2.5m,
                 IgstAmount = 0m,
                 TotalAmount = 105m,
-                PaymentMode = "Cash",
+                PaymentMode = PaymentModes.Cash,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, TaxPercentage = 5, Total = 100 }
@@ -58,7 +59,7 @@ namespace HotelPOS.Tests
             {
                 Id = id,
                 TableNumber = 1,
-                PaymentMode = "Cash",
+                PaymentMode = PaymentModes.Cash,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, TaxPercentage = 5, Total = 100 }
@@ -120,7 +121,7 @@ namespace HotelPOS.Tests
             var update = BuildUpdate(id, o =>
             {
                 o.DiscountAmount = 20m;
-                o.PaymentMode = "UPI";
+                o.PaymentMode = PaymentModes.Upi;
                 o.TotalAmount = 85m;
             });
 
@@ -130,7 +131,7 @@ namespace HotelPOS.Tests
             using var ctx2 = NewCtx();
             var saved = await ctx2.Orders.FindAsync(id);
             Assert.Equal(20m, saved!.DiscountAmount);
-            Assert.Equal("UPI", saved.PaymentMode);
+            Assert.Equal(PaymentModes.Upi, saved.PaymentMode);
             Assert.Equal(85m, saved.TotalAmount);
         }
 
@@ -310,7 +311,7 @@ namespace HotelPOS.Tests
         public async Task AddUserAsync_NullPassword_ReturnsErrorGracefully()
         {
             // Before fix: NullReferenceException. After fix: returns clean error.
-            var (success, error) = await _service.AddUserAsync("user1", null!, "Cashier", 2);
+            var (success, error) = await _service.AddUserAsync("user1", null!, RoleNames.Cashier, 2);
             Assert.False(success);
             Assert.False(string.IsNullOrEmpty(error));
         }
@@ -318,7 +319,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddUserAsync_EmptyPassword_ReturnsError()
         {
-            var (success, error) = await _service.AddUserAsync("user1", "", "Cashier", 2);
+            var (success, error) = await _service.AddUserAsync("user1", "", RoleNames.Cashier, 2);
             Assert.False(success);
             Assert.Contains("10", error); // mentions min length
         }
@@ -326,7 +327,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task AddUserAsync_ShortPassword_ReturnsError()
         {
-            var (success, error) = await _service.AddUserAsync("user1", "short", "Admin", 1);
+            var (success, error) = await _service.AddUserAsync("user1", "short", RoleNames.Admin, 1);
             Assert.False(success);
             Assert.Contains("10", error);
         }
@@ -336,18 +337,18 @@ namespace HotelPOS.Tests
         {
             _repoMock.Setup(r => r.GetUserByUsernameAsync("newuser")).ReturnsAsync((User?)null);
 
-            var (success, error) = await _service.AddUserAsync("newuser", "StrongPass123!", "Admin", 1);
+            var (success, error) = await _service.AddUserAsync("newuser", "StrongPass123!", RoleNames.Admin, 1);
 
             Assert.True(success);
             Assert.Equal(string.Empty, error);
             _repoMock.Verify(r => r.AddAsync(It.Is<User>(u =>
-                u.Username == "newuser" && u.Role == "Admin" && u.IsActive)), Times.Once);
+                u.Username == "newuser" && u.Role == RoleNames.Admin && u.IsActive)), Times.Once);
         }
 
         [Fact]
         public async Task AddUserAsync_EmptyUsername_ReturnsError()
         {
-            var (success, error) = await _service.AddUserAsync("   ", "StrongPass123!", "Admin", 1);
+            var (success, error) = await _service.AddUserAsync("   ", "StrongPass123!", RoleNames.Admin, 1);
             Assert.False(success);
             Assert.Contains("empty", error, StringComparison.OrdinalIgnoreCase);
         }
@@ -360,7 +361,7 @@ namespace HotelPOS.Tests
             _repoMock.Setup(r => r.GetUserByUsernameAsync("existing"))
                      .ReturnsAsync(new User { Username = "existing" });
 
-            var (success, error) = await _service.AddUserAsync("existing", "StrongPass123!", "Admin", 1);
+            var (success, error) = await _service.AddUserAsync("existing", "StrongPass123!", RoleNames.Admin, 1);
 
             Assert.False(success);
             Assert.Contains("existing", error);
@@ -518,7 +519,7 @@ namespace HotelPOS.Tests
                 Subtotal = 100,
                 GstAmount = 5,
                 TotalAmount = 105,
-                PaymentMode = "Cash",
+                PaymentMode = PaymentModes.Cash,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, TaxPercentage = 5, Total = 100 }
@@ -533,7 +534,7 @@ namespace HotelPOS.Tests
                 Id = original.Id,
                 TableNumber = 2,
                 DiscountAmount = 10,
-                PaymentMode = "Card",
+                PaymentMode = PaymentModes.Card,
                 CustomerName = "Priya Sharma",
                 CustomerPhone = "9123456789",
                 CustomerGstin = "GSTIN_CORP",
@@ -549,7 +550,7 @@ namespace HotelPOS.Tests
             Assert.Equal("Priya Sharma", saved.CustomerName);
             Assert.Equal("9123456789", saved.CustomerPhone);
             Assert.Equal("GSTIN_CORP", saved.CustomerGstin);
-            Assert.Equal("Card", saved.PaymentMode);
+            Assert.Equal(PaymentModes.Card, saved.PaymentMode);
             Assert.Equal(2, saved.TableNumber);
             Assert.Single(saved.Items);
             Assert.Equal(2, saved.Items[0].Quantity);
@@ -567,7 +568,7 @@ namespace HotelPOS.Tests
                 Subtotal = 100,
                 GstAmount = 5,
                 TotalAmount = 105,
-                PaymentMode = "Cash",
+                PaymentMode = PaymentModes.Cash,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Tea", Quantity = 1, Price = 100, TaxPercentage = 5, Total = 100 }
@@ -579,7 +580,7 @@ namespace HotelPOS.Tests
             var updated = new Order
             {
                 Id = original.Id,
-                PaymentMode = "Cash",
+                PaymentMode = PaymentModes.Cash,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Tea", Quantity = 3, Price = 100, TaxPercentage = 12, Total = 300 }
@@ -613,8 +614,8 @@ namespace HotelPOS.Tests
         [Fact]
         public void RecentOrderRowDto_HasPaymentModeField()
         {
-            var dto = new RecentOrderRowDto { PaymentMode = "UPI" };
-            Assert.Equal("UPI", dto.PaymentMode);
+            var dto = new RecentOrderRowDto { PaymentMode = PaymentModes.Upi };
+            Assert.Equal(PaymentModes.Upi, dto.PaymentMode);
         }
 
         [Fact]
@@ -642,7 +643,7 @@ namespace HotelPOS.Tests
         public void RecentOrderRowDto_DefaultPaymentMode_IsCash()
         {
             var dto = new RecentOrderRowDto();
-            Assert.Equal("Cash", dto.PaymentMode);
+            Assert.Equal(PaymentModes.Cash, dto.PaymentMode);
         }
 
         // ── ReportService maps all fields correctly ──────────────────────────
@@ -661,7 +662,7 @@ namespace HotelPOS.Tests
                     Id          = 1,
                     TableNumber = 3,
                     CreatedAt   = DateTime.UtcNow,
-                    PaymentMode = "Card",
+                    PaymentMode = PaymentModes.Card,
                     DiscountAmount = 25m,
                     TotalAmount = 175m,
                     CustomerName  = "Ravi",
@@ -685,7 +686,7 @@ namespace HotelPOS.Tests
             Assert.Single(report.RecentOrders);
             var row = report.RecentOrders[0];
 
-            Assert.Equal("Card", row.PaymentMode);
+            Assert.Equal(PaymentModes.Card, row.PaymentMode);
             Assert.Equal(25m, row.DiscountAmount);
             Assert.Equal("Ravi", row.CustomerName);
             Assert.Equal("9123456789", row.CustomerPhone);
@@ -721,8 +722,8 @@ namespace HotelPOS.Tests
             var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object);
             var report = await service.GetSalesReportAsync();
 
-            // Null PaymentMode should default to "Cash"
-            Assert.Equal("Cash", report.RecentOrders[0].PaymentMode);
+            // Null PaymentMode should default to PaymentModes.Cash
+            Assert.Equal(PaymentModes.Cash, report.RecentOrders[0].PaymentMode);
         }
 
         [Fact]
@@ -737,7 +738,7 @@ namespace HotelPOS.Tests
                 new Order
                 {
                     Id = 3, TableNumber = 2, CreatedAt = DateTime.UtcNow,
-                    PaymentMode    = "UPI",
+                    PaymentMode    = PaymentModes.Upi,
                     DiscountAmount = 10m,
                     TotalAmount    = 90m,
                     CustomerName   = "Ananya",
@@ -759,7 +760,7 @@ namespace HotelPOS.Tests
             var report = await service.GetSalesReportAsync();
 
             var row = report.RecentOrders[0];
-            Assert.Equal("UPI", row.PaymentMode);
+            Assert.Equal(PaymentModes.Upi, row.PaymentMode);
             Assert.Equal(10m, row.DiscountAmount);
             Assert.Equal("Ananya", row.CustomerName);
             Assert.Equal("9000000001", row.CustomerPhone);
@@ -793,7 +794,7 @@ namespace HotelPOS.Tests
             {
                 Id = 42,
                 TableNumber = 5,
-                PaymentMode = "UPI",
+                PaymentMode = PaymentModes.Upi,
                 DiscountAmount = 30m,
                 CustomerName = "Ravi Kumar",
                 CustomerPhone = "9876543210",
@@ -806,7 +807,7 @@ namespace HotelPOS.Tests
 
             vm.LoadOrderForEdit(order);
 
-            Assert.Equal("UPI", vm.PaymentMode);
+            Assert.Equal(PaymentModes.Upi, vm.PaymentMode);
             Assert.Equal(30m, vm.DiscountAmount);
             Assert.Equal("Ravi Kumar", vm.CustomerName);
             Assert.Equal("9876543210", vm.CustomerPhone);
@@ -839,7 +840,7 @@ namespace HotelPOS.Tests
             {
                 Id = 10,
                 TableNumber = 1,
-                PaymentMode = "Cash",
+                PaymentMode = PaymentModes.Cash,
                 CustomerName = null,
                 CustomerPhone = null,
                 CustomerGstin = null,
@@ -851,7 +852,7 @@ namespace HotelPOS.Tests
 
             var ex = Record.Exception(() => vm.LoadOrderForEdit(order));
             Assert.Null(ex);
-            Assert.Equal("Cash", vm.PaymentMode);
+            Assert.Equal(PaymentModes.Cash, vm.PaymentMode);
         }
     }
 }
@@ -911,7 +912,7 @@ namespace HotelPOS.Tests
         {
             Id = id,
             TableNumber = 3,
-            PaymentMode = "Card",
+            PaymentMode = PaymentModes.Card,
             Items = new List<OrderItem>
             {
                 new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, Total = 100 }

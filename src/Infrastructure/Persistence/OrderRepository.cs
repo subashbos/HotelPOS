@@ -93,7 +93,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, 
             DateTime? from = null, DateTime? to = null, int? tableNumber = null,
-            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null)
+            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null, CancellationToken cancellationToken = default)
         {
             var query = _context.Orders
                 .Include(o => o.Items)
@@ -125,7 +125,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId.Value)));
             }
 
-            var total = await query.CountAsync();
+            var total = await query.CountAsync(cancellationToken);
 
             // Support 'All' (-1) by skipping pagination
             if (pageSize > 0)
@@ -140,7 +140,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 query = query.OrderByDescending(o => o.CreatedAt);
             }
 
-            var items = await query.ToListAsync();
+            var items = await query.ToListAsync(cancellationToken);
             return (items, total);
         }
 
@@ -174,7 +174,17 @@ namespace HotelPOS.Infrastructure.Persistence
             _context.OrderItems.RemoveRange(existing.Items);
             existing.Items = order.Items;
 
-            await _context.SaveChangesAsync();
+            existing.Version++;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new InvalidOperationException(
+                    $"Order #{order.Id} was modified by another user. Please reload the order and try again.");
+            }
         }
         public async Task<Order?> GetByIdWithItemsAsync(int id)
         {

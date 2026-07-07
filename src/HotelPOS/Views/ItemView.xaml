@@ -105,7 +105,8 @@
                     <!-- DataGrid -->
                     <DataGrid x:Name="ItemGrid" Grid.Row="1"
                               ItemsSource="{Binding Items}"
-                              Style="{StaticResource PremiumGrid}">
+                              Style="{StaticResource PremiumGrid}"
+                              ScrollViewer.ScrollChanged="ItemGrid_ScrollChanged">
 
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
@@ -157,8 +158,6 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <!-- Pagination -->
-                    <ctrl:PaginationControl x:Name="ItemPager" Grid.Row="2"/>
                 </Grid>
             </Border>
         </Grid>

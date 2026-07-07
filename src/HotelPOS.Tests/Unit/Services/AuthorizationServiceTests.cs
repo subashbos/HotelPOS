@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -23,7 +24,7 @@ namespace HotelPOS.Tests
         [Fact]
         public void HasPermission_Admin_ReturnsTrueForAnyModule()
         {
-            var service = CreateService(true, "Admin");
+            var service = CreateService(true, RoleNames.Admin);
             Assert.True(service.HasPermission("Settings"));
             Assert.True(service.HasPermission("Roles"));
         }
@@ -31,7 +32,7 @@ namespace HotelPOS.Tests
         [Fact]
         public void HasPermission_Cashier_ReturnsTrueOnlyForBillingAndShift()
         {
-            var service = CreateService(true, "Cashier");
+            var service = CreateService(true, RoleNames.Cashier);
             Assert.True(service.HasPermission("Billing"));
             Assert.True(service.HasPermission("Shift"));
             Assert.False(service.HasPermission("Settings"));
@@ -44,7 +45,7 @@ namespace HotelPOS.Tests
             {
                 new() { ModuleName = "Settings", CanAccess = false }
             };
-            var service = CreateService(true, "Admin", permissions);
+            var service = CreateService(true, RoleNames.Admin, permissions);
             Assert.False(service.HasPermission("Settings"));
         }
 
@@ -58,7 +59,7 @@ namespace HotelPOS.Tests
         [Fact]
         public void EnsurePermission_WhenCashierAccessesSettings_Throws()
         {
-            var service = CreateService(true, "Cashier");
+            var service = CreateService(true, RoleNames.Cashier);
             Assert.Throws<UnauthorizedAccessException>(() => service.EnsurePermission("Settings"));
         }
     }

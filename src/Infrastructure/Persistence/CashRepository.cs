@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<CashSession?> GetCurrentSessionAsync()
         {
             return await _context.CashSessions
-                .Where(s => s.Status == "Open")
+                .Where(s => s.Status == CashSessionStatuses.Open)
                 .OrderByDescending(s => s.OpenedAt)
                 .FirstOrDefaultAsync();
         }

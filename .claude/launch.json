@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "angular-client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "src/HotelPOS.Client"],
+      "port": 4200
+    }
+  ]
+}

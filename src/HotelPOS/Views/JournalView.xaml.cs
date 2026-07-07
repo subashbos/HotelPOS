@@ -1,11 +1,15 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+
+using HotelPOS.ViewModels;
 
 namespace HotelPOS.Views
 {
@@ -18,7 +22,7 @@ namespace HotelPOS.Views
         public DateTime CreatedAt { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal DiscountAmount { get; set; }
-        public string PaymentMode { get; set; } = "Cash";
+        public string PaymentMode { get; set; } = PaymentModes.Cash;
         public List<OrderItem> Items { get; set; } = new();
         public int ItemCount => Items?.Count ?? 0;
     }
@@ -28,8 +32,8 @@ namespace HotelPOS.Views
         private readonly IOrderService _orderService;
         private readonly IReportService _reportService;
         private readonly INotificationService _notificationService;
-        private List<JournalRow> _allRows = new();
-        private bool _isLoaded = false;   // prevents premature LoadAsync calls
+        private readonly JournalViewModel _viewModel;
+        private bool _isLoaded = false;
 
         public JournalView(IOrderService orderService, IReportService reportService, INotificationService notificationService)
         {
@@ -45,94 +49,17 @@ namespace HotelPOS.Views
                 App.RegisterTestService(notificationService);
             }
 
-            // Wire pager for server-side pagination
-            JournalPager.ExternalPageRequested += async (page, size) => await LoadPagedAsync(page, size);
+            _viewModel = new JournalViewModel(orderService, notificationService);
+            DataContext = _viewModel;
 
-            Loaded += async (s, e) =>
+            Loaded += (s, e) =>
             {
                 _isLoaded = true;
-                await LoadAsync();
+                _viewModel.FromDate = FromDate.SelectedDate;
+                _viewModel.ToDate = ToDate.SelectedDate;
+                _viewModel.TableFilter = GetTableFilter();
             };
-        }
-
-        private async Task LoadAsync()
-        {
-            if (!_isLoaded) return;
-            JournalPager.ResetToFirstPage();
-            await RefreshTotalCountAsync();
-        }
-
-        /// <summary>
-        /// Updates the journal pager's total record count and the row count text based on the currently selected date range and table filter.
-        /// </summary>
-        /// <remarks>
-        /// Reads the FromDate and ToDate controls (ToDate is treated as exclusive by adding one day) and the optional table filter, requests the total count from the order service, sets JournalPager's external source to that total, and updates RowCountText with a human-readable transaction count. If an error occurs, it reports it via ShowError.
-        /// </remarks>
-        private async Task RefreshTotalCountAsync()
-        {
-            using (var scope = App.CreateDbScope())
-            {
-                var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                try
-                {
-                    var from = FromDate.SelectedDate;
-                    var to = ToDate.SelectedDate?.AddDays(1);
-                    int? tbl = GetTableFilter();
-
-                    // Get count by requesting a minimal page
-                    var result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(1, 1, from, to, tbl));
-                    var total = result.TotalCount;
-
-                    JournalPager.SetExternalSource(total);
-                    RowCountText.Text = $"{total} transaction{(total == 1 ? "" : "s")}";
-                }
-                catch (Exception ex)
-                {
-                    ShowError("Failed to refresh count", ex);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Loads a single page of orders using the current date and table filters and sets the JournalGrid's ItemsSource to the resulting list of JournalRow entries.
-        /// </summary>
-        /// <param name="page">One-based page index to load.</param>
-        /// <param name="size">Number of orders per page.</param>
-        /// <remarks>On failure the method reports the error via ShowError and does not propagate the exception.</remarks>
-        private async Task LoadPagedAsync(int page, int size)
-        {
-            using (var scope = App.CreateDbScope())
-            {
-                var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                try
-                {
-                    var from = FromDate.SelectedDate;
-                    var to = ToDate.SelectedDate?.AddDays(1);
-                    int? tbl = GetTableFilter();
-
-                    var result = await orderService.GetPagedOrdersAsync(new PagedOrdersRequest(page, size, from, to, tbl));
-                    var items = result.Items;
-                    int startSno = (page - 1) * size + 1;
-
-                    JournalGrid.ItemsSource = items
-                        .Select((o, idx) => new JournalRow
-                        {
-                            SNo = startSno + idx,
-                            Id = o.Id,
-                            TableNumber = o.TableNumber,
-                            CreatedAt = o.CreatedAt,
-                            TotalAmount = o.TotalAmount,
-                            DiscountAmount = o.DiscountAmount,
-                            PaymentMode = o.PaymentMode,
-                            Items = o.Items ?? new List<OrderItem>()
-                        })
-                        .ToList();
-                }
-                catch (Exception ex)
-                {
-                    ShowError("Failed to load page", ex);
-                }
-            }
+            Unloaded += (s, e) => _viewModel.Dispose();
         }
 
         private int? GetTableFilter()
@@ -149,21 +76,27 @@ namespace HotelPOS.Views
 
         // ── Toolbar events ────────────────────────────────────────────────────
 
-        private async void Filter_Changed(object sender, SelectionChangedEventArgs e)
+        private void Filter_Changed(object sender, SelectionChangedEventArgs e)
         {
             // Guard: SelectionChanged fires during InitializeComponent (XAML parsing).
             // Skip until the Loaded event has run.
-            if (!_isLoaded) return;
-            await LoadAsync();
+            if (!_isLoaded || _viewModel == null) return;
+            _viewModel.FromDate = FromDate.SelectedDate;
+            _viewModel.ToDate = ToDate.SelectedDate;
+            _viewModel.TableFilter = GetTableFilter();
         }
 
-        private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadAsync();
+        private void Refresh_Click(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel != null && _viewModel.RefreshCommand.CanExecute(null))
+                _viewModel.RefreshCommand.Execute(null);
+        }
 
         // ── Export ────────────────────────────────────────────────────────────
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            if (_allRows.Count == 0)
+            if (_viewModel == null || _viewModel.Items.Count == 0)
             {
                 _notificationService.ShowInfo("No data to export.");
                 return;
@@ -191,7 +124,7 @@ namespace HotelPOS.Views
                     ws.Cell(1, c + 1).Value = headers[c];
 
                 int row = 2;
-                foreach (var r in _allRows)
+                foreach (var r in _viewModel.Items)
                 {
                     ws.Cell(row, 1).Value = r.Id;
                     ws.Cell(row, 2).Value = r.CreatedAt.ToString("dd MMM yyyy HH:mm");
@@ -351,8 +284,8 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is int orderId)
             {
-                if (MessageBox.Show($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
-                    MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
+                    HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     try
                     {
@@ -366,7 +299,8 @@ namespace HotelPOS.Views
                     {
                         _notificationService.ShowError($"Delete failed: {ex.Message}");
                     }
-                    await LoadAsync();
+                    if (_viewModel != null && _viewModel.RefreshCommand.CanExecute(null))
+                        _viewModel.RefreshCommand.Execute(null);
                 }
             }
         }

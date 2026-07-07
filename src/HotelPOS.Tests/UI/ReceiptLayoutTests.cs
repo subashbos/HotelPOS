@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using System.Windows.Documents;
 using Xunit;
@@ -14,7 +15,7 @@ namespace HotelPOS.Tests
                 var order = new Order
                 {
                     Id = 1,
-                    PaymentMode = "Cash",
+                    PaymentMode = PaymentModes.Cash,
                     Items = new List<OrderItem>
                     {
                         new OrderItem { ItemName = "Test Item", Price = 100, Quantity = 1, Total = 100 }
@@ -64,7 +65,7 @@ namespace HotelPOS.Tests
 
                 Assert.DoesNotContain("Table", text);
                 Assert.DoesNotContain("UPI Payment", text);
-                Assert.Contains("UPI", text); // Shortened payment mode
+                Assert.Contains(PaymentModes.Upi, text); // Shortened payment mode
             });
 
             thread.SetApartmentState(System.Threading.ApartmentState.STA);

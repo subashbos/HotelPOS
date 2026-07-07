@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using HotelPOS.Domain.Common.Constants;
 
 namespace HotelPOS.Domain.Entities
 {
@@ -19,7 +20,7 @@ namespace HotelPOS.Domain.Entities
         
         [Required]
         [MaxLength(20)]
-        public string PaymentType { get; set; } = "Cash"; // Cash, Credit, UPI
+        public string PaymentType { get; set; } = PaymentModes.Cash; // Cash, Credit, UPI
         
         [MaxLength(500)]
         public string? Notes { get; set; }

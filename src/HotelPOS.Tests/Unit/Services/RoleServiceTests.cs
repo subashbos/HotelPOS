@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -49,7 +50,7 @@ namespace HotelPOS.Tests
         public async Task AddRoleAsync_ShouldReturnFalse_IfRoleExists()
         {
             // Arrange
-            string roleName = "Admin";
+            string roleName = RoleNames.Admin;
             _roleRepoMock.Setup(r => r.GetRoleByNameAsync(roleName)).ReturnsAsync(new Role { Name = roleName });
 
             // Act
@@ -78,7 +79,7 @@ namespace HotelPOS.Tests
         public async Task GetAllRolesAsync_ShouldReturnRoles()
         {
             // Arrange
-            var roles = new List<Role> { new Role { Name = "Admin" }, new Role { Name = "Cashier" } };
+            var roles = new List<Role> { new Role { Name = RoleNames.Admin }, new Role { Name = RoleNames.Cashier } };
             _roleRepoMock.Setup(r => r.GetAllRolesAsync()).ReturnsAsync(roles);
 
             // Act
@@ -86,7 +87,7 @@ namespace HotelPOS.Tests
 
             // Assert
             Assert.Equal(2, result.Count);
-            Assert.Equal("Admin", result[0].Name);
+            Assert.Equal(RoleNames.Admin, result[0].Name);
         }
 
         [Fact]
@@ -103,7 +104,7 @@ namespace HotelPOS.Tests
         {
             // Arrange
             int roleId = 1;
-            var expectedRole = new Role { Id = roleId, Name = "Admin" };
+            var expectedRole = new Role { Id = roleId, Name = RoleNames.Admin };
             _roleRepoMock.Setup(r => r.GetRoleByIdAsync(roleId)).ReturnsAsync(expectedRole);
 
             // Act
@@ -112,7 +113,7 @@ namespace HotelPOS.Tests
             // Assert
             Assert.NotNull(result);
             Assert.Equal(roleId, result.Id);
-            Assert.Equal("Admin", result.Name);
+            Assert.Equal(RoleNames.Admin, result.Name);
             _roleRepoMock.Verify(r => r.GetRoleByIdAsync(roleId), Times.Once);
         }
 

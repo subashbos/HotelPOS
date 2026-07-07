@@ -1,6 +1,8 @@
 import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { ItemService } from '../../../services/item.service';
+import { OrderService } from '../../../services/order.service';
 import { Item } from '../../../models/item.model';
+import { CreateOrderRequest, ORDER_TYPE_LABELS, PAYMENT_MODES } from '../../../models/order.model';
 
 interface CartRow {
   sNo: number;
@@ -39,6 +41,10 @@ export class BillingComponent implements OnInit {
   categories: string[] = ['All'];
   selectedCategory = 'All';
 
+  // Cached rather than recomputed via a getter, since filtering the whole
+  // catalog on every change-detection cycle gets expensive as the menu grows.
+  filteredMenuItems: Item[] = [];
+
   // ── State ──
   isLoading = false;
   loadError = '';
@@ -53,8 +59,9 @@ export class BillingComponent implements OnInit {
   selectedCartRow: CartRow | null = null;
 
   // ── Order Meta ──
-  orderType = 'Dine In';
-  paymentMode = 'Cash';
+  readonly orderTypeLabels = ORDER_TYPE_LABELS;
+  orderType: string = ORDER_TYPE_LABELS[0];
+  paymentMode: string = PAYMENT_MODES.Cash;
 
   // ── Customer Details ──
   showCustomerDetails = false;
@@ -69,12 +76,15 @@ export class BillingComponent implements OnInit {
   // ── Checkout ──
   showCheckoutModal = false;
   lastInvoiceNumber = '';
+  isCheckingOut = false;
+  checkoutConfirmed = false;
+  checkoutError = '';
 
   // ── Hold Orders ──
   heldOrders: HeldOrder[] = [];
   showHeldOrders = false;
 
-  constructor(private readonly itemService: ItemService) {}
+  constructor(private readonly itemService: ItemService, private readonly orderService: OrderService) {}
 
   ngOnInit(): void {
     this.loadItems();
@@ -95,6 +105,7 @@ export class BillingComponent implements OnInit {
         )];
         this.categories = ['All', ...cats];
         this.isLoading = false;
+        this.updateFilteredMenuItems();
       },
       error: (err) => {
         this.loadError = 'Failed to load menu items. Please check the server connection.';
@@ -125,9 +136,27 @@ export class BillingComponent implements OnInit {
     }
   }
 
+  // ── trackBy functions (avoid re-rendering the whole list on every change-detection cycle) ──
+  trackByItemId(_index: number, item: Item): number {
+    return item.id;
+  }
+
+  trackByCartItemId(_index: number, row: CartRow): number {
+    return row.itemId;
+  }
+
+  trackByHoldName(_index: number, held: HeldOrder): string {
+    return held.holdName;
+  }
+
   // ── Filtered Items (Category + Search) ──
-  get filteredMenuItems(): Item[] {
-    return this.allItems.filter(item => {
+  selectCategory(cat: string): void {
+    this.selectedCategory = cat;
+    this.updateFilteredMenuItems();
+  }
+
+  updateFilteredMenuItems(): void {
+    this.filteredMenuItems = this.allItems.filter(item => {
       const matchCat = this.selectedCategory === 'All' ||
         item.category?.name === this.selectedCategory;
       const q = this.searchQuery.toLowerCase();
@@ -144,6 +173,7 @@ export class BillingComponent implements OnInit {
     if (!q) {
       this.autoCompleteItems = [];
       this.showAutoComplete = false;
+      this.updateFilteredMenuItems();
       return;
     }
     this.autoCompleteItems = this.allItems.filter(i =>
@@ -151,6 +181,7 @@ export class BillingComponent implements OnInit {
       (!i.trackInventory || i.stockQuantity > 0)
     );
     this.showAutoComplete = this.autoCompleteItems.length > 0;
+    this.updateFilteredMenuItems();
   }
 
   addFromAutoComplete(item: Item): void {
@@ -159,6 +190,7 @@ export class BillingComponent implements OnInit {
     this.searchQuery = '';
     this.autoCompleteItems = [];
     this.showAutoComplete = false;
+    this.updateFilteredMenuItems();
     this.focusSearch();
   }
 
@@ -226,8 +258,8 @@ export class BillingComponent implements OnInit {
     this.customerPhone = '';
     this.customerGstin = '';
     this.tableNumber = '';
-    this.orderType = 'Dine In';
-    this.paymentMode = 'Cash';
+    this.orderType = ORDER_TYPE_LABELS[0];
+    this.paymentMode = PAYMENT_MODES.Cash;
   }
 
   // ── Hold Orders ──
@@ -285,15 +317,61 @@ export class BillingComponent implements OnInit {
   // ── Checkout ──
   processCheckout(): void {
     if (this.cart.length === 0) return;
-    const randomArray = new Uint32Array(1);
-    window.crypto.getRandomValues(randomArray);
-    const randomSuffix = 1000 + (randomArray[0] % 9000);
-    this.lastInvoiceNumber = `INV-${new Date().getFullYear()}-${randomSuffix}`;
+    this.lastInvoiceNumber = '';
+    this.checkoutConfirmed = false;
+    this.checkoutError = '';
     this.showCheckoutModal = true;
   }
 
   confirmCheckout(): void {
+    if (this.isCheckingOut || this.checkoutConfirmed || this.cart.length === 0) return;
+
+    this.isCheckingOut = true;
+    this.checkoutError = '';
+
+    const request: CreateOrderRequest = {
+      items: this.cart.map(r => ({
+        itemId: r.itemId,
+        itemName: r.itemName,
+        quantity: r.quantity,
+        price: r.price,
+        taxPercentage: r.taxPercentage,
+        total: r.total
+      })),
+      tableNumber: Number(this.tableNumber) || 0,
+      discount: this.discountAmount,
+      paymentMode: this.paymentMode,
+      customerName: this.customerName || undefined,
+      customerPhone: this.customerPhone || undefined,
+      customerGstin: this.customerGstin || undefined,
+      // Backend order types are written without spaces (e.g. "DineIn"); the UI labels use spaces for readability.
+      orderType: this.orderType.replace(/\s+/g, '')
+    };
+
+    this.orderService.createOrder(request).subscribe({
+      next: (orderId) => {
+        this.isCheckingOut = false;
+        this.checkoutConfirmed = true;
+        this.lastInvoiceNumber = `Order #${orderId}`;
+      },
+      error: (err) => {
+        this.isCheckingOut = false;
+        this.checkoutError = err.error?.message || err.error?.Message || 'Failed to save the order. Please try again.';
+        console.error('Checkout error:', err);
+      }
+    });
+  }
+
+  // Closing the modal after a *confirmed* checkout is what clears the local cart —
+  // the order is already saved server-side by then. Closing before confirming just
+  // dismisses the review dialog and leaves the cart untouched.
+  closeCheckoutModal(): void {
+    const wasConfirmed = this.checkoutConfirmed;
     this.showCheckoutModal = false;
-    this.clearCart();
+    this.checkoutConfirmed = false;
+    this.checkoutError = '';
+    if (wasConfirmed) {
+      this.clearCart();
+    }
   }
 }

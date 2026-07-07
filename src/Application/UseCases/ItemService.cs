@@ -148,13 +148,15 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<(int Added, int Skipped)> BulkAddAsync(List<CreateItemDto> items)
         {
-            int added = 0, skipped = 0;
+            int skipped = 0;
             var existing = await _itemRepository.GetAllAsync() ?? new List<Item>();
             var existingNames = new HashSet<string>(
                 existing.Select(i => i.Name.Trim().ToLowerInvariant()));
             var existingBarcodes = new HashSet<string>(
                 existing.Where(i => !string.IsNullOrWhiteSpace(i.Barcode))
                         .Select(i => i.Barcode!));
+
+            var toAdd = new List<Item>();
 
             foreach (var dto in items)
             {
@@ -167,7 +169,7 @@ namespace HotelPOS.Application.UseCases
                 if (!string.IsNullOrWhiteSpace(dto.Barcode) && existingBarcodes.Contains(dto.Barcode))
                 { skipped++; continue; }
 
-                await _itemRepository.AddAsync(new Item
+                toAdd.Add(new Item
                 {
                     Name = dto.Name.Trim(),
                     Price = dto.Price,
@@ -180,9 +182,14 @@ namespace HotelPOS.Application.UseCases
                 {
                     existingBarcodes.Add(dto.Barcode);
                 }
-                added++;
             }
-            return (added, skipped);
+
+            if (toAdd.Count > 0)
+            {
+                await _itemRepository.AddRangeAsync(toAdd);
+            }
+
+            return (toAdd.Count, skipped);
         }
     }
 }

@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
@@ -27,7 +28,7 @@ namespace HotelPOS.Tests
         public async Task InitializeAsync_LoadsHistoryAndStatus()
         {
             // Arrange
-            var session = new CashSession { Id = 1, Status = "Open" };
+            var session = new CashSession { Id = 1, Status = CashSessionStatuses.Open };
             var history = new List<CashSession> { session };
 
             _mockCashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(session);
@@ -78,7 +79,7 @@ namespace HotelPOS.Tests
         public async Task CloseSessionCommand_CallsServiceAndRefreshes()
         {
             // Arrange
-            var session = new CashSession { Id = 1, Status = "Open" };
+            var session = new CashSession { Id = 1, Status = CashSessionStatuses.Open };
             _mockCashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(session);
             _vm.ActualCash = 1200;
             _vm.Notes = "All good";

@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
@@ -67,7 +68,7 @@ namespace HotelPOS.Tests
         {
             var order = MakeOrder(1);
             order.DiscountAmount = 50m;
-            order.PaymentMode = "UPI";
+            order.PaymentMode = PaymentModes.Upi;
             order.CustomerName = "Ravi";
             order.CustomerPhone = "9876543210";
             order.CustomerGstin = "GSTIN123";
@@ -77,7 +78,7 @@ namespace HotelPOS.Tests
             _vm.LoadOrderForEdit(order);
 
             Assert.Equal(50m, _vm.DiscountAmount);
-            Assert.Equal("UPI", _vm.PaymentMode);
+            Assert.Equal(PaymentModes.Upi, _vm.PaymentMode);
             Assert.Equal("Ravi", _vm.CustomerName);
             Assert.Equal("9876543210", _vm.CustomerPhone);
             Assert.Equal("GSTIN123", _vm.CustomerGstin);
@@ -219,7 +220,7 @@ namespace HotelPOS.Tests
             };
             var order = MakeOrder(23);
             order.DiscountAmount = 25m;
-            order.PaymentMode = "Card";
+            order.PaymentMode = PaymentModes.Card;
             order.Items = orderItems;
 
             _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(orderItems);
@@ -231,7 +232,7 @@ namespace HotelPOS.Tests
             await _vm.SaveOrderCommand.ExecuteAsync(null);
 
             Assert.Equal(0m, _vm.DiscountAmount);
-            Assert.Equal("Cash", _vm.PaymentMode);
+            Assert.Equal(PaymentModes.Cash, _vm.PaymentMode);
         }
 
         [Fact]
@@ -265,7 +266,7 @@ namespace HotelPOS.Tests
             TableNumber = tableNumber,
             Items = new List<OrderItem> { new OrderItem { ItemId = 1, Price = 100, Quantity = 1, Total = 100 } },
             DiscountAmount = 0,
-            PaymentMode = "Cash"
+            PaymentMode = PaymentModes.Cash
         };
     }
 }

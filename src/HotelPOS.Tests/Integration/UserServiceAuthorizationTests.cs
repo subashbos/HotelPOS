@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -17,7 +18,7 @@ namespace HotelPOS.Tests
             var service = new UserService(_repo.Object, auth.Object, isTest: true);
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
-                service.AddUserAsync("newuser", "ValidPass123!", "Cashier", 2));
+                service.AddUserAsync("newuser", "ValidPass123!", RoleNames.Cashier, 2));
         }
 
         [Fact]

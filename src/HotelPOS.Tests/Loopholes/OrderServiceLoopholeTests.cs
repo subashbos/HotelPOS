@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
@@ -67,9 +68,9 @@ namespace HotelPOS.Tests
         }
 
         [Theory]
-        [InlineData("Cash")]
-        [InlineData("Card")]
-        [InlineData("UPI")]
+        [InlineData(PaymentModes.Cash)]
+        [InlineData(PaymentModes.Card)]
+        [InlineData(PaymentModes.Upi)]
         public async Task SaveOrderAsync_ValidPaymentModes_DoNotThrow(string mode)
         {
             _repo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV/2526/0001");

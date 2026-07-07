@@ -1,9 +1,11 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using System.ComponentModel.DataAnnotations;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -29,7 +31,7 @@ namespace HotelPOS.Tests
                 {
                     Id = 1,
                     Username = "admin",
-                    Role = "Admin",
+                    Role = RoleNames.Admin,
                     MustChangePassword = true
                 });
 
@@ -49,7 +51,7 @@ namespace HotelPOS.Tests
                 {
                     Id = 2,
                     Username = "cashier",
-                    Role = "Cashier",
+                    Role = RoleNames.Cashier,
                     MustChangePassword = false
                 });
 
@@ -58,6 +60,34 @@ namespace HotelPOS.Tests
 
             var ok = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(ok.Value);
+        }
+
+        [Theory]
+        [InlineData("", "password")]
+        [InlineData("admin", "")]
+        [InlineData("", "")]
+        public void LoginDto_MissingUsernameOrPassword_FailsDataAnnotationValidation(string username, string password)
+        {
+            // [ApiController]'s automatic model validation (which returns 400 before the action
+            // runs) only applies during real HTTP model binding, not direct action-method calls,
+            // so this exercises the DataAnnotations directly instead.
+            var dto = new LoginDto { Username = username, Password = password };
+            var validationResults = new List<ValidationResult>();
+
+            var isValid = Validator.TryValidateObject(dto, new ValidationContext(dto), validationResults, validateAllProperties: true);
+
+            Assert.False(isValid);
+        }
+
+        [Fact]
+        public void LoginDto_ValidUsernameAndPassword_PassesDataAnnotationValidation()
+        {
+            var dto = new LoginDto { Username = "admin", Password = "password" };
+            var validationResults = new List<ValidationResult>();
+
+            var isValid = Validator.TryValidateObject(dto, new ValidationContext(dto), validationResults, validateAllProperties: true);
+
+            Assert.True(isValid);
         }
     }
 }

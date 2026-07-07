@@ -1,3 +1,4 @@
+using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,20 +47,20 @@ namespace HotelPOS.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error opening entry form: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Error opening entry form: {ex.Message}", "Error", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Error);
                 return Task.FromResult(false);
             }
         }
 
         private Task<bool> ConfirmDeleteAsync(string supplierName)
         {
-            var result = MessageBox.Show(
+            var result = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
                 $"Are you sure you want to delete supplier '{supplierName}'? This action cannot be undone.",
                 "Confirm Delete",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+                HotelPOS.Application.Interfaces.DialogButton.YesNo,
+                HotelPOS.Application.Interfaces.DialogIcon.Warning);
 
-            return Task.FromResult(result == MessageBoxResult.Yes);
+            return Task.FromResult(result == HotelPOS.Application.Interfaces.DialogResult.Yes);
         }
     }
 }

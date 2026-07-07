@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
@@ -47,7 +48,7 @@ namespace HotelPOS.Tests
                     TaxAmount = 5,
                     Discount = 2,
                     TotalAmount = 253,
-                    PaymentType = "Cash"
+                    PaymentType = PaymentModes.Cash
                 }
             };
 
@@ -125,7 +126,7 @@ namespace HotelPOS.Tests
             vm.SelectedSupplier = vm.Suppliers[1];
             vm.ItemNameSearch = "Garlic";
             vm.InvoiceNoSearch = "INV555";
-            vm.SelectedPaymentType = "UPI";
+            vm.SelectedPaymentType = PaymentModes.Upi;
 
             // Act
             await vm.ResetFilterAsync();

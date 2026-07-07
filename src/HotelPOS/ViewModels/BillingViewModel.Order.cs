@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,13 +24,13 @@ namespace HotelPOS.ViewModels
             if (Cart.Count == 0) return;
 
             // LOOPHOLE FIX: Confirm before moving to hold/kitchen
-            var result = System.Windows.MessageBox.Show(
+            var result = await _dialogService.ShowMessageAsync(
                 "Send this order to Kitchen / Hold?",
                 "Hold Order",
-                System.Windows.MessageBoxButton.YesNo,
-                System.Windows.MessageBoxImage.Question);
+                DialogButton.YesNo,
+                DialogIcon.Question);
 
-            if (result != System.Windows.MessageBoxResult.Yes) return;
+            if (result != DialogResult.Yes) return;
 
             _cartService.HoldOrder(TableNumber, $"Table {TableNumber} - {DateTime.Now:hh:mm tt}");
 
@@ -112,7 +113,7 @@ namespace HotelPOS.ViewModels
             IsEditMode = true;
 
             // Set OrderType first so IsTableless is correct before TableNumber is set
-            OrderType = string.IsNullOrWhiteSpace(order.OrderType) ? "DineIn" : order.OrderType;
+            OrderType = string.IsNullOrWhiteSpace(order.OrderType) ? OrderTypes.DineIn : order.OrderType;
 
             // For tableless orders the stored TableNumber is 0 — keep it as-is
             // For DineIn, use the stored table number (always > 0)
@@ -135,7 +136,7 @@ namespace HotelPOS.ViewModels
             if (_editingOrder != null) _cartService.Clear(TableNumber);
             _editingOrder = null;
             IsEditMode = false;
-            OrderType = "DineIn";   // reset to default
+            OrderType = OrderTypes.DineIn;   // reset to default
             UpdateCart();
             StatusMessage = "Ready";
             OrderEditCancelled?.Invoke();
@@ -144,9 +145,9 @@ namespace HotelPOS.ViewModels
         [RelayCommand]
         private void ToggleOrderType()
         {
-            if (OrderType == "DineIn") OrderType = "Takeaway";
-            else if (OrderType == "Takeaway") OrderType = "Online";
-            else OrderType = "DineIn";
+            if (OrderType == OrderTypes.DineIn) OrderType = OrderTypes.Takeaway;
+            else if (OrderType == OrderTypes.Takeaway) OrderType = OrderTypes.Online;
+            else OrderType = OrderTypes.DineIn;
         }
 
         /// <summary>
@@ -242,21 +243,21 @@ namespace HotelPOS.ViewModels
                         _editingOrder.CustomerPhone = CustomerPhone;
                         _editingOrder.CustomerGstin = CustomerGstin;
 
-                        if (finalPaymentMode == "Split")
+                        if (finalPaymentMode == PaymentModes.Split)
                         {
                             _editingOrder.CashPaid = finalCash;
                             _editingOrder.CardPaid = finalCard;
                             _editingOrder.UpiPaid = finalUpi;
                             _editingOrder.AmountPaid = finalCash + finalCard + finalUpi;
-                            _editingOrder.Status = _editingOrder.AmountPaid >= _editingOrder.TotalAmount ? "Paid" : "Partial";
+                            _editingOrder.Status = _editingOrder.AmountPaid >= _editingOrder.TotalAmount ? OrderStatuses.Paid : OrderStatuses.Partial;
                         }
                         else
                         {
                             _editingOrder.AmountPaid = _editingOrder.TotalAmount;
-                            _editingOrder.CashPaid = finalPaymentMode == "Cash" ? _editingOrder.TotalAmount : 0;
-                            _editingOrder.CardPaid = finalPaymentMode == "Card" ? _editingOrder.TotalAmount : 0;
-                            _editingOrder.UpiPaid = finalPaymentMode == "UPI" ? _editingOrder.TotalAmount : 0;
-                            _editingOrder.Status = "Paid";
+                            _editingOrder.CashPaid = finalPaymentMode == PaymentModes.Cash ? _editingOrder.TotalAmount : 0;
+                            _editingOrder.CardPaid = finalPaymentMode == PaymentModes.Card ? _editingOrder.TotalAmount : 0;
+                            _editingOrder.UpiPaid = finalPaymentMode == PaymentModes.Upi ? _editingOrder.TotalAmount : 0;
+                            _editingOrder.Status = OrderStatuses.Paid;
                         }
 
                         await orderService.UpdateOrderAsync(_editingOrder);
@@ -264,19 +265,19 @@ namespace HotelPOS.ViewModels
                     else
                     {
                         int orderId;
-                        if (finalPaymentMode == "Split")
+                        if (finalPaymentMode == PaymentModes.Split)
                         {
                             // Save order first (initially cash mode to bypass validate, then updates details)
-                            orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, "Cash", CustomerName, CustomerPhone, CustomerGstin, OrderType));
+                            orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, PaymentModes.Cash, CustomerName, CustomerPhone, CustomerGstin, OrderType));
                             var createdOrder = await orderService.GetOrderAsync(orderId);
                             if (createdOrder != null)
                             {
-                                createdOrder.PaymentMode = "Split";
+                                createdOrder.PaymentMode = PaymentModes.Split;
                                 createdOrder.CashPaid = finalCash;
                                 createdOrder.CardPaid = finalCard;
                                 createdOrder.UpiPaid = finalUpi;
                                 createdOrder.AmountPaid = finalCash + finalCard + finalUpi;
-                                createdOrder.Status = createdOrder.AmountPaid >= createdOrder.TotalAmount ? "Paid" : "Partial";
+                                createdOrder.Status = createdOrder.AmountPaid >= createdOrder.TotalAmount ? OrderStatuses.Paid : OrderStatuses.Partial;
                                 await orderService.UpdateOrderAsync(createdOrder);
                             }
                         }
@@ -300,8 +301,8 @@ namespace HotelPOS.ViewModels
 
                 IsEditMode = false;
                 _editingOrder = null;
-                PaymentMode = "Cash";
-                OrderType = "DineIn";
+                PaymentMode = PaymentModes.Cash;
+                OrderType = OrderTypes.DineIn;
                 // CLEANUP: Reset customer details to null to align with property definitions and save memory
                 CustomerName = null;
                 CustomerPhone = null;

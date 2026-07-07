@@ -105,8 +105,8 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is int id)
             {
-                if (MessageBox.Show("Delete this category? Items linked to it will lose their category.", "Confirm Delete",
-                    MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage("Delete this category? Items linked to it will lose their category.", "Confirm Delete",
+                    HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     using (var scope = App.CreateDbScope())
                     {

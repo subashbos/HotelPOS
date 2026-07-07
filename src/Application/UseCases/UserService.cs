@@ -1,6 +1,7 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Users.Commands;
 using HotelPOS.Application.UseCases.Users.Queries;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 
@@ -28,7 +29,7 @@ namespace HotelPOS.Application.UseCases
 
         public Task<List<User>> GetAllUsersAsync()
         {
-            _authorization.EnsurePermission("Settings");
+            _authorization.EnsurePermission(PermissionModules.Settings);
 
             if (_mediator != null)
                 return _mediator.Send(new GetAllUsersQuery());
@@ -38,7 +39,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<(bool Success, string Error)> AddUserAsync(string username, string password, string role, int roleId)
         {
-            _authorization.EnsurePermission("Settings");
+            _authorization.EnsurePermission(PermissionModules.Settings);
 
             if (_mediator != null)
                 return await _mediator.Send(new AddUserCommand(username, password, role, roleId));
@@ -47,9 +48,9 @@ namespace HotelPOS.Application.UseCases
             if (string.IsNullOrWhiteSpace(username))
                 return (false, "Username cannot be empty.");
             if (string.IsNullOrEmpty(password))
-                return (false, "Password cannot be empty. Password must be at least 10 characters.");
-            if (password.Length < 10)
-                return (false, "Password must be at least 10 characters.");
+                return (false, $"Password cannot be empty. Password must be at least {ValidationLimits.MinPasswordLength} characters.");
+            if (password.Length < ValidationLimits.MinPasswordLength)
+                return (false, $"Password must be at least {ValidationLimits.MinPasswordLength} characters.");
 
             var existing = await _userRepository!.GetUserByUsernameAsync(username.Trim());
             if (existing != null)
@@ -73,16 +74,16 @@ namespace HotelPOS.Application.UseCases
 
         private static (string Hash, string Salt) HashPassword(string password)
         {
-            var saltBytes = new byte[16];
+            var saltBytes = new byte[ValidationLimits.SaltByteSize];
             using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
             rng.GetBytes(saltBytes);
-            var hashBytes = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, 100000, System.Security.Cryptography.HashAlgorithmName.SHA256, 32);
+            var hashBytes = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, ValidationLimits.Pbkdf2Iterations, System.Security.Cryptography.HashAlgorithmName.SHA256, ValidationLimits.HashByteSize);
             return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
         }
 
         public async Task ToggleActiveAsync(int userId, bool isActive)
         {
-            _authorization.EnsurePermission("Settings");
+            _authorization.EnsurePermission(PermissionModules.Settings);
 
             if (_mediator != null)
             {
@@ -98,7 +99,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteUserAsync(int userId, int currentUserId)
         {
-            _authorization.EnsurePermission("Settings");
+            _authorization.EnsurePermission(PermissionModules.Settings);
 
             if (_mediator != null)
             {
@@ -116,15 +117,15 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<(bool Success, string Error)> ResetPasswordAsync(int userId, string newPassword)
         {
-            _authorization.EnsureSelfOrPermission(userId, "Settings");
+            _authorization.EnsureSelfOrPermission(userId, PermissionModules.Settings);
 
             if (_mediator != null)
                 return await _mediator.Send(new ResetPasswordCommand(userId, newPassword));
 
             if (string.IsNullOrEmpty(newPassword))
-                return (false, "New password cannot be empty. Password must be at least 10 characters.");
-            if (newPassword.Length < 10)
-                return (false, "Password must be at least 10 characters.");
+                return (false, $"New password cannot be empty. Password must be at least {ValidationLimits.MinPasswordLength} characters.");
+            if (newPassword.Length < ValidationLimits.MinPasswordLength)
+                return (false, $"Password must be at least {ValidationLimits.MinPasswordLength} characters.");
 
             var user = await _userRepository!.GetByIdAsync(userId);
             if (user == null) return (false, "User not found.");

@@ -345,7 +345,7 @@
                                     <Grid Margin="0,0,0,12">
                                         <TextBlock Text="Date-wise Summary" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     </Grid>
-                                    <DataGrid x:Name="DateGrid" MinHeight="300" MaxHeight="500" Style="{StaticResource PremiumGrid}">
+                                    <DataGrid x:Name="DateGrid" MinHeight="300" MaxHeight="500" Style="{StaticResource PremiumGrid}" ScrollViewer.ScrollChanged="DateGrid_ScrollChanged">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                             <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM yyyy}" Width="140"/>
@@ -378,7 +378,6 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
-                                    <ctrl:PaginationControl x:Name="DatePager" Margin="0,12,0,0"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -392,7 +391,7 @@
                                 <Grid Margin="0,0,0,12">
                                     <TextBlock Text="Revenue by Table" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                 </Grid>
-                                <DataGrid x:Name="TableGrid" Height="580" Style="{StaticResource PremiumGrid}">
+                                <DataGrid x:Name="TableGrid" Height="580" Style="{StaticResource PremiumGrid}" ScrollViewer.ScrollChanged="TableGrid_ScrollChanged">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                         <DataGridTextColumn Header="TABLE" Binding="{Binding TableNumber, StringFormat=Table {0}}" Width="90"/>
@@ -423,7 +422,6 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
-                                    <ctrl:PaginationControl x:Name="TablePager" Margin="0,12,0,0"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -445,7 +443,7 @@
                                 <Grid Margin="0,0,0,12">
                                     <TextBlock Text="Top Selling Items" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                 </Grid>
-                                <DataGrid x:Name="ItemGrid" Height="400" Style="{StaticResource PremiumGrid}">
+                                <DataGrid x:Name="ItemGrid" Height="400" Style="{StaticResource PremiumGrid}" ScrollViewer.ScrollChanged="ItemGrid_ScrollChanged">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                         <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*"/>
@@ -477,7 +475,6 @@
                                             </StackPanel>
                                         </Grid>
                                     </Border>
-                                    <ctrl:PaginationControl x:Name="ItemPager" Margin="0,12,0,0"/>
                             </StackPanel>
                         </Border>
 

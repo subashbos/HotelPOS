@@ -73,15 +73,25 @@ namespace HotelPOS.Application.UseCases
             try
             {
                 await _purchaseRepository.AddAsync(purchase);
+
+                var itemIds = purchase.PurchaseItems.Select(i => i.ItemId).Distinct().ToList();
+                var catalogItems = await _itemRepository!.GetByIdsAsync(itemIds);
+                var itemsById = catalogItems.ToDictionary(i => i.Id);
+
                 foreach (var item in purchase.PurchaseItems)
                 {
-                    var catalogItem = await _itemRepository!.GetByIdAsync(item.ItemId);
-                    if (catalogItem != null && catalogItem.TrackInventory)
+                    if (itemsById.TryGetValue(item.ItemId, out var catalogItem) && catalogItem.TrackInventory)
                     {
                         catalogItem.StockQuantity += item.Quantity;
-                        await _itemRepository.UpdateAsync(catalogItem);
                     }
                 }
+
+                var toUpdate = catalogItems.Where(i => i.TrackInventory).ToList();
+                if (toUpdate.Count > 0)
+                {
+                    await _itemRepository.UpdateRangeAsync(toUpdate);
+                }
+
                 await _purchaseRepository.CommitTransactionAsync();
             }
             catch

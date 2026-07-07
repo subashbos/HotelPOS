@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,8 +69,8 @@ namespace HotelPOS.Infrastructure.Persistence
                 grossProfit,
                 totalExpenses,
                 netProfit,
-                Math.Round(marginPercentage, 2),
-                Math.Round(foodCostPercentage, 2)
+                Math.Round(marginPercentage, MoneyPrecision.CurrencyDecimals),
+                Math.Round(foodCostPercentage, MoneyPrecision.CurrencyDecimals)
             );
         }
 
@@ -115,9 +116,9 @@ namespace HotelPOS.Infrastructure.Persistence
                     double margin = rev > 0 ? (double)(profit / rev * 100) : 0;
 
                     string rec = "Healthy: Good profitability.";
-                    if (margin < 10)
+                    if (margin < StockAlertThresholds.CriticalMarginPercent)
                         rec = "Critical: Increase price or negotiate cost.";
-                    else if (margin < 25)
+                    else if (margin < StockAlertThresholds.WarningMarginPercent)
                         rec = "Low Margin: Review pricing structures.";
 
                     return new ItemMarginRowDto(
@@ -130,7 +131,7 @@ namespace HotelPOS.Infrastructure.Persistence
                         rev,
                         cogs,
                         profit,
-                        Math.Round(margin, 2),
+                        Math.Round(margin, MoneyPrecision.CurrencyDecimals),
                         rec
                     );
                 })
@@ -177,14 +178,14 @@ namespace HotelPOS.Infrastructure.Persistence
                         g.Key,
                         qty,
                         cost,
-                        Math.Round(pct, 2)
+                        Math.Round(pct, MoneyPrecision.CurrencyDecimals)
                     );
                 })
                 .OrderByDescending(r => r.Cost)
                 .ToList();
 
             var recent = entries.OrderByDescending(e => e.WastedAt)
-                .Take(50)
+                .Take(ReportingLimits.RecentEntriesLimit)
                 .Select((e, idx) => new WastageItemRowDto(
                     idx + 1,
                     e.Id,
@@ -229,7 +230,7 @@ namespace HotelPOS.Infrastructure.Persistence
             var items = await _context.Items.Where(i => i.TrackInventory).ToListAsync();
 
             // Load orders from last 30 days to calculate rate
-            var last30Days = DateTime.UtcNow.AddDays(-30);
+            var last30Days = DateTime.UtcNow.AddDays(-ReportingLimits.TrailingSalesDays);
             var orders = await _context.Orders
                 .Include(o => o.Items)
                 .Where(o => o.CreatedAt >= last30Days)
@@ -245,7 +246,7 @@ namespace HotelPOS.Infrastructure.Persistence
             foreach (var item in items)
             {
                 qtySoldMap.TryGetValue(item.Id, out int sold);
-                double dailyRate = Math.Round((double)sold / 30.0, 3);
+                double dailyRate = Math.Round((double)sold / ReportingLimits.TrailingSalesDays, MoneyPrecision.RateDecimals);
 
                 int daysRemaining = -1;
                 if (item.StockQuantity <= 0)
@@ -257,14 +258,14 @@ namespace HotelPOS.Infrastructure.Persistence
                     daysRemaining = (int)Math.Ceiling(item.StockQuantity / dailyRate);
                 }
 
-                string alertLevel = "Normal";
-                if (item.StockQuantity <= 0 || (daysRemaining >= 0 && daysRemaining <= 2))
+                string alertLevel = AlertLevels.Normal;
+                if (item.StockQuantity <= 0 || (daysRemaining >= 0 && daysRemaining <= StockAlertThresholds.CriticalDaysRemaining))
                 {
-                    alertLevel = "Critical";
+                    alertLevel = AlertLevels.Critical;
                 }
-                else if (item.StockQuantity <= item.MinStockThreshold || (daysRemaining >= 0 && daysRemaining <= 7))
+                else if (item.StockQuantity <= item.MinStockThreshold || (daysRemaining >= 0 && daysRemaining <= StockAlertThresholds.WarningDaysRemaining))
                 {
-                    alertLevel = "Warning";
+                    alertLevel = AlertLevels.Warning;
                 }
 
                 alerts.Add(new LowStockAlertDto(
@@ -279,7 +280,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 ));
             }
 
-            return alerts.OrderBy(a => a.AlertLevel == "Critical" ? 0 : a.AlertLevel == "Warning" ? 1 : 2)
+            return alerts.OrderBy(a => a.AlertLevel == AlertLevels.Critical ? 0 : a.AlertLevel == AlertLevels.Warning ? 1 : 2)
                 .ThenBy(a => a.DaysRemaining >= 0 ? a.DaysRemaining : int.MaxValue)
                 .Select((a, i) => a with { SNo = i + 1 })
                 .ToList();
@@ -288,7 +289,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<MonthlyTrendDto>> GetMonthlyTrendDataAsync()
         {
             var now = DateTime.Now;
-            var startDateLocal = new DateTime(now.Year, now.Month, 1).AddMonths(-11);
+            var startDateLocal = new DateTime(now.Year, now.Month, 1).AddMonths(-(ReportingLimits.TrailingHistoryMonths - 1));
             var startDateUtc = startDateLocal.ToUniversalTime();
 
             var orders = await _context.Orders.Include(o => o.Items)
@@ -303,7 +304,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
             var result = new List<MonthlyTrendDto>();
 
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < ReportingLimits.TrailingHistoryMonths; i++)
             {
                 var target = startDateLocal.AddMonths(i);
                 var targetOrders = orders.Where(o => o.CreatedAt.ToLocalTime().Year == target.Year && o.CreatedAt.ToLocalTime().Month == target.Month).ToList();

@@ -1,3 +1,4 @@
+using HotelPOS.Application.Interfaces;
 using HotelPOS.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
@@ -68,6 +69,14 @@ namespace HotelPOS.Views
         {
             DialogResult = false;
             Close();
+        }
+
+        // The window has no native title bar (WindowStyle="None"), so dragging is
+        // wired up from the custom header instead.
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
         }
 
         private void Input_GotFocus(object sender, RoutedEventArgs e)
