@@ -133,6 +133,26 @@ namespace HotelPOS.Views
         }
 
         /// <summary>
+        /// Opens a dialog to set/clear the currently selected user's email address (used for password-reset codes).
+        /// </summary>
+        private async void SetEmail_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
+
+            var dialog = new SetEmailDialog(u.Username, u.Email) { Owner = Window.GetWindow(this) };
+            if (dialog.ShowDialog() == true)
+            {
+                using (var scope = App.CreateDbScope())
+                {
+                    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                    await userService.SetEmailAsync(u.Id, dialog.Email);
+                }
+                await RefreshAsync();
+                ShowFeedback($"✉ Email updated for {u.Username}.", true);
+            }
+        }
+
+        /// <summary>
         /// Deletes the currently selected user after asking for confirmation and refreshes the displayed user list.
         /// </summary>
         /// <remarks>

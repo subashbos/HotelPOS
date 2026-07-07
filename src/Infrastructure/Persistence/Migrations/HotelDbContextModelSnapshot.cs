@@ -254,6 +254,26 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.LoginLockout", b =>
+                {
+                    b.Property<string>("NormalizedUsername")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LastAttemptUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockedUntilUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("NormalizedUsername");
+
+                    b.ToTable("LoginLockouts");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -416,6 +436,40 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.PasswordResetRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Used")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodeHash");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetRequests");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.Purchase", b =>
                 {
                     b.Property<int>("Id")
@@ -554,6 +608,80 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("RawMaterials");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReplacedByTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("RevokedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.RememberMeToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RevokedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RememberMeTokens");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.Role", b =>
@@ -1013,6 +1141,9 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("IdleTimeoutMinutes")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsCompositionScheme")
                         .HasColumnType("bit");
 
@@ -1041,6 +1172,24 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Property<bool>("ShowThankYouFooter")
                         .HasColumnType("bit");
 
+                    b.Property<string>("SmtpFromAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SmtpHost")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SmtpPassword")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SmtpPort")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("SmtpUseSsl")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SmtpUsername")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("SystemSettings");
@@ -1056,6 +1205,7 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             HotelGst = "27AAAAA0000A1Z5",
                             HotelName = "New Hotel",
                             HotelPhone = "",
+                            IdleTimeoutMinutes = 15,
                             IsCompositionScheme = false,
                             ReceiptFormat = "Thermal",
                             ShowDiscountLine = false,
@@ -1063,7 +1213,9 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             ShowItemsOnBill = true,
                             ShowPhoneOnReceipt = true,
                             ShowPrintPreview = true,
-                            ShowThankYouFooter = true
+                            ShowThankYouFooter = true,
+                            SmtpPort = 587,
+                            SmtpUseSsl = true
                         });
                 });
 
@@ -1108,8 +1260,15 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLoginUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("MustChangePassword")
                         .HasColumnType("bit");
@@ -1131,6 +1290,13 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TwoFactorSecret")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -1231,6 +1397,17 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.PasswordResetRequest", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.Purchase", b =>
                 {
                     b.HasOne("HotelPOS.Domain.Entities.Supplier", "Supplier")
@@ -1259,6 +1436,28 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Navigation("Item");
 
                     b.Navigation("Purchase");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.RememberMeToken", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.RolePermission", b =>

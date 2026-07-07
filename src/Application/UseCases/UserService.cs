@@ -97,6 +97,39 @@ namespace HotelPOS.Application.UseCases
             await _userRepository.UpdateAsync(user);
         }
 
+        public async Task SetTwoFactorAsync(int userId, bool enabled, string? secret)
+        {
+            _authorization.EnsureSelfOrPermission(userId, PermissionModules.Settings);
+
+            if (_mediator != null)
+            {
+                await _mediator.Send(new SetTwoFactorCommand(userId, enabled, secret));
+                return;
+            }
+
+            var user = await _userRepository!.GetByIdAsync(userId)
+                ?? throw new KeyNotFoundException($"User #{userId} not found.");
+            user.TwoFactorEnabled = enabled;
+            user.TwoFactorSecret = enabled ? secret : null;
+            await _userRepository.UpdateAsync(user);
+        }
+
+        public async Task SetEmailAsync(int userId, string? email)
+        {
+            _authorization.EnsurePermission(PermissionModules.Settings);
+
+            if (_mediator != null)
+            {
+                await _mediator.Send(new SetUserEmailCommand(userId, email));
+                return;
+            }
+
+            var user = await _userRepository!.GetByIdAsync(userId)
+                ?? throw new KeyNotFoundException($"User #{userId} not found.");
+            user.Email = email;
+            await _userRepository.UpdateAsync(user);
+        }
+
         public async Task DeleteUserAsync(int userId, int currentUserId)
         {
             _authorization.EnsurePermission(PermissionModules.Settings);

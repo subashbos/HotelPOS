@@ -88,6 +88,81 @@ namespace HotelPOS.Views
             // Disaster Recovery
             EnableAutomatedBackupsCheck.IsChecked = _current.EnableAutomatedBackups;
             OffsiteBackupPathBox.Text = _current.OffsiteBackupPath;
+
+            // Security
+            IdleTimeoutBox.Text = _current.IdleTimeoutMinutes.ToString();
+            SmtpHostBox.Text = _current.SmtpHost;
+            SmtpPortBox.Text = _current.SmtpPort.ToString();
+            SmtpUseSslCheck.IsChecked = _current.SmtpUseSsl;
+            SmtpUsernameBox.Text = _current.SmtpUsername;
+            SmtpPasswordBox.Password = _current.SmtpPassword ?? string.Empty;
+            SmtpFromBox.Text = _current.SmtpFromAddress;
+
+            RefreshTwoFactorUi();
+        }
+
+        private void RefreshTwoFactorUi()
+        {
+            var user = AppSession.CurrentUser;
+            bool enabled = user?.TwoFactorEnabled == true;
+
+            TwoFactorStatusText.Text = enabled ? "✅ Enabled on this account." : "⚪ Not enabled on this account.";
+            EnableTwoFactorButton.Visibility = enabled ? Visibility.Collapsed : Visibility.Visible;
+            DisableTwoFactorButton.Visibility = enabled ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private async void EnableTwoFactor_Click(object sender, RoutedEventArgs e)
+        {
+            var user = AppSession.CurrentUser;
+            if (user == null) return;
+
+            var dialog = new TwoFactorEnrollDialog(user.Username) { Owner = Window.GetWindow(this) };
+            if (dialog.ShowDialog() != true) return;
+
+            try
+            {
+                using (var scope = App.CreateDbScope())
+                {
+                    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                    await userService.SetTwoFactorAsync(user.Id, true, dialog.Secret);
+                }
+                user.TwoFactorEnabled = true;
+                user.TwoFactorSecret = dialog.Secret;
+                RefreshTwoFactorUi();
+                _notificationService.ShowSuccess("Two-factor authentication is now enabled.");
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowError($"Could not enable two-factor authentication: {ex.Message}");
+            }
+        }
+
+        private async void DisableTwoFactor_Click(object sender, RoutedEventArgs e)
+        {
+            var user = AppSession.CurrentUser;
+            if (user == null) return;
+
+            var confirm = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+                "Disable two-factor authentication for your account?",
+                "Confirm", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning);
+            if (confirm != HotelPOS.Application.Interfaces.DialogResult.Yes) return;
+
+            try
+            {
+                using (var scope = App.CreateDbScope())
+                {
+                    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+                    await userService.SetTwoFactorAsync(user.Id, false, null);
+                }
+                user.TwoFactorEnabled = false;
+                user.TwoFactorSecret = null;
+                RefreshTwoFactorUi();
+                _notificationService.ShowSuccess("Two-factor authentication has been disabled.");
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowError($"Could not disable two-factor authentication: {ex.Message}");
+            }
         }
 
         // ── Save Hotel Profile ────────────────────────────────────────────────
@@ -145,6 +220,91 @@ namespace HotelPOS.Views
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Backup failed: {ex.Message}");
+            }
+        }
+
+        // ── Save Security Settings ────────────────────────────────────────────
+
+        private async void SaveSecurity_Click(object sender, RoutedEventArgs e)
+        {
+            if (_current == null) return;
+
+            if (!int.TryParse(IdleTimeoutBox.Text, out var idleMinutes) || idleMinutes < 0)
+            {
+                _notificationService.ShowError("Auto-logout minutes must be a non-negative whole number.");
+                return;
+            }
+
+            if (!int.TryParse(SmtpPortBox.Text, out var smtpPort) || smtpPort <= 0)
+            {
+                _notificationService.ShowError("SMTP port must be a positive whole number.");
+                return;
+            }
+
+            _current.IdleTimeoutMinutes = idleMinutes;
+            _current.SmtpHost = string.IsNullOrWhiteSpace(SmtpHostBox.Text) ? null : SmtpHostBox.Text.Trim();
+            _current.SmtpPort = smtpPort;
+            _current.SmtpUseSsl = SmtpUseSslCheck.IsChecked == true;
+            _current.SmtpUsername = string.IsNullOrWhiteSpace(SmtpUsernameBox.Text) ? null : SmtpUsernameBox.Text.Trim();
+            if (!string.IsNullOrEmpty(SmtpPasswordBox.Password))
+                _current.SmtpPassword = SmtpPasswordBox.Password;
+            _current.SmtpFromAddress = string.IsNullOrWhiteSpace(SmtpFromBox.Text) ? null : SmtpFromBox.Text.Trim();
+
+            await Save();
+        }
+
+        private async void SendTestEmail_Click(object sender, RoutedEventArgs e)
+        {
+            var toAddress = TestEmailToBox.Text.Trim();
+            if (string.IsNullOrEmpty(toAddress))
+            {
+                _notificationService.ShowError("Enter an address to send the test email to.");
+                return;
+            }
+
+            if (!int.TryParse(SmtpPortBox.Text, out var smtpPort) || smtpPort <= 0)
+            {
+                _notificationService.ShowError("SMTP port must be a positive whole number.");
+                return;
+            }
+
+            // Uses whatever is currently typed into the form, so an admin can verify
+            // SMTP settings before saving them.
+            var testSettings = new SystemSetting
+            {
+                SmtpHost = string.IsNullOrWhiteSpace(SmtpHostBox.Text) ? null : SmtpHostBox.Text.Trim(),
+                SmtpPort = smtpPort,
+                SmtpUseSsl = SmtpUseSslCheck.IsChecked == true,
+                SmtpUsername = string.IsNullOrWhiteSpace(SmtpUsernameBox.Text) ? null : SmtpUsernameBox.Text.Trim(),
+                SmtpPassword = string.IsNullOrEmpty(SmtpPasswordBox.Password) ? _current?.SmtpPassword : SmtpPasswordBox.Password,
+                SmtpFromAddress = string.IsNullOrWhiteSpace(SmtpFromBox.Text) ? null : SmtpFromBox.Text.Trim()
+            };
+
+            try
+            {
+                SendTestEmailButton.IsEnabled = false;
+                SendTestEmailButton.Content = "Sending...";
+
+                using (var scope = App.CreateDbScope())
+                {
+                    var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+                    await emailService.SendEmailAsync(
+                        toAddress,
+                        "HotelPOS test email",
+                        "This is a test email from HotelPOS to confirm your SMTP settings are working.",
+                        testSettings);
+                }
+
+                _notificationService.ShowSuccess($"Test email sent to {toAddress}.");
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowError($"Could not send test email: {ex.Message}");
+            }
+            finally
+            {
+                SendTestEmailButton.IsEnabled = true;
+                SendTestEmailButton.Content = "✉  Send Test Email";
             }
         }
 

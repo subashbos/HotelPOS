@@ -37,5 +37,15 @@ namespace HotelPOS.Domain.Entities
         public bool IsActive { get; set; } = true;
 
         public bool MustChangePassword { get; set; } = false;
+
+        public DateTime? LastLoginUtc { get; set; }
+
+        [MaxLength(255)]
+        public string? Email { get; set; }
+
+        public bool TwoFactorEnabled { get; set; } = false;
+
+        [MaxLength(64)]
+        public string? TwoFactorSecret { get; set; }
     }
 }

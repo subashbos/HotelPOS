@@ -113,7 +113,7 @@ namespace HotelPOS
             ServiceProvider = services.BuildServiceProvider();
 
             // Show login immediately; initialize database in the background
-            ShowLoginWindow();
+            ShowLoginWindow(allowAutoLogin: true);
             _ = InitializeDatabaseAsync();
         }
 
@@ -141,7 +141,12 @@ namespace HotelPOS
         /// Opens a fresh login window in its own DI scope.
         /// Call this after logout to present a clean login screen.
         /// </summary>
-        public void ShowLoginWindow()
+        /// <param name="allowAutoLogin">
+        /// Only true for the very first window shown at process cold-start. Post-logout calls
+        /// (explicit sign-out or idle timeout) must default to false — otherwise a saved "remember me"
+        /// token would immediately re-authenticate the user and idle timeout would never actually lock the session.
+        /// </param>
+        public void ShowLoginWindow(bool allowAutoLogin = false)
         {
             // Trigger backup on subsequent logouts if database is already initialized
             if (_isDatabaseInitialized)
@@ -152,6 +157,7 @@ namespace HotelPOS
             var scope = ServiceProvider.CreateScope();
             var login = scope.ServiceProvider.GetRequiredService<LoginWindow>();
             login.Tag = scope;   // store scope on the window so we can dispose it on close
+            login.AllowAutoLogin = allowAutoLogin;
             System.Windows.Application.Current.MainWindow = login;
 
             login.Closed += (_, __) =>

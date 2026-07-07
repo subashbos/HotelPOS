@@ -35,7 +35,11 @@ namespace HotelPOS.Tests
                     MustChangePassword = true
                 });
 
-            var controller = new AuthController(authMock.Object, CreateConfig());
+            var controller = new AuthController(
+                authMock.Object,
+                new Mock<IUserRepository>().Object,
+                new Mock<IRefreshTokenRepository>().Object,
+                CreateConfig());
             var result = await controller.Login(new LoginDto { Username = "admin", Password = "password" });
 
             var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
@@ -55,7 +59,11 @@ namespace HotelPOS.Tests
                     MustChangePassword = false
                 });
 
-            var controller = new AuthController(authMock.Object, CreateConfig());
+            var controller = new AuthController(
+                authMock.Object,
+                new Mock<IUserRepository>().Object,
+                new Mock<IRefreshTokenRepository>().Object,
+                CreateConfig());
             var result = await controller.Login(new LoginDto { Username = "cashier", Password = "password" });
 
             var ok = Assert.IsType<OkObjectResult>(result);

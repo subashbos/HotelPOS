@@ -32,16 +32,28 @@
 
                 <!-- Password Form -->
                 <TextBlock Text="Password" Style="{StaticResource FieldLabel}"/>
-                <PasswordBox x:Name="PasswordBox" Margin="0,0,0,24" KeyDown="Input_KeyDown"/>
+                <PasswordBox x:Name="PasswordBox" Margin="0,0,0,12" KeyDown="Input_KeyDown"/>
+
+                <!-- Remember me / Forgot password -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox x:Name="RememberMeCheck" Grid.Column="0" Content="Remember me" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}"/>
+                    <Button x:Name="ForgotPasswordButton" Grid.Column="1" Content="Forgot password?" Click="ForgotPassword_Click"
+                            Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                            Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center"/>
+                </Grid>
 
                 <!-- Error Indicator -->
-                <TextBlock x:Name="ErrorText" Text="Invalid credentials" 
+                <TextBlock x:Name="ErrorText" Text="Invalid credentials"
                            Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource DangerBrush}"
                            Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,0,0,16"/>
 
                 <!-- Action -->
                 <Button x:Name="LoginButton" Content="Log In" Style="{DynamicResource PrimaryBtn}" Click="Login_Click"/>
-                
+
                 <TextBlock Text="Requires local DB active" Style="{StaticResource CaptionTextBlockStyle}" HorizontalAlignment="Center" Margin="0,24,0,0"/>
             </StackPanel>
         </Border>

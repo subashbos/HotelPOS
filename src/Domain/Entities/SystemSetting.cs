@@ -39,5 +39,17 @@ namespace HotelPOS.Domain.Entities
         // ── Disaster Recovery ────────────────────────────────────────────────
         public bool EnableAutomatedBackups { get; set; } = true;
         public string? OffsiteBackupPath { get; set; }
+
+        // ── Session Security ──────────────────────────────────────────────────
+        /// <summary>Minutes of inactivity before the WPF session auto-logs-out. 0 disables the timeout.</summary>
+        public int IdleTimeoutMinutes { get; set; } = 15;
+
+        // ── Outgoing Email (SMTP) — used for the self-service "forgot password" flow ──
+        public string? SmtpHost { get; set; }
+        public int SmtpPort { get; set; } = 587;
+        public string? SmtpUsername { get; set; }
+        public string? SmtpPassword { get; set; }
+        public bool SmtpUseSsl { get; set; } = true;
+        public string? SmtpFromAddress { get; set; }
     }
 }

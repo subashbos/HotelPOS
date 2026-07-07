@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Input;
@@ -12,6 +13,9 @@ namespace HotelPOS
         private readonly INotificationService _notificationService;
         private IServiceScope? _sessionScope;
 
+        /// <summary>Only true for the window shown at process cold-start; see App.ShowLoginWindow.</summary>
+        public bool AllowAutoLogin { get; set; }
+
         // DI resolves this constructor via the login scope created in App.ShowLoginWindow()
         public LoginWindow(IAuthService authService, IUserService userService, INotificationService notificationService)
         {
@@ -19,7 +23,52 @@ namespace HotelPOS
             _authService = authService;
             _userService = userService;
             _notificationService = notificationService;
-            Loaded += (s, e) => UsernameBox.Focus();
+            Loaded += async (s, e) =>
+            {
+                UsernameBox.Focus();
+                if (AllowAutoLogin)
+                {
+                    await TryAutoLoginAsync();
+                }
+            };
+        }
+
+        /// <summary>Attempts a silent "remember me" login using the locally saved token, if any.</summary>
+        private async Task TryAutoLoginAsync()
+        {
+            var saved = Services.RememberMeStore.Load();
+            if (saved == null) return;
+
+            var (username, token) = saved.Value;
+
+            try
+            {
+                User? user;
+                string? newToken = null;
+                using (var scope = App.CreateDbScope())
+                {
+                    var rememberMeService = scope.ServiceProvider.GetRequiredService<IRememberMeService>();
+                    user = await rememberMeService.ValidateAndConsumeAsync(username, token);
+                    if (user != null)
+                    {
+                        newToken = await rememberMeService.IssueTokenAsync(user.Id);
+                    }
+                }
+
+                if (user == null)
+                {
+                    Services.RememberMeStore.Clear();
+                    return;
+                }
+
+                Services.RememberMeStore.Save(user.Username, newToken!);
+                AppSession.CurrentUser = user;
+                CompleteLogin();
+            }
+            catch
+            {
+                // Best-effort: if the DB isn't ready yet or anything goes wrong, just fall back to manual login.
+            }
         }
 
         /// <summary>
@@ -60,6 +109,19 @@ namespace HotelPOS
                 }
                 else
                 {
+                    if (user.TwoFactorEnabled)
+                    {
+                        var challenge = new Views.TwoFactorChallengeDialog(user.Username) { Owner = this };
+                        if (challenge.ShowDialog() != true) return; // user cancelled
+
+                        if (!HotelPOS.Domain.Common.TotpGenerator.ValidateCode(user.TwoFactorSecret, challenge.Code))
+                        {
+                            ErrorText.Text = "Invalid authentication code.";
+                            ErrorText.Visibility = Visibility.Visible;
+                            return;
+                        }
+                    }
+
                     if (user.MustChangePassword)
                     {
                         // ResetPasswordAsync authorizes "resetting your own account" via AppSession —
@@ -102,25 +164,18 @@ namespace HotelPOS
 
                     AppSession.CurrentUser = user;
 
-                    var app = (App)System.Windows.Application.Current;
-                    var (scope, dashboard) = app.CreateDashboardScope();
-                    _sessionScope = scope;
-
-                    // Clear Tag so App.ShowLoginWindow() doesn't double-dispose the login scope
-                    Tag = null;
-
-                    dashboard.Closed += (_, __) =>
+                    // Any previously saved remember-me credential belongs to whichever account checked
+                    // the box last; clear it up front so an unchecked login never leaves a stale token behind.
+                    Services.RememberMeStore.Clear();
+                    if (RememberMeCheck.IsChecked == true)
                     {
-                        // Dispose all Scoped services (repositories, DbContext) for this session
-                        _sessionScope?.Dispose();
-                        _sessionScope = null;
-                        // Show a fresh login screen for the next session
-                        app.ShowLoginWindow();
-                    };
+                        using var rmScope = App.CreateDbScope();
+                        var rememberMeService = rmScope.ServiceProvider.GetRequiredService<IRememberMeService>();
+                        var token = await rememberMeService.IssueTokenAsync(user.Id);
+                        Services.RememberMeStore.Save(user.Username, token);
+                    }
 
-                    dashboard.Show();
-                    System.Windows.Application.Current.MainWindow = dashboard;
-                    Close();
+                    CompleteLogin();
                 }
             }
             catch (Exception ex)
@@ -136,10 +191,43 @@ namespace HotelPOS
             }
         }
 
+        /// <summary>Transitions from a verified AppSession.CurrentUser to the dashboard session.</summary>
+        private void CompleteLogin()
+        {
+            var app = (App)System.Windows.Application.Current;
+            var (scope, dashboard) = app.CreateDashboardScope();
+            _sessionScope = scope;
+
+            // Clear Tag so App.ShowLoginWindow() doesn't double-dispose the login scope
+            Tag = null;
+
+            dashboard.Closed += (_, __) =>
+            {
+                // Dispose all Scoped services (repositories, DbContext) for this session
+                _sessionScope?.Dispose();
+                _sessionScope = null;
+                // Show a fresh login screen for the next session (never auto-login post-logout — see App.ShowLoginWindow)
+                app.ShowLoginWindow();
+            };
+
+            dashboard.Show();
+            System.Windows.Application.Current.MainWindow = dashboard;
+            Close();
+        }
+
         private void Input_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 Login_Click(sender, e);
+        }
+
+        private void ForgotPassword_Click(object sender, RoutedEventArgs e)
+        {
+            var forgotDialog = new Views.ForgotPasswordDialog { Owner = this };
+            if (forgotDialog.ShowDialog() != true) return;
+
+            var codeDialog = new Views.ResetWithCodeDialog(forgotDialog.Username) { Owner = this };
+            codeDialog.ShowDialog();
         }
     }
 }

@@ -58,6 +58,14 @@
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
                         </DataGridTextColumn>
+                        <DataGridTextColumn Header="LAST LOGIN" Binding="{Binding LastLoginUtc, StringFormat='{}{0:dd-MMM-yyyy HH:mm}'}" Width="160">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Padding"           Value="14,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
                         <DataGridTemplateColumn Header="STATUS" Width="100">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -96,6 +104,7 @@
                     <Button Content="✅  Enable" Style="{StaticResource PrimaryBtn}" Click="Enable_Click" Margin="0,0,10,0"/>
                     <Button Content="🚫  Disable" Style="{StaticResource PrimaryBtn}" Click="Disable_Click" Margin="0,0,10,0"/>
                     <Button Content="🔑  Reset Password" Style="{StaticResource SecondaryBtn}" Click="ResetPwd_Click" Margin="0,0,10,0"/>
+                    <Button Content="✉  Set Email" Style="{StaticResource SecondaryBtn}" Click="SetEmail_Click" Margin="0,0,10,0"/>
                     <Button Content="🗑  Delete" Style="{StaticResource DangerBtn}" Click="Delete_Click"/>
                 </StackPanel>
             </Grid>

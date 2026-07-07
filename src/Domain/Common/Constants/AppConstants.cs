@@ -82,6 +82,20 @@ namespace HotelPOS.Domain.Common.Constants
         public const int HashByteSize = 32;
     }
 
+    public static class SecurityDefaults
+    {
+        public const int MaxFailedLoginAttempts = 5;
+        public const int LockoutWindowMinutes = 5;
+    }
+
+    public static class AuditActions
+    {
+        public const string LoginSuccess = "LoginSuccess";
+        public const string LoginFailed = "LoginFailed";
+        public const string LoginBlocked = "LoginBlocked";
+        public const string Logout = "Logout";
+    }
+
     public static class StockAlertThresholds
     {
         public const int CriticalMarginPercent = 10;

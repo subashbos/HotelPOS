@@ -38,6 +38,13 @@ namespace HotelPOS.Application.UseCases.Settings.Commands
                 existing.IsCompositionScheme = settings.IsCompositionScheme;
                 existing.EnableAutomatedBackups = settings.EnableAutomatedBackups;
                 existing.OffsiteBackupPath = settings.OffsiteBackupPath;
+                existing.IdleTimeoutMinutes = settings.IdleTimeoutMinutes;
+                existing.SmtpHost = settings.SmtpHost;
+                existing.SmtpPort = settings.SmtpPort;
+                existing.SmtpUsername = settings.SmtpUsername;
+                existing.SmtpPassword = settings.SmtpPassword;
+                existing.SmtpUseSsl = settings.SmtpUseSsl;
+                existing.SmtpFromAddress = settings.SmtpFromAddress;
 
                 await _repository.UpdateAsync(existing);
             }
