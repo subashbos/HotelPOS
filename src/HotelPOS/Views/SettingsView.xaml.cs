@@ -101,7 +101,7 @@ namespace HotelPOS.Views
             RefreshTwoFactorUi();
         }
 
-        private void RefreshTwoFactorUi()
+        private void RefreshTwoFactorUi() // NOSONAR - updates this view instance's own XAML-named controls; cannot be static
         {
             var user = AppSession.CurrentUser;
             bool enabled = user?.TwoFactorEnabled == true;
@@ -117,7 +117,7 @@ namespace HotelPOS.Views
             if (user == null) return;
 
             var dialog = new TwoFactorEnrollDialog(user.Username) { Owner = Window.GetWindow(this) };
-            if (dialog.ShowDialog() != true) return;
+            if (dialog.ShowDialog() is not true) return;
 
             try
             {
@@ -142,7 +142,7 @@ namespace HotelPOS.Views
             var user = AppSession.CurrentUser;
             if (user == null) return;
 
-            var confirm = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+            var confirm = await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                 "Disable two-factor authentication for your account?",
                 "Confirm", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning);
             if (confirm != HotelPOS.Application.Interfaces.DialogResult.Yes) return;
@@ -244,7 +244,7 @@ namespace HotelPOS.Views
             _current.IdleTimeoutMinutes = idleMinutes;
             _current.SmtpHost = string.IsNullOrWhiteSpace(SmtpHostBox.Text) ? null : SmtpHostBox.Text.Trim();
             _current.SmtpPort = smtpPort;
-            _current.SmtpUseSsl = SmtpUseSslCheck.IsChecked == true;
+            _current.SmtpUseSsl = SmtpUseSslCheck.IsChecked is true;
             _current.SmtpUsername = string.IsNullOrWhiteSpace(SmtpUsernameBox.Text) ? null : SmtpUsernameBox.Text.Trim();
             if (!string.IsNullOrEmpty(SmtpPasswordBox.Password))
                 _current.SmtpPassword = SmtpPasswordBox.Password;
@@ -274,7 +274,7 @@ namespace HotelPOS.Views
             {
                 SmtpHost = string.IsNullOrWhiteSpace(SmtpHostBox.Text) ? null : SmtpHostBox.Text.Trim(),
                 SmtpPort = smtpPort,
-                SmtpUseSsl = SmtpUseSslCheck.IsChecked == true,
+                SmtpUseSsl = SmtpUseSslCheck.IsChecked is true,
                 SmtpUsername = string.IsNullOrWhiteSpace(SmtpUsernameBox.Text) ? null : SmtpUsernameBox.Text.Trim(),
                 SmtpPassword = string.IsNullOrEmpty(SmtpPasswordBox.Password) ? _current?.SmtpPassword : SmtpPasswordBox.Password,
                 SmtpFromAddress = string.IsNullOrWhiteSpace(SmtpFromBox.Text) ? null : SmtpFromBox.Text.Trim()

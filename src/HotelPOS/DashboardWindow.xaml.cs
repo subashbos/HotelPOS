@@ -180,13 +180,7 @@ namespace HotelPOS
 
         private void AutoLogoutForInactivity()
         {
-            try
-            {
-                var cartService = _serviceProvider.GetRequiredService<ICartService>();
-                cartService.ClearAll();
-            }
-            catch { }
-
+            ClearCartBestEffort();
             LogLogoutAudit("Idle timeout");
             AppSession.Logout();
             Closing -= Window_Closing; // skip confirm dialog on auto-logout
@@ -529,13 +523,7 @@ namespace HotelPOS
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var cartService = _serviceProvider.GetRequiredService<ICartService>();
-                cartService.ClearAll();
-            }
-            catch { }
-
+            ClearCartBestEffort();
             LogLogoutAudit();
             ClearRememberMe();
             AppSession.Logout();
@@ -548,19 +536,27 @@ namespace HotelPOS
             if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage("Logout and close workspace?", "Exit",
                 HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question) == HotelPOS.Application.Interfaces.DialogResult.Yes)
             {
-                try
-                {
-                    var cartService = _serviceProvider.GetRequiredService<ICartService>();
-                    cartService.ClearAll();
-                }
-                catch { }
-
+                ClearCartBestEffort();
                 LogLogoutAudit();
                 ClearRememberMe();
                 AppSession.Logout();
                 // Close() fires → Closed event → scope.Dispose() + ShowLoginWindow()
             }
             else e.Cancel = true;
+        }
+
+        /// <summary>Best-effort cart clear so a failure here never blocks logout.</summary>
+        private void ClearCartBestEffort()
+        {
+            try
+            {
+                var cartService = _serviceProvider.GetRequiredService<ICartService>();
+                cartService.ClearAll();
+            }
+            catch
+            {
+                // Best-effort: logout must proceed even if the in-memory cart couldn't be cleared.
+            }
         }
 
         /// <summary>Best-effort audit entry for the current session's logout; never blocks the UI thread.</summary>
@@ -574,7 +570,10 @@ namespace HotelPOS
                 var auditService = _serviceProvider.GetRequiredService<IAuditService>();
                 _ = auditService.LogActionAsync("User", user.Id, AuditActions.Logout, $"{reason}: {user.Username}");
             }
-            catch { }
+            catch
+            {
+                // Best-effort audit logging: logout must never be blocked by an audit-log failure.
+            }
         }
 
         /// <summary>
@@ -593,7 +592,10 @@ namespace HotelPOS
                     _ = rememberMeService.RevokeAsync(saved.Value.Token);
                 }
             }
-            catch { }
+            catch
+            {
+                // Best-effort: sign-out must complete even if the remember-me token couldn't be revoked.
+            }
         }
 
         private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)

@@ -106,77 +106,23 @@ namespace HotelPOS
                 {
                     ErrorText.Text = "Invalid username or password.";
                     ErrorText.Visibility = Visibility.Visible;
+                    return;
                 }
-                else
+
+                if (user.TwoFactorEnabled && !VerifyTwoFactor(user))
                 {
-                    if (user.TwoFactorEnabled)
-                    {
-                        var challenge = new Views.TwoFactorChallengeDialog(user.Username) { Owner = this };
-                        if (challenge.ShowDialog() != true) return; // user cancelled
-
-                        if (!HotelPOS.Domain.Common.TotpGenerator.ValidateCode(user.TwoFactorSecret, challenge.Code))
-                        {
-                            ErrorText.Text = "Invalid authentication code.";
-                            ErrorText.Visibility = Visibility.Visible;
-                            return;
-                        }
-                    }
-
-                    if (user.MustChangePassword)
-                    {
-                        // ResetPasswordAsync authorizes "resetting your own account" via AppSession —
-                        // but AppSession isn't set until after this block. Establish it temporarily
-                        // (the primary credentials were already verified above) so the self-service
-                        // check passes, then clear it again on every exit path below since the user
-                        // hasn't actually completed login yet.
-                        AppSession.CurrentUser = user;
-
-                        var dialog = new Views.PasswordResetDialog(user.Username) { Owner = this };
-                        if (dialog.ShowDialog() == true)
-                        {
-                            bool ok = false;
-                            string? err = null;
-                            using (var pwScope = App.CreateDbScope())
-                            {
-                                var userService = pwScope.ServiceProvider.GetRequiredService<IUserService>();
-                                var res = await userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
-                                ok = res.Success;
-                                err = res.Error;
-                            }
-
-                            AppSession.CurrentUser = null;
-
-                            if (!ok)
-                            {
-                                _notificationService.ShowError($"Failed to update password: {err}");
-                                return;
-                            }
-                            _notificationService.ShowSuccess("Password updated successfully. You can now log in with your new password.");
-                            PasswordBox.Clear();
-                            return;
-                        }
-                        else
-                        {
-                            AppSession.CurrentUser = null;
-                            return; // User cancelled password change, don't log in
-                        }
-                    }
-
-                    AppSession.CurrentUser = user;
-
-                    // Any previously saved remember-me credential belongs to whichever account checked
-                    // the box last; clear it up front so an unchecked login never leaves a stale token behind.
-                    Services.RememberMeStore.Clear();
-                    if (RememberMeCheck.IsChecked == true)
-                    {
-                        using var rmScope = App.CreateDbScope();
-                        var rememberMeService = rmScope.ServiceProvider.GetRequiredService<IRememberMeService>();
-                        var token = await rememberMeService.IssueTokenAsync(user.Id);
-                        Services.RememberMeStore.Save(user.Username, token);
-                    }
-
-                    CompleteLogin();
+                    return; // cancelled or invalid code; error text (if any) already shown
                 }
+
+                if (user.MustChangePassword)
+                {
+                    await HandleMustChangePasswordAsync(user);
+                    return;
+                }
+
+                AppSession.CurrentUser = user;
+                await RememberLoginIfRequestedAsync(user);
+                CompleteLogin();
             }
             catch (Exception ex)
             {
@@ -189,6 +135,78 @@ namespace HotelPOS
                 LoginButton.IsEnabled = true;
                 LoginButton.Content = "Log In";
             }
+        }
+
+        /// <summary>Shows the two-factor challenge dialog and validates the entered code.</summary>
+        /// <returns>False if the user cancelled or the code was invalid (an inline error is shown in that case); true if verified.</returns>
+        private bool VerifyTwoFactor(User user)
+        {
+            var challenge = new Views.TwoFactorChallengeDialog(user.Username) { Owner = this };
+            if (challenge.ShowDialog() is not true) return false; // user cancelled
+
+            if (!HotelPOS.Domain.Common.TotpGenerator.ValidateCode(user.TwoFactorSecret, challenge.Code))
+            {
+                ErrorText.Text = "Invalid authentication code.";
+                ErrorText.Visibility = Visibility.Visible;
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Handles the forced password-reset flow for a user who must change their password before completing login.
+        /// </summary>
+        /// <remarks>
+        /// ResetPasswordAsync authorizes "resetting your own account" via AppSession — but AppSession isn't set
+        /// until after this flow. Establish it temporarily (the primary credentials were already verified by the
+        /// caller) so the self-service check passes, then clear it again on every exit path since the user hasn't
+        /// actually completed login yet.
+        /// </remarks>
+        private async Task HandleMustChangePasswordAsync(User user)
+        {
+            AppSession.CurrentUser = user;
+
+            var dialog = new Views.PasswordResetDialog(user.Username) { Owner = this };
+            if (dialog.ShowDialog() is not true)
+            {
+                AppSession.CurrentUser = null;
+                return; // User cancelled password change, don't log in
+            }
+
+            bool ok;
+            string? err;
+            using (var pwScope = App.CreateDbScope())
+            {
+                var userService = pwScope.ServiceProvider.GetRequiredService<IUserService>();
+                var res = await userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
+                ok = res.Success;
+                err = res.Error;
+            }
+
+            AppSession.CurrentUser = null;
+
+            if (!ok)
+            {
+                _notificationService.ShowError($"Failed to update password: {err}");
+                return;
+            }
+            _notificationService.ShowSuccess("Password updated successfully. You can now log in with your new password.");
+            PasswordBox.Clear();
+        }
+
+        /// <summary>Issues and saves a remember-me token if the checkbox is checked, clearing any stale one either way.</summary>
+        private async Task RememberLoginIfRequestedAsync(User user)
+        {
+            // Any previously saved remember-me credential belongs to whichever account checked
+            // the box last; clear it up front so an unchecked login never leaves a stale token behind.
+            Services.RememberMeStore.Clear();
+            if (RememberMeCheck.IsChecked is not true) return;
+
+            using var rmScope = App.CreateDbScope();
+            var rememberMeService = rmScope.ServiceProvider.GetRequiredService<IRememberMeService>();
+            var token = await rememberMeService.IssueTokenAsync(user.Id);
+            Services.RememberMeStore.Save(user.Username, token);
         }
 
         /// <summary>Transitions from a verified AppSession.CurrentUser to the dashboard session.</summary>
@@ -224,7 +242,7 @@ namespace HotelPOS
         private void ForgotPassword_Click(object sender, RoutedEventArgs e)
         {
             var forgotDialog = new Views.ForgotPasswordDialog { Owner = this };
-            if (forgotDialog.ShowDialog() != true) return;
+            if (forgotDialog.ShowDialog() is not true) return;
 
             var codeDialog = new Views.ResetWithCodeDialog(forgotDialog.Username) { Owner = this };
             codeDialog.ShowDialog();

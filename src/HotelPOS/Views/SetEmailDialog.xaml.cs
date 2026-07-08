@@ -29,6 +29,6 @@ namespace HotelPOS.Views
             DialogResult = true;
         }
 
-        private void Cancel_Click(object sender, RoutedEventArgs e) => DialogResult = false;
+        private void Cancel_Click(object sender, RoutedEventArgs e) => DialogResult = false; // NOSONAR - sets this dialog instance's inherited Window.DialogResult; cannot be static
     }
 }
