@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
@@ -10,33 +11,33 @@ namespace HotelPOS.Application.UseCases
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ILoginLockoutRepository _lockoutRepository;
         private readonly IMediator? _mediator;
+        private readonly IAuditService? _auditService;
 
         // PBKDF2 Configurations
-        private const int Iterations = 100000;
-        private const int KeySize = 32; // 256 bits
-        private const int SaltSize = 16; // 128 bits
-        private const int MaxFailedAttempts = 5;
-        private static readonly TimeSpan LockoutWindow = TimeSpan.FromMinutes(5);
-        private static readonly ConcurrentDictionary<string, FailedLoginState> FailedLogins =
+        private const int Iterations = ValidationLimits.Pbkdf2Iterations;
+        private const int KeySize = ValidationLimits.HashByteSize;
+        private const int SaltSize = ValidationLimits.SaltByteSize;
+        private const int MaxFailedAttempts = SecurityDefaults.MaxFailedLoginAttempts;
+        private static readonly TimeSpan LockoutWindow = TimeSpan.FromMinutes(SecurityDefaults.LockoutWindowMinutes);
+
+        // Per-username in-process gate: serializes the read-modify-write against the
+        // lockout store so concurrent attempts from the same app instance can't lose
+        // updates to each other. Persistence for surviving restarts lives in the DB.
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> LockoutGates =
             new(StringComparer.OrdinalIgnoreCase);
 
-        private sealed class FailedLoginState
-        {
-            public int Attempts { get; }
-            public DateTimeOffset? LockedUntilUtc { get; }
-
-            public FailedLoginState(int attempts, DateTimeOffset? lockedUntilUtc)
-            {
-                Attempts = attempts;
-                LockedUntilUtc = lockedUntilUtc;
-            }
-        }
-
-        public AuthService(IUserRepository userRepository, IMediator? mediator = null)
+        public AuthService(
+            IUserRepository userRepository,
+            ILoginLockoutRepository lockoutRepository,
+            IMediator? mediator = null,
+            IAuditService? auditService = null)
         {
             _userRepository = userRepository;
+            _lockoutRepository = lockoutRepository;
             _mediator = mediator;
+            _auditService = auditService;
         }
 
         public async Task<User?> AuthenticateAsync(string username, string password)
@@ -55,7 +56,9 @@ namespace HotelPOS.Application.UseCases
                 return null;
 
             var normalizedUsername = username.Trim();
-            if (IsLockedOut(normalizedUsername))
+            var lockoutKey = normalizedUsername.ToLowerInvariant();
+
+            if (await IsLockedOutAsync(lockoutKey))
             {
                 return null;
             }
@@ -63,7 +66,9 @@ namespace HotelPOS.Application.UseCases
             var user = await _userRepository.GetUserByUsernameAsync(normalizedUsername);
             if (user == null || !user.IsActive)
             {
-                RegisterFailedAttempt(normalizedUsername);
+                await RegisterFailedAttemptAsync(lockoutKey);
+                await LogAuditAsync(user?.Id ?? 0, normalizedUsername, AuditActions.LoginFailed,
+                    user == null ? "Unknown username" : "Account inactive");
                 return null;
             }
 
@@ -77,16 +82,20 @@ namespace HotelPOS.Application.UseCases
                               CryptographicOperations.FixedTimeEquals(hashBytes, expectedHash);
                 if (success)
                 {
-                    FailedLogins.TryRemove(normalizedUsername, out _);
+                    await _lockoutRepository.ClearAsync(lockoutKey);
+                    user.LastLoginUtc = DateTime.UtcNow;
+                    await _userRepository.UpdateAsync(user);
+                    await LogAuditAsync(user.Id, user.Username, AuditActions.LoginSuccess, null);
                     return user;
                 }
 
-                RegisterFailedAttempt(normalizedUsername);
+                await RegisterFailedAttemptAsync(lockoutKey);
+                await LogAuditAsync(user.Id, user.Username, AuditActions.LoginFailed, "Invalid password");
                 return null;
             }
             catch (FormatException)
             {
-                RegisterFailedAttempt(normalizedUsername);
+                await RegisterFailedAttemptAsync(lockoutKey);
                 return null;
             }
         }
@@ -104,46 +113,77 @@ namespace HotelPOS.Application.UseCases
             return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
         }
 
-        private static bool IsLockedOut(string username)
+        private static SemaphoreSlim GetGate(string lockoutKey) =>
+            LockoutGates.GetOrAdd(lockoutKey, _ => new SemaphoreSlim(1, 1));
+
+        private async Task<bool> IsLockedOutAsync(string lockoutKey)
         {
-            if (!FailedLogins.TryGetValue(username, out var state) || state.LockedUntilUtc is null)
+            var gate = GetGate(lockoutKey);
+            await gate.WaitAsync();
+            try
             {
+                var state = await _lockoutRepository.GetAsync(lockoutKey);
+                if (state?.LockedUntilUtc is null)
+                {
+                    return false;
+                }
+
+                if (state.LockedUntilUtc > DateTime.UtcNow)
+                {
+                    return true;
+                }
+
+                await _lockoutRepository.ClearAsync(lockoutKey);
                 return false;
             }
-
-            if (state.LockedUntilUtc > DateTimeOffset.UtcNow)
+            finally
             {
-                return true;
+                gate.Release();
             }
-
-            FailedLogins.TryRemove(username, out _);
-            return false;
         }
 
-        private static void RegisterFailedAttempt(string username)
+        private async Task RegisterFailedAttemptAsync(string lockoutKey)
         {
-            FailedLogins.AddOrUpdate(
-                username,
-                _ => new FailedLoginState(1, null),
-                (_, existing) =>
+            var gate = GetGate(lockoutKey);
+            await gate.WaitAsync();
+            try
+            {
+                var state = await _lockoutRepository.GetAsync(lockoutKey)
+                            ?? new LoginLockout { NormalizedUsername = lockoutKey };
+
+                if (state.LockedUntilUtc is not null && state.LockedUntilUtc <= DateTime.UtcNow)
                 {
-                    int attempts = existing.Attempts;
-                    DateTimeOffset? lockedUntilUtc = existing.LockedUntilUtc;
+                    state.FailedAttempts = 0;
+                    state.LockedUntilUtc = null;
+                }
 
-                    if (lockedUntilUtc is not null && lockedUntilUtc <= DateTimeOffset.UtcNow)
-                    {
-                        attempts = 0;
-                        lockedUntilUtc = null;
-                    }
+                state.FailedAttempts += 1;
+                state.LastAttemptUtc = DateTime.UtcNow;
+                if (state.FailedAttempts >= MaxFailedAttempts)
+                {
+                    state.LockedUntilUtc = DateTime.UtcNow.Add(LockoutWindow);
+                }
 
-                    attempts += 1;
-                    if (attempts >= MaxFailedAttempts)
-                    {
-                        lockedUntilUtc = DateTimeOffset.UtcNow.Add(LockoutWindow);
-                    }
+                await _lockoutRepository.SaveAsync(state);
+            }
+            finally
+            {
+                gate.Release();
+            }
+        }
 
-                    return new FailedLoginState(attempts, lockedUntilUtc);
-                });
+        private async Task LogAuditAsync(int userId, string username, string action, string? details)
+        {
+            if (_auditService == null) return;
+
+            try
+            {
+                await _auditService.LogActionAsync("User", userId, action, details ?? $"{action}: {username}");
+            }
+            catch
+            {
+                // Auditing must never block authentication.
+            }
         }
     }
 }

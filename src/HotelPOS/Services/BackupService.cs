@@ -4,6 +4,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace HotelPOS.Services
 {
@@ -101,6 +102,7 @@ namespace HotelPOS.Services
                 await masterConn.OpenAsync();
 
                 var dbName = conn.Database;
+                EnsureSafeIdentifier(dbName);
                 var quotedDb = new Microsoft.Data.SqlClient.SqlCommandBuilder().QuoteIdentifier(dbName);
                 var sql = $@"
                     ALTER DATABASE {quotedDb} SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
@@ -136,10 +138,20 @@ namespace HotelPOS.Services
             var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
             var destPath = Path.Combine(backupDir, fileName);
 
+            EnsureSafeIdentifier(conn.Database);
             var quotedDb = new Microsoft.Data.SqlClient.SqlCommandBuilder().QuoteIdentifier(conn.Database);
             var sql = $"BACKUP DATABASE {quotedDb} TO DISK = {{0}} WITH FORMAT, NAME = 'Full Backup of HotelPOS'";
             await db.Database.ExecuteSqlRawAsync(sql, destPath);
             return destPath;
+        }
+
+        // Database/table names can't be bound as SQL parameters, so validate before interpolating into DDL.
+        private static void EnsureSafeIdentifier(string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier) || !Regex.IsMatch(identifier, "^[A-Za-z0-9_]+$", RegexOptions.None, TimeSpan.FromSeconds(1)))
+            {
+                throw new InvalidOperationException($"Refusing to use unsafe database identifier: '{identifier}'.");
+            }
         }
 
         private void CleanupOldBackups(string backupDir)

@@ -90,6 +90,9 @@ namespace HotelPOS
                 .CreateMapper();
             services.AddSingleton(mapper);
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IEmailService, HotelPOS.Infrastructure.Services.SmtpEmailService>();
+            services.AddScoped<IPasswordResetService, PasswordResetService>();
+            services.AddScoped<IRememberMeService, RememberMeService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IBIReportService, BIReportService>();
             services.AddScoped<ISettingService, SettingService>();

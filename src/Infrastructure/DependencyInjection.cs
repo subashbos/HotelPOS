@@ -23,6 +23,10 @@ public static class DependencyInjection
         services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<ITableRepository, TableRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ILoginLockoutRepository, LoginLockoutRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IRememberMeTokenRepository, RememberMeTokenRepository>();
+        services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
         services.AddScoped<IHeldOrderRepository, HeldOrderRepository>();
 
         return services;

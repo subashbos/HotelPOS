@@ -13,6 +13,8 @@ export class LoginComponent implements OnInit {
     username: "",
     password: ""
   };
+  totpCode = "";
+  requiresTwoFactor = false;
   errorMessage = "";
   isLoading = false;
 
@@ -31,10 +33,19 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    if (this.requiresTwoFactor && !this.totpCode) {
+      this.errorMessage = "Enter your 6-digit authentication code.";
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = "";
 
-    this.authService.login(this.credentials).subscribe({
+    const payload = this.requiresTwoFactor
+      ? { ...this.credentials, totpCode: this.totpCode }
+      : this.credentials;
+
+    this.authService.login(payload).subscribe({
       next: () => {
         this.isLoading = false;
         // Redirect to admin dashboard
@@ -42,7 +53,11 @@ export class LoginComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        if (err.error?.message) {
+        if (err.status === 401 && err.error?.requiresTwoFactor) {
+          this.requiresTwoFactor = true;
+          this.totpCode = "";
+          this.errorMessage = "Enter the 6-digit code from your authenticator app.";
+        } else if (err.error?.message) {
           this.errorMessage = err.error.message;
         } else if (err.status === 401) {
           this.errorMessage = "Invalid username or password.";
@@ -51,5 +66,12 @@ export class LoginComponent implements OnInit {
         }
       }
     });
+  }
+
+  useDifferentAccount(): void {
+    this.requiresTwoFactor = false;
+    this.totpCode = "";
+    this.credentials.password = "";
+    this.errorMessage = "";
   }
 }

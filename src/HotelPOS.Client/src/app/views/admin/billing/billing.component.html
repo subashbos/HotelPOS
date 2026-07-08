@@ -17,8 +17,10 @@
           <div class="w-full md:w-72 relative">
             <div class="flex items-center bg-blueGray-50 rounded border-2 border-red-500 px-3 py-2">
               <i class="fas fa-search text-blueGray-400 mr-2 text-sm"></i>
+              <label for="billing-menu-search" class="sr-only">Search dishes</label>
               <input
                 #searchEl
+                id="billing-menu-search"
                 type="text"
                 placeholder="Search dishes..."
                 class="bg-transparent border-0 outline-none text-xs text-blueGray-700 w-full font-normal focus:ring-0 focus:outline-none"
@@ -191,7 +193,9 @@
 
               <!-- QTY -->
               <td class="px-2 py-2 text-center">
+                <label [attr.for]="'cart-qty-' + row.itemId" class="sr-only">Quantity</label>
                 <input
+                  [attr.id]="'cart-qty-' + row.itemId"
                   type="number"
                   [(ngModel)]="row.quantity"
                   min="1"
@@ -206,7 +210,9 @@
 
               <!-- PRICE -->
               <td class="px-2 py-2 text-right">
+                <label [attr.for]="'cart-price-' + row.itemId" class="sr-only">Price</label>
                 <input
+                  [attr.id]="'cart-price-' + row.itemId"
                   type="number"
                   [(ngModel)]="row.price"
                   min="0"
@@ -320,8 +326,9 @@
       <div class="px-6 py-3 border-t border-solid border-blueGray-100 bg-blueGray-50">
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
-            <span class="text-xs font-bold text-blueGray-500 uppercase">Payment</span>
+            <label for="payment-mode" class="text-xs font-bold text-blueGray-500 uppercase">Payment</label>
             <select
+              id="payment-mode"
               [(ngModel)]="paymentMode"
               class="border border-solid border-blueGray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-red-400 bg-white"
             >
@@ -331,8 +338,9 @@
             </select>
           </div>
           <div class="flex items-center gap-3">
-            <span class="text-xs font-bold text-blueGray-500 uppercase">Discount</span>
+            <label for="discount-amount" class="text-xs font-bold text-blueGray-500 uppercase">Discount</label>
             <input
+              id="discount-amount"
               type="number"
               [(ngModel)]="discountAmount"
               min="0"

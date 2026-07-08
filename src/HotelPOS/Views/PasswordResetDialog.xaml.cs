@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
@@ -18,10 +19,10 @@ namespace HotelPOS.Views
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
-            if (PwdBox.Password.Length < MinimumPasswordLength)
+            if (PwdBox.Password.Length < MinimumPasswordLength || !PasswordPolicy.MeetsComplexityRequirements(PwdBox.Password))
             {
                 var ns = ((App)System.Windows.Application.Current).ServiceProvider.GetRequiredService<INotificationService>();
-                ns.ShowError($"Password must be at least {MinimumPasswordLength} characters.");
+                ns.ShowError(PasswordPolicy.RequirementsMessage);
                 return;
             }
             NewPassword = PwdBox.Password;

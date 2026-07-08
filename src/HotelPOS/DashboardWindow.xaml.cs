@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace HotelPOS
 {
@@ -39,6 +40,11 @@ namespace HotelPOS
         private readonly IUserRepository _userRepository;
         private readonly IRoleService _roleService;
 
+        // ── Idle timeout ──────────────────────────────────────────────────────
+        private DispatcherTimer? _idleTimer;
+        private DateTime _lastActivityUtc = DateTime.UtcNow;
+        private TimeSpan _idleTimeout = TimeSpan.Zero;
+
         public DashboardWindow(IServiceProvider serviceProvider, IThemeService themeService,
             INotificationService notificationService, IUserRepository userRepository,
             IRoleService roleService)
@@ -49,6 +55,7 @@ namespace HotelPOS
             _notificationService = notificationService;
             _userRepository = userRepository;
             _roleService = roleService;
+            Closed += DashboardWindow_Closed;
         }
 
         private void ThemeToggle_Click(object sender, RoutedEventArgs e)
@@ -126,6 +133,64 @@ namespace HotelPOS
             else if (NavBilling.Visibility == Visibility.Visible) NavBilling_Click(null!, null!);
             else if (NavShift.Visibility == Visibility.Visible) NavShift_Click(null!, null!);
             else if (NavSales.Visibility == Visibility.Visible) NavSales_Click(null!, null!);
+
+            await InitializeIdleTimeoutAsync();
+        }
+
+        // ── Idle timeout ──────────────────────────────────────────────────────
+
+        private async Task InitializeIdleTimeoutAsync()
+        {
+            try
+            {
+                int minutes;
+                using (var scope = App.CreateDbScope())
+                {
+                    var settingService = scope.ServiceProvider.GetRequiredService<ISettingService>();
+                    var settings = await settingService.GetSettingsAsync();
+                    minutes = settings.IdleTimeoutMinutes;
+                }
+
+                if (minutes <= 0) return; // disabled
+
+                _idleTimeout = TimeSpan.FromMinutes(minutes);
+                _lastActivityUtc = DateTime.UtcNow;
+                InputManager.Current.PreProcessInput += InputManager_PreProcessInput;
+
+                _idleTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+                _idleTimer.Tick += IdleTimer_Tick;
+                _idleTimer.Start();
+            }
+            catch { /* Idle timeout is a convenience feature; never block dashboard load */ }
+        }
+
+        private void InputManager_PreProcessInput(object sender, PreProcessInputEventArgs e)
+        {
+            _lastActivityUtc = DateTime.UtcNow;
+        }
+
+        private void IdleTimer_Tick(object? sender, EventArgs e)
+        {
+            if (DateTime.UtcNow - _lastActivityUtc >= _idleTimeout)
+            {
+                _idleTimer?.Stop();
+                AutoLogoutForInactivity();
+            }
+        }
+
+        private void AutoLogoutForInactivity()
+        {
+            ClearCartBestEffort();
+            LogLogoutAudit("Idle timeout");
+            AppSession.Logout();
+            Closing -= Window_Closing; // skip confirm dialog on auto-logout
+            Close();
+        }
+
+        private void DashboardWindow_Closed(object? sender, EventArgs e)
+        {
+            InputManager.Current.PreProcessInput -= InputManager_PreProcessInput;
+            _idleTimer?.Stop();
         }
 
         /// <summary>
@@ -458,13 +523,9 @@ namespace HotelPOS
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var cartService = _serviceProvider.GetRequiredService<ICartService>();
-                cartService.ClearAll();
-            }
-            catch { }
-
+            ClearCartBestEffort();
+            LogLogoutAudit();
+            ClearRememberMe();
             AppSession.Logout();
             Closing -= Window_Closing;  // skip confirm dialog on explicit logout
             Close();                    // → Closed event → scope.Dispose + ShowLoginWindow()
@@ -475,17 +536,66 @@ namespace HotelPOS
             if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage("Logout and close workspace?", "Exit",
                 HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question) == HotelPOS.Application.Interfaces.DialogResult.Yes)
             {
-                try
-                {
-                    var cartService = _serviceProvider.GetRequiredService<ICartService>();
-                    cartService.ClearAll();
-                }
-                catch { }
-
+                ClearCartBestEffort();
+                LogLogoutAudit();
+                ClearRememberMe();
                 AppSession.Logout();
                 // Close() fires → Closed event → scope.Dispose() + ShowLoginWindow()
             }
             else e.Cancel = true;
+        }
+
+        /// <summary>Best-effort cart clear so a failure here never blocks logout.</summary>
+        private void ClearCartBestEffort()
+        {
+            try
+            {
+                var cartService = _serviceProvider.GetRequiredService<ICartService>();
+                cartService.ClearAll();
+            }
+            catch
+            {
+                // Best-effort: logout must proceed even if the in-memory cart couldn't be cleared.
+            }
+        }
+
+        /// <summary>Best-effort audit entry for the current session's logout; never blocks the UI thread.</summary>
+        private void LogLogoutAudit(string reason = "Manual logout")
+        {
+            var user = AppSession.CurrentUser;
+            if (user == null) return;
+
+            try
+            {
+                var auditService = _serviceProvider.GetRequiredService<IAuditService>();
+                _ = auditService.LogActionAsync("User", user.Id, AuditActions.Logout, $"{reason}: {user.Username}");
+            }
+            catch
+            {
+                // Best-effort audit logging: logout must never be blocked by an audit-log failure.
+            }
+        }
+
+        /// <summary>
+        /// Revokes and deletes any saved "remember me" credential. Called only on an explicit sign-out —
+        /// NOT on idle-timeout auto-logout, which is meant to be a session lock rather than a full sign-out.
+        /// </summary>
+        private void ClearRememberMe()
+        {
+            try
+            {
+                var saved = Services.RememberMeStore.Load();
+                Services.RememberMeStore.Clear();
+                if (saved != null)
+                {
+                    var rememberMeService = _serviceProvider.GetRequiredService<IRememberMeService>();
+                    _ = rememberMeService.RevokeAsync(saved.Value.Token);
+                }
+            }
+            catch
+            {
+                // Best-effort: sign-out must complete even if the remember-me token couldn't be revoked.
+            }
         }
 
         private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)

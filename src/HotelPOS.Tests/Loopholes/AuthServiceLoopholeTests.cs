@@ -2,6 +2,7 @@ using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Tests.TestHelpers;
 using Moq;
 using Xunit;
 
@@ -19,7 +20,7 @@ namespace HotelPOS.Tests
 
         public AuthServiceLoopholeTests()
         {
-            _service = new AuthService(_repo.Object);
+            _service = new AuthService(_repo.Object, new InMemoryLoginLockoutRepository());
         }
 
         // ── Inactive user ────────────────────────────────────────────────────

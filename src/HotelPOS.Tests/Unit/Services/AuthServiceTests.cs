@@ -2,6 +2,7 @@ using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Tests.TestHelpers;
 using Moq;
 using Xunit;
 
@@ -10,12 +11,14 @@ namespace HotelPOS.Tests
     public class AuthServiceTests
     {
         private readonly Mock<IUserRepository> _userRepoMock;
+        private readonly InMemoryLoginLockoutRepository _lockoutRepo;
         private readonly AuthService _service;
 
         public AuthServiceTests()
         {
             _userRepoMock = new Mock<IUserRepository>();
-            _service = new AuthService(_userRepoMock.Object);
+            _lockoutRepo = new InMemoryLoginLockoutRepository();
+            _service = new AuthService(_userRepoMock.Object, _lockoutRepo);
         }
 
         [Fact]
@@ -106,28 +109,12 @@ namespace HotelPOS.Tests
             Assert.Null(lockedResult);
             _userRepoMock.Verify(r => r.GetUserByUsernameAsync(username), Times.Exactly(5));
 
-            // 2. Use reflection to adjust LockedUntilUtc in the past
-            var failedLoginsField = typeof(AuthService).GetField("FailedLogins", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            var failedLogins = failedLoginsField?.GetValue(null) as System.Collections.IDictionary;
-            Assert.NotNull(failedLogins);
-
-            object? state = null;
-            foreach (System.Collections.DictionaryEntry entry in failedLogins!)
-            {
-                if (entry.Key?.ToString()?.Equals(username, StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    state = entry.Value;
-                    break;
-                }
-            }
+            // 2. Directly push the lockout state (in the injected store) into the past
+            var lockoutKey = username.ToLowerInvariant();
+            var state = await _lockoutRepo.GetAsync(lockoutKey);
             Assert.NotNull(state);
-
-            var stateType = typeof(AuthService).GetNestedType("FailedLoginState", System.Reflection.BindingFlags.NonPublic);
-            Assert.NotNull(stateType);
-            var constructor = stateType!.GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance, null, new[] { typeof(int), typeof(DateTimeOffset?) }, null);
-            Assert.NotNull(constructor);
-            var newState = constructor!.Invoke(new object?[] { 5, DateTimeOffset.UtcNow.AddMinutes(-10) });
-            failedLogins[username] = newState;
+            state!.LockedUntilUtc = DateTime.UtcNow.AddMinutes(-10);
+            await _lockoutRepo.SaveAsync(state);
 
             // 3. Try to authenticate again. The lockout should be cleared and repo is queried again
             _userRepoMock.Invocations.Clear();

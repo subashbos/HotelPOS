@@ -14,6 +14,10 @@ namespace HotelPOS.Infrastructure.Persistence
         public DbSet<Category> Categories { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<LoginLockout> LoginLockouts { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<RememberMeToken> RememberMeTokens { get; set; }
+        public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
         public DbSet<SystemSetting> SystemSettings { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<CashSession> CashSessions { get; set; }
@@ -53,6 +57,17 @@ namespace HotelPOS.Infrastructure.Persistence
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Username)
                 .IsUnique();
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(t => t.TokenHash)
+                .IsUnique();
+
+            modelBuilder.Entity<RememberMeToken>()
+                .HasIndex(t => t.TokenHash)
+                .IsUnique();
+
+            modelBuilder.Entity<PasswordResetRequest>()
+                .HasIndex(r => r.CodeHash);
 
             modelBuilder.Entity<Supplier>()
                 .HasIndex(s => s.Name)

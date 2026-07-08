@@ -21,43 +21,83 @@
           </div>
 
           <form (ngSubmit)="onSubmit()">
-            <div class="relative w-full mb-3">
-              <label
-                class="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                for="username"
-              >
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                class="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                placeholder="Username"
-                [(ngModel)]="credentials.username"
-                required
-                [disabled]="isLoading"
-              />
-            </div>
+            <ng-container *ngIf="!requiresTwoFactor">
+              <div class="relative w-full mb-3">
+                <label
+                  class="block uppercase text-blueGray-600 text-xs font-bold mb-2"
+                  for="username"
+                >
+                  Username
+                </label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  class="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+                  placeholder="Username"
+                  [(ngModel)]="credentials.username"
+                  required
+                  [disabled]="isLoading"
+                />
+              </div>
 
-            <div class="relative w-full mb-3">
-              <label
-                class="block uppercase text-blueGray-600 text-xs font-bold mb-2"
-                for="password"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                class="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
-                placeholder="Password"
-                [(ngModel)]="credentials.password"
-                required
-                [disabled]="isLoading"
-              />
-            </div>
+              <div class="relative w-full mb-3">
+                <label
+                  class="block uppercase text-blueGray-600 text-xs font-bold mb-2"
+                  for="password"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  class="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150"
+                  placeholder="Password"
+                  [(ngModel)]="credentials.password"
+                  required
+                  [disabled]="isLoading"
+                />
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="requiresTwoFactor">
+              <div class="text-center text-blueGray-500 text-xs mb-4">
+                Signed in as <strong>{{ credentials.username }}</strong>
+              </div>
+
+              <div class="relative w-full mb-3">
+                <label
+                  class="block uppercase text-blueGray-600 text-xs font-bold mb-2"
+                  for="totpCode"
+                >
+                  Authentication Code
+                </label>
+                <input
+                  id="totpCode"
+                  name="totpCode"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="6"
+                  autocomplete="one-time-code"
+                  class="border-0 px-3 py-3 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full ease-linear transition-all duration-150 text-center tracking-widest"
+                  placeholder="000000"
+                  [(ngModel)]="totpCode"
+                  required
+                  [disabled]="isLoading"
+                />
+              </div>
+
+              <div class="text-right mb-3">
+                <a
+                  href="javascript:void(0)"
+                  class="text-blueGray-500 text-xs"
+                  (click)="useDifferentAccount()"
+                >
+                  Use a different account
+                </a>
+              </div>
+            </ng-container>
 
             <div class="text-center mt-6">
               <button
@@ -66,7 +106,7 @@
                 [disabled]="isLoading"
               >
                 <span *ngIf="isLoading" class="mr-2 inline-block animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                {{ isLoading ? 'Signing In...' : 'Sign In' }}
+                {{ isLoading ? 'Signing In...' : (requiresTwoFactor ? 'Verify' : 'Sign In') }}
               </button>
             </div>
           </form>

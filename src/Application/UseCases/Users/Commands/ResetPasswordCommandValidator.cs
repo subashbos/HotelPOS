@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelPOS.Domain.Common;
 
 namespace HotelPOS.Application.UseCases.Users.Commands
 {
@@ -14,7 +15,9 @@ namespace HotelPOS.Application.UseCases.Users.Commands
             RuleFor(x => x.NewPassword)
                 .NotEmpty().WithMessage("New password cannot be empty.")
                 .MinimumLength(MinimumPasswordLength)
-                .WithMessage($"Password must be at least {MinimumPasswordLength} characters.");
+                .WithMessage($"Password must be at least {MinimumPasswordLength} characters.")
+                .Must(PasswordPolicy.MeetsComplexityRequirements)
+                .WithMessage(PasswordPolicy.RequirementsMessage);
         }
     }
 }

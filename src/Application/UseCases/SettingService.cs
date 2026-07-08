@@ -53,20 +53,7 @@ namespace HotelPOS.Application.UseCases
             var existing = await _repository!.GetByIdAsync(1);
             if (existing != null)
             {
-                existing.HotelName = settings.HotelName;
-                existing.HotelAddress = settings.HotelAddress;
-                existing.HotelPhone = settings.HotelPhone;
-                existing.HotelGst = settings.HotelGst;
-                existing.DefaultPrinter = settings.DefaultPrinter;
-                existing.ShowPrintPreview = settings.ShowPrintPreview;
-                existing.ReceiptFormat = settings.ReceiptFormat;
-                existing.ShowGstBreakdown = settings.ShowGstBreakdown;
-                existing.ShowItemsOnBill = settings.ShowItemsOnBill;
-                existing.ShowDiscountLine = settings.ShowDiscountLine;
-                existing.ShowPhoneOnReceipt = settings.ShowPhoneOnReceipt;
-                existing.ShowThankYouFooter = settings.ShowThankYouFooter;
-                existing.EnableRoundOff = settings.EnableRoundOff;
-                existing.IsCompositionScheme = settings.IsCompositionScheme;
+                existing.UpdateFrom(settings);
                 await _repository.UpdateAsync(existing);
             }
             else

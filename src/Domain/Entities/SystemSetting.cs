@@ -39,5 +39,45 @@ namespace HotelPOS.Domain.Entities
         // ── Disaster Recovery ────────────────────────────────────────────────
         public bool EnableAutomatedBackups { get; set; } = true;
         public string? OffsiteBackupPath { get; set; }
+
+        // ── Session Security ──────────────────────────────────────────────────
+        /// <summary>Minutes of inactivity before the WPF session auto-logs-out. 0 disables the timeout.</summary>
+        public int IdleTimeoutMinutes { get; set; } = 15;
+
+        // ── Outgoing Email (SMTP) — used for the self-service "forgot password" flow ──
+        public string? SmtpHost { get; set; }
+        public int SmtpPort { get; set; } = 587;
+        public string? SmtpUsername { get; set; }
+        public string? SmtpPassword { get; set; }
+        public bool SmtpUseSsl { get; set; } = true;
+        public string? SmtpFromAddress { get; set; }
+
+        /// <summary>Copies all editable fields from <paramref name="source"/> onto this instance (Id is left untouched).</summary>
+        public void UpdateFrom(SystemSetting source)
+        {
+            HotelName = source.HotelName;
+            HotelAddress = source.HotelAddress;
+            HotelPhone = source.HotelPhone;
+            HotelGst = source.HotelGst;
+            DefaultPrinter = source.DefaultPrinter;
+            ShowPrintPreview = source.ShowPrintPreview;
+            ReceiptFormat = source.ReceiptFormat;
+            ShowGstBreakdown = source.ShowGstBreakdown;
+            ShowItemsOnBill = source.ShowItemsOnBill;
+            ShowDiscountLine = source.ShowDiscountLine;
+            ShowPhoneOnReceipt = source.ShowPhoneOnReceipt;
+            ShowThankYouFooter = source.ShowThankYouFooter;
+            EnableRoundOff = source.EnableRoundOff;
+            IsCompositionScheme = source.IsCompositionScheme;
+            EnableAutomatedBackups = source.EnableAutomatedBackups;
+            OffsiteBackupPath = source.OffsiteBackupPath;
+            IdleTimeoutMinutes = source.IdleTimeoutMinutes;
+            SmtpHost = source.SmtpHost;
+            SmtpPort = source.SmtpPort;
+            SmtpUsername = source.SmtpUsername;
+            SmtpPassword = source.SmtpPassword;
+            SmtpUseSsl = source.SmtpUseSsl;
+            SmtpFromAddress = source.SmtpFromAddress;
+        }
     }
 }
