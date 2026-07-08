@@ -117,7 +117,7 @@ namespace HotelPOS.Views
             if (user == null) return;
 
             var dialog = new TwoFactorEnrollDialog(user.Username) { Owner = Window.GetWindow(this) };
-            if (dialog.ShowDialog() is not true) return;
+            if (!dialog.ShowDialog().GetValueOrDefault()) return;
 
             try
             {
@@ -244,7 +244,7 @@ namespace HotelPOS.Views
             _current.IdleTimeoutMinutes = idleMinutes;
             _current.SmtpHost = string.IsNullOrWhiteSpace(SmtpHostBox.Text) ? null : SmtpHostBox.Text.Trim();
             _current.SmtpPort = smtpPort;
-            _current.SmtpUseSsl = SmtpUseSslCheck.IsChecked is true;
+            _current.SmtpUseSsl = SmtpUseSslCheck.IsChecked.GetValueOrDefault();
             _current.SmtpUsername = string.IsNullOrWhiteSpace(SmtpUsernameBox.Text) ? null : SmtpUsernameBox.Text.Trim();
             if (!string.IsNullOrEmpty(SmtpPasswordBox.Password))
                 _current.SmtpPassword = SmtpPasswordBox.Password;
@@ -274,7 +274,7 @@ namespace HotelPOS.Views
             {
                 SmtpHost = string.IsNullOrWhiteSpace(SmtpHostBox.Text) ? null : SmtpHostBox.Text.Trim(),
                 SmtpPort = smtpPort,
-                SmtpUseSsl = SmtpUseSslCheck.IsChecked is true,
+                SmtpUseSsl = SmtpUseSslCheck.IsChecked.GetValueOrDefault(),
                 SmtpUsername = string.IsNullOrWhiteSpace(SmtpUsernameBox.Text) ? null : SmtpUsernameBox.Text.Trim(),
                 SmtpPassword = string.IsNullOrEmpty(SmtpPasswordBox.Password) ? _current?.SmtpPassword : SmtpPasswordBox.Password,
                 SmtpFromAddress = string.IsNullOrWhiteSpace(SmtpFromBox.Text) ? null : SmtpFromBox.Text.Trim()

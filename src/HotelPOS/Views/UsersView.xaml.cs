@@ -140,7 +140,7 @@ namespace HotelPOS.Views
             if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
 
             var dialog = new SetEmailDialog(u.Username, u.Email) { Owner = Window.GetWindow(this) };
-            if (dialog.ShowDialog() is true)
+            if (dialog.ShowDialog().GetValueOrDefault())
             {
                 using (var scope = App.CreateDbScope())
                 {

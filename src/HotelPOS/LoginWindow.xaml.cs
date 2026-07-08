@@ -142,7 +142,7 @@ namespace HotelPOS
         private bool VerifyTwoFactor(User user)
         {
             var challenge = new Views.TwoFactorChallengeDialog(user.Username) { Owner = this };
-            if (challenge.ShowDialog() is not true) return false; // user cancelled
+            if (!challenge.ShowDialog().GetValueOrDefault()) return false; // user cancelled
 
             if (!HotelPOS.Domain.Common.TotpGenerator.ValidateCode(user.TwoFactorSecret, challenge.Code))
             {
@@ -168,7 +168,7 @@ namespace HotelPOS
             AppSession.CurrentUser = user;
 
             var dialog = new Views.PasswordResetDialog(user.Username) { Owner = this };
-            if (dialog.ShowDialog() is not true)
+            if (!dialog.ShowDialog().GetValueOrDefault())
             {
                 AppSession.CurrentUser = null;
                 return; // User cancelled password change, don't log in
@@ -196,12 +196,12 @@ namespace HotelPOS
         }
 
         /// <summary>Issues and saves a remember-me token if the checkbox is checked, clearing any stale one either way.</summary>
-        private async Task RememberLoginIfRequestedAsync(User user)
+        private async Task RememberLoginIfRequestedAsync(User user) // NOSONAR - reads this window instance's own RememberMeCheck control; cannot be static
         {
             // Any previously saved remember-me credential belongs to whichever account checked
             // the box last; clear it up front so an unchecked login never leaves a stale token behind.
             Services.RememberMeStore.Clear();
-            if (RememberMeCheck.IsChecked is not true) return;
+            if (!RememberMeCheck.IsChecked.GetValueOrDefault()) return;
 
             using var rmScope = App.CreateDbScope();
             var rememberMeService = rmScope.ServiceProvider.GetRequiredService<IRememberMeService>();
@@ -242,7 +242,7 @@ namespace HotelPOS
         private void ForgotPassword_Click(object sender, RoutedEventArgs e)
         {
             var forgotDialog = new Views.ForgotPasswordDialog { Owner = this };
-            if (forgotDialog.ShowDialog() is not true) return;
+            if (!forgotDialog.ShowDialog().GetValueOrDefault()) return;
 
             var codeDialog = new Views.ResetWithCodeDialog(forgotDialog.Username) { Owner = this };
             codeDialog.ShowDialog();
