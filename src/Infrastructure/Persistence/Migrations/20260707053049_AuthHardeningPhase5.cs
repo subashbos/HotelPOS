@@ -205,49 +205,17 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
             migrationBuilder.DropTable(
                 name: "RememberMeTokens");
 
-            migrationBuilder.DropColumn(
-                name: "Email",
-                table: "Users");
+            DropColumns(migrationBuilder, "Users", "Email", "LastLoginUtc", "TwoFactorEnabled", "TwoFactorSecret");
 
-            migrationBuilder.DropColumn(
-                name: "LastLoginUtc",
-                table: "Users");
+            DropColumns(migrationBuilder, "SystemSettings", "IdleTimeoutMinutes", "SmtpFromAddress", "SmtpHost", "SmtpPassword", "SmtpPort", "SmtpUseSsl", "SmtpUsername");
+        }
 
-            migrationBuilder.DropColumn(
-                name: "TwoFactorEnabled",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "TwoFactorSecret",
-                table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "IdleTimeoutMinutes",
-                table: "SystemSettings");
-
-            migrationBuilder.DropColumn(
-                name: "SmtpFromAddress",
-                table: "SystemSettings");
-
-            migrationBuilder.DropColumn(
-                name: "SmtpHost",
-                table: "SystemSettings");
-
-            migrationBuilder.DropColumn(
-                name: "SmtpPassword",
-                table: "SystemSettings");
-
-            migrationBuilder.DropColumn(
-                name: "SmtpPort",
-                table: "SystemSettings");
-
-            migrationBuilder.DropColumn(
-                name: "SmtpUseSsl",
-                table: "SystemSettings");
-
-            migrationBuilder.DropColumn(
-                name: "SmtpUsername",
-                table: "SystemSettings");
+        private static void DropColumns(MigrationBuilder migrationBuilder, string table, params string[] columns)
+        {
+            foreach (var column in columns)
+            {
+                migrationBuilder.DropColumn(name: column, table: table);
+            }
         }
     }
 }
