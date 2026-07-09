@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Application", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Infrastructure", "src\Infrastructure\Infrastructure.csproj", "{771C817E-8566-45EB-BE9B-EA118D9846E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.WPF", "src\HotelPOS\HotelPOS.WPF.csproj", "{35A3FFAE-56B2-4CF7-BA9C-41ABB6035AE7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.WPF", "src\HotelPOS.WPF\HotelPOS.WPF.csproj", "{35A3FFAE-56B2-4CF7-BA9C-41ABB6035AE7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotelPOS.Tests", "src\HotelPOS.Tests\HotelPOS.Tests.csproj", "{8F73B0A0-6436-41BA-B22C-0AF212B2E07D}"
 EndProject
