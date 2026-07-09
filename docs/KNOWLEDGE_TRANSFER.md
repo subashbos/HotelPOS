@@ -25,7 +25,7 @@ Primary startup flow:
 
 The solution follows a strict **Clean Architecture** with **CQRS** and **MVVM** patterns:
 
-- `HotelPOS.WPF/`: WPF presentation (MVVM ViewModels, UI XAML, and DI composition root)
+- `HotelPOS/`: WPF presentation (MVVM ViewModels, UI XAML, and DI composition root)
 - `HotelPOS.Domain/`: Core entities (`Item`, `Order`) and repository contracts
 - `HotelPOS.Application/`: Business services, MediatR Commands/Queries, and Data Transfer Objects (DTOs)
 - `HotelPOS.Persistence/`: EF Core `DbContext`, `GenericRepository<T>`, and specific repository implementations
@@ -43,7 +43,7 @@ Dependency direction and Data Flow:
 
 ### Dependency Injection and Lifetimes
 
-Defined in `HotelPOS.WPF/App.xaml.cs`.
+Defined in `HotelPOS/App.xaml.cs`.
 
 - `DbContext` is scoped (one per DI scope)
 - Repositories and core services are mostly scoped
@@ -94,15 +94,15 @@ Core data context is in `HotelPOS.Persistence/HotelDbContext.cs`.
 
 ### Receipt + Printing
 
-- Print UI: `HotelPOS.WPF/PrintPreviewWindow.xaml.cs`
-- Receipt generation: `HotelPOS.WPF/ReceiptGenerator.cs`
+- Print UI: `HotelPOS/PrintPreviewWindow.xaml.cs`
+- Receipt generation: `HotelPOS/ReceiptGenerator.cs`
 - Supports thermal and A4 formats
 - Uses runtime system settings for branding and tax display behavior
 - All DataGrids are standardized using the `PremiumGrid` style defined in `Themes/GlobalStyles.xaml`.
 
 ## 4) Database and Configuration
 
-Main configuration file: `HotelPOS.WPF/appsettings.json`
+Main configuration file: `HotelPOS/appsettings.json`
 
 - Required key: `ConnectionStrings:DefaultConnection`
 - Current development sample points to SQL Server
@@ -115,7 +115,7 @@ Important operational note:
 
 ## 5) Session and Role Behavior
 
-Session state is tracked in `HotelPOS.WPF/AppSession.cs`.
+Session state is tracked in `HotelPOS/AppSession.cs`.
 
 - `IsAdmin` and `IsManager` flags control visibility/navigation access in dashboard
 - Cashier-like users have admin modules hidden and default to billing screen
@@ -126,9 +126,9 @@ Session state is tracked in `HotelPOS.WPF/AppSession.cs`.
 From repository root:
 
 ```powershell
-dotnet restore .\HotelPOS.WPF\HotelPOS.slnx
-dotnet build .\HotelPOS.WPF\HotelPOS.slnx
-dotnet run --project .\HotelPOS.WPF\HotelPOS.WPF.csproj
+dotnet restore .\HotelPOS\HotelPOS.slnx
+dotnet build .\HotelPOS\HotelPOS.slnx
+dotnet run --project .\HotelPOS\HotelPOS.csproj
 dotnet test .\HotelPOS.Tests\HotelPOS.Tests.csproj
 ```
 
@@ -145,11 +145,11 @@ Smoke-test checklist for new owner:
 
 Most likely files to modify during feature work:
 
-- DI registrations and startup behavior: `HotelPOS.WPF/App.xaml.cs`
-- Billing UX and keyboard shortcuts: `HotelPOS.WPF/MainWindow.xaml.cs`, `HotelPOS.WPF/Views/BillingView.xaml*`
+- DI registrations and startup behavior: `HotelPOS/App.xaml.cs`
+- Billing UX and keyboard shortcuts: `HotelPOS/MainWindow.xaml.cs`, `HotelPOS/Views/BillingView.xaml*`
 - Business rules: `HotelPOS.Application/*Service.cs`
 - Data shape and migrations: `HotelPOS.Persistence/HotelDbContext.cs`, `HotelPOS.Persistence/Migrations/*`
-- Receipt format and compliance details: `HotelPOS.WPF/ReceiptGenerator.cs`
+- Receipt format and compliance details: `HotelPOS/ReceiptGenerator.cs`
 
 ## 8) Known Risks / Follow-Up Recommendations
 
@@ -257,12 +257,12 @@ Status legend: `Open` | `In Progress` | `Mitigated` | `Closed`
 
 ## 10) Quick Reference
 
-- Startup + DI: `HotelPOS.WPF/App.xaml.cs`
-- Login/session scope: `HotelPOS.WPF/LoginWindow.xaml.cs`
-- Dashboard navigation: `HotelPOS.WPF/DashboardWindow.xaml.cs`
-- Billing workflow: `HotelPOS.WPF/MainWindow.xaml.cs`
+- Startup + DI: `HotelPOS/App.xaml.cs`
+- Login/session scope: `HotelPOS/LoginWindow.xaml.cs`
+- Dashboard navigation: `HotelPOS/DashboardWindow.xaml.cs`
+- Billing workflow: `HotelPOS/MainWindow.xaml.cs`
 - Order business logic: `HotelPOS.Application/OrderService.cs`
 - Auth logic: `HotelPOS.Application/AuthService.cs`
 - Data context: `HotelPOS.Persistence/HotelDbContext.cs`
-- Receipt rendering: `HotelPOS.WPF/ReceiptGenerator.cs`
+- Receipt rendering: `HotelPOS/ReceiptGenerator.cs`
 
