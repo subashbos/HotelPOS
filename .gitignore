@@ -380,7 +380,8 @@ build/
 *.sqlite3
 
 # Local / development app settings (may contain secrets)
-appsettings.Development.json
+# appsettings.Development.json is tracked as a template with no secrets -
+# actual secrets (e.g. Jwt:Key) go through dotnet user-secrets instead.
 appsettings.Local.json
 secrets.json
 

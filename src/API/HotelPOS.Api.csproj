@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>HotelPOS.Api</AssemblyName>
     <RootNamespace>HotelPOS.Api</RootNamespace>
+    <UserSecretsId>76ac33d4-caa9-46bf-9044-80a1da92633d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

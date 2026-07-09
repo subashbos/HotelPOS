@@ -79,6 +79,18 @@ dotnet build --configuration Release
 
 ---
 
+## 🔐 Configuration & Secrets
+
+The API (`src/API`) splits configuration by environment: `appsettings.json` holds production-safe defaults (empty connection string, empty JWT key, no CORS origins — all must be explicitly configured for a real deployment), and `appsettings.Development.json` layers in local dev defaults (a local SQL Server connection string, verbose logging, and the Angular dev server's origin for CORS).
+
+The JWT signing key is never checked into either file. Set it via:
+- **Local development**: `dotnet user-secrets set "Jwt:Key" "<a-random-32+-character-string>"` from `src/API` (the project already has a `UserSecretsId` configured).
+- **Production/CI**: set the `HOTELPOS_JWT_KEY` environment variable. The API throws a clear startup error if neither is set.
+
+CORS origins for a real deployment go in `Cors:AllowedOrigins` (an array) via `appsettings.Production.json`, environment variables, or your deployment platform's configuration — not hardcoded in source.
+
+---
+
 ## 📖 How to Use
 
 ### Database Initialization

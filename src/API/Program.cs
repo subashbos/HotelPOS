@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentValidation;
 using HotelPOS.Api;
+using HotelPOS.Api.Configuration;
 using HotelPOS.Api.Middleware;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
@@ -65,24 +66,26 @@ AutoMapper.IMapper mapper = mapperCfg.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
 // ── CORS Configuration ────────────────────────────────────────────────────
+var corsAllowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+        policy.WithOrigins(corsAllowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
 });
 
 // ── JWT Authentication ────────────────────────────────────────────────────
-var jwtKey = builder.Configuration["Jwt:Key"]
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+
+var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
+var jwtKey = jwtOptions.Key
     ?? Environment.GetEnvironmentVariable("HOTELPOS_JWT_KEY");
 if (string.IsNullOrWhiteSpace(jwtKey))
     throw new InvalidOperationException(
         "JWT Key is not configured. Set Jwt:Key in appsettings or HOTELPOS_JWT_KEY environment variable.");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "HotelPOS";
-var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "HotelPOSClient";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -93,8 +96,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ClockSkew = TimeSpan.FromSeconds(30)
         };
