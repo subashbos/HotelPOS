@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Api;
+using HotelPOS.Api.Configuration;
 using MediatR;
 using FluentValidation;
 using AutoMapper;
@@ -147,6 +148,7 @@ namespace HotelPOS.Tests.Integration
                 .Build();
 
             services.AddSingleton<IConfiguration>(configuration);
+            services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
             services.AddDbContext<HotelDbContext>(options =>
             {
                 options.UseInMemoryDatabase("ApiDITestDb");

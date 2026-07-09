@@ -1,9 +1,10 @@
 using HotelPOS.Domain.Common.Constants;
+using HotelPOS.Api.Configuration;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 using System.ComponentModel.DataAnnotations;
 using Xunit;
@@ -12,15 +13,13 @@ namespace HotelPOS.Tests
 {
     public class AuthControllerTests
     {
-        private static IConfiguration CreateConfig() =>
-            new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Jwt:Key"] = "HotelPOS_TestJwtKey_Minimum32Characters!",
-                    ["Jwt:Issuer"] = "HotelPOS",
-                    ["Jwt:Audience"] = "HotelPOSClient"
-                })
-                .Build();
+        private static IOptions<JwtOptions> CreateJwtOptions() =>
+            Options.Create(new JwtOptions
+            {
+                Key = "HotelPOS_TestJwtKey_Minimum32Characters!",
+                Issuer = "HotelPOS",
+                Audience = "HotelPOSClient"
+            });
 
         [Fact]
         public async Task Login_WhenMustChangePassword_ReturnsUnauthorizedWithoutToken()
@@ -39,7 +38,7 @@ namespace HotelPOS.Tests
                 authMock.Object,
                 new Mock<IUserRepository>().Object,
                 new Mock<IRefreshTokenRepository>().Object,
-                CreateConfig());
+                CreateJwtOptions());
             var result = await controller.Login(new LoginDto { Username = "admin", Password = "password" });
 
             var unauthorized = Assert.IsType<UnauthorizedObjectResult>(result);
@@ -63,7 +62,7 @@ namespace HotelPOS.Tests
                 authMock.Object,
                 new Mock<IUserRepository>().Object,
                 new Mock<IRefreshTokenRepository>().Object,
-                CreateConfig());
+                CreateJwtOptions());
             var result = await controller.Login(new LoginDto { Username = "cashier", Password = "password" });
 
             var ok = Assert.IsType<OkObjectResult>(result);
