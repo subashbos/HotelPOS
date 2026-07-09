@@ -78,7 +78,7 @@ HotelPOS is a modern, high-performance Point of Sale (POS) and billing applicati
 ---
 
 ## 6. Project Structure
-For detailed architectural info, refer to [SystemDesign.md](file:///d:/HotelPOS/SystemDesign.md).
+For detailed architectural info, refer to [SystemDesign.md](SystemDesign.md).
 
 - **HotelPOS**: The main UI (WPF/XAML) containing views and view-models.
 - **HotelPOS.Domain**: Core data models and database entities.

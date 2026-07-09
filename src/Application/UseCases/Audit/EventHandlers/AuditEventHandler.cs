@@ -2,7 +2,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Events;
 using MediatR;
 
-namespace HotelPOS.Application.UseCases.Handlers
+namespace HotelPOS.Application.UseCases.Audit.EventHandlers
 {
     public class AuditEventHandler : INotificationHandler<EntityActionEvent>
     {

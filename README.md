@@ -8,11 +8,11 @@ Welcome to **HotelPOS**, a professional-grade Point of Sale (POS) and inventory 
 
 For in-depth explanations of the system's design and features, refer to the dedicated guides:
 
-1. **[User Guide & Features](file:///d:/HotelPOS/ProjectDocumentation.md)**  
+1. **[User Guide & Features](docs/ProjectDocumentation.md)**  
    *Operational manual for cashiers, business owners, GST setups, and POS shortcuts.*
-2. **[System Design & Architecture](file:///d:/HotelPOS/SystemDesign.md)**  
+2. **[System Design & Architecture](docs/SystemDesign.md)**  
    *Comprehensive layout of the Clean Architecture implementation and design patterns (CQRS, MediatR).*
-3. **[Technical Reference & Deep Dives](file:///d:/HotelPOS/TechnicalReference.md)**  
+3. **[Technical Reference & Deep Dives](docs/TechnicalReference.md)**  
    *Detailed documentation of thread safety, printing, tax calculation engines, and database synchronization.*
 
 ---

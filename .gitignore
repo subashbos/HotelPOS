@@ -370,7 +370,7 @@ FodyWeavers.xsd
 Build/
 build/
 .codex-build/
-eslint-results.sarif
+*.sarif
 
 # SQLite database files (runtime data, not source)
 *.db
@@ -401,6 +401,7 @@ Thumbs.db
 # Claude Code local/runtime state (launch.json is shared config, keep that tracked)
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+.claude/desktop.ini
 
 # ==========================================
 # Angular & Node.js
