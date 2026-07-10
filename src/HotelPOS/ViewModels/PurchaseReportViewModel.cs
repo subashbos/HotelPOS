@@ -10,8 +10,6 @@ namespace HotelPOS.ViewModels
 {
     public partial class PurchaseReportViewModel : ObservableObject
     {
-        private readonly IReportService _reportService;
-        private readonly IPurchaseService _purchaseService;
         private readonly INotificationService _notificationService;
 
         [ObservableProperty]
@@ -57,8 +55,6 @@ namespace HotelPOS.ViewModels
 
         public PurchaseReportViewModel(IReportService reportService, IPurchaseService purchaseService, INotificationService notificationService)
         {
-            _reportService = reportService;
-            _purchaseService = purchaseService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

@@ -50,7 +50,6 @@ namespace HotelPOS.Views
     public partial class BIReportView : UserControl
     {
         private readonly IBIReportService _biService;
-        private readonly IItemService _itemService;
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
@@ -60,7 +59,6 @@ namespace HotelPOS.Views
         {
             InitializeComponent();
             _biService = biService;
-            _itemService = itemService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

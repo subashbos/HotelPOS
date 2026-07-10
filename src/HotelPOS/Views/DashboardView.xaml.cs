@@ -35,8 +35,6 @@ namespace HotelPOS.Views
 
     public partial class DashboardView : UserControl
     {
-        private readonly IOrderService _orderService;
-        private readonly IReportService _reportService;
         private readonly INotificationService _notificationService;
         private bool _isLoading;
 
@@ -57,8 +55,6 @@ namespace HotelPOS.Views
         public DashboardView(IOrderService orderService, IReportService reportService, INotificationService notificationService)
         {
             InitializeComponent();
-            _orderService = orderService;
-            _reportService = reportService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

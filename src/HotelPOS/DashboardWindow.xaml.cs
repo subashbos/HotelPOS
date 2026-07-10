@@ -39,8 +39,6 @@ namespace HotelPOS
         private BomView? _cachedBom;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
-        private readonly IUserRepository _userRepository;
-        private readonly IRoleService _roleService;
 
         // ── Idle timeout ──────────────────────────────────────────────────────
         private DispatcherTimer? _idleTimer;
@@ -55,8 +53,6 @@ namespace HotelPOS
             _serviceProvider = serviceProvider;
             _themeService = themeService;
             _notificationService = notificationService;
-            _userRepository = userRepository;
-            _roleService = roleService;
             Closed += DashboardWindow_Closed;
         }
 

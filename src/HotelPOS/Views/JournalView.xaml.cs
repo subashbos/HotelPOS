@@ -29,8 +29,6 @@ namespace HotelPOS.Views
 
     public partial class JournalView : UserControl
     {
-        private readonly IOrderService _orderService;
-        private readonly IReportService _reportService;
         private readonly INotificationService _notificationService;
         private readonly JournalViewModel _viewModel;
         private bool _isLoaded = false;
@@ -38,8 +36,8 @@ namespace HotelPOS.Views
         public JournalView(IOrderService orderService, IReportService reportService, INotificationService notificationService)
         {
             InitializeComponent();
-            _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
-            _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
+            _ = orderService ?? throw new ArgumentNullException(nameof(orderService));
+            _ = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
