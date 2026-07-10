@@ -43,7 +43,7 @@ namespace HotelPOS.Views
                 if (element is TextBox tb)
                 {
                     // Do not interfere with multi-line note inputs or data grids
-                    if (tb.AcceptsReturn == false && !IsDescendantOfDataGrid(tb))
+                    if (tb.AcceptsReturn is false && !IsDescendantOfDataGrid(tb))
                     {
                         e.Handled = true;
                         element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));

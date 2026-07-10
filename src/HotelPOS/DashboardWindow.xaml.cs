@@ -13,6 +13,8 @@ namespace HotelPOS
 {
     public partial class DashboardWindow : Window
     {
+        private const string PurchaseModule = "Purchase";
+
         private readonly IServiceProvider _serviceProvider;
 
         // Cached views — created once, reused on navigation
@@ -230,23 +232,23 @@ namespace HotelPOS
             if (user == null) return;
 
             NavDash.Visibility = HasPermission("Dashboard") ? Visibility.Visible : Visibility.Collapsed;
-            NavBIReport.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
+            NavBIReport.Visibility = HasPermission(PermissionModules.SalesReport) ? Visibility.Visible : Visibility.Collapsed;
             NavBilling.Visibility = HasPermission("Billing") ? Visibility.Visible : Visibility.Collapsed;
 
-            NavSales.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
+            NavSales.Visibility = HasPermission(PermissionModules.SalesReport) ? Visibility.Visible : Visibility.Collapsed;
             NavShift.Visibility = HasPermission("Shift") ? Visibility.Visible : Visibility.Collapsed;
 
             NavMenu.Visibility = HasPermission("Items") ? Visibility.Visible : Visibility.Collapsed;
             NavTables.Visibility = HasPermission("Tables") ? Visibility.Visible : Visibility.Collapsed;
 
             NavCats.Visibility = HasPermission("Categories") ? Visibility.Visible : Visibility.Collapsed;
-            NavPurchase.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
-            NavSuppliers.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
-            NavRawMaterials.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
-            NavBom.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
+            NavPurchase.Visibility = HasPermission(PurchaseModule) ? Visibility.Visible : Visibility.Collapsed;
+            NavSuppliers.Visibility = HasPermission(PurchaseModule) ? Visibility.Visible : Visibility.Collapsed;
+            NavRawMaterials.Visibility = HasPermission(PurchaseModule) ? Visibility.Visible : Visibility.Collapsed;
+            NavBom.Visibility = HasPermission(PurchaseModule) ? Visibility.Visible : Visibility.Collapsed;
 
-            NavItemReport.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
-            NavPurchaseReport.Visibility = HasPermission("Purchase") || HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
+            NavItemReport.Visibility = HasPermission(PermissionModules.SalesReport) ? Visibility.Visible : Visibility.Collapsed;
+            NavPurchaseReport.Visibility = HasPermission(PurchaseModule) || HasPermission(PermissionModules.SalesReport) ? Visibility.Visible : Visibility.Collapsed;
             NavLedger.Visibility = HasPermission("Ledger") ? Visibility.Visible : Visibility.Collapsed;
             NavJournal.Visibility = HasPermission("Journal") ? Visibility.Visible : Visibility.Collapsed;
 

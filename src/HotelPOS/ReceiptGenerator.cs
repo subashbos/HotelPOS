@@ -128,7 +128,6 @@ namespace HotelPOS
 
             // ── Totals Table ──────────────────────────────────────────────────
             decimal subtotal = order.Subtotal;
-            decimal gstTotal = order.GstAmount;
             decimal grandTotal = order.TotalAmount;
 
             var totals = new System.Windows.Documents.Table { Margin = new Thickness(0, 6, 0, 0) };

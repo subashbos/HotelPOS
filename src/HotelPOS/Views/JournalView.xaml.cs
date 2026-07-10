@@ -108,7 +108,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"Journal_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() is not true) return;
 
             try
             {
@@ -161,7 +161,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"GST_Report_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() is not true) return;
 
             try
             {

@@ -88,7 +88,7 @@ namespace HotelPOS.ViewModels
                 Suppliers.Clear();
                 Suppliers.Add(new Supplier { Id = 0, Name = "All Suppliers" });
                 foreach (var sup in suppliers) Suppliers.Add(sup);
-                SelectedSupplier = Suppliers.First();
+                SelectedSupplier = Suppliers[0];
 
                 await ApplyFilterAsync();
             }

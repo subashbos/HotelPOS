@@ -19,7 +19,7 @@ namespace HotelPOS.Views
         private readonly INotificationService _notificationService;
         private List<Item> _allItems = new();
         private List<Item> _filtered = new();
-        private ObservableCollection<Item> _items = new();
+        private readonly ObservableCollection<Item> _items = new();
         private int _currentPage = 1;
         private const int PageSize = 20;
         private bool _isLoading = false;
@@ -157,7 +157,7 @@ namespace HotelPOS.Views
                 Title = "Select Excel File",
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() is not true) return;
 
             try
             {
@@ -194,7 +194,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"Menu_Export_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() is not true) return;
 
             try
             {

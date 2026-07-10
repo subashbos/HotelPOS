@@ -44,11 +44,11 @@ namespace HotelPOS.Views
         public List<ItemReportRowDto>? LastItemReport { get; private set; }
         public List<DailyRow>? LastDailyReport { get; private set; }
 
-        private ObservableCollection<TableSalesRowDto> _tableItems = new();
+        private readonly ObservableCollection<TableSalesRowDto> _tableItems = new();
         private int _tablePage = 1;
-        private ObservableCollection<ItemReportRowDto> _itemItems = new();
+        private readonly ObservableCollection<ItemReportRowDto> _itemItems = new();
         private int _itemPage = 1;
-        private ObservableCollection<DailyRow> _dateItems = new();
+        private readonly ObservableCollection<DailyRow> _dateItems = new();
         private int _datePage = 1;
         private const int PageSize = 20;
 
@@ -103,10 +103,10 @@ namespace HotelPOS.Views
             if (CustomFrom.SelectedDate.HasValue || CustomTo.SelectedDate.HasValue)
                 return (CustomFrom.SelectedDate, CustomTo.SelectedDate?.AddDays(1));
 
-            if (TodayFilter.IsChecked == true)
+            if (TodayFilter.IsChecked is true)
                 return (DateTime.Today, null);
 
-            if (WeekFilter.IsChecked == true)
+            if (WeekFilter.IsChecked is true)
             {
                 var today = DateTime.Today;
                 var offset = (int)today.DayOfWeek == 0 ? 6 : (int)today.DayOfWeek - 1;
@@ -312,7 +312,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"HotelPOS_Report_{DateTime.Now:yyyyMMdd_HHmm}.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() is not true) return;
 
             try
             {

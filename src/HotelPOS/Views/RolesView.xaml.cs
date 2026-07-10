@@ -109,7 +109,7 @@ namespace HotelPOS.Views
                 if (roles != null && roles.Any())
                 {
                     var adminRole = roles.FirstOrDefault(r => r.Name == RoleNames.Admin);
-                    RolesGrid.SelectedItem = adminRole ?? roles.First();
+                    RolesGrid.SelectedItem = adminRole ?? roles[0];
                 }
             }
         }

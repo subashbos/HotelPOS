@@ -43,7 +43,7 @@ namespace HotelPOS.Views
                 };
 
                 var result = dialog.ShowDialog();
-                return Task.FromResult(result == true);
+                return Task.FromResult(result is true);
             }
             catch (Exception ex)
             {
