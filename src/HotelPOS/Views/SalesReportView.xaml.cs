@@ -248,7 +248,7 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is RecentOrderRowDto row)
             {
-                var confirm = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Are you sure you want to void order invoice {row.InvoiceNumber}?", "Confirm Void", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning);
+                var confirm = await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync($"Are you sure you want to void order invoice {row.InvoiceNumber}?", "Confirm Void", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning);
                 if (confirm == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     string reason = Microsoft.VisualBasic.Interaction.InputBox("Enter reason for voiding this order:", "Void Reason", "Customer Cancellation");
@@ -280,7 +280,7 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is RecentOrderRowDto row)
             {
-                var confirm = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Are you sure you want to refund order invoice {row.InvoiceNumber}?", "Confirm Refund", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question);
+                var confirm = await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync($"Are you sure you want to refund order invoice {row.InvoiceNumber}?", "Confirm Refund", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Question);
                 if (confirm == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     string reason = Microsoft.VisualBasic.Interaction.InputBox("Enter reason for refunding this order:", "Refund Reason", "Return/Refund");

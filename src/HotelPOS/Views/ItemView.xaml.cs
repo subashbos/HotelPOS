@@ -138,7 +138,7 @@ namespace HotelPOS.Views
             if (sender is Button b && b.Tag is int id)
             {
                 var item = _allItems.FirstOrDefault(i => i.Id == id);
-                if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Delete '{item?.Name}'?\nThis cannot be undone.",
+                if (await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync($"Delete '{item?.Name}'?\nThis cannot be undone.",
                     "Confirm Delete", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     await _itemService.DeleteItemAsync(id);

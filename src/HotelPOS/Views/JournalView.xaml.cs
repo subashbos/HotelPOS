@@ -282,7 +282,7 @@ namespace HotelPOS.Views
         {
             if (sender is Button b && b.Tag is int orderId)
             {
-                if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
+                if (await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
                     HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
                 {
                     try

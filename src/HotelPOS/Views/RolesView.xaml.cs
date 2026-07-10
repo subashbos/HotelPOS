@@ -260,7 +260,7 @@ namespace HotelPOS.Views
                 return;
             }
 
-            if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+            if (await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                     $"Delete role '{_selectedRole.Name}'?\nUsers assigned this role will lose all access.",
                     "Confirm Delete",
                     HotelPOS.Application.Interfaces.DialogButton.YesNo,

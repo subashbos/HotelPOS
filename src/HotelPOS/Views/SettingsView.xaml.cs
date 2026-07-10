@@ -310,7 +310,7 @@ namespace HotelPOS.Views
 
         private async void RestoreDb_Click(object sender, RoutedEventArgs e)
         {
-            var confirm = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+            var confirm = await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                 "⚠️ WARNING: Restoring the database will overwrite all current data and reset active tables.\n\nAre you sure you want to continue?",
                 "Confirm Database Restore",
                 HotelPOS.Application.Interfaces.DialogButton.YesNo,
@@ -333,7 +333,7 @@ namespace HotelPOS.Views
                         var backup = scope.ServiceProvider.GetRequiredService<IBackupService>();
                         await backup.RestoreBackupAsync(dlg.FileName);
                     }
-                    App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+                    await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                         "Database restored successfully!\n\nThe application will now close to reload context. Please restart the application.",
                         "Restore Success",
                         HotelPOS.Application.Interfaces.DialogButton.OK,
