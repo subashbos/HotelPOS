@@ -1,7 +1,9 @@
+using HotelPOS.Api.Configuration;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,7 +18,7 @@ namespace HotelPOS.Api.Controllers
         private readonly IAuthService _authService;
         private readonly IUserRepository _userRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
-        private readonly IConfiguration _config;
+        private readonly JwtOptions _jwtOptions;
 
         private const int RefreshTokenDays = 30;
 
@@ -24,12 +26,12 @@ namespace HotelPOS.Api.Controllers
             IAuthService authService,
             IUserRepository userRepository,
             IRefreshTokenRepository refreshTokenRepository,
-            IConfiguration config)
+            IOptions<JwtOptions> jwtOptions)
         {
             _authService = authService;
             _userRepository = userRepository;
             _refreshTokenRepository = refreshTokenRepository;
-            _config = config;
+            _jwtOptions = jwtOptions.Value;
         }
 
         [HttpPost("login")]
@@ -156,9 +158,7 @@ namespace HotelPOS.Api.Controllers
 
         private string GenerateJwtToken(User user)
         {
-            var jwtKey = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured.");
-            var jwtIssuer = _config["Jwt:Issuer"] ?? "HotelPOS";
-            var jwtAudience = _config["Jwt:Audience"] ?? "HotelPOSClient";
+            var jwtKey = _jwtOptions.Key ?? throw new InvalidOperationException("JWT Key not configured.");
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -172,8 +172,8 @@ namespace HotelPOS.Api.Controllers
             };
 
             var token = new JwtSecurityToken(
-                issuer: jwtIssuer,
-                audience: jwtAudience,
+                issuer: _jwtOptions.Issuer,
+                audience: _jwtOptions.Audience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(8),
                 signingCredentials: creds

@@ -8,11 +8,11 @@ Welcome to **HotelPOS**, a professional-grade Point of Sale (POS) and inventory 
 
 For in-depth explanations of the system's design and features, refer to the dedicated guides:
 
-1. **[User Guide & Features](file:///d:/HotelPOS/ProjectDocumentation.md)**  
+1. **[User Guide & Features](docs/ProjectDocumentation.md)**  
    *Operational manual for cashiers, business owners, GST setups, and POS shortcuts.*
-2. **[System Design & Architecture](file:///d:/HotelPOS/SystemDesign.md)**  
+2. **[System Design & Architecture](docs/SystemDesign.md)**  
    *Comprehensive layout of the Clean Architecture implementation and design patterns (CQRS, MediatR).*
-3. **[Technical Reference & Deep Dives](file:///d:/HotelPOS/TechnicalReference.md)**  
+3. **[Technical Reference & Deep Dives](docs/TechnicalReference.md)**  
    *Detailed documentation of thread safety, printing, tax calculation engines, and database synchronization.*
 
 ---
@@ -76,6 +76,18 @@ dotnet build --configuration Release
 1. Open the solution file `HotelPOS.sln` or `HotelPOS/HotelPOS.slnx` in Visual Studio.
 2. Select the **Release** configuration and **Any CPU** platform.
 3. Right-click the solution in Solution Explorer and click **Build Solution**.
+
+---
+
+## 🔐 Configuration & Secrets
+
+The API (`src/API`) splits configuration by environment: `appsettings.json` holds production-safe defaults (empty connection string, empty JWT key, no CORS origins — all must be explicitly configured for a real deployment), and `appsettings.Development.json` layers in local dev defaults (a local SQL Server connection string, verbose logging, and the Angular dev server's origin for CORS).
+
+The JWT signing key is never checked into either file. Set it via:
+- **Local development**: `dotnet user-secrets set "Jwt:Key" "<a-random-32+-character-string>"` from `src/API` (the project already has a `UserSecretsId` configured).
+- **Production/CI**: set the `HOTELPOS_JWT_KEY` environment variable. The API throws a clear startup error if neither is set.
+
+CORS origins for a real deployment go in `Cors:AllowedOrigins` (an array) via `appsettings.Production.json`, environment variables, or your deployment platform's configuration — not hardcoded in source.
 
 ---
 
