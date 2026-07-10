@@ -1,9 +1,9 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
-process.env.CHROME_BIN = process.env.CHROME_BIN || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+process.env.CHROME_BIN = process.env.CHROME_BIN || String.raw`C:\Program Files\Google\Chrome\Application\chrome.exe`;
 
-module.exports = function (config) {
+module.exports = function karmaConfig(config) {
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
@@ -22,7 +22,7 @@ module.exports = function (config) {
       suppressAll: true
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, './coverage/hotel-pos-client'),
+      dir: require('node:path').join(__dirname, './coverage/hotel-pos-client'),
       subdir: '.',
       reporters: [
         { type: 'html' },

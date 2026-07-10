@@ -52,7 +52,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private bool IsDescendantOfDataGrid(DependencyObject obj)
+        private static bool IsDescendantOfDataGrid(DependencyObject obj)
         {
             var parent = VisualTreeHelper.GetParent(obj);
             while (parent != null)

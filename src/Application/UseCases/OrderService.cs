@@ -10,6 +10,8 @@ namespace HotelPOS.Application.UseCases
 {
     public class OrderService : IOrderService
     {
+        private const string OrderEntityType = "Order";
+
         private readonly IOrderRepository _repo;
         private readonly IMediator? _mediator;
         private readonly IItemService _itemService;
@@ -137,7 +139,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {effectiveTableNumber}, Type: {orderType}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {effectiveTableNumber}, Type: {orderType}"));
                 }
                 return orderId;
             }
@@ -148,7 +150,7 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
-        private void CalculateTotals(Order order, List<OrderItem> items)
+        private static void CalculateTotals(Order order, List<OrderItem> items)
         {
             order.Subtotal = items.Sum(x => x.Total);
             order.GstAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / MoneyPrecision.PercentDivisor)), MoneyPrecision.CurrencyDecimals);
@@ -159,7 +161,7 @@ namespace HotelPOS.Application.UseCases
             order.IgstAmount = 0m;
         }
 
-        private string GetFiscalYear(DateTime date)
+        private static string GetFiscalYear(DateTime date)
         {
             // India: April 1 to March 31
             int year = date.Month < 4 ? date.Year - 1 : date.Year;
@@ -227,7 +229,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
                 }
             }
             catch
@@ -262,7 +264,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.DeleteAsync(orderId);
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, orderId, "Delete", "Soft Deleted"));
                 }
             }
         }
@@ -311,7 +313,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
                 }
             }
             catch
@@ -371,8 +373,7 @@ namespace HotelPOS.Application.UseCases
 
                 // Recalculate totals
                 CalculateTotals(order, order.Items);
-                
-                decimal oldTotal = order.TotalAmount;
+
                 order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
                 order.RefundedAmount += refundTotal;
                 order.RefundReason = reason;
@@ -405,7 +406,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
                 }
             }
             catch
@@ -453,7 +454,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
                 }
             }
             catch

@@ -143,7 +143,7 @@ namespace HotelPOS.Application.UseCases
             if (userId == currentUserId)
                 throw new InvalidOperationException("You cannot delete your own account.");
 
-            var user = await _userRepository!.GetByIdAsync(userId)
+            _ = await _userRepository!.GetByIdAsync(userId)
                 ?? throw new KeyNotFoundException($"User #{userId} not found.");
             await _userRepository.DeleteAsync(userId);
         }

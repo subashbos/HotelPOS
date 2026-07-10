@@ -125,4 +125,4 @@ app.UseAuthentication();   // MUST come before UseAuthorization
 app.UseAuthorization();
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
