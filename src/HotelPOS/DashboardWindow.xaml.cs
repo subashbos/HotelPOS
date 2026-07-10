@@ -609,13 +609,10 @@ namespace HotelPOS
                         e.Handled = true;
                     }
                 }
-                else if (e.Key == Key.F4)
+                else if (e.Key == Key.F4 && !bv.IsKeyboardFocusWithin)
                 {
-                    if (!bv.IsKeyboardFocusWithin)
-                    {
-                        bv.TriggerCheckout();
-                        e.Handled = true;
-                    }
+                    bv.TriggerCheckout();
+                    e.Handled = true;
                 }
             }
         }

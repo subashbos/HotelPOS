@@ -125,24 +125,22 @@ namespace HotelPOS.Views
         /// </remarks>
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button b && b.Tag is int id)
-            {
-                if (await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync("Delete this table?", "Confirm Delete",
+            if (sender is Button b && b.Tag is int id
+                && await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync("Delete this table?", "Confirm Delete",
                     HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
+            {
+                try
                 {
-                    try
+                    using (var scope = App.CreateDbScope())
                     {
-                        using (var scope = App.CreateDbScope())
-                        {
-                            var tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
-                            await tableService.DeleteTableAsync(id);
-                        }
-                        ShowStatus("🗑 Table deleted.", true);
+                        var tableService = scope.ServiceProvider.GetRequiredService<ITableService>();
+                        await tableService.DeleteTableAsync(id);
                     }
-                    catch (Exception ex) { ShowStatus(ex.Message, false); }
-
-                    await LoadDataAsync();
+                    ShowStatus("🗑 Table deleted.", true);
                 }
+                catch (Exception ex) { ShowStatus(ex.Message, false); }
+
+                await LoadDataAsync();
             }
         }
 

@@ -53,12 +53,10 @@ namespace HotelPOS.Behaviors
             if (_scrollViewer == null || Command == null) return;
 
             // Trigger when reaching 90% of the scrollable height
-            if (_scrollViewer.VerticalOffset + _scrollViewer.ViewportHeight >= _scrollViewer.ExtentHeight * 0.9)
+            if (_scrollViewer.VerticalOffset + _scrollViewer.ViewportHeight >= _scrollViewer.ExtentHeight * 0.9
+                && Command.CanExecute(null))
             {
-                if (Command.CanExecute(null))
-                {
-                    Command.Execute(null);
-                }
+                Command.Execute(null);
             }
         }
 

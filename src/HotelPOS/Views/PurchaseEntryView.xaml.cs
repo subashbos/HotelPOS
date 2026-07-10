@@ -40,14 +40,11 @@ namespace HotelPOS.Views
             else if (e.Key == Key.Enter)
             {
                 var element = Keyboard.FocusedElement as UIElement;
-                if (element is TextBox tb)
+                // Do not interfere with multi-line note inputs or data grids
+                if (element is TextBox tb && tb.AcceptsReturn is false && !IsDescendantOfDataGrid(tb))
                 {
-                    // Do not interfere with multi-line note inputs or data grids
-                    if (tb.AcceptsReturn is false && !IsDescendantOfDataGrid(tb))
-                    {
-                        e.Handled = true;
-                        element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-                    }
+                    e.Handled = true;
+                    element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
                 }
             }
         }

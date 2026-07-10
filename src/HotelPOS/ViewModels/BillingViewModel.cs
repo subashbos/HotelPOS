@@ -126,13 +126,10 @@ namespace HotelPOS.ViewModels
                     }
                 }
 
-                if (SetProperty(ref _selectedQty, value))
+                if (SetProperty(ref _selectedQty, value) && SelectedCartRow != null)
                 {
-                    if (SelectedCartRow != null)
-                    {
-                        _cartService.SetQuantity(TableNumber, SelectedCartRow.ItemId, value);
-                        UpdateCart();
-                    }
+                    _cartService.SetQuantity(TableNumber, SelectedCartRow.ItemId, value);
+                    UpdateCart();
                 }
             }
         }

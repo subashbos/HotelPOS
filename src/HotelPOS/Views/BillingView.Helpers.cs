@@ -10,12 +10,9 @@ namespace HotelPOS.Views
     {
         private void GridTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox tb && tb.DataContext is CartRow row)
+            if (sender is TextBox tb && tb.DataContext is CartRow row && _viewModel.UpdateRowCommand.CanExecute(row))
             {
-                if (_viewModel.UpdateRowCommand.CanExecute(row))
-                {
-                    _viewModel.UpdateRowCommand.Execute(row);
-                }
+                _viewModel.UpdateRowCommand.Execute(row);
             }
         }
 

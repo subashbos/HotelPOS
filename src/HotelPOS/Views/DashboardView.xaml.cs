@@ -483,24 +483,22 @@ namespace HotelPOS.Views
         /// <param name="sender">The Button that raised the event; its Tag must be an <c>int</c> containing the order ID to delete.</param>
         private async void DeleteOrder_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button b && b.Tag is int orderId)
-            {
-                if (await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
+            if (sender is Button b && b.Tag is int orderId
+                && await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
                     HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
+            {
+                try
                 {
-                    try
+                    using (var scope = App.CreateDbScope())
                     {
-                        using (var scope = App.CreateDbScope())
-                        {
-                            var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                            await orderService.DeleteOrderAsync(orderId);
-                        }
-                        await LoadAsync();
+                        var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                        await orderService.DeleteOrderAsync(orderId);
                     }
-                    catch (Exception ex)
-                    {
-                        _notificationService.ShowError($"Delete failed: {ex.Message}");
-                    }
+                    await LoadAsync();
+                }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Delete failed: {ex.Message}");
                 }
             }
         }
