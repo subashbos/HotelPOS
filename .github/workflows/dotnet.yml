@@ -1,0 +1,85 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  dotnet:
+    name: .NET Build & Test
+    # HotelPOS.WPF / HotelPOS.Tests target net10.0-windows (UseWPF=true), which
+    # requires the Windows Desktop build tooling and therefore a Windows runner.
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore HotelPOS.sln
+
+      - name: Build
+        run: dotnet build HotelPOS.sln --no-restore --configuration Release -warnaserror
+
+      - name: Test
+        run: dotnet test HotelPOS.sln --no-build --configuration Release --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
+
+      - name: Publish test results to Actions summary
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: .NET Test Results
+          path: TestResults/*.trx
+          reporter: dotnet-trx
+          fail-on-error: true
+
+      - name: Upload test results artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dotnet-test-results
+          path: TestResults/*.trx
+
+  angular:
+    name: Angular Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: src/HotelPOS.Client/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: src/HotelPOS.Client
+
+      - name: Locate Chrome
+        id: chrome
+        run: echo "path=$(which google-chrome-stable || which google-chrome || which chromium-browser)" >> "$GITHUB_OUTPUT"
+
+      - name: Run Angular unit tests
+        run: npx ng test --watch=false --browsers=ChromeHeadlessCI
+        working-directory: src/HotelPOS.Client
+        env:
+          CHROME_BIN: ${{ steps.chrome.outputs.path }}
+
+      - name: Build
+        run: npm run build
+        working-directory: src/HotelPOS.Client
