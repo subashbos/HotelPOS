@@ -1,4 +1,4 @@
-import { HttpHandler, HttpRequest, HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpHandler, HttpRequest, HttpErrorResponse, HttpResponse, HttpEvent } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { AuthInterceptor } from './auth.interceptor';
 import { AuthService } from './auth.service';
@@ -10,7 +10,7 @@ describe('AuthInterceptor', () => {
   let interceptor: AuthInterceptor;
 
   beforeEach(() => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken', 'logout']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken', 'logout', 'hasRefreshToken', 'refresh']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     interceptor = new AuthInterceptor(authServiceSpy, routerSpy);
   });
@@ -41,8 +41,9 @@ describe('AuthInterceptor', () => {
     expect(capturedRequest.headers.has('Authorization')).toBeFalse();
   });
 
-  it('logs out and redirects to /login on a 401 from a non-login request', () => {
+  it('logs out and redirects to /login on a 401 with no refresh token available', () => {
     authServiceSpy.getToken.and.returnValue('expired-token');
+    authServiceSpy.hasRefreshToken.and.returnValue(false);
     const req = new HttpRequest('GET', '/api/orders');
     const handler = makeHandler(throwError(() => new HttpErrorResponse({ status: 401 })));
 
@@ -74,5 +75,62 @@ describe('AuthInterceptor', () => {
     expect(caught?.status).toBe(500);
     expect(authServiceSpy.logout).not.toHaveBeenCalled();
     expect(routerSpy.navigate).not.toHaveBeenCalled();
+  });
+
+  it('refreshes the token and retries the original request on a 401', () => {
+    authServiceSpy.getToken.and.returnValue('expired-token');
+    authServiceSpy.hasRefreshToken.and.returnValue(true);
+    authServiceSpy.refresh.and.returnValue(of({ token: 'new-token', refreshToken: 'new-refresh', username: 'u', role: 'Admin' }));
+
+    const req = new HttpRequest('GET', '/api/orders');
+    let attempt = 0;
+    let retriedRequest!: HttpRequest<unknown>;
+    const handler = {
+      handle: (r: HttpRequest<unknown>) => {
+        attempt++;
+        if (attempt === 1) {
+          return throwError(() => new HttpErrorResponse({ status: 401 }));
+        }
+        retriedRequest = r;
+        return of(new HttpResponse({ status: 200 }));
+      }
+    } as HttpHandler;
+
+    let result: HttpEvent<unknown> | undefined;
+    interceptor.intercept(req, handler).subscribe(event => { result = event; });
+
+    expect(authServiceSpy.refresh).toHaveBeenCalled();
+    expect(retriedRequest.headers.get('Authorization')).toBe('Bearer new-token');
+    expect((result as HttpResponse<unknown>).status).toBe(200);
+    expect(authServiceSpy.logout).not.toHaveBeenCalled();
+  });
+
+  it('logs out when the refresh call itself fails', () => {
+    authServiceSpy.getToken.and.returnValue('expired-token');
+    authServiceSpy.hasRefreshToken.and.returnValue(true);
+    authServiceSpy.refresh.and.returnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
+
+    const req = new HttpRequest('GET', '/api/orders');
+    const handler = makeHandler(throwError(() => new HttpErrorResponse({ status: 401 })));
+
+    interceptor.intercept(req, handler).subscribe({ error: () => {} });
+
+    expect(authServiceSpy.logout).toHaveBeenCalled();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('logs out instead of refreshing again if the retried request still gets a 401', () => {
+    authServiceSpy.getToken.and.returnValue('expired-token');
+    authServiceSpy.hasRefreshToken.and.returnValue(true);
+    authServiceSpy.refresh.and.returnValue(of({ token: 'new-token', refreshToken: 'new-refresh', username: 'u', role: 'Admin' }));
+
+    const req = new HttpRequest('GET', '/api/orders');
+    const handler = makeHandler(throwError(() => new HttpErrorResponse({ status: 401 })));
+
+    interceptor.intercept(req, handler).subscribe({ error: () => {} });
+
+    expect(authServiceSpy.refresh).toHaveBeenCalledTimes(1);
+    expect(authServiceSpy.logout).toHaveBeenCalled();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
   });
 });
