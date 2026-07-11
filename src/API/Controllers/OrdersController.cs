@@ -69,6 +69,7 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("{id:int}/void")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> VoidOrder(int id, [FromBody] VoidOrderRequest request)
         {
             if (id <= 0) return BadRequest("Invalid order ID.");
