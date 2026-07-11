@@ -45,12 +45,17 @@ namespace HotelPOS.Api.Middleware
             }
             catch (KeyNotFoundException ex)
             {
-                var response = new ProblemDetails { Status = 404, Title = "Resource not found.", Detail = ex.Message };
+                // ex.Message here is always a message the application itself constructed (e.g.
+                // "Order #5 not found."), never a raw framework/DB exception - safe to return as-is.
+                var response = new ProblemDetails { Status = 404, Title = "Resource not found.", Detail = ex.Message }; // NOSONAR
                 await WriteResponseAsync(context, HttpStatusCode.NotFound, response);
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
             {
-                var response = new ProblemDetails { Status = 400, Title = "The request could not be processed.", Detail = ex.Message };
+                // ex.Message here is always a message the application itself constructed (e.g.
+                // "An item with the name 'X' already exists."), never a raw framework/DB
+                // exception - safe to return as-is.
+                var response = new ProblemDetails { Status = 400, Title = "The request could not be processed.", Detail = ex.Message }; // NOSONAR
                 await WriteResponseAsync(context, HttpStatusCode.BadRequest, response);
             }
             catch (Exception ex)
