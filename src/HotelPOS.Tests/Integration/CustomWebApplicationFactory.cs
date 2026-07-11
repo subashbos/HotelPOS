@@ -27,11 +27,27 @@ namespace HotelPOS.Tests.Integration
         public const string TestJwtIssuer = "HotelPOS";
         public const string TestJwtAudience = "HotelPOSClient";
 
-        // Generated per factory instance rather than a literal, so there's no
-        // credential-shaped string for secret scanners to flag and no key reuse across runs.
-        // AuthController derives its signing key via Encoding.UTF8.GetBytes(configuredKeyString),
-        // so IssueToken below must do the same with this exact string to produce valid signatures.
-        private readonly string _signingKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        // Program.cs reads and validates Jwt:Key eagerly (builder.Configuration.GetSection(...))
+        // *before* builder.Build() runs, but WebApplicationFactory's ConfigureAppConfiguration
+        // hook only applies at Build() time - too late for that check. The Jwt__Key env var
+        // (double underscore = .NET's config-hierarchy separator) is picked up immediately by
+        // WebApplication.CreateBuilder()'s default sources, with higher precedence than
+        // appsettings.json's "" default, so it's visible in time.
+        //
+        // Set once via a static field initializer (guaranteed thread-safe, runs exactly once)
+        // rather than per-instance: xUnit runs different test classes - and therefore different
+        // CustomWebApplicationFactory instances - in parallel by default, and this env var is
+        // process-wide, so per-instance random keys would race and clobber each other.
+        private static readonly string SigningKey = InitializeJwtEnvironment();
+
+        private static string InitializeJwtEnvironment()
+        {
+            var key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+            Environment.SetEnvironmentVariable("Jwt__Key", key);
+            Environment.SetEnvironmentVariable("Jwt__Issuer", TestJwtIssuer);
+            Environment.SetEnvironmentVariable("Jwt__Audience", TestJwtAudience);
+            return key;
+        }
 
         private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
@@ -43,11 +59,7 @@ namespace HotelPOS.Tests.Integration
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["Jwt:Key"] = _signingKey,
-                    ["Jwt:Issuer"] = TestJwtIssuer,
-                    ["Jwt:Audience"] = TestJwtAudience,
-                    ["ConnectionStrings:DefaultConnection"] = "DataSource=:memory:",
-                    ["Cors:AllowedOrigins:0"] = "http://localhost:4200"
+                    ["ConnectionStrings:DefaultConnection"] = "DataSource=:memory:"
                 });
             });
 
@@ -74,7 +86,7 @@ namespace HotelPOS.Tests.Integration
         /// <summary>Mints a JWT identical in shape to AuthController's, for a given role, without going through login.</summary>
         public string IssueToken(string role, string username = "test.user", int userId = 1)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_signingKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
