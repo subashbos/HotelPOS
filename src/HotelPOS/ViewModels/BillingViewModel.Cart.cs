@@ -114,14 +114,17 @@ namespace HotelPOS.ViewModels
         {
             if (Cart.Count == 0) return;
 
-            // Confirm before wiping the entire bill
-            var result = await _dialogService.ShowMessageAsync(
-                "Clear all items from the current bill?",
-                "Clear Cart",
-                DialogButton.YesNo,
-                DialogIcon.Warning);
+            // Confirm before wiping the entire bill (skip confirmation if no dialog service is wired up)
+            if (_dialogService != null)
+            {
+                var result = await _dialogService.ShowMessageAsync(
+                    "Clear all items from the current bill?",
+                    "Clear Cart",
+                    DialogButton.YesNo,
+                    DialogIcon.Warning);
 
-            if (result != DialogResult.Yes) return;
+                if (result != DialogResult.Yes) return;
+            }
 
             _cartService.Clear(TableNumber);
             DiscountAmount = 0;   // LOOPHOLE FIX: reset discount when cart is cleared

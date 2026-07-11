@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using HotelPOS.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
@@ -22,9 +24,14 @@ namespace HotelPOS.Tests.Integration
     /// </summary>
     public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
-        public const string TestJwtKey = "HotelPOS_TestJwtKey_Minimum32Characters!";
         public const string TestJwtIssuer = "HotelPOS";
         public const string TestJwtAudience = "HotelPOSClient";
+
+        // Generated per factory instance rather than a literal, so there's no
+        // credential-shaped string for secret scanners to flag and no key reuse across runs.
+        // AuthController derives its signing key via Encoding.UTF8.GetBytes(configuredKeyString),
+        // so IssueToken below must do the same with this exact string to produce valid signatures.
+        private readonly string _signingKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
         private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
@@ -36,7 +43,7 @@ namespace HotelPOS.Tests.Integration
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["Jwt:Key"] = TestJwtKey,
+                    ["Jwt:Key"] = _signingKey,
                     ["Jwt:Issuer"] = TestJwtIssuer,
                     ["Jwt:Audience"] = TestJwtAudience,
                     ["ConnectionStrings:DefaultConnection"] = "DataSource=:memory:",
@@ -65,9 +72,9 @@ namespace HotelPOS.Tests.Integration
         }
 
         /// <summary>Mints a JWT identical in shape to AuthController's, for a given role, without going through login.</summary>
-        public static string IssueToken(string role, string username = "test.user", int userId = 1)
+        public string IssueToken(string role, string username = "test.user", int userId = 1)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestJwtKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_signingKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -81,7 +88,7 @@ namespace HotelPOS.Tests.Integration
                 issuer: TestJwtIssuer,
                 audience: TestJwtAudience,
                 claims: claims,
-                expires: System.DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

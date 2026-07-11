@@ -29,7 +29,7 @@ namespace HotelPOS.Tests.Integration
             var client = _factory.CreateClient();
             if (role != null)
             {
-                var token = CustomWebApplicationFactory.IssueToken(role, username);
+                var token = _factory.IssueToken(role, username);
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
             return client;

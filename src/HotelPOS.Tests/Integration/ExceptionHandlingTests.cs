@@ -28,7 +28,7 @@ namespace HotelPOS.Tests.Integration
         private HttpClient CreateClient(string role, string username = "test.user")
         {
             var client = _factory.CreateClient();
-            var token = CustomWebApplicationFactory.IssueToken(role, username);
+            var token = _factory.IssueToken(role, username);
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             return client;
         }

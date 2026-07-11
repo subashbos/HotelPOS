@@ -59,7 +59,7 @@ namespace HotelPOS.Tests.Unit.Services
                         appInstance.InitializeComponent();
                     }
 
-                    var app = (App)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(App));
+                    var app = (App)System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(App));
                     var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
                     var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
                         .AddInMemoryCollection(new System.Collections.Generic.Dictionary<string, string?>
