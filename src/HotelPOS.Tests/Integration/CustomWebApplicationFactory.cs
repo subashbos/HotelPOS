@@ -70,8 +70,17 @@ namespace HotelPOS.Tests.Integration
 
             builder.ConfigureServices(services =>
             {
-                var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<HotelDbContext>));
-                if (descriptor != null) services.Remove(descriptor);
+                // AddDbContext<HotelDbContext> in Program.cs registers three descriptors -
+                // HotelDbContext itself, DbContextOptions<HotelDbContext>, and the non-generic
+                // DbContextOptions alias. Removing only the generic options descriptor leaves the
+                // other two still wired to the original SqlServer configuration, and EF Core
+                // throws "Only a single database provider can be registered" once the SQLite
+                // registration below is added alongside them.
+                var descriptorsToRemove = services.Where(d =>
+                    d.ServiceType == typeof(DbContextOptions<HotelDbContext>) ||
+                    d.ServiceType == typeof(DbContextOptions) ||
+                    d.ServiceType == typeof(HotelDbContext)).ToList();
+                foreach (var descriptor in descriptorsToRemove) services.Remove(descriptor);
 
                 services.AddDbContext<HotelDbContext>(options => options.UseSqlite(_connection));
             });
