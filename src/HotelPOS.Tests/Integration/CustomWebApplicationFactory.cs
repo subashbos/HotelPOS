@@ -70,20 +70,30 @@ namespace HotelPOS.Tests.Integration
 
             builder.ConfigureServices(services =>
             {
-                // AddDbContext<HotelDbContext> in Program.cs registers three descriptors -
-                // HotelDbContext itself, DbContextOptions<HotelDbContext>, and the non-generic
-                // DbContextOptions alias. Removing only the generic options descriptor leaves the
-                // other two still wired to the original SqlServer configuration, and EF Core
-                // throws "Only a single database provider can be registered" once the SQLite
-                // registration below is added alongside them.
+                // Removing only DbContextOptions<HotelDbContext> (and even DbContextOptions +
+                // HotelDbContext alongside it) still left EF Core reporting both SqlServer and
+                // Sqlite as registered. AddDbContext apparently registers the UseSqlServer(...)
+                // configure-action itself as a separate, *accumulating* registration (options
+                // pattern style) from the constructed DbContextOptions<HotelDbContext> instance -
+                // so removing only the latter doesn't stop the former from also running against
+                // the new builder. Cast the net over every descriptor whose service type mentions
+                // HotelDbContext anywhere (closed generic arguments included), not just the
+                // specific types AddDbContext is known to register.
                 var descriptorsToRemove = services.Where(d =>
-                    d.ServiceType == typeof(DbContextOptions<HotelDbContext>) ||
                     d.ServiceType == typeof(DbContextOptions) ||
-                    d.ServiceType == typeof(HotelDbContext)).ToList();
+                    d.ServiceType == typeof(HotelDbContext) ||
+                    ContainsHotelDbContext(d.ServiceType)).ToList();
                 foreach (var descriptor in descriptorsToRemove) services.Remove(descriptor);
 
                 services.AddDbContext<HotelDbContext>(options => options.UseSqlite(_connection));
             });
+        }
+
+        private static bool ContainsHotelDbContext(Type type)
+        {
+            if (type == typeof(HotelDbContext)) return true;
+            if (!type.IsGenericType) return false;
+            return type.GetGenericArguments().Any(ContainsHotelDbContext);
         }
 
         protected override IHost CreateHost(IHostBuilder builder)
