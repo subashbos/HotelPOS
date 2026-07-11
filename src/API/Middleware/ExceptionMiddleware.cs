@@ -10,6 +10,8 @@ namespace HotelPOS.Api.Middleware
         private readonly ILogger<ExceptionMiddleware> _logger;
         private readonly IHostEnvironment _env;
 
+        private static readonly JsonSerializerOptions SerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
         public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
         {
             _next = next;
@@ -25,9 +27,6 @@ namespace HotelPOS.Api.Middleware
             }
             catch (FluentValidation.ValidationException valEx)
             {
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-
                 var errors = valEx.Errors
                     .GroupBy(e => e.PropertyName)
                     .ToDictionary(
@@ -42,22 +41,36 @@ namespace HotelPOS.Api.Middleware
                     Detail = "Please refer to the errors property for additional details."
                 };
 
-                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+                await WriteResponseAsync(context, HttpStatusCode.BadRequest, response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                var response = new ProblemDetails { Status = 404, Title = "Resource not found.", Detail = ex.Message };
+                await WriteResponseAsync(context, HttpStatusCode.NotFound, response);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                var response = new ProblemDetails { Status = 400, Title = "The request could not be processed.", Detail = ex.Message };
+                await WriteResponseAsync(context, HttpStatusCode.BadRequest, response);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
                 var response = _env.IsDevelopment()
                     ? new ProblemDetails { Status = 500, Title = ex.Message, Detail = ex.StackTrace }
                     : new ProblemDetails { Status = 500, Title = "Internal Server Error", Detail = "An unexpected error occurred." };
 
-                var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+                await WriteResponseAsync(context, HttpStatusCode.InternalServerError, response);
             }
+        }
+
+        private static async Task WriteResponseAsync(HttpContext context, HttpStatusCode statusCode, ProblemDetails response)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)statusCode;
+            // Serialize via the runtime type so derived types like ValidationProblemDetails keep their extra properties (e.g. Errors).
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, response.GetType(), SerializerOptions));
         }
     }
 }

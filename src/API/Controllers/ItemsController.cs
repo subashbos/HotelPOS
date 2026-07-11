@@ -47,21 +47,10 @@ namespace HotelPOS.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
-            {
-                var command = _mapper.Map<CreateItemCommand>(request);
+            var command = _mapper.Map<CreateItemCommand>(request);
 
-                var item = await _mediator.Send(command);
-                return CreatedAtAction(nameof(GetItem), new { id = item.Id }, _mapper.Map<ItemDto>(item));
-            }
-            catch (System.InvalidOperationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (System.ArgumentException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
+            var item = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetItem), new { id = item.Id }, _mapper.Map<ItemDto>(item));
         }
     }
 
