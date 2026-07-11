@@ -103,7 +103,7 @@ namespace HotelPOS.Tests
 
             // Assert
             _reportServiceMock.Verify(r => r.GetPagedPurchaseReportAsync(It.Is<PagedPurchaseReportRequest>(req => 
-                req.Page == 1 && req.PageSize == 10 && req.From == targetFrom && req.To == targetTo.AddDays(1) &&
+                req.Page == 1 && req.PageSize == 20 && req.From == targetFrom && req.To == targetTo.AddDays(1) &&
                 req.SupplierId == 1 && req.ItemName == "Onions" && req.PaymentType == "Credit" && req.InvoiceNo == "INV123")), Times.Once);
         }
 
