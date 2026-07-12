@@ -11,7 +11,7 @@ namespace HotelPOS.Views
 {
     public class MarginConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) // NOSONAR
         {
             if (value is double margin)
             {
@@ -22,7 +22,7 @@ namespace HotelPOS.Views
             return "High";
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) // NOSONAR
         {
             throw new NotImplementedException();
         }

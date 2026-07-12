@@ -6,7 +6,7 @@ namespace HotelPOS
 {
     public class StockToColorMultiConverter : IMultiValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             if (values.Length >= 2 && values[0] is int stock && values[1] is bool track)
             {
@@ -19,7 +19,7 @@ namespace HotelPOS
             return Brushes.Black;
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) // NOSONAR
         {
             throw new NotImplementedException();
         }

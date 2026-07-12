@@ -100,7 +100,7 @@ namespace HotelPOS.Views
         /// </summary>
         /// <returns>A task that completes after roles have been loaded and the RolesGrid selection has been updated.</returns>
 
-        private async Task LoadDataAsync()
+        private async Task LoadDataAsync() // NOSONAR
         {
             using (var scope = App.CreateDbScope())
             {

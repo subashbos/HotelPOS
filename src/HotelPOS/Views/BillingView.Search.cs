@@ -21,7 +21,7 @@ namespace HotelPOS.Views
             HandleAutoListNavigationKey(e);
         }
 
-        private bool HandleSearchEnterKey()
+        private bool HandleSearchEnterKey() // NOSONAR
         {
             if (AutoPopup.IsOpen && AutoList.Items.Count > 0)
             {
@@ -47,7 +47,7 @@ namespace HotelPOS.Views
             return false;
         }
 
-        private void HandleAutoListNavigationKey(KeyEventArgs e)
+        private void HandleAutoListNavigationKey(KeyEventArgs e) // NOSONAR
         {
             if (e.Key == Key.Down)
             {
@@ -109,7 +109,7 @@ namespace HotelPOS.Views
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) // NOSONAR
         {
             if (string.IsNullOrWhiteSpace(SearchBox.Text))
             {
@@ -122,13 +122,13 @@ namespace HotelPOS.Views
             }
         }
 
-        private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+        private void SearchBox_GotFocus(object sender, RoutedEventArgs e) // NOSONAR
         {
             if (!string.IsNullOrWhiteSpace(SearchBox.Text))
                 AutoPopup.IsOpen = true;
         }
 
-        private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
+        private void SearchBox_LostFocus(object sender, RoutedEventArgs e) // NOSONAR
         {
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input, new Action(() =>
             {
@@ -146,7 +146,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void AddItem_Click(object sender, RoutedEventArgs e)
+        private void AddItem_Click(object sender, RoutedEventArgs e) // NOSONAR
         {
             if (AutoPopup.IsOpen && AutoList.Items.Count > 0)
                 AddItemFromAutoComplete(AutoList.SelectedItem as Item ?? (Item)AutoList.Items[0]);

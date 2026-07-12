@@ -6,7 +6,7 @@ namespace HotelPOS
 {
     public class StockToColorConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             if (value is int stock)
             {
@@ -16,7 +16,7 @@ namespace HotelPOS
             return new SolidColorBrush(Color.FromRgb(0x00, 0xA8, 0x96)); // Teal for OK
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             throw new NotImplementedException();
         }

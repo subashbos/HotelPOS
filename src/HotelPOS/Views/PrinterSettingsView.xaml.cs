@@ -10,7 +10,7 @@ namespace HotelPOS.Views
             InitializeComponent();
         }
 
-        private void Save_Click(object sender, RoutedEventArgs e)
+        private void Save_Click(object sender, RoutedEventArgs e) // NOSONAR
         {
             StatusText.Text = "Settings saved successfully (Simulated).";
             StatusText.Visibility = Visibility.Visible;

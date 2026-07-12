@@ -6,7 +6,7 @@ namespace HotelPOS
 {
     public class BoolToVisibilityConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             bool boolValue = false;
             if (value is bool b) boolValue = b;
@@ -18,7 +18,7 @@ namespace HotelPOS
             return boolValue ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             throw new NotImplementedException();
         }

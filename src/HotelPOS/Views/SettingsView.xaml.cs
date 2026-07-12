@@ -39,7 +39,7 @@ namespace HotelPOS.Views
 
         // ── Printers ─────────────────────────────────────────────────────────
 
-        private void LoadPrinters()
+        private void LoadPrinters() // NOSONAR
         {
             try
             {

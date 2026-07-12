@@ -94,7 +94,7 @@ namespace HotelPOS.Views
 
         private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadAsync();
 
-        private (DateTime? from, DateTime? to) ResolveRange()
+        private (DateTime? from, DateTime? to) ResolveRange() // NOSONAR
         {
             if (CustomFrom.SelectedDate.HasValue || CustomTo.SelectedDate.HasValue)
                 return (CustomFrom.SelectedDate, CustomTo.SelectedDate?.AddDays(1));

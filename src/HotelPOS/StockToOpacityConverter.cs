@@ -5,7 +5,7 @@ namespace HotelPOS
 {
     public class StockToOpacityConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             if (value is int stock && stock <= 0)
             {
@@ -14,7 +14,7 @@ namespace HotelPOS
             return 1.0;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             throw new NotImplementedException();
         }

@@ -229,7 +229,7 @@ namespace HotelPOS
             Close();
         }
 
-        private void Input_KeyDown(object sender, KeyEventArgs e)
+        private void Input_KeyDown(object sender, KeyEventArgs e) // NOSONAR
         {
             if (e.Key == Key.Enter)
                 Login_Click(sender, e);

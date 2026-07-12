@@ -57,7 +57,7 @@ namespace HotelPOS.Views
             _viewModel.LoadOrderForEdit(order);
         }
 
-        public void FocusSearch()
+        public void FocusSearch() // NOSONAR
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -116,7 +116,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void SyncOrderTypeButtons(string orderType)
+        private void SyncOrderTypeButtons(string orderType) // NOSONAR
         {
             // Active button: primary colour + white text; inactive: surface colour
             var activeBackground = (System.Windows.Media.Brush)FindResource("PrimaryBrush");

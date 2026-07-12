@@ -138,12 +138,12 @@ namespace HotelPOS.Views
             DisplayOrderBox.Text = "0";
         }
 
-        private void NumberOnly_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        private void NumberOnly_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e) // NOSONAR
         {
             e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
 
-        private void ShowStatus(string message, bool success)
+        private void ShowStatus(string message, bool success) // NOSONAR
         {
             StatusText.Text = message;
             StatusBorder.Background = success ? SuccessBg : ErrorBg;

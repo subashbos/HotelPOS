@@ -41,8 +41,8 @@ namespace HotelPOS.Tests
             _roleRepoMock.Verify(r => r.AddRoleAsync(It.IsAny<Role>()), Times.Once);
             Assert.NotNull(capturedRole);
             Assert.Equal(roleName, capturedRole.Name);
-            // Verify all 12 modules are present (including 'Roles' and 'SalesReport')
-            Assert.Equal(12, capturedRole.Permissions.Count);
+            // Verify one permission entry exists per registered module
+            Assert.Equal(PermissionModules.All.Length, capturedRole.Permissions.Count);
             Assert.All(capturedRole.Permissions, p => Assert.False(p.CanAccess));
         }
 

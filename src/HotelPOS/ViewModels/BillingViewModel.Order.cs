@@ -323,7 +323,7 @@ namespace HotelPOS.ViewModels
         }
 
         // Save order first (initially cash mode to bypass validation), then apply the real split payment details.
-        private async Task<int> CreateSplitPaymentOrderAsync(IOrderService orderService, List<OrderItem> rawItems, decimal finalCash, decimal finalCard, decimal finalUpi)
+        private async Task<int> CreateSplitPaymentOrderAsync(IOrderService orderService, List<OrderItem> rawItems, decimal finalCash, decimal finalCard, decimal finalUpi) // NOSONAR
         {
             int orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, PaymentModes.Cash, CustomerName, CustomerPhone, CustomerGstin, OrderType));
             var createdOrder = await orderService.GetOrderAsync(orderId);

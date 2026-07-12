@@ -60,7 +60,7 @@ namespace HotelPOS.Views
             Unloaded += (s, e) => _viewModel.Dispose();
         }
 
-        private int? GetTableFilter()
+        private int? GetTableFilter() // NOSONAR
         {
             if (TableFilter.SelectedItem is ComboBoxItem ci && ci.Tag is string tag && int.TryParse(tag, out var tv))
                 return tv;

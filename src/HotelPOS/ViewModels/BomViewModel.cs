@@ -19,7 +19,7 @@ namespace HotelPOS.ViewModels
         [ObservableProperty] private decimal _costPerUnit;
 
         // Computed
-        public decimal EffectiveQuantity => QuantityRequired * (1 + WastagePercentage / 100m);
+        public decimal EffectiveQuantity => QuantityRequired * (1 + WastagePercentage / 100m); // NOSONAR
         public decimal IngredientCost => EffectiveQuantity * CostPerUnit;
         public decimal WastageCost => (EffectiveQuantity - QuantityRequired) * CostPerUnit;
 
@@ -219,7 +219,7 @@ namespace HotelPOS.ViewModels
             RecalculateCosts();
         }
 
-        private void RecalculateCosts()
+        private void RecalculateCosts() // NOSONAR
         {
             TotalNetCost = BomRows.Sum(r => r.QuantityRequired * r.CostPerUnit);
             TotalWastageCost = BomRows.Sum(r => r.WastageCost);

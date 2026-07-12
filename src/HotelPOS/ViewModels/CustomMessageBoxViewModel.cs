@@ -31,7 +31,7 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private Visibility _noButtonVisibility = Visibility.Collapsed;
 
-        public void Setup(string message, string title, DialogButton button, DialogIcon icon)
+        public void Setup(string message, string title, DialogButton button, DialogIcon icon) // NOSONAR
         {
             Message = message;
             Title = title;

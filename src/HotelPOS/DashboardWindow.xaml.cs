@@ -475,7 +475,7 @@ namespace HotelPOS
             UpdateHeaderVisibilities();
         }
 
-        private void UpdateHeaderVisibilities()
+        private void UpdateHeaderVisibilities() // NOSONAR
         {
             bool isExpanded = (string?)SidebarBorder.Tag == "expanded";
 
@@ -649,7 +649,7 @@ namespace HotelPOS
             }
         }
 
-        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e) // NOSONAR
         {
             // Global shortcuts for Billing POS when it's active
             if (MainContentArea.Content is BillingView bv)

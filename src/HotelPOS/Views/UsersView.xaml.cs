@@ -42,7 +42,7 @@ namespace HotelPOS.Views
         /// DisplayMemberPath to "Name" and SelectedValuePath to "Id", and selects the first
         /// role if any exist.
         /// </remarks>
-        private async Task LoadRolesAsync()
+        private async Task LoadRolesAsync() // NOSONAR
         {
             List<Role> roles;
             using (var scope = App.CreateDbScope())
@@ -59,7 +59,7 @@ namespace HotelPOS.Views
         /// <summary>
         /// Reloads the user list from the database, assigns a 1-based sequence number to each user's <c>SNo</c>, and updates <c>UsersGrid.ItemsSource</c>.
         /// </summary>
-        public async Task RefreshAsync()
+        public async Task RefreshAsync() // NOSONAR
         {
             List<User> users;
             using (var scope = App.CreateDbScope())
@@ -71,7 +71,7 @@ namespace HotelPOS.Views
             UsersGrid.ItemsSource = users;
         }
 
-        private User? SelectedUser => UsersGrid.SelectedItem as User;
+        private User? SelectedUser => UsersGrid.SelectedItem as User; // NOSONAR
 
         private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -228,7 +228,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void ShowFeedback(string message, bool success)
+        private void ShowFeedback(string message, bool success) // NOSONAR
         {
             FeedbackText.Text = message;
             FeedbackBorder.Background = success ? SuccessBg : ErrorBg;

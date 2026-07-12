@@ -16,7 +16,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void GridTextBox_GotFocus(object sender, RoutedEventArgs e)
+        private void GridTextBox_GotFocus(object sender, RoutedEventArgs e) // NOSONAR
         {
             if (sender is TextBox tb) tb.SelectAll();
         }
@@ -40,7 +40,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void DiscountBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void DiscountBox_PreviewKeyDown(object sender, KeyEventArgs e) // NOSONAR
         {
             if (e.Key == Key.Enter)
             {

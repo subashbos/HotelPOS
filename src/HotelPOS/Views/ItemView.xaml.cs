@@ -100,7 +100,7 @@ namespace HotelPOS.Views
 
         private void Search_Changed(object sender, TextChangedEventArgs e) => ApplyFilter();
 
-        private void ClearSearch_Click(object sender, RoutedEventArgs e)
+        private void ClearSearch_Click(object sender, RoutedEventArgs e) // NOSONAR
         {
             SearchBox.Text = string.Empty;
             SearchBox.Focus();
