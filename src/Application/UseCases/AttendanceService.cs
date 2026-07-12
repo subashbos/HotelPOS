@@ -26,7 +26,7 @@ namespace HotelPOS.Application.UseCases
             return await _repository.GetByDateRangeAsync(date.Date, date.Date);
         }
 
-        public async Task MarkAttendanceAsync(Attendance attendance)
+        public async Task<Attendance> MarkAttendanceAsync(Attendance attendance)
         {
             if (attendance == null) throw new ArgumentNullException(nameof(attendance));
             if (attendance.EmployeeId <= 0) throw new ArgumentException("A valid employee is required.");
@@ -50,12 +50,12 @@ namespace HotelPOS.Application.UseCases
                 existing.WorkedHours = attendance.WorkedHours;
                 existing.Remarks = attendance.Remarks?.Trim();
                 await _repository.UpdateAsync(existing);
+                return existing;
             }
-            else
-            {
-                attendance.Remarks = attendance.Remarks?.Trim();
-                await _repository.AddAsync(attendance);
-            }
+
+            attendance.Remarks = attendance.Remarks?.Trim();
+            await _repository.AddAsync(attendance);
+            return attendance;
         }
 
         public async Task DeleteAttendanceAsync(int id)

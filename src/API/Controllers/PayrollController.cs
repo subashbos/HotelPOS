@@ -65,6 +65,28 @@ namespace HotelPOS.Api.Controllers
             }
         }
 
+        [HttpPost("runs/{id:int}/mark-paid")]
+        [Authorize(Roles = RoleNames.Admin)]
+        public async Task<IActionResult> MarkRunAsPaid(int id)
+        {
+            if (id <= 0) return BadRequest("Invalid payroll run ID.");
+
+            try
+            {
+                await _payrollService.MarkRunAsPaidAsync(id);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            return NoContent();
+        }
+
         [HttpGet("runs")]
         public async Task<ActionResult<IEnumerable<PayrollRunDto>>> GetRuns()
         {

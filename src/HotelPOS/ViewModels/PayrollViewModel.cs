@@ -156,6 +156,33 @@ namespace HotelPOS.ViewModels
         }
 
         [RelayCommand]
+        private async Task MarkRunAsPaidAsync()
+        {
+            if (SelectedRun == null)
+            {
+                _notificationService.ShowWarning("Please select a payroll run.");
+                return;
+            }
+
+            using (var scope = App.CreateDbScope())
+            {
+                var payrollService = scope.ServiceProvider.GetRequiredService<IPayrollService>();
+                try
+                {
+                    await payrollService.MarkRunAsPaidAsync(SelectedRun.Id);
+                    _notificationService.ShowSuccess($"Payroll for {SelectedRun.Month:D2}/{SelectedRun.Year} marked as paid.");
+                }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Failed to mark payroll as paid: {ex.Message}");
+                    return;
+                }
+            }
+
+            await LoadRunsAsync();
+        }
+
+        [RelayCommand]
         private async Task SaveSalaryStructureAsync()
         {
             if (SalaryEmployee == null)

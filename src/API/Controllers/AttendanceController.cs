@@ -47,7 +47,7 @@ namespace HotelPOS.Api.Controllers
             var attendance = _mapper.Map<Attendance>(request);
             try
             {
-                await _attendanceService.MarkAttendanceAsync(attendance);
+                attendance = await _attendanceService.MarkAttendanceAsync(attendance);
             }
             catch (ArgumentException ex)
             {

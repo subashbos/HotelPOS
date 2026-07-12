@@ -84,11 +84,32 @@ namespace HotelPOS.Application.UseCases
                 var payslip = CalculatePayslip(structure, workingDays, paidDays);
                 payslip.PayrollRunId = run.Id;
                 payslip.EmployeeId = employee.Id;
+                payslip.Employee = employee;
                 run.Payslips.Add(payslip);
             }
 
             await _payrollRepository.AddRunAsync(run);
             return run;
+        }
+
+        public async Task MarkRunAsPaidAsync(int runId)
+        {
+            var run = await _payrollRepository.GetRunByIdAsync(runId)
+                ?? throw new KeyNotFoundException($"Payroll run #{runId} not found.");
+
+            if (run.Status != PayrollRunStatuses.Processed)
+                throw new InvalidOperationException("Only a processed payroll run can be marked as paid.");
+
+            var paidOn = DateTime.UtcNow;
+            run.Status = PayrollRunStatuses.Paid;
+            run.PaidOn = paidOn;
+            foreach (var payslip in run.Payslips)
+            {
+                payslip.PaymentStatus = PayslipPaymentStatuses.Paid;
+                payslip.PaidOn = paidOn;
+            }
+
+            await _payrollRepository.UpdateRunAsync(run);
         }
 
         public async Task<List<PayrollRun>> GetRunsAsync()

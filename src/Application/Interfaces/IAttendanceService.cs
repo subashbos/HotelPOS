@@ -6,7 +6,7 @@ namespace HotelPOS.Application.Interfaces
     {
         Task<List<Attendance>> GetAttendanceAsync(int employeeId, DateTime fromDate, DateTime toDate);
         Task<List<Attendance>> GetAttendanceForDateAsync(DateTime date);
-        Task MarkAttendanceAsync(Attendance attendance);
+        Task<Attendance> MarkAttendanceAsync(Attendance attendance);
         Task DeleteAttendanceAsync(int id);
     }
 }

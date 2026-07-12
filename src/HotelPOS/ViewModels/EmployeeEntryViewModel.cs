@@ -93,6 +93,10 @@ namespace HotelPOS.ViewModels
         public bool IsFirstNameInvalid => !string.IsNullOrEmpty(FirstNameError);
 
         [ObservableProperty]
+        private string _employeeCodeError = string.Empty;
+        public bool IsEmployeeCodeInvalid => !string.IsNullOrEmpty(EmployeeCodeError);
+
+        [ObservableProperty]
         private string _phoneError = string.Empty;
         public bool IsPhoneInvalid => !string.IsNullOrEmpty(PhoneError);
 
@@ -232,6 +236,19 @@ namespace HotelPOS.ViewModels
                 using (var scope = App.CreateDbScope())
                 {
                     var employeeService = scope.ServiceProvider.GetRequiredService<IEmployeeService>();
+
+                    var trimmedCode = EmployeeCode.Trim();
+                    if (!string.IsNullOrEmpty(trimmedCode))
+                    {
+                        var isUnique = await employeeService.ValidateEmployeeCodeUniqueAsync(trimmedCode, Id);
+                        if (!isUnique)
+                        {
+                            EmployeeCodeError = $"An employee with code '{trimmedCode}' already exists.";
+                            _notificationService.ShowWarning(EmployeeCodeError);
+                            return;
+                        }
+                    }
+                    EmployeeCodeError = string.Empty;
 
                     var employee = new Employee
                     {

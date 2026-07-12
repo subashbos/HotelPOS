@@ -73,10 +73,5 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             return await _context.Designations.Include(d => d.Department).OrderBy(d => d.Title).ToListAsync();
         }
-
-        public async Task<Designation?> GetDesignationByIdAsync(int id)
-        {
-            return await _context.Designations.Include(d => d.Department).FirstOrDefaultAsync(d => d.Id == id);
-        }
     }
 }

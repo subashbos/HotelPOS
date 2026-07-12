@@ -90,7 +90,20 @@
                 <!-- Row 1 -->
                 <StackPanel Grid.Row="1" Grid.Column="0" Style="{StaticResource FieldStack}">
                     <TextBlock Text="EMPLOYEE CODE (auto if blank)" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding EmployeeCode, UpdateSourceTrigger=PropertyChanged}" Tag="e.g. EMP0001"/>
+                    <TextBox Text="{Binding EmployeeCode, UpdateSourceTrigger=PropertyChanged}" Tag="e.g. EMP0001">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsEmployeeCodeInvalid}" Value="True">
+                                        <Setter Property="BorderBrush" Value="#EF4444"/>
+                                        <Setter Property="BorderThickness" Value="1.5"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                    <TextBlock Text="{Binding EmployeeCodeError}" Foreground="#EF4444" FontSize="11" Margin="2,2,0,0"
+                               Visibility="{Binding IsEmployeeCodeInvalid, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="2" Style="{StaticResource FieldStack}">
                     <TextBlock Text="GENDER" Style="{StaticResource FieldLabel}"/>

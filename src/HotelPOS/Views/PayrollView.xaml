@@ -137,12 +137,19 @@
             <!-- ══ RIGHT: RUNS + PAYSLIPS ══ -->
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="1.1*"/>
                     <RowDefinition Height="12"/>
                     <RowDefinition Height="1.4*"/>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                    <Button Command="{Binding MarkRunAsPaidCommand}" Style="{StaticResource SecondaryBtn}" Padding="14,8">
+                        <TextBlock Text="₹  Mark Selected Run as Paid"/>
+                    </Button>
+                </StackPanel>
+
+                <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12">
                     <DataGrid ItemsSource="{Binding Runs}"
                               SelectedItem="{Binding SelectedRun}"
                               Style="{StaticResource PremiumGrid}"
@@ -189,7 +196,7 @@
                     </DataGrid>
                 </Border>
 
-                <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12">
+                <Border Grid.Row="3" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12">
                     <DataGrid ItemsSource="{Binding Payslips}"
                               Style="{StaticResource PremiumGrid}"
                               AutoGenerateColumns="False"

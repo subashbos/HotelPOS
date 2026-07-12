@@ -14,6 +14,5 @@ namespace HotelPOS.Application.Interfaces
 
         Task<List<Department>> GetDepartmentsAsync();
         Task<List<Designation>> GetDesignationsAsync();
-        Task<Designation?> GetDesignationByIdAsync(int id);
     }
 }

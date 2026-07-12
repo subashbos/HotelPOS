@@ -8,6 +8,7 @@ namespace HotelPOS.Application.Interfaces
         Task SaveSalaryStructureAsync(SalaryStructure structure);
 
         Task<PayrollRun> RunPayrollAsync(int month, int year, int? processedByUserId);
+        Task MarkRunAsPaidAsync(int runId);
         Task<List<PayrollRun>> GetRunsAsync();
         Task<PayrollRun?> GetRunByIdAsync(int id);
         Task<List<Payslip>> GetPayslipsByEmployeeAsync(int employeeId);
