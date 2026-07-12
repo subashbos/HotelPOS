@@ -35,6 +35,10 @@ namespace HotelPOS
         private SupplierView? _cachedSuppliers;
         private RawMaterialView? _cachedRawMaterials;
         private BomView? _cachedBom;
+        private EmployeeView? _cachedEmployees;
+        private AttendanceView? _cachedAttendance;
+        private LeaveView? _cachedLeave;
+        private PayrollView? _cachedPayroll;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
         private readonly IUserRepository _userRepository;
@@ -252,6 +256,11 @@ namespace HotelPOS
 
             NavRoles.Visibility = HasPermission("Roles") ? Visibility.Visible : Visibility.Collapsed;
 
+            NavEmployees.Visibility = HasPermission(PermissionModules.HumanResources) ? Visibility.Visible : Visibility.Collapsed;
+            NavAttendance.Visibility = HasPermission(PermissionModules.HumanResources) ? Visibility.Visible : Visibility.Collapsed;
+            NavLeave.Visibility = HasPermission(PermissionModules.HumanResources) ? Visibility.Visible : Visibility.Collapsed;
+            NavPayroll.Visibility = HasPermission(PermissionModules.HumanResources) ? Visibility.Visible : Visibility.Collapsed;
+
             NavSettings.Visibility = HasPermission("Settings") ? Visibility.Visible : Visibility.Collapsed;
             NavAudit.Visibility = HasPermission("Audit") ? Visibility.Visible : Visibility.Collapsed;
 
@@ -403,6 +412,34 @@ namespace HotelPOS
             SetActive(NavRoles);
         }
 
+        private void NavEmployees_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedEmployees ??= _serviceProvider.GetRequiredService<EmployeeView>();
+            MainContentArea.Content = _cachedEmployees;
+            SetActive(NavEmployees);
+        }
+
+        private void NavAttendance_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedAttendance ??= _serviceProvider.GetRequiredService<AttendanceView>();
+            MainContentArea.Content = _cachedAttendance;
+            SetActive(NavAttendance);
+        }
+
+        private void NavLeave_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedLeave ??= _serviceProvider.GetRequiredService<LeaveView>();
+            MainContentArea.Content = _cachedLeave;
+            SetActive(NavLeave);
+        }
+
+        private void NavPayroll_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedPayroll ??= _serviceProvider.GetRequiredService<PayrollView>();
+            MainContentArea.Content = _cachedPayroll;
+            SetActive(NavPayroll);
+        }
+
         private void SetActive(Button active)
         {
             // 1. Enable all navigation buttons
@@ -411,6 +448,7 @@ namespace HotelPOS
                 NavBilling, NavShift,
                 NavMenu, NavCats, NavTables, NavPurchase, NavSuppliers, NavRawMaterials, NavBom,
                 NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
+                NavEmployees, NavAttendance, NavLeave, NavPayroll,
                 NavSettings, NavRoles, NavAudit
             };
             foreach (var btn in allButtons)
@@ -453,6 +491,10 @@ namespace HotelPOS
                     ? Visibility.Visible : Visibility.Collapsed;
 
                 HeaderAdmin.Visibility = (NavSettings.Visibility == Visibility.Visible || NavRoles.Visibility == Visibility.Visible || NavAudit.Visibility == Visibility.Visible)
+                    ? Visibility.Visible : Visibility.Collapsed;
+
+                HeaderHR.Visibility = (NavEmployees.Visibility == Visibility.Visible || NavAttendance.Visibility == Visibility.Visible
+                        || NavLeave.Visibility == Visibility.Visible || NavPayroll.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
             }
         }

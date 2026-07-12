@@ -28,6 +28,10 @@ public static class DependencyInjection
         services.AddScoped<IRememberMeTokenRepository, RememberMeTokenRepository>();
         services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
         services.AddScoped<IHeldOrderRepository, HeldOrderRepository>();
+        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+        services.AddScoped<ILeaveRepository, LeaveRepository>();
+        services.AddScoped<IPayrollRepository, PayrollRepository>();
 
         return services;
     }
