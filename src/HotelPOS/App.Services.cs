@@ -6,6 +6,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.UseCases.Auth.Commands;
 using HotelPOS.Application.UseCases.CashSessions.Commands;
+using HotelPOS.Application.UseCases.Expenses.Commands;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Orders.Commands;
 using HotelPOS.Application.UseCases.Purchases.Commands;
@@ -80,6 +81,9 @@ namespace HotelPOS
             services.AddScoped<IValidator<CloseSessionCommand>, CloseSessionCommandValidator>();
             // Purchase validators
             services.AddScoped<IValidator<SavePurchaseCommand>, SavePurchaseCommandValidator>();
+            // Expense validators
+            services.AddScoped<IValidator<SaveExpenseCommand>, SaveExpenseCommandValidator>();
+            services.AddScoped<IValidator<DeleteExpenseCommand>, DeleteExpenseCommandValidator>();
             // Auth validators
             services.AddScoped<IValidator<LoginCommand>, LoginCommandValidator>();
 
@@ -104,6 +108,7 @@ namespace HotelPOS
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
+            services.AddScoped<IExpenseService>(provider => new ExpenseService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
             services.AddScoped<IBomService, Services.BomService>();
 
             services.AddSingleton<ICartService, CartService>();
@@ -121,6 +126,8 @@ namespace HotelPOS
             services.AddTransient<PurchaseReportViewModel>();
             services.AddTransient<RawMaterialViewModel>();
             services.AddTransient<BomViewModel>();
+            services.AddTransient<ExpenseViewModel>();
+            services.AddTransient<ExpenseEntryViewModel>();
 
             // ── Views & Windows ───────────────────────────────────────────────
             services.AddTransient<SessionView>();
@@ -142,6 +149,7 @@ namespace HotelPOS
             services.AddTransient<RolesView>();
             services.AddTransient<RawMaterialView>();
             services.AddTransient<BomView>();
+            services.AddTransient<ExpenseView>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
 

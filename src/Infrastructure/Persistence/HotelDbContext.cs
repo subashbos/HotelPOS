@@ -73,6 +73,9 @@ namespace HotelPOS.Infrastructure.Persistence
                 .HasIndex(s => s.Name)
                 .IsUnique();
 
+            modelBuilder.Entity<Expense>()
+                .HasIndex(e => e.Date);
+
             // ── Decimal Precision ─────────────────────────────────────────────
             foreach (var property in modelBuilder.Model.GetEntityTypes()
                 .SelectMany(t => t.GetProperties())
@@ -130,6 +133,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 21, RoleId = 1, ModuleName = PermissionModules.Roles, CanAccess = true },
                 new RolePermission { Id = 23, RoleId = 1, ModuleName = PermissionModules.SalesReport, CanAccess = true },
                 new RolePermission { Id = 25, RoleId = 1, ModuleName = "Purchase", CanAccess = true },
+                new RolePermission { Id = 27, RoleId = 1, ModuleName = PermissionModules.Expenses, CanAccess = true },
 
                 // Cashier: Restricted access
                 new RolePermission { Id = 11, RoleId = 2, ModuleName = PermissionModules.Dashboard, CanAccess = false },
@@ -144,7 +148,8 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 20, RoleId = 2, ModuleName = PermissionModules.Shift, CanAccess = true },
                 new RolePermission { Id = 22, RoleId = 2, ModuleName = PermissionModules.Roles, CanAccess = false },
                 new RolePermission { Id = 24, RoleId = 2, ModuleName = PermissionModules.SalesReport, CanAccess = false },
-                new RolePermission { Id = 26, RoleId = 2, ModuleName = "Purchase", CanAccess = false }
+                new RolePermission { Id = 26, RoleId = 2, ModuleName = "Purchase", CanAccess = false },
+                new RolePermission { Id = 28, RoleId = 2, ModuleName = PermissionModules.Expenses, CanAccess = false }
             );
 
 
