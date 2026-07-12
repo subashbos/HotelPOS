@@ -196,8 +196,8 @@ namespace HotelPOS.ViewModels
             var currentActive = _cartService.GetActiveTables() ?? new List<int>();
             currentActive = currentActive.Where(t => t > 0).ToList();
 
-            foreach (var t in currentActive)
-                if (!ActiveTabs.Contains(t)) ActiveTabs.Add(t);
+            foreach (var t in currentActive.Where(t => !ActiveTabs.Contains(t)))
+                ActiveTabs.Add(t);
 
             var toRemoveTabs = ActiveTabs.Where(t => !currentActive.Contains(t) && t != TableNumber).ToList();
             foreach (var t in toRemoveTabs) ActiveTabs.Remove(t);

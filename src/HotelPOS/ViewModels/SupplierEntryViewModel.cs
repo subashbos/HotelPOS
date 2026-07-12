@@ -10,7 +10,6 @@ namespace HotelPOS.ViewModels
 {
     public partial class SupplierEntryViewModel : ObservableObject
     {
-        private readonly ISupplierService _supplierService;
         private readonly INotificationService _notificationService;
 
         public event EventHandler<bool>? RequestClose;
@@ -74,7 +73,6 @@ namespace HotelPOS.ViewModels
 
         public SupplierEntryViewModel(ISupplierService supplierService, INotificationService notificationService)
         {
-            _supplierService = supplierService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

@@ -183,16 +183,16 @@ namespace HotelPOS.Views
         {
             if (_current == null) return;
             _current.DefaultPrinter = PrinterList.SelectedItem?.ToString() ?? "Microsoft Print to PDF";
-            _current.ReceiptFormat = FormatThermal.IsChecked == true ? "Thermal" : "A4";
-            _current.ShowPrintPreview = ShowPreviewCheck.IsChecked == true;
+            _current.ReceiptFormat = FormatThermal.IsChecked is true ? "Thermal" : "A4";
+            _current.ShowPrintPreview = ShowPreviewCheck.IsChecked is true;
 
-            _current.ShowItemsOnBill = ShowItemsCheck.IsChecked == true;
-            _current.ShowGstBreakdown = ShowGstCheck.IsChecked == true;
-            _current.ShowDiscountLine = ShowDiscountCheck.IsChecked == true;
-            _current.ShowPhoneOnReceipt = ShowPhoneCheck.IsChecked == true;
-            _current.ShowThankYouFooter = ShowFooterCheck.IsChecked == true;
-            _current.EnableRoundOff = RoundOffCheck.IsChecked == true;
-            _current.IsCompositionScheme = CompositionCheck.IsChecked == true;
+            _current.ShowItemsOnBill = ShowItemsCheck.IsChecked is true;
+            _current.ShowGstBreakdown = ShowGstCheck.IsChecked is true;
+            _current.ShowDiscountLine = ShowDiscountCheck.IsChecked is true;
+            _current.ShowPhoneOnReceipt = ShowPhoneCheck.IsChecked is true;
+            _current.ShowThankYouFooter = ShowFooterCheck.IsChecked is true;
+            _current.EnableRoundOff = RoundOffCheck.IsChecked is true;
+            _current.IsCompositionScheme = CompositionCheck.IsChecked is true;
             await Save();
         }
 
@@ -201,7 +201,7 @@ namespace HotelPOS.Views
         private async void SaveBackups_Click(object sender, RoutedEventArgs e)
         {
             if (_current == null) return;
-            _current.EnableAutomatedBackups = EnableAutomatedBackupsCheck.IsChecked == true;
+            _current.EnableAutomatedBackups = EnableAutomatedBackupsCheck.IsChecked is true;
             _current.OffsiteBackupPath = string.IsNullOrWhiteSpace(OffsiteBackupPathBox.Text) ? null : OffsiteBackupPathBox.Text.Trim();
             await Save();
         }
@@ -310,7 +310,7 @@ namespace HotelPOS.Views
 
         private async void RestoreDb_Click(object sender, RoutedEventArgs e)
         {
-            var confirm = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+            var confirm = await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                 "⚠️ WARNING: Restoring the database will overwrite all current data and reset active tables.\n\nAre you sure you want to continue?",
                 "Confirm Database Restore",
                 HotelPOS.Application.Interfaces.DialogButton.YesNo,
@@ -324,7 +324,7 @@ namespace HotelPOS.Views
                 Title = "Select Backup File to Restore"
             };
 
-            if (dlg.ShowDialog() == true)
+            if (dlg.ShowDialog() is true)
             {
                 try
                 {
@@ -333,7 +333,7 @@ namespace HotelPOS.Views
                         var backup = scope.ServiceProvider.GetRequiredService<IBackupService>();
                         await backup.RestoreBackupAsync(dlg.FileName);
                     }
-                    App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+                    await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                         "Database restored successfully!\n\nThe application will now close to reload context. Please restart the application.",
                         "Restore Success",
                         HotelPOS.Application.Interfaces.DialogButton.OK,

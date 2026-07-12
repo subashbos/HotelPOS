@@ -57,8 +57,8 @@ namespace HotelPOS.Tests
 
         private string CallGetFiscalYear(DateTime date)
         {
-            var method = typeof(OrderService).GetMethod("GetFiscalYear", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            return (string)method!.Invoke(_service, new object[] { date })!;
+            var method = typeof(OrderService).GetMethod("GetFiscalYear", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            return (string)method!.Invoke(null, new object[] { date })!;
         }
     }
 }

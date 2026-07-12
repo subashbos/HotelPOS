@@ -1,12 +1,10 @@
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 
 @Component({
-  standalone: false,    
+  standalone: false,
   selector: "app-header-stats",
   templateUrl: "./header-stats.component.html",
 })
-export class HeaderStatsComponent implements OnInit {
+export class HeaderStatsComponent {
   constructor() {}
-
-  ngOnInit(): void {}
 }

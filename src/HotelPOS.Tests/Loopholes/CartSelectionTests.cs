@@ -21,15 +21,13 @@ namespace HotelPOS.Tests
             var mockCashService = new Mock<ICashService>();
 
             mockCartService.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
+            BillingViewModel.RegisterTestServices(
+                mockItemService.Object, mockOrderService.Object, mockCatService.Object,
+                mockCashService.Object, new Mock<ITableService>().Object);
             var vm = new BillingViewModel(
-                mockItemService.Object,
                 mockCartService.Object,
-                mockOrderService.Object,
                 mockSettingService.Object,
-                mockCatService.Object,
-                mockNotifyService.Object,
-                mockCashService.Object,
-                new Mock<ITableService>().Object);
+                mockNotifyService.Object);
 
             var cartItem = new OrderItem { ItemId = 1, ItemName = "Coffee", Quantity = 1, Price = 10, Total = 10 };
             mockCartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem> { cartItem });

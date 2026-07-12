@@ -197,6 +197,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Date");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Expenses");
@@ -871,6 +873,15 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
+                            Id = 27,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Expenses",
+                            RoleId = 1
+                        },
+                        new
+                        {
                             Id = 11,
                             CanAccess = false,
                             CanDelete = true,
@@ -984,6 +995,15 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             CanDelete = true,
                             CanEdit = true,
                             ModuleName = "Purchase",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 28,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Expenses",
                             RoleId = 2
                         });
                 });

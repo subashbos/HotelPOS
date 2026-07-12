@@ -17,9 +17,9 @@ namespace HotelPOS.Behaviors
         public static readonly DependencyProperty CommandProperty =
             DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(InfiniteScrollBehavior), new PropertyMetadata(null));
 
-        public ICommand Command
+        public ICommand? Command
         {
-            get => (ICommand)GetValue(CommandProperty);
+            get => GetValue(CommandProperty) as ICommand;
             set => SetValue(CommandProperty, value);
         }
 
@@ -53,12 +53,10 @@ namespace HotelPOS.Behaviors
             if (_scrollViewer == null || Command == null) return;
 
             // Trigger when reaching 90% of the scrollable height
-            if (_scrollViewer.VerticalOffset + _scrollViewer.ViewportHeight >= _scrollViewer.ExtentHeight * 0.9)
+            if (_scrollViewer.VerticalOffset + _scrollViewer.ViewportHeight >= _scrollViewer.ExtentHeight * 0.9
+                && Command.CanExecute(null))
             {
-                if (Command.CanExecute(null))
-                {
-                    Command.Execute(null);
-                }
+                Command.Execute(null);
             }
         }
 

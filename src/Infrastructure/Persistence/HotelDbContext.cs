@@ -83,6 +83,9 @@ namespace HotelPOS.Infrastructure.Persistence
                 .HasIndex(s => s.Name)
                 .IsUnique();
 
+            modelBuilder.Entity<Expense>()
+                .HasIndex(e => e.Date);
+
             // ── Decimal Precision ─────────────────────────────────────────────
             foreach (var property in modelBuilder.Model.GetEntityTypes()
                 .SelectMany(t => t.GetProperties())
@@ -272,7 +275,8 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 21, RoleId = 1, ModuleName = PermissionModules.Roles, CanAccess = true },
                 new RolePermission { Id = 23, RoleId = 1, ModuleName = PermissionModules.SalesReport, CanAccess = true },
                 new RolePermission { Id = 25, RoleId = 1, ModuleName = "Purchase", CanAccess = true },
-                new RolePermission { Id = 27, RoleId = 1, ModuleName = PermissionModules.HumanResources, CanAccess = true },
+                new RolePermission { Id = 27, RoleId = 1, ModuleName = PermissionModules.Expenses, CanAccess = true },
+                new RolePermission { Id = 29, RoleId = 1, ModuleName = PermissionModules.HumanResources, CanAccess = true },
 
                 // Cashier: Restricted access
                 new RolePermission { Id = 11, RoleId = 2, ModuleName = PermissionModules.Dashboard, CanAccess = false },
@@ -288,7 +292,8 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 22, RoleId = 2, ModuleName = PermissionModules.Roles, CanAccess = false },
                 new RolePermission { Id = 24, RoleId = 2, ModuleName = PermissionModules.SalesReport, CanAccess = false },
                 new RolePermission { Id = 26, RoleId = 2, ModuleName = "Purchase", CanAccess = false },
-                new RolePermission { Id = 28, RoleId = 2, ModuleName = PermissionModules.HumanResources, CanAccess = false }
+                new RolePermission { Id = 28, RoleId = 2, ModuleName = PermissionModules.Expenses, CanAccess = false },
+                new RolePermission { Id = 30, RoleId = 2, ModuleName = PermissionModules.HumanResources, CanAccess = false }
             );
 
 
@@ -314,11 +319,12 @@ namespace HotelPOS.Infrastructure.Persistence
             );
 
             // ── Suppliers seed ────────────────────────────────────────────────
+            const string maharashtra = "Maharashtra";
             modelBuilder.Entity<Supplier>().HasData(
-                new Supplier { Id = 1, Name = "Metro Wholesalers", Phone = "9876543210", Gstin = "27AAAAA1111A1Z1", City = "Mumbai", State = "Maharashtra", Pincode = "400001", OpeningBalance = 0, CreditLimit = 50000, PaymentTerms = "Credit" },
-                new Supplier { Id = 2, Name = "Apex Food Distributors", Phone = "9876543211", Gstin = "27BBBBB2222B2Z2", City = "Pune", State = "Maharashtra", Pincode = "411001", OpeningBalance = 5000, CreditLimit = 100000, PaymentTerms = "30 Days" },
-                new Supplier { Id = 3, Name = "Supreme Dairy Partners", Phone = "9876543212", Gstin = "27CCCCC3333C3Z3", City = "Mumbai", State = "Maharashtra", Pincode = "400002", OpeningBalance = 0, CreditLimit = 25000, PaymentTerms = PaymentModes.Cash },
-                new Supplier { Id = 4, Name = "Standard Kitchen Supplies", Phone = "9876543213", Gstin = "27DDDDD4444D4Z4", City = "Nashik", State = "Maharashtra", Pincode = "422001", OpeningBalance = 1500, CreditLimit = 30000, PaymentTerms = "Credit" }
+                new Supplier { Id = 1, Name = "Metro Wholesalers", Phone = "9876543210", Gstin = "27AAAAA1111A1Z1", City = "Mumbai", State = maharashtra, Pincode = "400001", OpeningBalance = 0, CreditLimit = 50000, PaymentTerms = "Credit" },
+                new Supplier { Id = 2, Name = "Apex Food Distributors", Phone = "9876543211", Gstin = "27BBBBB2222B2Z2", City = "Pune", State = maharashtra, Pincode = "411001", OpeningBalance = 5000, CreditLimit = 100000, PaymentTerms = "30 Days" },
+                new Supplier { Id = 3, Name = "Supreme Dairy Partners", Phone = "9876543212", Gstin = "27CCCCC3333C3Z3", City = "Mumbai", State = maharashtra, Pincode = "400002", OpeningBalance = 0, CreditLimit = 25000, PaymentTerms = PaymentModes.Cash },
+                new Supplier { Id = 4, Name = "Standard Kitchen Supplies", Phone = "9876543213", Gstin = "27DDDDD4444D4Z4", City = "Nashik", State = maharashtra, Pincode = "422001", OpeningBalance = 1500, CreditLimit = 30000, PaymentTerms = "Credit" }
             );
         }
     }

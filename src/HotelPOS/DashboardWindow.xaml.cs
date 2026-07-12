@@ -13,6 +13,8 @@ namespace HotelPOS
 {
     public partial class DashboardWindow : Window
     {
+        private const string PurchaseModule = "Purchase";
+
         private readonly IServiceProvider _serviceProvider;
 
         // Cached views — created once, reused on navigation
@@ -39,10 +41,9 @@ namespace HotelPOS
         private AttendanceView? _cachedAttendance;
         private LeaveView? _cachedLeave;
         private PayrollView? _cachedPayroll;
+        private ExpenseView? _cachedExpenses;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
-        private readonly IUserRepository _userRepository;
-        private readonly IRoleService _roleService;
 
         // ── Idle timeout ──────────────────────────────────────────────────────
         private DispatcherTimer? _idleTimer;
@@ -57,8 +58,6 @@ namespace HotelPOS
             _serviceProvider = serviceProvider;
             _themeService = themeService;
             _notificationService = notificationService;
-            _userRepository = userRepository;
-            _roleService = roleService;
             Closed += DashboardWindow_Closed;
         }
 
@@ -201,7 +200,7 @@ namespace HotelPOS
         /// Re-evaluates sidebar visibility against the current session's permissions.
         /// Called once at login and again whenever the active user's role permissions are updated live.
         /// </summary>
-        private bool HasPermission(string moduleName)
+        private static bool HasPermission(string moduleName)
         {
             var user = AppSession.CurrentUser;
             if (user == null) return false;
@@ -233,40 +232,43 @@ namespace HotelPOS
             var user = AppSession.CurrentUser;
             if (user == null) return;
 
-            NavDash.Visibility = HasPermission("Dashboard") ? Visibility.Visible : Visibility.Collapsed;
-            NavBIReport.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
-            NavBilling.Visibility = HasPermission("Billing") ? Visibility.Visible : Visibility.Collapsed;
+            NavDash.Visibility = Vis(HasPermission("Dashboard"));
+            NavBIReport.Visibility = Vis(HasPermission(PermissionModules.SalesReport));
+            NavBilling.Visibility = Vis(HasPermission("Billing"));
 
-            NavSales.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
-            NavShift.Visibility = HasPermission("Shift") ? Visibility.Visible : Visibility.Collapsed;
+            NavSales.Visibility = Vis(HasPermission(PermissionModules.SalesReport));
+            NavShift.Visibility = Vis(HasPermission("Shift"));
+            NavExpenses.Visibility = Vis(HasPermission(PermissionModules.Expenses));
 
-            NavMenu.Visibility = HasPermission("Items") ? Visibility.Visible : Visibility.Collapsed;
-            NavTables.Visibility = HasPermission("Tables") ? Visibility.Visible : Visibility.Collapsed;
+            NavMenu.Visibility = Vis(HasPermission("Items"));
+            NavTables.Visibility = Vis(HasPermission("Tables"));
 
-            NavCats.Visibility = HasPermission("Categories") ? Visibility.Visible : Visibility.Collapsed;
-            NavPurchase.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
-            NavSuppliers.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
-            NavRawMaterials.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
-            NavBom.Visibility = HasPermission("Purchase") ? Visibility.Visible : Visibility.Collapsed;
+            NavCats.Visibility = Vis(HasPermission("Categories"));
+            NavPurchase.Visibility = Vis(HasPermission(PurchaseModule));
+            NavSuppliers.Visibility = Vis(HasPermission(PurchaseModule));
+            NavRawMaterials.Visibility = Vis(HasPermission(PurchaseModule));
+            NavBom.Visibility = Vis(HasPermission(PurchaseModule));
 
-            NavItemReport.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
-            NavPurchaseReport.Visibility = HasPermission("Purchase") || HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
-            NavLedger.Visibility = HasPermission("Ledger") ? Visibility.Visible : Visibility.Collapsed;
-            NavJournal.Visibility = HasPermission("Journal") ? Visibility.Visible : Visibility.Collapsed;
+            NavItemReport.Visibility = Vis(HasPermission(PermissionModules.SalesReport));
+            NavPurchaseReport.Visibility = Vis(HasPermission(PurchaseModule) || HasPermission(PermissionModules.SalesReport));
+            NavLedger.Visibility = Vis(HasPermission("Ledger"));
+            NavJournal.Visibility = Vis(HasPermission("Journal"));
 
-            NavRoles.Visibility = HasPermission("Roles") ? Visibility.Visible : Visibility.Collapsed;
+            NavRoles.Visibility = Vis(HasPermission("Roles"));
 
-            NavEmployees.Visibility = HasPermission(PermissionModules.HumanResources) ? Visibility.Visible : Visibility.Collapsed;
-            NavAttendance.Visibility = HasPermission(PermissionModules.HumanResources) ? Visibility.Visible : Visibility.Collapsed;
-            NavLeave.Visibility = HasPermission(PermissionModules.HumanResources) ? Visibility.Visible : Visibility.Collapsed;
-            NavPayroll.Visibility = HasPermission(PermissionModules.HumanResources) ? Visibility.Visible : Visibility.Collapsed;
+            NavEmployees.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
+            NavAttendance.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
+            NavLeave.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
+            NavPayroll.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
 
-            NavSettings.Visibility = HasPermission("Settings") ? Visibility.Visible : Visibility.Collapsed;
-            NavAudit.Visibility = HasPermission("Audit") ? Visibility.Visible : Visibility.Collapsed;
+            NavSettings.Visibility = Vis(HasPermission("Settings"));
+            NavAudit.Visibility = Vis(HasPermission("Audit"));
 
             // Update section header visibilities dynamically
             UpdateHeaderVisibilities();
         }
+
+        private static Visibility Vis(bool allowed) => allowed ? Visibility.Visible : Visibility.Collapsed;
 
         // ── Navigation ────────────────────────────────────────────────────────
 
@@ -405,6 +407,13 @@ namespace HotelPOS
             SetActive(NavShift);
         }
 
+        private void NavExpenses_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedExpenses ??= _serviceProvider.GetRequiredService<ExpenseView>();
+            MainContentArea.Content = _cachedExpenses;
+            SetActive(NavExpenses);
+        }
+
         private void NavRoles_Click(object sender, RoutedEventArgs e)
         {
             _cachedRoles ??= _serviceProvider.GetRequiredService<RolesView>();
@@ -445,7 +454,7 @@ namespace HotelPOS
             // 1. Enable all navigation buttons
             var allButtons = new[]
             {
-                NavBilling, NavShift,
+                NavBilling, NavShift, NavExpenses,
                 NavMenu, NavCats, NavTables, NavPurchase, NavSuppliers, NavRawMaterials, NavBom,
                 NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
                 NavEmployees, NavAttendance, NavLeave, NavPayroll,
@@ -481,7 +490,7 @@ namespace HotelPOS
             else
             {
                 // Expanded mode: show header ONLY if at least one child button is visible
-                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible)
+                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible || NavExpenses.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
 
                 HeaderInv.Visibility = (NavMenu.Visibility == Visibility.Visible || NavCats.Visibility == Visibility.Visible || NavTables.Visibility == Visibility.Visible || NavPurchase.Visibility == Visibility.Visible || NavSuppliers.Visibility == Visibility.Visible || NavRawMaterials.Visibility == Visibility.Visible || NavBom.Visibility == Visibility.Visible)
@@ -645,21 +654,15 @@ namespace HotelPOS
             // Global shortcuts for Billing POS when it's active
             if (MainContentArea.Content is BillingView bv)
             {
-                if (e.Key == Key.F1 || e.Key == Key.F3)
+                if ((e.Key == Key.F1 || e.Key == Key.F3) && !bv.IsKeyboardFocusWithin)
                 {
-                    if (!bv.IsKeyboardFocusWithin)
-                    {
-                        bv.FocusSearch();
-                        e.Handled = true;
-                    }
+                    bv.FocusSearch();
+                    e.Handled = true;
                 }
-                else if (e.Key == Key.F4)
+                else if (e.Key == Key.F4 && !bv.IsKeyboardFocusWithin)
                 {
-                    if (!bv.IsKeyboardFocusWithin)
-                    {
-                        bv.TriggerCheckout();
-                        e.Handled = true;
-                    }
+                    bv.TriggerCheckout();
+                    e.Handled = true;
                 }
             }
         }

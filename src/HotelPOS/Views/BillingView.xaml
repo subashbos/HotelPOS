@@ -303,7 +303,7 @@
                                                 </StackPanel>
                                             </StackPanel>
                                             <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="#E67E22"/></StackPanel></Border>
-                                            <Button Grid.Column="2" Content="+" Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource PrimaryBtn}" Width="38" Height="38" FontSize="20" FontWeight="Bold">
+                                            <Button Grid.Column="2" Content="+" Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource PrimaryBtn}" Width="38" Height="38" Padding="0" FontSize="20" FontWeight="Bold">
                                                 <Button.IsEnabled>
                                                     <MultiBinding Converter="{StaticResource IdToEnabledConverter}" ConverterParameter="StockCheck">
                                                         <Binding Path="StockQuantity"/>

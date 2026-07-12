@@ -100,7 +100,7 @@ export class AuthService {
   private decodeToken(token: string): Record<string, unknown> | null {
     try {
       const payload = token.split('.')[1];
-      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const normalized = payload.replaceAll('-', '+').replaceAll('_', '/');
       return JSON.parse(atob(normalized));
     } catch {
       return null;

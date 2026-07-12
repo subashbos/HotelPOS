@@ -675,7 +675,7 @@ namespace HotelPOS.Tests
                 }
             };
 
-            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((orders, orders.Count));
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
@@ -714,7 +714,7 @@ namespace HotelPOS.Tests
                 }
             };
 
-            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((orders, orders.Count));
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
@@ -751,7 +751,7 @@ namespace HotelPOS.Tests
                 }
             };
 
-            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+            repoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((orders, orders.Count));
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
@@ -785,9 +785,10 @@ namespace HotelPOS.Tests
             cartSvc.Setup(s => s.GetSubtotal(It.IsAny<int>())).Returns(300m);
             cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
 
+            HotelPOS.ViewModels.BillingViewModel.RegisterTestServices(
+                itemSvc.Object, orderSvc.Object, catSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
             var vm = new HotelPOS.ViewModels.BillingViewModel(
-                itemSvc.Object, cartSvc.Object, orderSvc.Object,
-                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
+                cartSvc.Object, settSvc.Object, notifSvc.Object);
 
             // This is what DashboardView.EditOrder_Click now builds:
             var order = new Order
@@ -832,9 +833,10 @@ namespace HotelPOS.Tests
             cartSvc.Setup(s => s.GetSubtotal(It.IsAny<int>())).Returns(300m);
             cartSvc.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
 
+            HotelPOS.ViewModels.BillingViewModel.RegisterTestServices(
+                itemSvc.Object, orderSvc.Object, catSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
             var vm = new HotelPOS.ViewModels.BillingViewModel(
-                itemSvc.Object, cartSvc.Object, orderSvc.Object,
-                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
+                cartSvc.Object, settSvc.Object, notifSvc.Object);
 
             var order = new Order
             {
@@ -901,9 +903,10 @@ namespace HotelPOS.Tests
             orderSvc.Setup(s => s.UpdateOrderAsync(It.IsAny<Order>())).Returns(Task.CompletedTask);
             cashSvc.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
 
+            HotelPOS.ViewModels.BillingViewModel.RegisterTestServices(
+                itemSvc.Object, orderSvc.Object, catSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
             var vm = new HotelPOS.ViewModels.BillingViewModel(
-                itemSvc.Object, cartSvc.Object, orderSvc.Object,
-                settSvc.Object, catSvc.Object, notifSvc.Object, cashSvc.Object, (new Mock<ITableService>()).Object);
+                cartSvc.Object, settSvc.Object, notifSvc.Object);
 
             return (vm, orderSvc, cartSvc, notifSvc);
         }

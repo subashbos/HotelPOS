@@ -8,14 +8,9 @@ namespace HotelPOS.ViewModels
 {
     public partial class BillingViewModel : ObservableObject
     {
-        private readonly IItemService _itemService;
         private readonly ICartService _cartService;
-        private readonly IOrderService _orderService;
         private readonly ISettingService _settingService;
-        private readonly ICategoryService _categoryService;
         private readonly INotificationService _notificationService;
-        private readonly ICashService _cashService;
-        private readonly ITableService _tableService;
         private readonly IDialogService? _dialogService;
 
         [ObservableProperty]
@@ -131,13 +126,10 @@ namespace HotelPOS.ViewModels
                     }
                 }
 
-                if (SetProperty(ref _selectedQty, value))
+                if (SetProperty(ref _selectedQty, value) && SelectedCartRow != null)
                 {
-                    if (SelectedCartRow != null)
-                    {
-                        _cartService.SetQuantity(TableNumber, SelectedCartRow.ItemId, value);
-                        UpdateCart();
-                    }
+                    _cartService.SetQuantity(TableNumber, SelectedCartRow.ItemId, value);
+                    UpdateCart();
                 }
             }
         }
@@ -163,36 +155,37 @@ namespace HotelPOS.ViewModels
 
         private List<Item> _allItems = new();
 
-        public BillingViewModel(IItemService itemService, ICartService cartService,
-                                IOrderService orderService, ISettingService settingService,
-                                ICategoryService categoryService, INotificationService notificationService,
-                                ICashService cashService, ITableService tableService,
-                                IDialogService? dialogService = null)
+        public BillingViewModel(ICartService cartService, ISettingService settingService,
+                                INotificationService notificationService, IDialogService? dialogService = null)
         {
-            _itemService = itemService;
             _cartService = cartService;
-            _orderService = orderService;
             _settingService = settingService;
-            _categoryService = categoryService;
             _notificationService = notificationService;
-            _cashService = cashService;
-            _tableService = tableService;
             _dialogService = dialogService;
 
             if (System.Windows.Application.Current == null)
             {
-                App.RegisterTestService(itemService);
                 App.RegisterTestService(cartService);
-                App.RegisterTestService(orderService);
                 App.RegisterTestService(settingService);
-                App.RegisterTestService(categoryService);
                 App.RegisterTestService(notificationService);
-                App.RegisterTestService(cashService);
-                App.RegisterTestService(tableService);
                 if (dialogService != null) App.RegisterTestService(dialogService);
             }
 
             LoadHeldOrders();
+        }
+
+        /// <summary>
+        /// Test-only helper: registers the collaborator services this view model resolves via scoped DI
+        /// lookups (rather than constructor injection) so unit tests can inject mocks for them.
+        /// </summary>
+        public static void RegisterTestServices(IItemService itemService, IOrderService orderService,
+            ICategoryService categoryService, ICashService cashService, ITableService tableService)
+        {
+            App.RegisterTestService(itemService);
+            App.RegisterTestService(orderService);
+            App.RegisterTestService(categoryService);
+            App.RegisterTestService(cashService);
+            App.RegisterTestService(tableService);
         }
 
         [ObservableProperty]

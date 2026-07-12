@@ -254,9 +254,10 @@ namespace HotelPOS
 
                     Log.Information("Database synchronization complete.");
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Log.Fatal(ex, "Database synchronization failed.");
+                    // Logged with full context by InitializeDatabaseAsync's catch block, which also
+                    // surfaces the error to the user and shuts down — avoid double-logging here.
                     throw;
                 }
             }
