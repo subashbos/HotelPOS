@@ -25,15 +25,13 @@ namespace HotelPOS.Tests
 
         private BillingViewModel CreateViewModel()
         {
+            BillingViewModel.RegisterTestServices(
+                _itemService.Object, _orderService.Object, _categoryService.Object,
+                _cashService.Object, _tableService.Object);
             return new BillingViewModel(
-                _itemService.Object,
                 _cartService.Object,
-                _orderService.Object,
                 _settingService.Object,
-                _categoryService.Object,
-                _notificationService.Object,
-                _cashService.Object,
-                _tableService.Object
+                _notificationService.Object
             );
         }
 

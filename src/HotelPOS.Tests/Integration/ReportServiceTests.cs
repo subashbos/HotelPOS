@@ -34,7 +34,7 @@ namespace HotelPOS.Tests
                 new Order { Id = 1, TotalAmount = 100, CreatedAt = DateTime.UtcNow },
                 new Order { Id = 2, TotalAmount = 200, CreatedAt = DateTime.UtcNow }
             };
-            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((orders, 2));
             _itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             _categoryRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
@@ -60,7 +60,7 @@ namespace HotelPOS.Tests
             };
 
             // Setup mock to simulate repository filtering
-            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((orders.Where(o => o.CreatedAt >= today).ToList(), 1));
 
             _itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
@@ -90,7 +90,7 @@ namespace HotelPOS.Tests
                 }
             };
 
-            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((orders, 1));
             _itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item> { item1 });
             _categoryRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category> { cat1 });
@@ -120,7 +120,7 @@ namespace HotelPOS.Tests
                 new Order { Id = 2, TotalAmount = 200, CreatedAt = date2, Subtotal = 180, GstAmount = 20 }
             };
 
-            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((orders, 2));
 
             // Act
@@ -166,7 +166,7 @@ namespace HotelPOS.Tests
             };
 
             _purchaseRepoMock.Setup(r => r.GetPagedPurchasesAsync(
-                1, 20, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), supplierId, itemName, paymentType, invoiceNo))
+                1, 20, It.Is<PurchaseQueryFilter>(f => f.SupplierId == supplierId && f.ItemName == itemName && f.PaymentType == paymentType && f.InvoiceNo == invoiceNo)))
                 .ReturnsAsync((new List<Purchase> { purchase }, 1));
 
             // Act
@@ -196,7 +196,7 @@ namespace HotelPOS.Tests
                 .ToList();
 
             // Setup repository to return capped subset, but total count in database could be e.g. 750
-            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(1, 500, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null))
+            _orderRepoMock.Setup(r => r.GetPagedWithItemsAsync(1, 500, It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((fakeOrders, 750));
 
             _itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
@@ -207,7 +207,7 @@ namespace HotelPOS.Tests
 
             // Assert
             // Verify that the query page size was restricted to 500
-            _orderRepoMock.Verify(r => r.GetPagedWithItemsAsync(1, 500, It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), null), Times.Once);
+            _orderRepoMock.Verify(r => r.GetPagedWithItemsAsync(1, 500, It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()), Times.Once);
 
             // TotalOrders should reflect the count of orders retrieved (capped at 500), not the 750 database total count
             Assert.Equal(500, result.TotalOrders);

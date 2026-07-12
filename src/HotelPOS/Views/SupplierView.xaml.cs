@@ -52,7 +52,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private Task<bool> ConfirmDeleteAsync(string supplierName)
+        private static Task<bool> ConfirmDeleteAsync(string supplierName)
         {
             var result = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
                 $"Are you sure you want to delete supplier '{supplierName}'? This action cannot be undone.",

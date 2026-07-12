@@ -29,31 +29,32 @@ namespace HotelPOS.Infrastructure.Persistence
         }
 
         public async Task<(List<Purchase> purchases, int totalCount)> GetPagedPurchasesAsync(
-            int page, int pageSize, System.DateTime? from, System.DateTime? to, 
-            int? supplierId, string? itemName, string? paymentType, string? invoiceNo)
+            int page, int pageSize, PurchaseQueryFilter? filter = null)
         {
+            filter ??= new PurchaseQueryFilter();
+
             var query = _context.Purchases
                 .Include(p => p.Supplier)
                 .Include(p => p.PurchaseItems)
                 .AsQueryable();
 
-            if (from.HasValue)
-                query = query.Where(p => p.PurchaseDate >= from.Value);
-            
-            if (to.HasValue)
-                query = query.Where(p => p.PurchaseDate < to.Value);
+            if (filter.From.HasValue)
+                query = query.Where(p => p.PurchaseDate >= filter.From.Value);
 
-            if (supplierId.HasValue && supplierId.Value > 0)
-                query = query.Where(p => p.SupplierId == supplierId.Value);
+            if (filter.To.HasValue)
+                query = query.Where(p => p.PurchaseDate < filter.To.Value);
 
-            if (!string.IsNullOrWhiteSpace(paymentType) && paymentType != "All")
-                query = query.Where(p => p.PaymentType == paymentType);
+            if (filter.SupplierId.HasValue && filter.SupplierId.Value > 0)
+                query = query.Where(p => p.SupplierId == filter.SupplierId.Value);
 
-            if (!string.IsNullOrWhiteSpace(invoiceNo))
-                query = query.Where(p => p.InvoiceNumber.Contains(invoiceNo));
+            if (!string.IsNullOrWhiteSpace(filter.PaymentType) && filter.PaymentType != "All")
+                query = query.Where(p => p.PaymentType == filter.PaymentType);
 
-            if (!string.IsNullOrWhiteSpace(itemName))
-                query = query.Where(p => p.PurchaseItems.Any(i => i.ItemName.Contains(itemName)));
+            if (!string.IsNullOrWhiteSpace(filter.InvoiceNo))
+                query = query.Where(p => p.InvoiceNumber.Contains(filter.InvoiceNo));
+
+            if (!string.IsNullOrWhiteSpace(filter.ItemName))
+                query = query.Where(p => p.PurchaseItems.Any(i => i.ItemName.Contains(filter.ItemName)));
 
             var totalCount = await query.CountAsync();
 

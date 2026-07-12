@@ -50,15 +50,13 @@ namespace HotelPOS.Tests
                     settingService.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting());
                     cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync((CashSession?)null);
 
+                    BillingViewModel.RegisterTestServices(
+                        itemService.Object, orderService.Object, categoryService.Object,
+                        cashService.Object, tableService.Object);
                     var vm = new BillingViewModel(
-                        itemService.Object,
                         cartService.Object,
-                        orderService.Object,
                         settingService.Object,
-                        categoryService.Object,
-                        notificationService.Object,
-                        cashService.Object,
-                        tableService.Object);
+                        notificationService.Object);
 
                     vm.PaymentMode = PaymentModes.Cash;
                     vm.Cart.Add(new CartRow { ItemId = 1, ItemName = "Item 1", Quantity = 1 });

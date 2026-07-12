@@ -294,7 +294,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<MonthlyTrendDto>> GetMonthlyTrendDataAsync()
         {
             var now = DateTime.Now;
-            var startDateLocal = new DateTime(now.Year, now.Month, 1).AddMonths(-(ReportingLimits.TrailingHistoryMonths - 1));
+            var startDateLocal = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Local).AddMonths(-(ReportingLimits.TrailingHistoryMonths - 1));
             var startDateUtc = startDateLocal.ToUniversalTime();
 
             var orders = await _context.Orders.Include(o => o.Items)

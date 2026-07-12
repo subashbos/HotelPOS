@@ -17,9 +17,9 @@ namespace HotelPOS.Behaviors
         public static readonly DependencyProperty CommandProperty =
             DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(InfiniteScrollBehavior), new PropertyMetadata(null));
 
-        public ICommand Command
+        public ICommand? Command
         {
-            get => (ICommand)GetValue(CommandProperty);
+            get => GetValue(CommandProperty) as ICommand;
             set => SetValue(CommandProperty, value);
         }
 

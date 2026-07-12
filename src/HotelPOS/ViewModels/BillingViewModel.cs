@@ -155,11 +155,8 @@ namespace HotelPOS.ViewModels
 
         private List<Item> _allItems = new();
 
-        public BillingViewModel(IItemService itemService, ICartService cartService,
-                                IOrderService orderService, ISettingService settingService,
-                                ICategoryService categoryService, INotificationService notificationService,
-                                ICashService cashService, ITableService tableService,
-                                IDialogService? dialogService = null)
+        public BillingViewModel(ICartService cartService, ISettingService settingService,
+                                INotificationService notificationService, IDialogService? dialogService = null)
         {
             _cartService = cartService;
             _settingService = settingService;
@@ -168,18 +165,27 @@ namespace HotelPOS.ViewModels
 
             if (System.Windows.Application.Current == null)
             {
-                App.RegisterTestService(itemService);
                 App.RegisterTestService(cartService);
-                App.RegisterTestService(orderService);
                 App.RegisterTestService(settingService);
-                App.RegisterTestService(categoryService);
                 App.RegisterTestService(notificationService);
-                App.RegisterTestService(cashService);
-                App.RegisterTestService(tableService);
                 if (dialogService != null) App.RegisterTestService(dialogService);
             }
 
             LoadHeldOrders();
+        }
+
+        /// <summary>
+        /// Test-only helper: registers the collaborator services this view model resolves via scoped DI
+        /// lookups (rather than constructor injection) so unit tests can inject mocks for them.
+        /// </summary>
+        public static void RegisterTestServices(IItemService itemService, IOrderService orderService,
+            ICategoryService categoryService, ICashService cashService, ITableService tableService)
+        {
+            App.RegisterTestService(itemService);
+            App.RegisterTestService(orderService);
+            App.RegisterTestService(categoryService);
+            App.RegisterTestService(cashService);
+            App.RegisterTestService(tableService);
         }
 
         [ObservableProperty]

@@ -68,7 +68,11 @@ namespace HotelPOS.Views
                 ComboCategory.ItemsSource = list;
                 ComboCategory.SelectedIndex = 0;
             }
-            catch { }
+            catch
+            {
+                // Category dropdown is a non-critical filter aid; if it fails to load,
+                // the report still works with "All Categories" as the only option.
+            }
         }
 
         private async void Filter_Changed(object sender, EventArgs e)

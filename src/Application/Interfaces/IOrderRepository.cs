@@ -11,9 +11,8 @@ namespace HotelPOS.Application.Interfaces
         Task<List<Order>> GetAllWithItemsAsync();
 
         /// <summary>Returns a paged list of orders with advanced filtering.</summary>
-        Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, 
-            DateTime? from = null, DateTime? to = null, int? tableNumber = null, 
-            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null, CancellationToken cancellationToken = default);
+        Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize,
+            OrderQueryFilter? filter = null, CancellationToken cancellationToken = default);
 
         Task UpdateAsync(Order order);
         Task<Order?> GetByIdWithItemsAsync(int id);
@@ -24,4 +23,15 @@ namespace HotelPOS.Application.Interfaces
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
     }
+
+    /// <summary>Optional filter criteria for <see cref="IOrderRepository.GetPagedWithItemsAsync"/>.</summary>
+    public record OrderQueryFilter(
+        DateTime? From = null,
+        DateTime? To = null,
+        int? TableNumber = null,
+        string? Search = null,
+        string? PaymentMode = null,
+        string? OrderType = null,
+        int? CategoryId = null
+    );
 }

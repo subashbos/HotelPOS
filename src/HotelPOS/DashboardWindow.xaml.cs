@@ -603,13 +603,10 @@ namespace HotelPOS
             // Global shortcuts for Billing POS when it's active
             if (MainContentArea.Content is BillingView bv)
             {
-                if (e.Key == Key.F1 || e.Key == Key.F3)
+                if ((e.Key == Key.F1 || e.Key == Key.F3) && !bv.IsKeyboardFocusWithin)
                 {
-                    if (!bv.IsKeyboardFocusWithin)
-                    {
-                        bv.FocusSearch();
-                        e.Handled = true;
-                    }
+                    bv.FocusSearch();
+                    e.Handled = true;
                 }
                 else if (e.Key == Key.F4 && !bv.IsKeyboardFocusWithin)
                 {

@@ -43,15 +43,13 @@ namespace HotelPOS.Tests
             };
             _cartServiceMock.Setup(c => c.GetItems(It.IsAny<int>())).Returns(items);
 
+            BillingViewModel.RegisterTestServices(
+                _itemServiceMock.Object, _orderServiceMock.Object, _categoryServiceMock.Object,
+                _cashServiceMock.Object, new Mock<ITableService>().Object);
             var viewModel = new BillingViewModel(
-                _itemServiceMock.Object,
                 _cartServiceMock.Object,
-                _orderServiceMock.Object,
                 _settingServiceMock.Object,
-                _categoryServiceMock.Object,
-                _notificationServiceMock.Object,
-                _cashServiceMock.Object,
-                new Mock<ITableService>().Object);
+                _notificationServiceMock.Object);
 
             // Act - Select table to trigger UpdateCart
             viewModel.SelectTableCommand.Execute(1);
@@ -73,15 +71,13 @@ namespace HotelPOS.Tests
                 new OrderItem { ItemId = 3, ItemName = "Item C" }
             };
 
+            BillingViewModel.RegisterTestServices(
+                _itemServiceMock.Object, _orderServiceMock.Object, _categoryServiceMock.Object,
+                _cashServiceMock.Object, new Mock<ITableService>().Object);
             var viewModel = new BillingViewModel(
-                _itemServiceMock.Object,
                 _cartServiceMock.Object,
-                _orderServiceMock.Object,
                 _settingServiceMock.Object,
-                _categoryServiceMock.Object,
-                _notificationServiceMock.Object,
-                _cashServiceMock.Object,
-                new Mock<ITableService>().Object);
+                _notificationServiceMock.Object);
 
             _cartServiceMock.Setup(c => c.GetItems(1)).Returns(initialItems);
             viewModel.SelectTableCommand.Execute(1);
@@ -118,15 +114,13 @@ namespace HotelPOS.Tests
             };
             _cartServiceMock.Setup(c => c.GetItems(1)).Returns(items);
 
+            BillingViewModel.RegisterTestServices(
+                _itemServiceMock.Object, _orderServiceMock.Object, _categoryServiceMock.Object,
+                _cashServiceMock.Object, new Mock<ITableService>().Object);
             var viewModel = new BillingViewModel(
-                _itemServiceMock.Object,
                 _cartServiceMock.Object,
-                _orderServiceMock.Object,
                 _settingServiceMock.Object,
-                _categoryServiceMock.Object,
-                _notificationServiceMock.Object,
-                _cashServiceMock.Object,
-                new Mock<ITableService>().Object);
+                _notificationServiceMock.Object);
 
             viewModel.SelectTableCommand.Execute(1);
 
@@ -151,15 +145,13 @@ namespace HotelPOS.Tests
             };
             _cartServiceMock.Setup(c => c.GetItems(1)).Returns(items);
 
+            BillingViewModel.RegisterTestServices(
+                _itemServiceMock.Object, _orderServiceMock.Object, _categoryServiceMock.Object,
+                _cashServiceMock.Object, new Mock<ITableService>().Object);
             var viewModel = new BillingViewModel(
-                _itemServiceMock.Object,
                 _cartServiceMock.Object,
-                _orderServiceMock.Object,
                 _settingServiceMock.Object,
-                _categoryServiceMock.Object,
-                _notificationServiceMock.Object,
-                _cashServiceMock.Object,
-                new Mock<ITableService>().Object);
+                _notificationServiceMock.Object);
 
             viewModel.SelectTableCommand.Execute(1);
             viewModel.SelectedCartRow = viewModel.Cart[0];
@@ -183,15 +175,13 @@ namespace HotelPOS.Tests
             };
             _cartServiceMock.Setup(c => c.GetItems(1)).Returns(items);
 
+            BillingViewModel.RegisterTestServices(
+                _itemServiceMock.Object, _orderServiceMock.Object, _categoryServiceMock.Object,
+                _cashServiceMock.Object, new Mock<ITableService>().Object);
             var viewModel = new BillingViewModel(
-                _itemServiceMock.Object,
                 _cartServiceMock.Object,
-                _orderServiceMock.Object,
                 _settingServiceMock.Object,
-                _categoryServiceMock.Object,
-                _notificationServiceMock.Object,
-                _cashServiceMock.Object,
-                new Mock<ITableService>().Object);
+                _notificationServiceMock.Object);
 
             viewModel.SelectTableCommand.Execute(1);
             var row = viewModel.Cart[0];
