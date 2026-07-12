@@ -111,7 +111,7 @@ namespace HotelPOS.Application.UseCases
                 return;
             }
 
-            var existing = await _supplierRepository!.GetByIdAsync(id)
+            _ = await _supplierRepository!.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Supplier #{id} not found.");
             await _supplierRepository.DeleteAsync(id);
         }

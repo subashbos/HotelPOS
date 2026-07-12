@@ -28,9 +28,11 @@ namespace HotelPOS.Tests
         [Fact]
         public void AddToCart_Calls_CartService_And_Updates_UI()
         {
+            BillingViewModel.RegisterTestServices(
+                _itemService.Object, _orderService.Object, _categoryService.Object,
+                _cashService.Object, _tableService.Object);
             var vm = new BillingViewModel(
-                _itemService.Object, _cartService.Object, _orderService.Object, _settingService.Object,
-                _categoryService.Object, _notificationService.Object, _cashService.Object, _tableService.Object);
+                _cartService.Object, _settingService.Object, _notificationService.Object);
 
             var item = new Item { Id = 1, Name = "Pizza", Price = 100 };
             _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
@@ -45,9 +47,11 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task ApplyFilter_Filters_By_SearchText()
         {
+            BillingViewModel.RegisterTestServices(
+                _itemService.Object, _orderService.Object, _categoryService.Object,
+                _cashService.Object, _tableService.Object);
             var vm = new BillingViewModel(
-                _itemService.Object, _cartService.Object, _orderService.Object, _settingService.Object,
-                _categoryService.Object, _notificationService.Object, _cashService.Object, _tableService.Object);
+                _cartService.Object, _settingService.Object, _notificationService.Object);
 
             var items = new List<Item> {
                 new Item { Id = 1, Name = "Apple" },

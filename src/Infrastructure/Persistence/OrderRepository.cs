@@ -91,39 +91,14 @@ namespace HotelPOS.Infrastructure.Persistence
                 .ToListAsync();
         }
 
-        public async Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize, 
-            DateTime? from = null, DateTime? to = null, int? tableNumber = null,
-            string? search = null, string? paymentMode = null, string? orderType = null, int? categoryId = null, CancellationToken cancellationToken = default)
+        public async Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize,
+            OrderQueryFilter? filter = null, CancellationToken cancellationToken = default)
         {
             var query = _context.Orders
                 .Include(o => o.Items)
                 .Where(o => !o.IsDeleted);
 
-            if (from.HasValue) query = query.Where(o => o.CreatedAt >= from.Value);
-            if (to.HasValue) query = query.Where(o => o.CreatedAt <= to.Value);
-            if (tableNumber.HasValue) query = query.Where(o => o.TableNumber == tableNumber.Value);
-            
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(o => (o.InvoiceNumber != null && o.InvoiceNumber.Contains(search)) || 
-                                         (o.CustomerName != null && o.CustomerName.Contains(search)) || 
-                                         (o.CustomerPhone != null && o.CustomerPhone.Contains(search)));
-            }
-
-            if (!string.IsNullOrWhiteSpace(paymentMode) && paymentMode != "All")
-            {
-                query = query.Where(o => o.PaymentMode == paymentMode);
-            }
-
-            if (!string.IsNullOrWhiteSpace(orderType) && orderType != "All")
-            {
-                query = query.Where(o => o.OrderType == orderType);
-            }
-
-            if (categoryId.HasValue && categoryId > 0)
-            {
-                query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId.Value)));
-            }
+            query = ApplyOrderFilters(query, filter ?? new OrderQueryFilter());
 
             var total = await query.CountAsync(cancellationToken);
 
@@ -142,6 +117,39 @@ namespace HotelPOS.Infrastructure.Persistence
 
             var items = await query.ToListAsync(cancellationToken);
             return (items, total);
+        }
+
+        private IQueryable<Order> ApplyOrderFilters(IQueryable<Order> query, OrderQueryFilter filter)
+        {
+            if (filter.From.HasValue) query = query.Where(o => o.CreatedAt >= filter.From.Value);
+            if (filter.To.HasValue) query = query.Where(o => o.CreatedAt <= filter.To.Value);
+            if (filter.TableNumber.HasValue) query = query.Where(o => o.TableNumber == filter.TableNumber.Value);
+
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+            {
+                var search = filter.Search;
+                query = query.Where(o => (o.InvoiceNumber != null && o.InvoiceNumber.Contains(search)) ||
+                                         (o.CustomerName != null && o.CustomerName.Contains(search)) ||
+                                         (o.CustomerPhone != null && o.CustomerPhone.Contains(search)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.PaymentMode) && filter.PaymentMode != "All")
+            {
+                query = query.Where(o => o.PaymentMode == filter.PaymentMode);
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.OrderType) && filter.OrderType != "All")
+            {
+                query = query.Where(o => o.OrderType == filter.OrderType);
+            }
+
+            if (filter.CategoryId.HasValue && filter.CategoryId > 0)
+            {
+                var categoryId = filter.CategoryId.Value;
+                query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId)));
+            }
+
+            return query;
         }
 
         public async Task UpdateAsync(Order order)

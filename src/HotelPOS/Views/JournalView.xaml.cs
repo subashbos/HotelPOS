@@ -29,8 +29,6 @@ namespace HotelPOS.Views
 
     public partial class JournalView : UserControl
     {
-        private readonly IOrderService _orderService;
-        private readonly IReportService _reportService;
         private readonly INotificationService _notificationService;
         private readonly JournalViewModel _viewModel;
         private bool _isLoaded = false;
@@ -38,8 +36,8 @@ namespace HotelPOS.Views
         public JournalView(IOrderService orderService, IReportService reportService, INotificationService notificationService)
         {
             InitializeComponent();
-            _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
-            _reportService = reportService ?? throw new ArgumentNullException(nameof(reportService));
+            _ = orderService ?? throw new ArgumentNullException(nameof(orderService));
+            _ = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
@@ -108,7 +106,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"Journal_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() is not true) return;
 
             try
             {
@@ -161,7 +159,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"GST_Report_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() is not true) return;
 
             try
             {
@@ -282,26 +280,24 @@ namespace HotelPOS.Views
         /// <param name="e">Click event data.</param>
         private async void DeleteOrder_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button b && b.Tag is int orderId)
-            {
-                if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
+            if (sender is Button b && b.Tag is int orderId
+                && await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync($"Are you sure you want to delete Order #{orderId}?", "Confirm Delete",
                     HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning) == HotelPOS.Application.Interfaces.DialogResult.Yes)
+            {
+                try
                 {
-                    try
+                    using (var scope = App.CreateDbScope())
                     {
-                        using (var scope = App.CreateDbScope())
-                        {
-                            var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                            await orderService.DeleteOrderAsync(orderId);
-                        }
+                        var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                        await orderService.DeleteOrderAsync(orderId);
                     }
-                    catch (Exception ex)
-                    {
-                        _notificationService.ShowError($"Delete failed: {ex.Message}");
-                    }
-                    if (_viewModel != null && _viewModel.RefreshCommand.CanExecute(null))
-                        _viewModel.RefreshCommand.Execute(null);
                 }
+                catch (Exception ex)
+                {
+                    _notificationService.ShowError($"Delete failed: {ex.Message}");
+                }
+                if (_viewModel != null && _viewModel.RefreshCommand.CanExecute(null))
+                    _viewModel.RefreshCommand.Execute(null);
             }
         }
     }

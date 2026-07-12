@@ -9,7 +9,7 @@ const RETRY_HEADER = 'X-Retried-After-Refresh';
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
-  private refreshedToken$ = new BehaviorSubject<string | null>(null);
+  private readonly refreshedToken$ = new BehaviorSubject<string | null>(null);
 
   constructor(private readonly authService: AuthService, private readonly router: Router) {}
 

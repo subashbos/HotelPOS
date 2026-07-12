@@ -55,6 +55,24 @@ namespace HotelPOS.Application.UseCases
             }
 
             // Legacy path
+            ValidatePurchase(purchase);
+
+            await _purchaseRepository!.BeginTransactionAsync();
+            try
+            {
+                await _purchaseRepository.AddAsync(purchase);
+                await ApplyPurchaseToStockAsync(purchase);
+                await _purchaseRepository.CommitTransactionAsync();
+            }
+            catch
+            {
+                await _purchaseRepository.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        private static void ValidatePurchase(Purchase purchase)
+        {
             if (purchase.SupplierId <= 0)
                 throw new ArgumentException("A valid supplier must be selected.");
             if (string.IsNullOrWhiteSpace(purchase.InvoiceNumber))
@@ -68,36 +86,26 @@ namespace HotelPOS.Application.UseCases
                 if (item.UnitPrice < 0)
                     throw new ArgumentException("Each item unit price cannot be negative.");
             }
+        }
 
-            await _purchaseRepository!.BeginTransactionAsync();
-            try
+        private async Task ApplyPurchaseToStockAsync(Purchase purchase)
+        {
+            var itemIds = purchase.PurchaseItems.Select(i => i.ItemId).Distinct().ToList();
+            var catalogItems = await _itemRepository!.GetByIdsAsync(itemIds);
+            var itemsById = catalogItems.ToDictionary(i => i.Id);
+
+            foreach (var item in purchase.PurchaseItems)
             {
-                await _purchaseRepository.AddAsync(purchase);
-
-                var itemIds = purchase.PurchaseItems.Select(i => i.ItemId).Distinct().ToList();
-                var catalogItems = await _itemRepository!.GetByIdsAsync(itemIds);
-                var itemsById = catalogItems.ToDictionary(i => i.Id);
-
-                foreach (var item in purchase.PurchaseItems)
+                if (itemsById.TryGetValue(item.ItemId, out var catalogItem) && catalogItem.TrackInventory)
                 {
-                    if (itemsById.TryGetValue(item.ItemId, out var catalogItem) && catalogItem.TrackInventory)
-                    {
-                        catalogItem.StockQuantity += item.Quantity;
-                    }
+                    catalogItem.StockQuantity += item.Quantity;
                 }
-
-                var toUpdate = catalogItems.Where(i => i.TrackInventory).ToList();
-                if (toUpdate.Count > 0)
-                {
-                    await _itemRepository.UpdateRangeAsync(toUpdate);
-                }
-
-                await _purchaseRepository.CommitTransactionAsync();
             }
-            catch
+
+            var toUpdate = catalogItems.Where(i => i.TrackInventory).ToList();
+            if (toUpdate.Count > 0)
             {
-                await _purchaseRepository.RollbackTransactionAsync();
-                throw;
+                await _itemRepository.UpdateRangeAsync(toUpdate);
             }
         }
     }

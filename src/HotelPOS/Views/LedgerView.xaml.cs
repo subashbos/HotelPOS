@@ -34,7 +34,7 @@ namespace HotelPOS.Views
     {
         private readonly INotificationService _notificationService;
         private List<LedgerRow> _allRows = new();
-        private ObservableCollection<LedgerRow> _items = new();
+        private readonly ObservableCollection<LedgerRow> _items = new();
         private int _currentPage = 1;
         private const int PageSize = 20;
         private bool _isLoaded = false;
@@ -183,7 +183,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"Ledger_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() != true) return;
+            if (dlg.ShowDialog() is not true) return;
 
             try
             {

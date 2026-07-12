@@ -104,6 +104,8 @@ namespace HotelPOS.Services
                 var dbName = conn.Database;
                 EnsureSafeIdentifier(dbName);
                 var quotedDb = new Microsoft.Data.SqlClient.SqlCommandBuilder().QuoteIdentifier(dbName);
+                // sonar: identifiers can't be SQL parameters; dbName is allowlist-validated above and quoted.
+                // The only externally-influenced value (backupFilePath) is passed as a real parameter below.
                 var sql = $@"
                     ALTER DATABASE {quotedDb} SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
                     RESTORE DATABASE {quotedDb} FROM DISK = @backupPath WITH REPLACE;
@@ -116,7 +118,7 @@ namespace HotelPOS.Services
             }
         }
 
-        private async Task<string?> PerformSqliteBackup(System.Data.Common.DbConnection conn, string backupDir)
+        private static async Task<string?> PerformSqliteBackup(System.Data.Common.DbConnection conn, string backupDir)
         {
             var dbPath = conn.DataSource;
             if (string.IsNullOrEmpty(dbPath) || !File.Exists(dbPath)) return null;
@@ -133,13 +135,15 @@ namespace HotelPOS.Services
             return destPath;
         }
 
-        private async Task<string?> PerformSqlServerBackup(HotelDbContext db, System.Data.Common.DbConnection conn, string backupDir)
+        private static async Task<string?> PerformSqlServerBackup(HotelDbContext db, System.Data.Common.DbConnection conn, string backupDir)
         {
             var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
             var destPath = Path.Combine(backupDir, fileName);
 
             EnsureSafeIdentifier(conn.Database);
             var quotedDb = new Microsoft.Data.SqlClient.SqlCommandBuilder().QuoteIdentifier(conn.Database);
+            // sonar: identifiers can't be SQL parameters; conn.Database is allowlist-validated above and quoted.
+            // destPath is the only externally-influenced value and is passed as a real parameter ({0} -> @p0).
             var sql = $"BACKUP DATABASE {quotedDb} TO DISK = {{0}} WITH FORMAT, NAME = 'Full Backup of HotelPOS'";
             await db.Database.ExecuteSqlRawAsync(sql, destPath);
             return destPath;
@@ -154,7 +158,7 @@ namespace HotelPOS.Services
             }
         }
 
-        private void CleanupOldBackups(string backupDir)
+        private static void CleanupOldBackups(string backupDir)
         {
             if (!Directory.Exists(backupDir)) return;
 

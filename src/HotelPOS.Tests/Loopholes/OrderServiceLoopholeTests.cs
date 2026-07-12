@@ -254,9 +254,9 @@ namespace HotelPOS.Tests
         public void FiscalYear_March31_ReturnsPreviousYearRange()
         {
             var method = typeof(OrderService).GetMethod("GetFiscalYear",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 
-            var result = (string)method!.Invoke(_service, new object[] { new DateTime(2026, 3, 31) })!;
+            var result = (string)method!.Invoke(null, new object[] { new DateTime(2026, 3, 31) })!;
 
             Assert.Equal("2025-26", result);
         }
@@ -265,9 +265,9 @@ namespace HotelPOS.Tests
         public void FiscalYear_April1_ReturnsCurrentYearRange()
         {
             var method = typeof(OrderService).GetMethod("GetFiscalYear",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 
-            var result = (string)method!.Invoke(_service, new object[] { new DateTime(2026, 4, 1) })!;
+            var result = (string)method!.Invoke(null, new object[] { new DateTime(2026, 4, 1) })!;
 
             Assert.Equal("2026-27", result);
         }
@@ -276,9 +276,9 @@ namespace HotelPOS.Tests
         public void FiscalYear_January1_ReturnsPreviousYearRange()
         {
             var method = typeof(OrderService).GetMethod("GetFiscalYear",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 
-            var result = (string)method!.Invoke(_service, new object[] { new DateTime(2026, 1, 1) })!;
+            var result = (string)method!.Invoke(null, new object[] { new DateTime(2026, 1, 1) })!;
 
             Assert.Equal("2025-26", result);
         }

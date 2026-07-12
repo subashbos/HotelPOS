@@ -13,8 +13,6 @@ namespace HotelPOS
 {
     public partial class AddItemWindow : Window
     {
-        private readonly IItemService _itemService;
-        private readonly ICategoryService _categoryService;
         private readonly INotificationService _notificationService;
         private Item? _editingItem;
         public event Action? ItemSaved;
@@ -22,8 +20,6 @@ namespace HotelPOS
         public AddItemWindow(IItemService itemService, ICategoryService categoryService, INotificationService notificationService)
         {
             InitializeComponent();
-            _itemService = itemService;
-            _categoryService = categoryService;
             _notificationService = notificationService;
         }
 

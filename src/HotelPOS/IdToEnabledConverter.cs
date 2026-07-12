@@ -10,10 +10,7 @@ namespace HotelPOS
             if (parameter?.ToString() == "StockCheck")
             {
                 if (values.Length < 2) return true;
-                if (values[0] is int stock && values[1] is bool track)
-                {
-                    if (track && stock <= 0) return false;
-                }
+                if (values[0] is int stock && values[1] is bool track && track && stock <= 0) return false;
                 return true;
             }
 
