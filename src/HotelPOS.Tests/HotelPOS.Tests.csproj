@@ -9,6 +9,13 @@
     <IsTestProject>true</IsTestProject>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <!-- EF Core migrations are auto-generated scaffolding never exercised by tests (applied via
+         `dotnet ef database update`, not app code paths). XAML code-behind (*.xaml.cs) is thin,
+         XAML-wired UI glue that needs an STA thread + a loaded Application to instantiate
+         meaningfully; the actual logic lives in the ViewModels, which stay in scope. Both are
+         excluded from the coverage gate rather than counted as untestable "misses". -->
+    <ExcludeByFile>**/Migrations/*.cs,**/*.xaml.cs</ExcludeByFile>
   </PropertyGroup>
 
   <ItemGroup>
