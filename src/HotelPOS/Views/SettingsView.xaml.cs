@@ -183,16 +183,16 @@ namespace HotelPOS.Views
         {
             if (_current == null) return;
             _current.DefaultPrinter = PrinterList.SelectedItem?.ToString() ?? "Microsoft Print to PDF";
-            _current.ReceiptFormat = FormatThermal.IsChecked is true ? "Thermal" : "A4";
-            _current.ShowPrintPreview = ShowPreviewCheck.IsChecked is true;
+            _current.ReceiptFormat = FormatThermal.IsChecked.GetValueOrDefault() ? "Thermal" : "A4";
+            _current.ShowPrintPreview = ShowPreviewCheck.IsChecked.GetValueOrDefault();
 
-            _current.ShowItemsOnBill = ShowItemsCheck.IsChecked is true;
-            _current.ShowGstBreakdown = ShowGstCheck.IsChecked is true;
-            _current.ShowDiscountLine = ShowDiscountCheck.IsChecked is true;
-            _current.ShowPhoneOnReceipt = ShowPhoneCheck.IsChecked is true;
-            _current.ShowThankYouFooter = ShowFooterCheck.IsChecked is true;
-            _current.EnableRoundOff = RoundOffCheck.IsChecked is true;
-            _current.IsCompositionScheme = CompositionCheck.IsChecked is true;
+            _current.ShowItemsOnBill = ShowItemsCheck.IsChecked.GetValueOrDefault();
+            _current.ShowGstBreakdown = ShowGstCheck.IsChecked.GetValueOrDefault();
+            _current.ShowDiscountLine = ShowDiscountCheck.IsChecked.GetValueOrDefault();
+            _current.ShowPhoneOnReceipt = ShowPhoneCheck.IsChecked.GetValueOrDefault();
+            _current.ShowThankYouFooter = ShowFooterCheck.IsChecked.GetValueOrDefault();
+            _current.EnableRoundOff = RoundOffCheck.IsChecked.GetValueOrDefault();
+            _current.IsCompositionScheme = CompositionCheck.IsChecked.GetValueOrDefault();
             await Save();
         }
 
@@ -201,7 +201,7 @@ namespace HotelPOS.Views
         private async void SaveBackups_Click(object sender, RoutedEventArgs e)
         {
             if (_current == null) return;
-            _current.EnableAutomatedBackups = EnableAutomatedBackupsCheck.IsChecked is true;
+            _current.EnableAutomatedBackups = EnableAutomatedBackupsCheck.IsChecked.GetValueOrDefault();
             _current.OffsiteBackupPath = string.IsNullOrWhiteSpace(OffsiteBackupPathBox.Text) ? null : OffsiteBackupPathBox.Text.Trim();
             await Save();
         }
@@ -324,7 +324,7 @@ namespace HotelPOS.Views
                 Title = "Select Backup File to Restore"
             };
 
-            if (dlg.ShowDialog() is true)
+            if (dlg.ShowDialog().GetValueOrDefault())
             {
                 try
                 {

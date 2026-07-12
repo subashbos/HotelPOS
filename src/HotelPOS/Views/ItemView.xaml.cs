@@ -6,6 +6,7 @@ using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -157,7 +158,7 @@ namespace HotelPOS.Views
                 Title = "Select Excel File",
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
             };
-            if (dlg.ShowDialog() is not true) return;
+            if (!dlg.ShowDialog().GetValueOrDefault()) return;
 
             try
             {
@@ -194,7 +195,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"Menu_Export_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() is not true) return;
+            if (!dlg.ShowDialog().GetValueOrDefault()) return;
 
             try
             {
@@ -236,7 +237,7 @@ namespace HotelPOS.Views
 
             if (!headers.TryGetValue("name", out int nameCol) ||
                 !headers.TryGetValue("price", out int priceCol))
-                throw new Exception("Excel must have 'Name' and 'Price' column headers in row 1.");
+                throw new InvalidDataException("Excel must have 'Name' and 'Price' column headers in row 1.");
 
             headers.TryGetValue("tax", out int taxCol);
             headers.TryGetValue("category", out int catCol);

@@ -73,10 +73,12 @@ namespace HotelPOS.Views
 
         private User? SelectedUser => UsersGrid.SelectedItem as User;
 
-        // Intentionally empty: selection state is read on-demand via the SelectedUser
-        // property rather than reacted to here; the handler only exists to keep the
-        // XAML-bound SelectionChanged event wired for future use.
-        private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Intentionally empty: selection state is read on-demand via the SelectedUser
+            // property rather than reacted to here; the handler only exists to keep the
+            // XAML-bound SelectionChanged event wired for future use.
+        }
 
         /// <summary>
         /// Enables the currently selected user account and refreshes the displayed user list.
@@ -124,7 +126,7 @@ namespace HotelPOS.Views
             if (SelectedUser is not User u) { ShowFeedback(SelectUserFirstMessage, false); return; }
 
             var dialog = new PasswordResetDialog(u.Username) { Owner = Window.GetWindow(this) };
-            if (dialog.ShowDialog() is true)
+            if (dialog.ShowDialog().GetValueOrDefault())
             {
                 bool ok;
                 string err;

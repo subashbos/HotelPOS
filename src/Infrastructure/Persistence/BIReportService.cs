@@ -249,10 +249,17 @@ namespace HotelPOS.Infrastructure.Persistence
                 alerts.Add(BuildLowStockAlert(item, sold, idx++));
             }
 
-            return alerts.OrderBy(a => a.AlertLevel == AlertLevels.Critical ? 0 : a.AlertLevel == AlertLevels.Warning ? 1 : 2)
+            return alerts.OrderBy(AlertSortRank)
                 .ThenBy(a => a.DaysRemaining >= 0 ? a.DaysRemaining : int.MaxValue)
                 .Select((a, i) => a with { SNo = i + 1 })
                 .ToList();
+        }
+
+        private static int AlertSortRank(LowStockAlertDto alert)
+        {
+            if (alert.AlertLevel == AlertLevels.Critical) return 0;
+            if (alert.AlertLevel == AlertLevels.Warning) return 1;
+            return 2;
         }
 
         private static LowStockAlertDto BuildLowStockAlert(Item item, int sold, int sno)

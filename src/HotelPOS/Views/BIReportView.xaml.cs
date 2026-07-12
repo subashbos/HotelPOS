@@ -219,7 +219,7 @@ namespace HotelPOS.Views
                 FileName = $"HotelPOS_BI_Margins_{DateTime.Now:yyyyMMdd}.xlsx"
             };
 
-            if (dlg.ShowDialog() is true)
+            if (dlg.ShowDialog().GetValueOrDefault())
             {
                 try
                 {

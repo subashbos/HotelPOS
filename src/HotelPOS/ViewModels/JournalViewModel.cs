@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace HotelPOS.ViewModels
 {
-    public partial class JournalViewModel : ObservableObject, IDisposable
+    public sealed partial class JournalViewModel : ObservableObject, IDisposable
     {
         private readonly IOrderService _orderService;
         private readonly INotificationService _notificationService;

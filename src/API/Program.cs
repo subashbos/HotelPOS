@@ -132,4 +132,7 @@ app.MapControllers();
 await app.RunAsync();
 
 /// <summary>Exposed so WebApplicationFactory&lt;Program&gt; can host this API in integration tests.</summary>
-public partial class Program { }
+public partial class Program
+{
+    protected Program() { }
+}
