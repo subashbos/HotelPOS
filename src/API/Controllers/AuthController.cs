@@ -21,6 +21,7 @@ namespace HotelPOS.Api.Controllers
         private readonly JwtOptions _jwtOptions;
 
         private const int RefreshTokenDays = 30;
+        private const int AccessTokenMinutes = 20;
 
         public AuthController(
             IAuthService authService,
@@ -175,7 +176,7 @@ namespace HotelPOS.Api.Controllers
                 issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(8),
+                expires: DateTime.UtcNow.AddMinutes(AccessTokenMinutes),
                 signingCredentials: creds
             );
 

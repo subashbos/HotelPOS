@@ -28,7 +28,7 @@ jobs:
         run: dotnet restore HotelPOS.sln
 
       - name: Build
-        run: dotnet build HotelPOS.sln --no-restore --configuration Release
+        run: dotnet build HotelPOS.sln --no-restore --configuration Release -warnaserror
 
       - name: Test
         run: dotnet test HotelPOS.sln --no-build --configuration Release --logger trx --results-directory TestResults
@@ -40,6 +40,14 @@ jobs:
           name: .NET Test Results
           path: TestResults/*.trx
           reporter: dotnet-trx
+          fail-on-error: true
+
+      - name: Upload test results artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dotnet-test-results
+          path: TestResults/*.trx
 
   angular:
     name: Angular Test
