@@ -62,7 +62,7 @@ namespace HotelPOS.ViewModels
             IsLoading = true;
 
             // Cancel any ongoing request if multiple scrolls happen quickly
-            _cancellationTokenSource?.Cancel();
+            if (_cancellationTokenSource != null) await _cancellationTokenSource.CancelAsync();
             _cancellationTokenSource?.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
             var token = _cancellationTokenSource.Token;

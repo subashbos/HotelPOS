@@ -48,7 +48,7 @@ namespace HotelPOS.Application.UseCases
             var utcTo = to?.ToUniversalTime();
 
             // Fetch only relevant orders from database (latest 500 for the dashboard summary)
-            var (orders, totalCount) = await _orderRepo.GetPagedWithItemsAsync(1, 500, utcFrom, utcTo);
+            var (orders, _) = await _orderRepo.GetPagedWithItemsAsync(1, 500, utcFrom, utcTo);
 
             var totalRevenue = orders.Sum(o => o.TotalAmount);
             var count = orders.Count;
@@ -109,7 +109,7 @@ namespace HotelPOS.Application.UseCases
                     ItemName = g.Key,
                     TotalQtySold = g.Sum(i => i.Quantity),
                     TotalRevenue = g.Sum(i => i.Total),
-                    UnitPrice = g.Count() > 0 ? g.Average(i => i.Price) : 0
+                    UnitPrice = g.Any() ? g.Average(i => i.Price) : 0
                 })
                 .OrderByDescending(x => x.TotalRevenue)
                 .ToList();
@@ -168,7 +168,7 @@ namespace HotelPOS.Application.UseCases
             var now = DateTime.Now;
 
             // Get data for the last 12 months (UTC bounds)
-            var startDateLocal = new DateTime(now.Year, now.Month, 1).AddMonths(-11);
+            var startDateLocal = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Local).AddMonths(-11);
             var startDateUtc = startDateLocal.ToUniversalTime();
 
             var (orders, _) = await _orderRepo.GetPagedWithItemsAsync(1, -1, startDateUtc);

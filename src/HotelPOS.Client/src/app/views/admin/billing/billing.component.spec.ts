@@ -37,7 +37,7 @@ describe('BillingComponent', () => {
     it('addToCart adds a new row with the correct computed total', () => {
       component.addToCart(makeItem({ id: 1, price: 200, taxPercentage: 5 }));
 
-      expect(component.cart.length).toBe(1);
+      expect(component.cart).toHaveSize(1);
       expect(component.cart[0].quantity).toBe(1);
       expect(component.cart[0].total).toBe(210); // 1 * 200 * 1.05
     });
@@ -47,7 +47,7 @@ describe('BillingComponent', () => {
       component.addToCart(item);
       component.addToCart(item);
 
-      expect(component.cart.length).toBe(1);
+      expect(component.cart).toHaveSize(1);
       expect(component.cart[0].quantity).toBe(2);
       expect(component.cart[0].total).toBe(420); // 2 * 200 * 1.05
     });
@@ -72,7 +72,7 @@ describe('BillingComponent', () => {
       component.addToCart(makeItem({ id: 1 }));
       component.decreaseQty(component.cart[0]);
 
-      expect(component.cart.length).toBe(0);
+      expect(component.cart).toHaveSize(0);
     });
 
     it('removeRow renumbers the remaining rows', () => {
@@ -146,7 +146,7 @@ describe('BillingComponent', () => {
       const request = orderServiceSpy.createOrder.calls.mostRecent().args[0];
       expect(request.orderType).toBe('DineIn');
       expect(request.tableNumber).toBe(7);
-      expect(request.items.length).toBe(1);
+      expect(request.items).toHaveSize(1);
       expect(request.items[0].itemId).toBe(1);
     });
 
@@ -158,7 +158,7 @@ describe('BillingComponent', () => {
 
       expect(component.checkoutConfirmed).toBeTrue();
       expect(component.lastInvoiceNumber).toBe('Order #42');
-      expect(component.cart.length).toBe(1); // not cleared yet — modal is still open showing the receipt
+      expect(component.cart).toHaveSize(1); // not cleared yet — modal is still open showing the receipt
       expect(component.isCheckingOut).toBeFalse();
     });
 
@@ -170,7 +170,7 @@ describe('BillingComponent', () => {
       component.closeCheckoutModal();
 
       expect(component.showCheckoutModal).toBeFalse();
-      expect(component.cart.length).toBe(0);
+      expect(component.cart).toHaveSize(0);
     });
 
     it('closeCheckoutModal does not clear the cart if checkout was never confirmed', () => {
@@ -178,7 +178,7 @@ describe('BillingComponent', () => {
 
       component.closeCheckoutModal();
 
-      expect(component.cart.length).toBe(1);
+      expect(component.cart).toHaveSize(1);
     });
 
     it('confirmCheckout surfaces the server error message and leaves the cart intact', () => {
@@ -190,7 +190,7 @@ describe('BillingComponent', () => {
       expect(component.checkoutError).toBe('Insufficient stock for raw material: Chicken.');
       expect(component.checkoutConfirmed).toBeFalse();
       expect(component.isCheckingOut).toBeFalse();
-      expect(component.cart.length).toBe(1);
+      expect(component.cart).toHaveSize(1);
     });
 
     it('confirmCheckout ignores a second click while a request is already in flight', () => {

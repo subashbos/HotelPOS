@@ -12,7 +12,7 @@ namespace HotelPOS.Views
     public partial class ItemReportView : UserControl
     {
         private readonly INotificationService _notificationService;
-        private ObservableCollection<ItemSalesReportRowDto> _items = new();
+        private readonly ObservableCollection<ItemSalesReportRowDto> _items = new();
         private List<ItemSalesReportRowDto> _allRows = new();
         private int _currentPage = 1;
         private const int PageSize = 20;
@@ -218,7 +218,7 @@ namespace HotelPOS.Views
                 FileName = $"Item_Report_{DateTime.Now:yyyyMMdd}.xlsx"
             };
 
-            if (dlg.ShowDialog() == true)
+            if (dlg.ShowDialog() is true)
             {
                 try
                 {

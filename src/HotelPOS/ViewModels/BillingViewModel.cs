@@ -8,14 +8,9 @@ namespace HotelPOS.ViewModels
 {
     public partial class BillingViewModel : ObservableObject
     {
-        private readonly IItemService _itemService;
         private readonly ICartService _cartService;
-        private readonly IOrderService _orderService;
         private readonly ISettingService _settingService;
-        private readonly ICategoryService _categoryService;
         private readonly INotificationService _notificationService;
-        private readonly ICashService _cashService;
-        private readonly ITableService _tableService;
         private readonly IDialogService? _dialogService;
 
         [ObservableProperty]
@@ -131,13 +126,10 @@ namespace HotelPOS.ViewModels
                     }
                 }
 
-                if (SetProperty(ref _selectedQty, value))
+                if (SetProperty(ref _selectedQty, value) && SelectedCartRow != null)
                 {
-                    if (SelectedCartRow != null)
-                    {
-                        _cartService.SetQuantity(TableNumber, SelectedCartRow.ItemId, value);
-                        UpdateCart();
-                    }
+                    _cartService.SetQuantity(TableNumber, SelectedCartRow.ItemId, value);
+                    UpdateCart();
                 }
             }
         }
@@ -169,14 +161,9 @@ namespace HotelPOS.ViewModels
                                 ICashService cashService, ITableService tableService,
                                 IDialogService? dialogService = null)
         {
-            _itemService = itemService;
             _cartService = cartService;
-            _orderService = orderService;
             _settingService = settingService;
-            _categoryService = categoryService;
             _notificationService = notificationService;
-            _cashService = cashService;
-            _tableService = tableService;
             _dialogService = dialogService;
 
             if (System.Windows.Application.Current == null)

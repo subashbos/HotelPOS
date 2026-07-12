@@ -147,6 +147,9 @@ coverage*.json
 coverage*.xml
 coverage*.info
 
+# Angular/karma coverage output
+src/HotelPOS.Client/coverage/
+
 # Visual Studio code coverage results
 *.coverage
 *.coveragexml

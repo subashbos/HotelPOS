@@ -99,31 +99,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 .Include(o => o.Items)
                 .Where(o => !o.IsDeleted);
 
-            if (from.HasValue) query = query.Where(o => o.CreatedAt >= from.Value);
-            if (to.HasValue) query = query.Where(o => o.CreatedAt <= to.Value);
-            if (tableNumber.HasValue) query = query.Where(o => o.TableNumber == tableNumber.Value);
-            
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                query = query.Where(o => (o.InvoiceNumber != null && o.InvoiceNumber.Contains(search)) || 
-                                         (o.CustomerName != null && o.CustomerName.Contains(search)) || 
-                                         (o.CustomerPhone != null && o.CustomerPhone.Contains(search)));
-            }
-
-            if (!string.IsNullOrWhiteSpace(paymentMode) && paymentMode != "All")
-            {
-                query = query.Where(o => o.PaymentMode == paymentMode);
-            }
-
-            if (!string.IsNullOrWhiteSpace(orderType) && orderType != "All")
-            {
-                query = query.Where(o => o.OrderType == orderType);
-            }
-
-            if (categoryId.HasValue && categoryId > 0)
-            {
-                query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId.Value)));
-            }
+            query = ApplyOrderFilters(query, from, to, tableNumber, search, paymentMode, orderType, categoryId);
 
             var total = await query.CountAsync(cancellationToken);
 
@@ -142,6 +118,38 @@ namespace HotelPOS.Infrastructure.Persistence
 
             var items = await query.ToListAsync(cancellationToken);
             return (items, total);
+        }
+
+        private IQueryable<Order> ApplyOrderFilters(IQueryable<Order> query, DateTime? from, DateTime? to,
+            int? tableNumber, string? search, string? paymentMode, string? orderType, int? categoryId)
+        {
+            if (from.HasValue) query = query.Where(o => o.CreatedAt >= from.Value);
+            if (to.HasValue) query = query.Where(o => o.CreatedAt <= to.Value);
+            if (tableNumber.HasValue) query = query.Where(o => o.TableNumber == tableNumber.Value);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(o => (o.InvoiceNumber != null && o.InvoiceNumber.Contains(search)) ||
+                                         (o.CustomerName != null && o.CustomerName.Contains(search)) ||
+                                         (o.CustomerPhone != null && o.CustomerPhone.Contains(search)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(paymentMode) && paymentMode != "All")
+            {
+                query = query.Where(o => o.PaymentMode == paymentMode);
+            }
+
+            if (!string.IsNullOrWhiteSpace(orderType) && orderType != "All")
+            {
+                query = query.Where(o => o.OrderType == orderType);
+            }
+
+            if (categoryId.HasValue && categoryId > 0)
+            {
+                query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId.Value)));
+            }
+
+            return query;
         }
 
         public async Task UpdateAsync(Order order)

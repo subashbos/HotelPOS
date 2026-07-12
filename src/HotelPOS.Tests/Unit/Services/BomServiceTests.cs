@@ -189,6 +189,8 @@ namespace HotelPOS.Tests
 
             var service = new BomService(context);
             await service.DeductIngredientStockAsync(1, 5); // no BomEntries for this item - should be a no-op, not throw
+
+            Assert.False(context.ChangeTracker.HasChanges());
         }
 
         [Fact]

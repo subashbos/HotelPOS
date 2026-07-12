@@ -10,8 +10,6 @@ namespace HotelPOS.ViewModels
 {
     public partial class PurchaseReportViewModel : ObservableObject
     {
-        private readonly IReportService _reportService;
-        private readonly IPurchaseService _purchaseService;
         private readonly INotificationService _notificationService;
 
         [ObservableProperty]
@@ -57,8 +55,6 @@ namespace HotelPOS.ViewModels
 
         public PurchaseReportViewModel(IReportService reportService, IPurchaseService purchaseService, INotificationService notificationService)
         {
-            _reportService = reportService;
-            _purchaseService = purchaseService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
@@ -88,7 +84,7 @@ namespace HotelPOS.ViewModels
                 Suppliers.Clear();
                 Suppliers.Add(new Supplier { Id = 0, Name = "All Suppliers" });
                 foreach (var sup in suppliers) Suppliers.Add(sup);
-                SelectedSupplier = Suppliers.First();
+                SelectedSupplier = Suppliers[0];
 
                 await ApplyFilterAsync();
             }

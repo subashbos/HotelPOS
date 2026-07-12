@@ -246,44 +246,49 @@ namespace HotelPOS.Infrastructure.Persistence
             foreach (var item in items)
             {
                 qtySoldMap.TryGetValue(item.Id, out int sold);
-                double dailyRate = Math.Round((double)sold / ReportingLimits.TrailingSalesDays, MoneyPrecision.RateDecimals);
-
-                int daysRemaining = -1;
-                if (item.StockQuantity <= 0)
-                {
-                    daysRemaining = 0;
-                }
-                else if (dailyRate > 0)
-                {
-                    daysRemaining = (int)Math.Ceiling(item.StockQuantity / dailyRate);
-                }
-
-                string alertLevel = AlertLevels.Normal;
-                if (item.StockQuantity <= 0 || (daysRemaining >= 0 && daysRemaining <= StockAlertThresholds.CriticalDaysRemaining))
-                {
-                    alertLevel = AlertLevels.Critical;
-                }
-                else if (item.StockQuantity <= item.MinStockThreshold || (daysRemaining >= 0 && daysRemaining <= StockAlertThresholds.WarningDaysRemaining))
-                {
-                    alertLevel = AlertLevels.Warning;
-                }
-
-                alerts.Add(new LowStockAlertDto(
-                    idx++,
-                    item.Id,
-                    item.Name,
-                    item.StockQuantity,
-                    item.MinStockThreshold,
-                    dailyRate,
-                    daysRemaining,
-                    alertLevel
-                ));
+                alerts.Add(BuildLowStockAlert(item, sold, idx++));
             }
 
             return alerts.OrderBy(a => a.AlertLevel == AlertLevels.Critical ? 0 : a.AlertLevel == AlertLevels.Warning ? 1 : 2)
                 .ThenBy(a => a.DaysRemaining >= 0 ? a.DaysRemaining : int.MaxValue)
                 .Select((a, i) => a with { SNo = i + 1 })
                 .ToList();
+        }
+
+        private static LowStockAlertDto BuildLowStockAlert(Item item, int sold, int sno)
+        {
+            double dailyRate = Math.Round((double)sold / ReportingLimits.TrailingSalesDays, MoneyPrecision.RateDecimals);
+
+            int daysRemaining = -1;
+            if (item.StockQuantity <= 0)
+            {
+                daysRemaining = 0;
+            }
+            else if (dailyRate > 0)
+            {
+                daysRemaining = (int)Math.Ceiling(item.StockQuantity / dailyRate);
+            }
+
+            string alertLevel = AlertLevels.Normal;
+            if (item.StockQuantity <= 0 || (daysRemaining >= 0 && daysRemaining <= StockAlertThresholds.CriticalDaysRemaining))
+            {
+                alertLevel = AlertLevels.Critical;
+            }
+            else if (item.StockQuantity <= item.MinStockThreshold || (daysRemaining >= 0 && daysRemaining <= StockAlertThresholds.WarningDaysRemaining))
+            {
+                alertLevel = AlertLevels.Warning;
+            }
+
+            return new LowStockAlertDto(
+                sno,
+                item.Id,
+                item.Name,
+                item.StockQuantity,
+                item.MinStockThreshold,
+                dailyRate,
+                daysRemaining,
+                alertLevel
+            );
         }
 
         public async Task<List<MonthlyTrendDto>> GetMonthlyTrendDataAsync()

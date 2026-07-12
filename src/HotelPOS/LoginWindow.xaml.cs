@@ -8,8 +8,6 @@ namespace HotelPOS
 {
     public partial class LoginWindow : Window
     {
-        private readonly IAuthService _authService;
-        private readonly IUserService _userService;
         private readonly INotificationService _notificationService;
         private IServiceScope? _sessionScope;
 
@@ -20,8 +18,6 @@ namespace HotelPOS
         public LoginWindow(IAuthService authService, IUserService userService, INotificationService notificationService)
         {
             InitializeComponent();
-            _authService = authService;
-            _userService = userService;
             _notificationService = notificationService;
             Loaded += async (s, e) =>
             {
