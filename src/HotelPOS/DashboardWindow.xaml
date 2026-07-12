@@ -200,6 +200,10 @@
                                 <Path Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 12.13c-1.42-.48-1.92-.89-1.92-1.47 0-.64.67-1.07 1.77-1.07 1.13 0 1.57.51 1.62 1.18h1.61c-.05-1.14-.85-2.02-2.1-2.3v-1.72h-2.2v1.71c-1.39.29-2.5 1.17-2.5 2.59 0 1.72 1.42 2.58 3.5 3.28 1.56.53 1.96 1.04 1.96 1.69 0 .54-.42 1.11-1.83 1.11-1.32 0-1.87-.58-1.94-1.37h-1.63c.08 1.34 1.03 2.18 2.28 2.45v1.73h2.2v-1.73c1.43-.27 2.57-1.11 2.57-2.61 0-1.88-1.43-2.69-3.55-3.4z"
                                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
                             </Button>
+                            <Button x:Name="NavExpenses" Style="{StaticResource NavBtn}" Click="NavExpenses_Click" Tag="Daily Expenses" ToolTip="Daily Expenses">
+                                <Path Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-2h2v2zm0-4H7v-2h2v2zm0-4H7V7h2v2zm8 8h-6v-2h6v2zm0-4h-6v-2h6v2zm0-4h-6V7h6v2z"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
+                            </Button>
                         </StackPanel>
 
                         <!-- INVENTORY -->

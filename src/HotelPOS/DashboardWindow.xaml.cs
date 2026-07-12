@@ -35,6 +35,7 @@ namespace HotelPOS
         private SupplierView? _cachedSuppliers;
         private RawMaterialView? _cachedRawMaterials;
         private BomView? _cachedBom;
+        private ExpenseView? _cachedExpenses;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
         private readonly IUserRepository _userRepository;
@@ -235,6 +236,7 @@ namespace HotelPOS
 
             NavSales.Visibility = HasPermission("SalesReport") ? Visibility.Visible : Visibility.Collapsed;
             NavShift.Visibility = HasPermission("Shift") ? Visibility.Visible : Visibility.Collapsed;
+            NavExpenses.Visibility = HasPermission(PermissionModules.Expenses) ? Visibility.Visible : Visibility.Collapsed;
 
             NavMenu.Visibility = HasPermission("Items") ? Visibility.Visible : Visibility.Collapsed;
             NavTables.Visibility = HasPermission("Tables") ? Visibility.Visible : Visibility.Collapsed;
@@ -396,6 +398,13 @@ namespace HotelPOS
             SetActive(NavShift);
         }
 
+        private void NavExpenses_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedExpenses ??= _serviceProvider.GetRequiredService<ExpenseView>();
+            MainContentArea.Content = _cachedExpenses;
+            SetActive(NavExpenses);
+        }
+
         private void NavRoles_Click(object sender, RoutedEventArgs e)
         {
             _cachedRoles ??= _serviceProvider.GetRequiredService<RolesView>();
@@ -408,7 +417,7 @@ namespace HotelPOS
             // 1. Enable all navigation buttons
             var allButtons = new[]
             {
-                NavBilling, NavShift,
+                NavBilling, NavShift, NavExpenses,
                 NavMenu, NavCats, NavTables, NavPurchase, NavSuppliers, NavRawMaterials, NavBom,
                 NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
                 NavSettings, NavRoles, NavAudit
@@ -443,7 +452,7 @@ namespace HotelPOS
             else
             {
                 // Expanded mode: show header ONLY if at least one child button is visible
-                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible)
+                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible || NavExpenses.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
 
                 HeaderInv.Visibility = (NavMenu.Visibility == Visibility.Visible || NavCats.Visibility == Visibility.Visible || NavTables.Visibility == Visibility.Visible || NavPurchase.Visibility == Visibility.Visible || NavSuppliers.Visibility == Visibility.Visible || NavRawMaterials.Visibility == Visibility.Visible || NavBom.Visibility == Visibility.Visible)

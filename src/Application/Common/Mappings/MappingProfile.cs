@@ -1,5 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.Category;
+using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.DTOs.Table;
@@ -37,6 +38,9 @@ namespace HotelPOS.Application.Common.Mappings
                     string.IsNullOrWhiteSpace(src.Gstin) ? null : src.Gstin.Trim().ToUpperInvariant()));
             CreateMap<Supplier, SaveSupplierDto>();
             CreateMap<Supplier, SupplierDto>().ReverseMap();
+
+            // ── Expense ───────────────────────────────────────────────────────
+            CreateMap<Expense, SaveExpenseDto>();
 
             // ── User ──────────────────────────────────────────────────────────
             CreateMap<AddUserCommand, User>()
