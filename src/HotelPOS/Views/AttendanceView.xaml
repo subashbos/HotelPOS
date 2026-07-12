@@ -110,7 +110,7 @@
                         <DataGridTemplateColumn Header="EMPLOYEE" Width="1.4*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Padding="12,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
+                                    <TextBlock Style="{StaticResource GridCellText}">
                                         <TextBlock.Text>
                                             <MultiBinding StringFormat="{}{0} {1}">
                                                 <Binding Path="Employee.FirstName"/>
@@ -122,56 +122,20 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="*"
+                                            ElementStyle="{StaticResource GridCellText}"/>
 
-                        <DataGridTextColumn Header="CHECK-IN" Binding="{Binding CheckInTime}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="CHECK-IN" Binding="{Binding CheckInTime}" Width="*"
+                                            ElementStyle="{StaticResource GridCellText}"/>
 
-                        <DataGridTextColumn Header="CHECK-OUT" Binding="{Binding CheckOutTime}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="CHECK-OUT" Binding="{Binding CheckOutTime}" Width="*"
+                                            ElementStyle="{StaticResource GridCellText}"/>
 
-                        <DataGridTextColumn Header="WORKED HRS" Binding="{Binding WorkedHours}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="TextAlignment" Value="Right"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="WORKED HRS" Binding="{Binding WorkedHours}" Width="*"
+                                            ElementStyle="{StaticResource GridCellTextRight}"/>
 
-                        <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" Width="1.2*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="REMARKS" Binding="{Binding Remarks}" Width="1.2*"
+                                            ElementStyle="{StaticResource GridCellText}"/>
 
                         <DataGridTemplateColumn Header="ACTIONS" Width="90">
                             <DataGridTemplateColumn.CellTemplate>

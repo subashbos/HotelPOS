@@ -156,42 +156,14 @@
                               AutoGenerateColumns="False"
                               IsReadOnly="True">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="MONTH" Binding="{Binding Month}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="YEAR" Binding="{Binding Year}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="PROCESSED ON" Binding="{Binding ProcessedOn}" Width="1.4*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="MONTH" Binding="{Binding Month}" Width="*"
+                                                ElementStyle="{StaticResource GridCellText}"/>
+                            <DataGridTextColumn Header="YEAR" Binding="{Binding Year}" Width="*"
+                                                ElementStyle="{StaticResource GridCellText}"/>
+                            <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="*"
+                                                ElementStyle="{StaticResource GridCellText}"/>
+                            <DataGridTextColumn Header="PROCESSED ON" Binding="{Binding ProcessedOn}" Width="1.4*"
+                                                ElementStyle="{StaticResource GridCellText}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
@@ -205,7 +177,7 @@
                             <DataGridTemplateColumn Header="EMPLOYEE" Width="1.2*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Padding="12,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
+                                        <TextBlock Style="{StaticResource GridCellText}">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="{}{0} {1}">
                                                     <Binding Path="Employee.FirstName"/>
@@ -216,67 +188,18 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="GROSS" Binding="{Binding GrossEarnings, StringFormat=Rs. {0:N2}}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="TextAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="PF (EE)" Binding="{Binding PfEmployee, StringFormat=Rs. {0:N2}}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="TextAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="ESI (EE)" Binding="{Binding EsiEmployee, StringFormat=Rs. {0:N2}}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="TextAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="PT" Binding="{Binding ProfessionalTax, StringFormat=Rs. {0:N2}}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="TextAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="LOP DAYS" Binding="{Binding LopDays}" Width="0.7*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="TextAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="NET PAY" Binding="{Binding NetPay, StringFormat=Rs. {0:N2}}" Width="1.1*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="TextAlignment" Value="Right"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="GROSS" Binding="{Binding GrossEarnings, StringFormat=Rs. {0:N2}}" Width="*"
+                                                ElementStyle="{StaticResource GridCellTextRight}"/>
+                            <DataGridTextColumn Header="PF (EE)" Binding="{Binding PfEmployee, StringFormat=Rs. {0:N2}}" Width="*"
+                                                ElementStyle="{StaticResource GridCellTextRight}"/>
+                            <DataGridTextColumn Header="ESI (EE)" Binding="{Binding EsiEmployee, StringFormat=Rs. {0:N2}}" Width="*"
+                                                ElementStyle="{StaticResource GridCellTextRight}"/>
+                            <DataGridTextColumn Header="PT" Binding="{Binding ProfessionalTax, StringFormat=Rs. {0:N2}}" Width="*"
+                                                ElementStyle="{StaticResource GridCellTextRight}"/>
+                            <DataGridTextColumn Header="LOP DAYS" Binding="{Binding LopDays}" Width="0.7*"
+                                                ElementStyle="{StaticResource GridCellTextRight}"/>
+                            <DataGridTextColumn Header="NET PAY" Binding="{Binding NetPay, StringFormat=Rs. {0:N2}}" Width="1.1*"
+                                                ElementStyle="{StaticResource GridCellTextRightBold}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>

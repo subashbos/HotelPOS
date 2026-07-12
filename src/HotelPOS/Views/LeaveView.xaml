@@ -145,7 +145,7 @@
                             <DataGridTemplateColumn Header="EMPLOYEE" Width="1.2*">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Padding="12,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
+                                        <TextBlock Style="{StaticResource GridCellText}">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="{}{0} {1}">
                                                     <Binding Path="Employee.FirstName"/>
@@ -157,57 +157,20 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="TYPE" Binding="{Binding LeaveType.Name}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="TYPE" Binding="{Binding LeaveType.Name}" Width="*"
+                                                ElementStyle="{StaticResource GridCellText}"/>
 
-                            <DataGridTextColumn Header="FROM" Binding="{Binding FromDate, StringFormat=dd-MMM-yyyy}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="FROM" Binding="{Binding FromDate, StringFormat=dd-MMM-yyyy}" Width="*"
+                                                ElementStyle="{StaticResource GridCellText}"/>
 
-                            <DataGridTextColumn Header="TO" Binding="{Binding ToDate, StringFormat=dd-MMM-yyyy}" Width="*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="TO" Binding="{Binding ToDate, StringFormat=dd-MMM-yyyy}" Width="*"
+                                                ElementStyle="{StaticResource GridCellText}"/>
 
-                            <DataGridTextColumn Header="DAYS" Binding="{Binding TotalDays}" Width="0.6*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="TextAlignment" Value="Right"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="DAYS" Binding="{Binding TotalDays}" Width="0.6*"
+                                                ElementStyle="{StaticResource GridCellTextRight}"/>
 
-                            <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="0.8*">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="VerticalAlignment" Value="Center"/>
-                                        <Setter Property="Padding" Value="12,0"/>
-                                        <Setter Property="FontWeight" Value="SemiBold"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="0.8*"
+                                                ElementStyle="{StaticResource GridCellTextBold}"/>
 
                             <DataGridTemplateColumn Header="ACTIONS" Width="180">
                                 <DataGridTemplateColumn.CellTemplate>

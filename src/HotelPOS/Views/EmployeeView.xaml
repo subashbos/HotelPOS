@@ -68,21 +68,13 @@
                           AutoGenerateColumns="False"
                           IsReadOnly="True">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="CODE" Binding="{Binding EmployeeCode}" Width="0.8*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="CODE" Binding="{Binding EmployeeCode}" Width="0.8*"
+                                            ElementStyle="{StaticResource GridCellTextBold}"/>
 
                         <DataGridTemplateColumn Header="NAME" Width="1.4*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Padding="12,0" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}">
+                                    <TextBlock Style="{StaticResource GridCellText}">
                                         <TextBlock.Text>
                                             <MultiBinding StringFormat="{}{0} {1}">
                                                 <Binding Path="FirstName"/>
@@ -94,45 +86,17 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Header="DEPARTMENT" Binding="{Binding Department.Name}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="DEPARTMENT" Binding="{Binding Department.Name}" Width="*"
+                                            ElementStyle="{StaticResource GridCellText}"/>
 
-                        <DataGridTextColumn Header="DESIGNATION" Binding="{Binding Designation.Title}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="DESIGNATION" Binding="{Binding Designation.Title}" Width="*"
+                                            ElementStyle="{StaticResource GridCellText}"/>
 
-                        <DataGridTextColumn Header="PHONE" Binding="{Binding Phone}" Width="0.9*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="PHONE" Binding="{Binding Phone}" Width="0.9*"
+                                            ElementStyle="{StaticResource GridCellText}"/>
 
-                        <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="0.8*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="12,0"/>
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="0.8*"
+                                            ElementStyle="{StaticResource GridCellText}"/>
 
                         <DataGridTemplateColumn Header="ACTIONS" Width="170">
                             <DataGridTemplateColumn.CellTemplate>
