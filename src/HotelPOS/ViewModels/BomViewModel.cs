@@ -23,19 +23,9 @@ namespace HotelPOS.ViewModels
         public decimal IngredientCost => EffectiveQuantity * CostPerUnit;
         public decimal WastageCost => (EffectiveQuantity - QuantityRequired) * CostPerUnit;
 
-        partial void OnQuantityRequiredChanged(decimal value)
-        {
-            OnPropertyChanged(nameof(EffectiveQuantity));
-            OnPropertyChanged(nameof(IngredientCost));
-            OnPropertyChanged(nameof(WastageCost));
-        }
+        partial void OnQuantityRequiredChanged(decimal value) => RaiseCalculatedPropertiesChanged();
 
-        partial void OnWastagePercentageChanged(decimal value)
-        {
-            OnPropertyChanged(nameof(EffectiveQuantity));
-            OnPropertyChanged(nameof(IngredientCost));
-            OnPropertyChanged(nameof(WastageCost));
-        }
+        partial void OnWastagePercentageChanged(decimal value) => RaiseCalculatedPropertiesChanged();
 
         partial void OnCostPerUnitChanged(decimal value)
         {

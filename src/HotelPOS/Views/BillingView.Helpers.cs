@@ -61,7 +61,7 @@ namespace HotelPOS.Views
         }
 
         // Helper methods for focus management
-        private DataGridCell? GetCell(DataGrid grid, object item, int column)
+        private static DataGridCell? GetCell(DataGrid grid, object item, int column)
         {
             var row = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
             if (row == null)
@@ -82,7 +82,7 @@ namespace HotelPOS.Views
             return null;
         }
 
-        private T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        private static T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {

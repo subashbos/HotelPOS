@@ -195,7 +195,7 @@ namespace HotelPOS
         /// Re-evaluates sidebar visibility against the current session's permissions.
         /// Called once at login and again whenever the active user's role permissions are updated live.
         /// </summary>
-        private bool HasPermission(string moduleName)
+        private static bool HasPermission(string moduleName)
         {
             var user = AppSession.CurrentUser;
             if (user == null) return false;

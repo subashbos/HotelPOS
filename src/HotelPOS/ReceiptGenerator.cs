@@ -26,8 +26,26 @@ namespace HotelPOS
             int headSz = isThermal ? 13 : 18;
             int textSz = isThermal ? 11 : 14;
             int smallSz = isThermal ? 9 : 12;
+            var items = order.Items ?? new List<OrderItem>();
 
-            // ── Hotel Header ──────────────────────────────────────────────────
+            doc.Blocks.Add(BuildReceiptHeader(order, settings, isThermal, titleSz, headSz, smallSz));
+            doc.Blocks.Add(ReceiptSeparator(isThermal));
+            doc.Blocks.Add(BuildItemsTable(items, isThermal, textSz));
+            doc.Blocks.Add(ReceiptSeparator(isThermal));
+            doc.Blocks.Add(BuildTotalsTable(order, items, settings, textSz, headSz, smallSz));
+
+            var footer = BuildFooter(settings, isThermal, textSz, smallSz);
+            if (footer != null) doc.Blocks.Add(footer);
+
+            return doc;
+        }
+
+        private static Paragraph ReceiptSeparator(bool isThermal)
+            => new(new Run(new string(isThermal ? '-' : '_', isThermal ? 38 : 86)))
+            { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 4, 0, 4) };
+
+        private static Paragraph BuildReceiptHeader(Order order, SystemSetting settings, bool isThermal, int titleSz, int headSz, int smallSz)
+        {
             var hdr = new Paragraph
             {
                 TextAlignment = TextAlignment.Center,
@@ -65,13 +83,11 @@ namespace HotelPOS
                     hdr.Inlines.Add(new Run($"GSTIN: {order.CustomerGstin}\n") { FontSize = smallSz, FontWeight = FontWeights.SemiBold });
             }
 
-            doc.Blocks.Add(hdr);
+            return hdr;
+        }
 
-            // Separator
-            doc.Blocks.Add(new Paragraph(new Run(new string(isThermal ? '-' : '_', isThermal ? 38 : 86)))
-            { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 4, 0, 4) });
-
-            // ── Items Table ───────────────────────────────────────────────────
+        private static System.Windows.Documents.Table BuildItemsTable(List<OrderItem> items, bool isThermal, int textSz)
+        {
             var table = new System.Windows.Documents.Table { Margin = new Thickness(0, 4, 0, 4) };
 
             if (isThermal)
@@ -106,7 +122,6 @@ namespace HotelPOS
             headerRow.Cells.Add(MakeCell("TOTAL", TextAlignment.Right));
             rowGroup.Rows.Add(headerRow);
 
-            var items = order.Items ?? new List<OrderItem>();
             int sNo = 1;
             foreach (var item in items)
             {
@@ -120,13 +135,11 @@ namespace HotelPOS
                 sNo++;
             }
 
-            doc.Blocks.Add(table);
+            return table;
+        }
 
-            // Separator
-            doc.Blocks.Add(new Paragraph(new Run(new string(isThermal ? '-' : '_', isThermal ? 38 : 86)))
-            { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 4, 0, 4) });
-
-            // ── Totals Table ──────────────────────────────────────────────────
+        private static System.Windows.Documents.Table BuildTotalsTable(Order order, List<OrderItem> items, SystemSetting settings, int textSz, int headSz, int smallSz)
+        {
             decimal subtotal = order.Subtotal;
             decimal grandTotal = order.TotalAmount;
 
@@ -173,19 +186,18 @@ namespace HotelPOS
             if (pmText.Contains(PaymentModes.Upi, StringComparison.OrdinalIgnoreCase)) pmText = PaymentModes.Upi;
 
             AddTotalsRow(tg, "Payment Mode:", pmText, false, smallSz);
-            doc.Blocks.Add(totals);
+            return totals;
+        }
 
-            // ── Footer ────────────────────────────────────────────────────────
-            if (settings.ShowThankYouFooter)
-            {
-                var ftr = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 16, 0, 0) };
-                ftr.Inlines.Add(new Run(new string(isThermal ? '-' : '_', isThermal ? 38 : 86) + "\n") { FontSize = smallSz });
-                ftr.Inlines.Add(new Run("Thank you for dining with us!\n") { FontSize = textSz, FontStyle = FontStyles.Italic });
-                ftr.Inlines.Add(new Run("Please visit again\n") { FontSize = smallSz });
-                doc.Blocks.Add(ftr);
-            }
+        private static Paragraph? BuildFooter(SystemSetting settings, bool isThermal, int textSz, int smallSz)
+        {
+            if (!settings.ShowThankYouFooter) return null;
 
-            return doc;
+            var ftr = new Paragraph { TextAlignment = TextAlignment.Center, Margin = new Thickness(0, 16, 0, 0) };
+            ftr.Inlines.Add(new Run(new string(isThermal ? '-' : '_', isThermal ? 38 : 86) + "\n") { FontSize = smallSz });
+            ftr.Inlines.Add(new Run("Thank you for dining with us!\n") { FontSize = textSz, FontStyle = FontStyles.Italic });
+            ftr.Inlines.Add(new Run("Please visit again\n") { FontSize = smallSz });
+            return ftr;
         }
 
         private static TableCell MakeCell(string text, TextAlignment align)

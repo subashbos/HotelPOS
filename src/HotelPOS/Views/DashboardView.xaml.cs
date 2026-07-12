@@ -545,7 +545,7 @@ namespace HotelPOS.Views
             PieTotalText.Text = "100%";
         }
 
-        private string GetPiePathData(double cx, double cy, double radius, double startAngle, double sweepAngle)
+        private static string GetPiePathData(double cx, double cy, double radius, double startAngle, double sweepAngle)
         {
             if (sweepAngle >= 360) sweepAngle = 359.99;
 
