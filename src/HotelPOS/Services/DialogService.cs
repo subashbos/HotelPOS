@@ -35,7 +35,7 @@ namespace HotelPOS.Services
                 }
 
                 var result = window.ShowDialog();
-                if (result == true)
+                if (result is true)
                 {
                     details.PaymentMode = viewModel.PaymentMode;
                     details.CashAmount = viewModel.ParsedCash;

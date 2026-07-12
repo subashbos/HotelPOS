@@ -30,15 +30,13 @@ namespace HotelPOS.Tests
             _cartService.Setup(s => s.GetSubtotal(It.IsAny<int>())).Returns(100m);
             _cartService.Setup(s => s.GetGstAmount(It.IsAny<int>())).Returns(5m); // 5% GST
 
+            BillingViewModel.RegisterTestServices(
+                _itemService.Object, _orderService.Object, _categoryService.Object,
+                _cashService.Object, new Mock<ITableService>().Object);
             var vm = new BillingViewModel(
-                _itemService.Object,
                 _cartService.Object,
-                _orderService.Object,
                 _settingService.Object,
-                _categoryService.Object,
-                _notificationService.Object,
-                _cashService.Object,
-                new Mock<ITableService>().Object);
+                _notificationService.Object);
 
             // Act
             await vm.InitializeAsync(); // This loads settings and calls UpdateCart

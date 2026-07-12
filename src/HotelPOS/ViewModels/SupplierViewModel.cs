@@ -9,7 +9,6 @@ namespace HotelPOS.ViewModels
 {
     public partial class SupplierViewModel : ObservableObject
     {
-        private readonly ISupplierService _supplierService;
         private readonly INotificationService _notificationService;
         private readonly List<Supplier> _allSuppliers = new();
 
@@ -43,7 +42,6 @@ namespace HotelPOS.ViewModels
 
         public SupplierViewModel(ISupplierService supplierService, INotificationService notificationService)
         {
-            _supplierService = supplierService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

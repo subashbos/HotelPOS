@@ -9,7 +9,7 @@ namespace HotelPOS.Controls
 {
     public partial class NotificationControl : UserControl
     {
-        private DispatcherTimer _timer;
+        private readonly DispatcherTimer _timer;
 
         public NotificationControl()
         {

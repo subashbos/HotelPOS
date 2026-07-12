@@ -10,6 +10,8 @@ namespace HotelPOS.Application.UseCases
 {
     public class OrderService : IOrderService
     {
+        private const string OrderEntityType = "Order";
+
         private readonly IOrderRepository _repo;
         private readonly IMediator? _mediator;
         private readonly IItemService _itemService;
@@ -114,7 +116,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {effectiveTableNumber}, Type: {orderType}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, orderId, "Create", $"Total: {order.TotalAmount:N2}, Table: {effectiveTableNumber}, Type: {orderType}"));
                 }
                 return orderId;
             }
@@ -125,7 +127,7 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
-        private void CalculateTotals(Order order, List<OrderItem> items)
+        private static void CalculateTotals(Order order, List<OrderItem> items)
         {
             order.Subtotal = items.Sum(x => x.Total);
             order.GstAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / MoneyPrecision.PercentDivisor)), MoneyPrecision.CurrencyDecimals);
@@ -136,7 +138,7 @@ namespace HotelPOS.Application.UseCases
             order.IgstAmount = 0m;
         }
 
-        private string GetFiscalYear(DateTime date)
+        private static string GetFiscalYear(DateTime date)
         {
             // India: April 1 to March 31
             int year = date.Month < 4 ? date.Year - 1 : date.Year;
@@ -147,7 +149,9 @@ namespace HotelPOS.Application.UseCases
             => _repo.GetAllWithItemsAsync();
 
         public Task<(List<Order> Items, int TotalCount)> GetPagedOrdersAsync(PagedOrdersRequest request, CancellationToken cancellationToken = default)
-            => _repo.GetPagedWithItemsAsync(request.PageNumber, request.PageSize, request.From, request.To, request.TableNumber, request.Search, request.PaymentMode, request.OrderType, request.CategoryId, cancellationToken);
+            => _repo.GetPagedWithItemsAsync(request.PageNumber, request.PageSize,
+                new OrderQueryFilter(request.From, request.To, request.TableNumber, request.Search, request.PaymentMode, request.OrderType, request.CategoryId),
+                cancellationToken);
 
         public Task<Order?> GetOrderAsync(int id) => _repo.GetByIdWithItemsAsync(id);
 
@@ -195,7 +199,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
                 }
             }
             catch
@@ -221,7 +225,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.DeleteAsync(orderId);
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", orderId, "Delete", "Soft Deleted"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, orderId, "Delete", "Soft Deleted"));
                 }
             }
         }
@@ -261,7 +265,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
                 }
             }
             catch
@@ -285,68 +289,28 @@ namespace HotelPOS.Application.UseCases
             await _repo.BeginTransactionAsync();
             try
             {
-                decimal refundTotal = 0;
-
-                foreach (var rItem in itemsToRefund)
-                {
-                    var orderItem = order.Items.FirstOrDefault(x => x.ItemId == rItem.ItemId);
-                    if (orderItem == null)
-                        throw new ArgumentException($"Item #{rItem.ItemId} not found in Order #{orderId}.");
-
-                    if (rItem.QuantityToRefund <= 0 || rItem.QuantityToRefund > orderItem.Quantity)
-                        throw new ArgumentException($"Invalid refund quantity ({rItem.QuantityToRefund}) for '{orderItem.ItemName}'.");
-
-                    // Restore inventory
-                    await _itemService.DeductStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
-                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
-
-                    // Compute refund value for this line
-                    refundTotal += orderItem.Price * rItem.QuantityToRefund;
-
-                    orderItem.Quantity -= rItem.QuantityToRefund;
-                    orderItem.Total = orderItem.Price * orderItem.Quantity;
-                }
+                decimal refundTotal = await RefundItemsAsync(order, itemsToRefund);
 
                 // Remove items completely refunded
                 order.Items.RemoveAll(x => x.Quantity == 0);
 
                 // Recalculate totals
                 CalculateTotals(order, order.Items);
-                
-                decimal oldTotal = order.TotalAmount;
+
                 order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
                 order.RefundedAmount += refundTotal;
                 order.RefundReason = reason;
 
                 // Adjust payment split values proportionally (defaulting to CashPaid reductions first)
-                order.AmountPaid = Math.Max(0, order.AmountPaid - refundTotal);
-                if (order.CashPaid >= refundTotal) order.CashPaid -= refundTotal;
-                else
-                {
-                    decimal remainder = refundTotal - order.CashPaid;
-                    order.CashPaid = 0;
-                    if (order.UpiPaid >= remainder) order.UpiPaid -= remainder;
-                    else
-                    {
-                        order.UpiPaid = 0;
-                        order.CardPaid = Math.Max(0, order.CardPaid - remainder);
-                    }
-                }
+                ApplyRefundToPaymentSplit(order, refundTotal);
 
-                if (order.Items.Count == 0)
-                {
-                    order.Status = OrderStatuses.Refunded;
-                }
-                else
-                {
-                    order.Status = OrderStatuses.PartiallyRefunded;
-                }
+                order.Status = order.Items.Count == 0 ? OrderStatuses.Refunded : OrderStatuses.PartiallyRefunded;
 
                 await _repo.UpdateAsync(order);
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
                 }
             }
             catch
@@ -354,6 +318,54 @@ namespace HotelPOS.Application.UseCases
                 await _repo.RollbackTransactionAsync();
                 throw;
             }
+        }
+
+        private async Task<decimal> RefundItemsAsync(Order order, List<OrderItemRefundDto> itemsToRefund)
+        {
+            decimal refundTotal = 0;
+
+            foreach (var rItem in itemsToRefund)
+            {
+                var orderItem = order.Items.FirstOrDefault(x => x.ItemId == rItem.ItemId);
+                if (orderItem == null)
+                    throw new ArgumentException($"Item #{rItem.ItemId} not found in Order #{order.Id}.");
+
+                if (rItem.QuantityToRefund <= 0 || rItem.QuantityToRefund > orderItem.Quantity)
+                    throw new ArgumentException($"Invalid refund quantity ({rItem.QuantityToRefund}) for '{orderItem.ItemName}'.");
+
+                // Restore inventory
+                await _itemService.DeductStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
+                if (_bomService != null) await _bomService.DeductIngredientStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
+
+                // Compute refund value for this line
+                refundTotal += orderItem.Price * rItem.QuantityToRefund;
+
+                orderItem.Quantity -= rItem.QuantityToRefund;
+                orderItem.Total = orderItem.Price * orderItem.Quantity;
+            }
+
+            return refundTotal;
+        }
+
+        private static void ApplyRefundToPaymentSplit(Order order, decimal refundTotal)
+        {
+            order.AmountPaid = Math.Max(0, order.AmountPaid - refundTotal);
+            if (order.CashPaid >= refundTotal)
+            {
+                order.CashPaid -= refundTotal;
+                return;
+            }
+
+            decimal remainder = refundTotal - order.CashPaid;
+            order.CashPaid = 0;
+            if (order.UpiPaid >= remainder)
+            {
+                order.UpiPaid -= remainder;
+                return;
+            }
+
+            order.UpiPaid = 0;
+            order.CardPaid = Math.Max(0, order.CardPaid - remainder);
         }
 
         public Task ProcessPartialPaymentAsync(int orderId, decimal cash, decimal card, decimal upi) => ProcessPartialPaymentInternalAsync(orderId, cash, card, upi);
@@ -385,7 +397,7 @@ namespace HotelPOS.Application.UseCases
                 await _repo.CommitTransactionAsync();
                 if (_mediator != null)
                 {
-                    await _mediator.Publish(new EntityActionEvent("Order", order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
+                    await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
                 }
             }
             catch

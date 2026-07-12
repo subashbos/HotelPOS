@@ -10,12 +10,9 @@ namespace HotelPOS.Views
     {
         private void GridTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (sender is TextBox tb && tb.DataContext is CartRow row)
+            if (sender is TextBox tb && tb.DataContext is CartRow row && _viewModel.UpdateRowCommand.CanExecute(row))
             {
-                if (_viewModel.UpdateRowCommand.CanExecute(row))
-                {
-                    _viewModel.UpdateRowCommand.Execute(row);
-                }
+                _viewModel.UpdateRowCommand.Execute(row);
             }
         }
 
@@ -64,7 +61,7 @@ namespace HotelPOS.Views
         }
 
         // Helper methods for focus management
-        private DataGridCell? GetCell(DataGrid grid, object item, int column)
+        private static DataGridCell? GetCell(DataGrid grid, object item, int column)
         {
             var row = grid.ItemContainerGenerator.ContainerFromItem(item) as DataGridRow;
             if (row == null)
@@ -85,7 +82,7 @@ namespace HotelPOS.Views
             return null;
         }
 
-        private T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        private static T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
@@ -97,42 +94,5 @@ namespace HotelPOS.Views
             return null;
         }
 
-        private T? FindChild<T>(DependencyObject parent, string childName) where T : DependencyObject
-        {
-            if (parent == null) return null;
-
-            T? foundChild = null;
-
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < childrenCount; i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                if (child is not T childType)
-                {
-                    foundChild = FindChild<T>(child, childName);
-                    if (foundChild != null) break;
-                }
-                else if (!string.IsNullOrEmpty(childName))
-                {
-                    if (child is FrameworkElement frameworkElement && frameworkElement.Name == childName)
-                    {
-                        foundChild = (T)child;
-                        break;
-                    }
-                    else
-                    {
-                        foundChild = FindChild<T>(child, childName);
-                        if (foundChild != null) break;
-                    }
-                }
-                else
-                {
-                    foundChild = (T)child;
-                    break;
-                }
-            }
-
-            return foundChild;
-        }
     }
 }

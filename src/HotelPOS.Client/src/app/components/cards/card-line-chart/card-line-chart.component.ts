@@ -1,16 +1,15 @@
-import { Component, OnInit, AfterViewInit } from "@angular/core";
+import { Component, AfterViewInit } from "@angular/core";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
 @Component({
-  standalone: false, 
+  standalone: false,
   selector: "app-card-line-chart",
   templateUrl: "./card-line-chart.component.html",
 })
-export class CardLineChartComponent implements OnInit, AfterViewInit {
+export class CardLineChartComponent implements AfterViewInit {
   constructor() {}
 
-  ngOnInit() {}
   ngAfterViewInit() {
     const config: any = {
       type: "line",

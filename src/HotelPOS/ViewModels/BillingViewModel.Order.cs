@@ -161,155 +161,22 @@ namespace HotelPOS.ViewModels
         private async Task SaveOrderAsync()
         {
             var rawItems = _cartService.GetItems(TableNumber);
-            if (rawItems.Count == 0)
+            if (!await ValidateCheckoutAsync(rawItems)) return;
+
+            var (proceed, finalCash, finalCard, finalUpi, finalPaymentMode) = await ResolveCheckoutPaymentAsync(rawItems);
+            if (!proceed)
             {
-                _notificationService.ShowInfo("Cannot save empty order");
+                CheckoutCancelled?.Invoke();
                 return;
             }
 
-            // LOOPHOLE FIX: Validate PaymentMode
-            if (string.IsNullOrWhiteSpace(PaymentMode))
-            {
-                _notificationService.ShowError("Please select a payment mode before checkout.");
-                return;
-            }
-
-            // LOOPHOLE FIX: Prevent checkout if shift is closed
-            using (var scope = App.CreateDbScope())
-            {
-                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
-                var currentSession = await cashService.GetCurrentSessionAsync();
-                if (currentSession == null)
-                {
-                    _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
-                    return;
-                }
-            }
-
-            decimal finalCash = 0;
-            decimal finalCard = 0;
-            decimal finalUpi = 0;
-            string finalPaymentMode = PaymentMode;
-
-            // Show Confirm Checkout Dialog if service is available
-            if (_dialogService != null)
-            {
-                var details = new ConfirmCheckoutDetails
-                {
-                    TotalItems = rawItems.Sum(i => i.Quantity),
-                    TotalAmount = Subtotal + GstAmount,
-                    DiscountAmount = DiscountAmount,
-                    FinalPayableAmount = TotalAmount,
-                    PaymentMode = PaymentMode
-                };
-
-                bool confirmed = await _dialogService.ShowConfirmCheckoutAsync(details);
-                if (!confirmed)
-                {
-                    CheckoutCancelled?.Invoke();
-                    return;
-                }
-
-                finalPaymentMode = details.PaymentMode;
-                if (finalPaymentMode == "Split")
-                {
-                    finalCash = details.CashAmount;
-                    finalCard = details.CardAmount;
-                    finalUpi = details.UpiAmount;
-                }
-            }
-
-            // Perform the save
             try
             {
-                using (var scope = App.CreateDbScope())
-                {
-                    var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
-                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-
-                    // Re-verify shift state under lock
-                    var currentSession = await cashService.GetCurrentSessionAsync();
-                    if (currentSession == null)
-                    {
-                        _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
-                        return;
-                    }
-
-                    if (IsEditMode && _editingOrder != null)
-                    {
-                        _editingOrder.Items = rawItems;
-                        _editingOrder.TableNumber = TableNumber;
-                        _editingOrder.DiscountAmount = DiscountAmount;
-                        _editingOrder.PaymentMode = finalPaymentMode;
-                        _editingOrder.OrderType = OrderType;
-                        _editingOrder.CustomerName = CustomerName;
-                        _editingOrder.CustomerPhone = CustomerPhone;
-                        _editingOrder.CustomerGstin = CustomerGstin;
-
-                        if (finalPaymentMode == PaymentModes.Split)
-                        {
-                            _editingOrder.CashPaid = finalCash;
-                            _editingOrder.CardPaid = finalCard;
-                            _editingOrder.UpiPaid = finalUpi;
-                            _editingOrder.AmountPaid = finalCash + finalCard + finalUpi;
-                            _editingOrder.Status = _editingOrder.AmountPaid >= _editingOrder.TotalAmount ? OrderStatuses.Paid : OrderStatuses.Partial;
-                        }
-                        else
-                        {
-                            _editingOrder.AmountPaid = _editingOrder.TotalAmount;
-                            _editingOrder.CashPaid = finalPaymentMode == PaymentModes.Cash ? _editingOrder.TotalAmount : 0;
-                            _editingOrder.CardPaid = finalPaymentMode == PaymentModes.Card ? _editingOrder.TotalAmount : 0;
-                            _editingOrder.UpiPaid = finalPaymentMode == PaymentModes.Upi ? _editingOrder.TotalAmount : 0;
-                            _editingOrder.Status = OrderStatuses.Paid;
-                        }
-
-                        await orderService.UpdateOrderAsync(_editingOrder);
-                    }
-                    else
-                    {
-                        int orderId;
-                        if (finalPaymentMode == PaymentModes.Split)
-                        {
-                            // Save order first (initially cash mode to bypass validate, then updates details)
-                            orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, PaymentModes.Cash, CustomerName, CustomerPhone, CustomerGstin, OrderType));
-                            var createdOrder = await orderService.GetOrderAsync(orderId);
-                            if (createdOrder != null)
-                            {
-                                createdOrder.PaymentMode = PaymentModes.Split;
-                                createdOrder.CashPaid = finalCash;
-                                createdOrder.CardPaid = finalCard;
-                                createdOrder.UpiPaid = finalUpi;
-                                createdOrder.AmountPaid = finalCash + finalCard + finalUpi;
-                                createdOrder.Status = createdOrder.AmountPaid >= createdOrder.TotalAmount ? OrderStatuses.Paid : OrderStatuses.Partial;
-                                await orderService.UpdateOrderAsync(createdOrder);
-                            }
-                        }
-                        else
-                        {
-                            orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, finalPaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType));
-                        }
-
-                        // Trigger Print
-                        await PrintOrderAsync(orderId);
-                    }
-                }
+                bool saved = await PersistOrderAsync(rawItems, finalPaymentMode, finalCash, finalCard, finalUpi);
+                if (!saved) return;
 
                 var wasEditMode = IsEditMode;
-
-                // Clear cart automatically without prompting the user
-                _cartService.Clear(TableNumber);
-                DiscountAmount = 0;
-                UpdateCart();
-                CartCleared?.Invoke();
-
-                IsEditMode = false;
-                _editingOrder = null;
-                PaymentMode = PaymentModes.Cash;
-                OrderType = OrderTypes.DineIn;
-                // CLEANUP: Reset customer details to null to align with property definitions and save memory
-                CustomerName = null;
-                CustomerPhone = null;
-                CustomerGstin = null;
+                ResetAfterSave();
 
                 // Fire after state is fully cleared so the dashboard refreshes
                 // with a clean VM — only for updates, not new orders
@@ -320,6 +187,175 @@ namespace HotelPOS.ViewModels
             {
                 _notificationService.ShowError($"Save failed: {ex.Message}");
             }
+        }
+
+        // LOOPHOLE FIX: empty cart / missing payment mode / shift-closed guards
+        private async Task<bool> ValidateCheckoutAsync(List<OrderItem> rawItems)
+        {
+            if (rawItems.Count == 0)
+            {
+                _notificationService.ShowInfo("Cannot save empty order");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(PaymentMode))
+            {
+                _notificationService.ShowError("Please select a payment mode before checkout.");
+                return false;
+            }
+
+            using (var scope = App.CreateDbScope())
+            {
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                var currentSession = await cashService.GetCurrentSessionAsync();
+                if (currentSession == null)
+                {
+                    _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Shows the Confirm Checkout dialog (if available) and resolves the final payment split.
+        private async Task<(bool Proceed, decimal Cash, decimal Card, decimal Upi, string PaymentMode)> ResolveCheckoutPaymentAsync(List<OrderItem> rawItems)
+        {
+            decimal finalCash = 0;
+            decimal finalCard = 0;
+            decimal finalUpi = 0;
+            string finalPaymentMode = PaymentMode;
+
+            if (_dialogService == null) return (true, finalCash, finalCard, finalUpi, finalPaymentMode);
+
+            var details = new ConfirmCheckoutDetails
+            {
+                TotalItems = rawItems.Sum(i => i.Quantity),
+                TotalAmount = Subtotal + GstAmount,
+                DiscountAmount = DiscountAmount,
+                FinalPayableAmount = TotalAmount,
+                PaymentMode = PaymentMode
+            };
+
+            bool confirmed = await _dialogService.ShowConfirmCheckoutAsync(details);
+            if (!confirmed) return (false, finalCash, finalCard, finalUpi, finalPaymentMode);
+
+            finalPaymentMode = details.PaymentMode;
+            if (finalPaymentMode == "Split")
+            {
+                finalCash = details.CashAmount;
+                finalCard = details.CardAmount;
+                finalUpi = details.UpiAmount;
+            }
+
+            return (true, finalCash, finalCard, finalUpi, finalPaymentMode);
+        }
+
+        // Re-verifies the shift under lock, then updates or creates the order. Returns false if the shift closed
+        // between the pre-check and now (caller should abort silently — the notification was already shown).
+        private async Task<bool> PersistOrderAsync(List<OrderItem> rawItems, string finalPaymentMode, decimal finalCash, decimal finalCard, decimal finalUpi)
+        {
+            using (var scope = App.CreateDbScope())
+            {
+                var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();
+                var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+
+                var currentSession = await cashService.GetCurrentSessionAsync();
+                if (currentSession == null)
+                {
+                    _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
+                    return false;
+                }
+
+                if (IsEditMode && _editingOrder != null)
+                {
+                    await UpdateEditingOrderAsync(orderService, rawItems, finalPaymentMode, finalCash, finalCard, finalUpi);
+                }
+                else
+                {
+                    int orderId;
+                    if (finalPaymentMode == PaymentModes.Split)
+                    {
+                        orderId = await CreateSplitPaymentOrderAsync(orderService, rawItems, finalCash, finalCard, finalUpi);
+                    }
+                    else
+                    {
+                        orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, finalPaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType));
+                    }
+
+                    // Trigger Print
+                    await PrintOrderAsync(orderId);
+                }
+            }
+
+            return true;
+        }
+
+        private async Task UpdateEditingOrderAsync(IOrderService orderService, List<OrderItem> rawItems, string finalPaymentMode, decimal finalCash, decimal finalCard, decimal finalUpi)
+        {
+            _editingOrder!.Items = rawItems;
+            _editingOrder.TableNumber = TableNumber;
+            _editingOrder.DiscountAmount = DiscountAmount;
+            _editingOrder.PaymentMode = finalPaymentMode;
+            _editingOrder.OrderType = OrderType;
+            _editingOrder.CustomerName = CustomerName;
+            _editingOrder.CustomerPhone = CustomerPhone;
+            _editingOrder.CustomerGstin = CustomerGstin;
+
+            if (finalPaymentMode == PaymentModes.Split)
+            {
+                _editingOrder.CashPaid = finalCash;
+                _editingOrder.CardPaid = finalCard;
+                _editingOrder.UpiPaid = finalUpi;
+                _editingOrder.AmountPaid = finalCash + finalCard + finalUpi;
+                _editingOrder.Status = _editingOrder.AmountPaid >= _editingOrder.TotalAmount ? OrderStatuses.Paid : OrderStatuses.Partial;
+            }
+            else
+            {
+                _editingOrder.AmountPaid = _editingOrder.TotalAmount;
+                _editingOrder.CashPaid = finalPaymentMode == PaymentModes.Cash ? _editingOrder.TotalAmount : 0;
+                _editingOrder.CardPaid = finalPaymentMode == PaymentModes.Card ? _editingOrder.TotalAmount : 0;
+                _editingOrder.UpiPaid = finalPaymentMode == PaymentModes.Upi ? _editingOrder.TotalAmount : 0;
+                _editingOrder.Status = OrderStatuses.Paid;
+            }
+
+            await orderService.UpdateOrderAsync(_editingOrder);
+        }
+
+        // Save order first (initially cash mode to bypass validation), then apply the real split payment details.
+        private async Task<int> CreateSplitPaymentOrderAsync(IOrderService orderService, List<OrderItem> rawItems, decimal finalCash, decimal finalCard, decimal finalUpi)
+        {
+            int orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, PaymentModes.Cash, CustomerName, CustomerPhone, CustomerGstin, OrderType));
+            var createdOrder = await orderService.GetOrderAsync(orderId);
+            if (createdOrder != null)
+            {
+                createdOrder.PaymentMode = PaymentModes.Split;
+                createdOrder.CashPaid = finalCash;
+                createdOrder.CardPaid = finalCard;
+                createdOrder.UpiPaid = finalUpi;
+                createdOrder.AmountPaid = finalCash + finalCard + finalUpi;
+                createdOrder.Status = createdOrder.AmountPaid >= createdOrder.TotalAmount ? OrderStatuses.Paid : OrderStatuses.Partial;
+                await orderService.UpdateOrderAsync(createdOrder);
+            }
+            return orderId;
+        }
+
+        // Clears cart/checkout state automatically without prompting the user.
+        private void ResetAfterSave()
+        {
+            _cartService.Clear(TableNumber);
+            DiscountAmount = 0;
+            UpdateCart();
+            CartCleared?.Invoke();
+
+            IsEditMode = false;
+            _editingOrder = null;
+            PaymentMode = PaymentModes.Cash;
+            OrderType = OrderTypes.DineIn;
+            // CLEANUP: Reset customer details to null to align with property definitions and save memory
+            CustomerName = null;
+            CustomerPhone = null;
+            CustomerGstin = null;
         }
 
         /// <summary>
@@ -347,35 +383,36 @@ namespace HotelPOS.ViewModels
                 // Execute on UI thread for printing
                 if (System.Windows.Application.Current != null)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        var doc = ReceiptGenerator.CreateReceipt(order, settings.ReceiptFormat == "Thermal", settings);
-                        if (settings.ShowPrintPreview && !skipPreview)
-                        {
-                            var preview = new PrintPreviewWindow(order, settings);
-                            preview.ShowDialog();
-                            PrintPreviewClosed?.Invoke();
-                        }
-                        else
-                        {
-                            var dialog = new System.Windows.Controls.PrintDialog();
-                            if (!string.IsNullOrEmpty(settings.DefaultPrinter))
-                            {
-                                try
-                                {
-                                    dialog.PrintQueue = new System.Printing.LocalPrintServer().GetPrintQueue(settings.DefaultPrinter);
-                                }
-                                catch { /* Fallback to default if printer not found */ }
-                            }
-                            dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "Receipt " + order.Id);
-                        }
-                    });
+                    System.Windows.Application.Current.Dispatcher.Invoke(() => PrintOrderOnUiThread(order, settings, skipPreview));
                 }
             }
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Print failed: {ex.Message}");
             }
+        }
+
+        private void PrintOrderOnUiThread(Order order, SystemSetting settings, bool skipPreview)
+        {
+            var doc = ReceiptGenerator.CreateReceipt(order, settings.ReceiptFormat == "Thermal", settings);
+            if (settings.ShowPrintPreview && !skipPreview)
+            {
+                var preview = new PrintPreviewWindow(order, settings);
+                preview.ShowDialog();
+                PrintPreviewClosed?.Invoke();
+                return;
+            }
+
+            var dialog = new System.Windows.Controls.PrintDialog();
+            if (!string.IsNullOrEmpty(settings.DefaultPrinter))
+            {
+                try
+                {
+                    dialog.PrintQueue = new System.Printing.LocalPrintServer().GetPrintQueue(settings.DefaultPrinter);
+                }
+                catch { /* Fallback to default if printer not found */ }
+            }
+            dialog.PrintDocument(((System.Windows.Documents.IDocumentPaginatorSource)doc).DocumentPaginator, "Receipt " + order.Id);
         }
     }
 }

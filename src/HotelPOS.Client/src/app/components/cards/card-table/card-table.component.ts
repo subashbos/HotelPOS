@@ -1,11 +1,11 @@
-import { Component, OnInit, Input } from "@angular/core";
+import { Component, Input } from "@angular/core";
 
 @Component({
-  standalone: false,    
+  standalone: false,
   selector: "app-card-table",
   templateUrl: "./card-table.component.html",
 })
-export class CardTableComponent implements OnInit {
+export class CardTableComponent {
   @Input()
   get color(): string {
     return this._color;
@@ -16,6 +16,4 @@ export class CardTableComponent implements OnInit {
   private _color = "light";
 
   constructor() {}
-
-  ngOnInit(): void {}
 }

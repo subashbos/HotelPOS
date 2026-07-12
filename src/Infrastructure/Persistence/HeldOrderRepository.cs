@@ -77,7 +77,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 var id = idVal is Guid g ? g : Guid.Parse(idVal.ToString()!);
                 var holdName = reader.GetString(1);
                 var heldAtVal = reader.GetValue(2);
-                var heldAt = heldAtVal is DateTime dt ? dt : DateTime.Parse(heldAtVal.ToString()!);
+                var heldAt = heldAtVal is DateTime dt ? dt : DateTime.Parse(heldAtVal.ToString()!, System.Globalization.CultureInfo.InvariantCulture);
                 var tableNum = reader.GetInt32(3);
                 var serializedItems = reader.GetString(4);
 

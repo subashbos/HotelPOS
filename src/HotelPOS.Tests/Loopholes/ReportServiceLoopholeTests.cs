@@ -30,13 +30,13 @@ namespace HotelPOS.Tests
         private void SetupEmptyOrders() =>
             _orderRepo.Setup(r => r.GetPagedWithItemsAsync(
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+                It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<Order>(), 0));
 
         private void SetupOrders(List<Order> orders) =>
             _orderRepo.Setup(r => r.GetPagedWithItemsAsync(
                 It.IsAny<int>(), It.IsAny<int>(),
-                It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>()))
+                It.IsAny<OrderQueryFilter>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((orders, orders.Count));
 
         // ── GetSalesReportAsync — zero orders ────────────────────────────────

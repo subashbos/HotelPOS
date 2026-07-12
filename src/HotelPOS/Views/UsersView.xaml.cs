@@ -9,6 +9,8 @@ namespace HotelPOS.Views
 {
     public partial class UsersView : UserControl
     {
+        private const string SelectUserFirstMessage = "Select a user first.";
+
         private static readonly SolidColorBrush SuccessBg = new(Color.FromRgb(0xD4, 0xED, 0xDA));
         private static readonly SolidColorBrush SuccessFg = new(Color.FromRgb(0x15, 0x57, 0x24));
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
@@ -71,6 +73,9 @@ namespace HotelPOS.Views
 
         private User? SelectedUser => UsersGrid.SelectedItem as User;
 
+        // Intentionally empty: selection state is read on-demand via the SelectedUser
+        // property rather than reacted to here; the handler only exists to keep the
+        // XAML-bound SelectionChanged event wired for future use.
         private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
 
         /// <summary>
@@ -80,7 +85,7 @@ namespace HotelPOS.Views
         /// <param name="e">Event data.</param>
         private async void Enable_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
+            if (SelectedUser is not User u) { ShowFeedback(SelectUserFirstMessage, false); return; }
             using (var scope = App.CreateDbScope())
             {
                 var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
@@ -98,7 +103,7 @@ namespace HotelPOS.Views
         /// </remarks>
         private async void Disable_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
+            if (SelectedUser is not User u) { ShowFeedback(SelectUserFirstMessage, false); return; }
             if (u.Id == AppSession.CurrentUser?.Id) { ShowFeedback("You cannot disable your own account.", false); return; }
             using (var scope = App.CreateDbScope())
             {
@@ -116,10 +121,10 @@ namespace HotelPOS.Views
         /// <param name="e">The routed event data.</param>
         private async void ResetPwd_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
+            if (SelectedUser is not User u) { ShowFeedback(SelectUserFirstMessage, false); return; }
 
             var dialog = new PasswordResetDialog(u.Username) { Owner = Window.GetWindow(this) };
-            if (dialog.ShowDialog() == true)
+            if (dialog.ShowDialog() is true)
             {
                 bool ok;
                 string err;
@@ -137,7 +142,7 @@ namespace HotelPOS.Views
         /// </summary>
         private async void SetEmail_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
+            if (SelectedUser is not User u) { ShowFeedback(SelectUserFirstMessage, false); return; }
 
             var dialog = new SetEmailDialog(u.Username, u.Email) { Owner = Window.GetWindow(this) };
             if (dialog.ShowDialog().GetValueOrDefault())
@@ -162,9 +167,9 @@ namespace HotelPOS.Views
         /// </remarks>
         private async void Delete_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedUser is not User u) { ShowFeedback("Select a user first.", false); return; }
+            if (SelectedUser is not User u) { ShowFeedback(SelectUserFirstMessage, false); return; }
 
-            var result = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+            var result = await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                 $"Permanently delete user '{u.Username}'?\nThis cannot be undone.",
                 "Confirm Delete", HotelPOS.Application.Interfaces.DialogButton.YesNo, HotelPOS.Application.Interfaces.DialogIcon.Warning);
             if (result != HotelPOS.Application.Interfaces.DialogResult.Yes) return;

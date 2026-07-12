@@ -415,10 +415,10 @@ namespace HotelPOS.Tests
             orderSvc.Setup(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>())).ReturnsAsync(1);
             cashSvc.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
 
+            HotelPOS.ViewModels.BillingViewModel.RegisterTestServices(
+                itemSvc.Object, orderSvc.Object, catSvc.Object, cashSvc.Object, tableSvc.Object);
             var vm = new HotelPOS.ViewModels.BillingViewModel(
-                itemSvc.Object, cartSvc.Object, orderSvc.Object,
-                settSvc.Object, catSvc.Object, notifSvc.Object,
-                cashSvc.Object, tableSvc.Object);
+                cartSvc.Object, settSvc.Object, notifSvc.Object);
 
             vm.OrderType = initialOrderType;
             return (vm, orderSvc, cartSvc);

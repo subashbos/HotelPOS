@@ -29,9 +29,11 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task SaveOrderAsync_EmptyCart_ShowsMessage()
         {
+            BillingViewModel.RegisterTestServices(
+                _itemService.Object, _orderService.Object, _categoryService.Object,
+                _cashService.Object, _tableService.Object);
             var vm = new BillingViewModel(
-                _itemService.Object, _cartService.Object, _orderService.Object, _settingService.Object,
-                _categoryService.Object, _notificationService.Object, _cashService.Object, _tableService.Object);
+                _cartService.Object, _settingService.Object, _notificationService.Object);
 
             _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
 
@@ -49,9 +51,11 @@ namespace HotelPOS.Tests
                 .Setup(s => s.ShowConfirmCheckoutAsync(It.IsAny<ConfirmCheckoutDetails>()))
                 .ReturnsAsync(true);
 
+            BillingViewModel.RegisterTestServices(
+                _itemService.Object, _orderService.Object, _categoryService.Object,
+                _cashService.Object, _tableService.Object);
             var localVm = new BillingViewModel(
-                _itemService.Object, _cartService.Object, _orderService.Object, _settingService.Object,
-                _categoryService.Object, _notificationService.Object, _cashService.Object, _tableService.Object,
+                _cartService.Object, _settingService.Object, _notificationService.Object,
                 mockDialogService.Object);
 
             var items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 2, Price = 100 } };
@@ -72,9 +76,11 @@ namespace HotelPOS.Tests
                 .Setup(s => s.ShowConfirmCheckoutAsync(It.IsAny<ConfirmCheckoutDetails>()))
                 .ReturnsAsync(false);
 
+            BillingViewModel.RegisterTestServices(
+                _itemService.Object, _orderService.Object, _categoryService.Object,
+                _cashService.Object, _tableService.Object);
             var localVm = new BillingViewModel(
-                _itemService.Object, _cartService.Object, _orderService.Object, _settingService.Object,
-                _categoryService.Object, _notificationService.Object, _cashService.Object, _tableService.Object,
+                _cartService.Object, _settingService.Object, _notificationService.Object,
                 mockDialogService.Object);
 
             var items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 2, Price = 100 } };

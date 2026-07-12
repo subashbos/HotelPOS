@@ -1,17 +1,17 @@
-import { Component, OnInit, Input } from "@angular/core";
+import { Component, Input } from "@angular/core";
 
 @Component({
-  standalone: false,    
+  standalone: false,
   selector: "app-card-stats",
   templateUrl: "./card-stats.component.html",
 })
-export class CardStatsComponent implements OnInit {
+export class CardStatsComponent {
   @Input()
   get statSubtitle(): string {
     return this._statSubtitle;
   }
   set statSubtitle(statSubtitle: string) {
-    this._statSubtitle = statSubtitle === undefined ? "Traffic" : statSubtitle;
+    this._statSubtitle = statSubtitle ?? "Traffic";
   }
   private _statSubtitle = "Traffic";
 
@@ -20,7 +20,7 @@ export class CardStatsComponent implements OnInit {
     return this._statTitle;
   }
   set statTitle(statTitle: string) {
-    this._statTitle = statTitle === undefined ? "350,897" : statTitle;
+    this._statTitle = statTitle ?? "350,897";
   }
   private _statTitle = "350,897";
 
@@ -40,7 +40,7 @@ export class CardStatsComponent implements OnInit {
     return this._statPercent;
   }
   set statPercent(statPercent: string) {
-    this._statPercent = statPercent === undefined ? "3.48" : statPercent;
+    this._statPercent = statPercent ?? "3.48";
   }
   private _statPercent = "3.48";
 
@@ -52,7 +52,7 @@ export class CardStatsComponent implements OnInit {
   }
   set statPercentColor(statPercentColor: string) {
     this._statPercentColor =
-      statPercentColor === undefined ? "text-emerald-500" : statPercentColor;
+      statPercentColor ?? "text-emerald-500";
   }
   private _statPercentColor = "text-emerald-500";
 
@@ -62,7 +62,7 @@ export class CardStatsComponent implements OnInit {
   }
   set statDescripiron(statDescripiron: string) {
     this._statDescripiron =
-      statDescripiron === undefined ? "Since last month" : statDescripiron;
+      statDescripiron ?? "Since last month";
   }
   private _statDescripiron = "Since last month";
 
@@ -72,7 +72,7 @@ export class CardStatsComponent implements OnInit {
   }
   set statIconName(statIconName: string) {
     this._statIconName =
-      statIconName === undefined ? "far fa-chart-bar" : statIconName;
+      statIconName ?? "far fa-chart-bar";
   }
   private _statIconName = "far fa-chart-bar";
 
@@ -84,11 +84,9 @@ export class CardStatsComponent implements OnInit {
   }
   set statIconColor(statIconColor: string) {
     this._statIconColor =
-      statIconColor === undefined ? "bg-red-500" : statIconColor;
+      statIconColor ?? "bg-red-500";
   }
   private _statIconColor = "bg-red-500";
 
   constructor() {}
-
-  ngOnInit(): void {}
 }

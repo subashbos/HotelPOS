@@ -82,6 +82,9 @@ namespace HotelPOS.Api.Controllers
         [System.ComponentModel.DataAnnotations.Required]
         public List<OrderItemDto> Items { get; set; } = new();
 
+        // sonar: an omitted value defaults to 0, but CreateOrderCommandValidator already
+        // rejects TableNumber == 0 for DineIn orders and caps Discount to [0, subtotal],
+        // so under-posting either field can't produce an invalid or exploitable order.
         public int TableNumber { get; set; }
 
         public decimal Discount { get; set; }

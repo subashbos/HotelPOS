@@ -8,10 +8,20 @@ namespace HotelPOS.Application.Interfaces
     {
         Task<List<Supplier>> GetSuppliersAsync();
         Task<List<Purchase>> GetPurchasesAsync();
-        Task<(List<Purchase> purchases, int totalCount)> GetPagedPurchasesAsync(int page, int pageSize, System.DateTime? from, System.DateTime? to, int? supplierId, string? itemName, string? paymentType, string? invoiceNo);
+        Task<(List<Purchase> purchases, int totalCount)> GetPagedPurchasesAsync(int page, int pageSize, PurchaseQueryFilter? filter = null);
         Task AddAsync(Purchase purchase);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
     }
+
+    /// <summary>Optional filter criteria for <see cref="IPurchaseRepository.GetPagedPurchasesAsync"/>.</summary>
+    public record PurchaseQueryFilter(
+        System.DateTime? From = null,
+        System.DateTime? To = null,
+        int? SupplierId = null,
+        string? ItemName = null,
+        string? PaymentType = null,
+        string? InvoiceNo = null
+    );
 }

@@ -111,7 +111,7 @@ namespace HotelPOS.Views
                 if (roles != null && roles.Any())
                 {
                     var adminRole = roles.FirstOrDefault(r => r.Name == RoleNames.Admin);
-                    RolesGrid.SelectedItem = adminRole ?? roles.First();
+                    RolesGrid.SelectedItem = adminRole ?? roles[0];
                 }
             }
         }
@@ -262,7 +262,7 @@ namespace HotelPOS.Views
                 return;
             }
 
-            if (App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+            if (await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                     $"Delete role '{_selectedRole.Name}'?\nUsers assigned this role will lose all access.",
                     "Confirm Delete",
                     HotelPOS.Application.Interfaces.DialogButton.YesNo,
