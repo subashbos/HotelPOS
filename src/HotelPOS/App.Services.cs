@@ -67,6 +67,9 @@ namespace HotelPOS
             services.AddScoped<IValidator<Purchase>, PurchaseValidator>();
             services.AddScoped<IValidator<CreateTableDto>, CreateTableDtoValidator>();
             services.AddScoped<IValidator<Supplier>, SupplierValidator>();
+            services.AddScoped<IValidator<Employee>, EmployeeValidator>();
+            services.AddScoped<IValidator<LeaveRequest>, LeaveRequestValidator>();
+            services.AddScoped<IValidator<SalaryStructure>, SalaryStructureValidator>();
             // User validators
             services.AddScoped<IValidator<AddUserCommand>, AddUserCommandValidator>();
             services.AddScoped<IValidator<ResetPasswordCommand>, ResetPasswordCommandValidator>();
@@ -110,6 +113,10 @@ namespace HotelPOS
             services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
             services.AddScoped<IExpenseService>(provider => new ExpenseService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
             services.AddScoped<IBomService, Services.BomService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IAttendanceService, AttendanceService>();
+            services.AddScoped<ILeaveService, LeaveService>();
+            services.AddScoped<IPayrollService, PayrollService>();
 
             services.AddSingleton<ICartService, CartService>();
             services.AddSingleton<INotificationService, NotificationService>();
@@ -126,6 +133,11 @@ namespace HotelPOS
             services.AddTransient<PurchaseReportViewModel>();
             services.AddTransient<RawMaterialViewModel>();
             services.AddTransient<BomViewModel>();
+            services.AddTransient<EmployeeViewModel>();
+            services.AddTransient<EmployeeEntryViewModel>();
+            services.AddTransient<AttendanceViewModel>();
+            services.AddTransient<LeaveViewModel>();
+            services.AddTransient<PayrollViewModel>();
             services.AddTransient<ExpenseViewModel>();
             services.AddTransient<ExpenseEntryViewModel>();
 
@@ -149,6 +161,10 @@ namespace HotelPOS
             services.AddTransient<RolesView>();
             services.AddTransient<RawMaterialView>();
             services.AddTransient<BomView>();
+            services.AddTransient<EmployeeView>();
+            services.AddTransient<AttendanceView>();
+            services.AddTransient<LeaveView>();
+            services.AddTransient<PayrollView>();
             services.AddTransient<ExpenseView>();
 
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
