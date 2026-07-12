@@ -346,27 +346,7 @@ namespace HotelPOS.Application.UseCases
             await _repo.BeginTransactionAsync();
             try
             {
-                decimal refundTotal = 0;
-
-                foreach (var rItem in itemsToRefund)
-                {
-                    var orderItem = order.Items.FirstOrDefault(x => x.ItemId == rItem.ItemId);
-                    if (orderItem == null)
-                        throw new ArgumentException($"Item #{rItem.ItemId} not found in Order #{orderId}.");
-
-                    if (rItem.QuantityToRefund <= 0 || rItem.QuantityToRefund > orderItem.Quantity)
-                        throw new ArgumentException($"Invalid refund quantity ({rItem.QuantityToRefund}) for '{orderItem.ItemName}'.");
-
-                    // Restore inventory
-                    await _itemService.DeductStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
-                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
-
-                    // Compute refund value for this line
-                    refundTotal += orderItem.Price * rItem.QuantityToRefund;
-
-                    orderItem.Quantity -= rItem.QuantityToRefund;
-                    orderItem.Total = orderItem.Price * orderItem.Quantity;
-                }
+                decimal refundTotal = await RefundItemsAsync(order, itemsToRefund);
 
                 // Remove items completely refunded
                 order.Items.RemoveAll(x => x.Quantity == 0);
@@ -379,28 +359,9 @@ namespace HotelPOS.Application.UseCases
                 order.RefundReason = reason;
 
                 // Adjust payment split values proportionally (defaulting to CashPaid reductions first)
-                order.AmountPaid = Math.Max(0, order.AmountPaid - refundTotal);
-                if (order.CashPaid >= refundTotal) order.CashPaid -= refundTotal;
-                else
-                {
-                    decimal remainder = refundTotal - order.CashPaid;
-                    order.CashPaid = 0;
-                    if (order.UpiPaid >= remainder) order.UpiPaid -= remainder;
-                    else
-                    {
-                        order.UpiPaid = 0;
-                        order.CardPaid = Math.Max(0, order.CardPaid - remainder);
-                    }
-                }
+                ApplyRefundToPaymentSplit(order, refundTotal);
 
-                if (order.Items.Count == 0)
-                {
-                    order.Status = OrderStatuses.Refunded;
-                }
-                else
-                {
-                    order.Status = OrderStatuses.PartiallyRefunded;
-                }
+                order.Status = order.Items.Count == 0 ? OrderStatuses.Refunded : OrderStatuses.PartiallyRefunded;
 
                 await _repo.UpdateAsync(order);
                 await _repo.CommitTransactionAsync();
@@ -414,6 +375,54 @@ namespace HotelPOS.Application.UseCases
                 await _repo.RollbackTransactionAsync();
                 throw;
             }
+        }
+
+        private async Task<decimal> RefundItemsAsync(Order order, List<OrderItemRefundDto> itemsToRefund)
+        {
+            decimal refundTotal = 0;
+
+            foreach (var rItem in itemsToRefund)
+            {
+                var orderItem = order.Items.FirstOrDefault(x => x.ItemId == rItem.ItemId);
+                if (orderItem == null)
+                    throw new ArgumentException($"Item #{rItem.ItemId} not found in Order #{order.Id}.");
+
+                if (rItem.QuantityToRefund <= 0 || rItem.QuantityToRefund > orderItem.Quantity)
+                    throw new ArgumentException($"Invalid refund quantity ({rItem.QuantityToRefund}) for '{orderItem.ItemName}'.");
+
+                // Restore inventory
+                await _itemService.DeductStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
+                if (_bomService != null) await _bomService.DeductIngredientStockAsync(orderItem.ItemId, -rItem.QuantityToRefund);
+
+                // Compute refund value for this line
+                refundTotal += orderItem.Price * rItem.QuantityToRefund;
+
+                orderItem.Quantity -= rItem.QuantityToRefund;
+                orderItem.Total = orderItem.Price * orderItem.Quantity;
+            }
+
+            return refundTotal;
+        }
+
+        private static void ApplyRefundToPaymentSplit(Order order, decimal refundTotal)
+        {
+            order.AmountPaid = Math.Max(0, order.AmountPaid - refundTotal);
+            if (order.CashPaid >= refundTotal)
+            {
+                order.CashPaid -= refundTotal;
+                return;
+            }
+
+            decimal remainder = refundTotal - order.CashPaid;
+            order.CashPaid = 0;
+            if (order.UpiPaid >= remainder)
+            {
+                order.UpiPaid -= remainder;
+                return;
+            }
+
+            order.UpiPaid = 0;
+            order.CardPaid = Math.Max(0, order.CardPaid - remainder);
         }
 
         public async Task ProcessPartialPaymentAsync(int orderId, decimal cash, decimal card, decimal upi)

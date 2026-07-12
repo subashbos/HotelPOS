@@ -10,33 +10,45 @@ namespace HotelPOS.Views
     {
         private void SearchBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (e.Key == Key.Enter && HandleSearchEnterKey())
             {
-                if (AutoPopup.IsOpen && AutoList.Items.Count > 0)
-                {
-                    var selected = AutoList.SelectedItem as Item ?? AutoList.Items[0] as Item;
-                    if (selected != null)
-                    {
-                        AddItemFromAutoComplete(selected);
-                        e.Handled = true;
-                        return;
-                    }
-                }
-
-                if (string.IsNullOrWhiteSpace(SearchBox.Text))
-                {
-                    // Empty search box + Enter = move to payment mode
-                    Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        PaymentModeCombo.Focus();
-                        PaymentModeCombo.IsDropDownOpen = true;
-                    }), System.Windows.Threading.DispatcherPriority.Input);
-                    e.Handled = true;
-                }
+                e.Handled = true;
+                return;
             }
 
             if (!AutoPopup.IsOpen) return;
 
+            HandleAutoListNavigationKey(e);
+        }
+
+        private bool HandleSearchEnterKey()
+        {
+            if (AutoPopup.IsOpen && AutoList.Items.Count > 0)
+            {
+                var selected = AutoList.SelectedItem as Item ?? AutoList.Items[0] as Item;
+                if (selected != null)
+                {
+                    AddItemFromAutoComplete(selected);
+                    return true;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(SearchBox.Text))
+            {
+                // Empty search box + Enter = move to payment mode
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    PaymentModeCombo.Focus();
+                    PaymentModeCombo.IsDropDownOpen = true;
+                }), System.Windows.Threading.DispatcherPriority.Input);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void HandleAutoListNavigationKey(KeyEventArgs e)
+        {
             if (e.Key == Key.Down)
             {
                 if (AutoList.SelectedIndex < AutoList.Items.Count - 1)
