@@ -51,44 +51,23 @@ namespace HotelPOS.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
-            {
-                var command = _mapper.Map<CreateOrderCommand>(request);
+            var command = _mapper.Map<CreateOrderCommand>(request);
 
-                var orderId = await _mediator.Send(command);
-                return Ok(orderId);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
+            var orderId = await _mediator.Send(command);
+            return Ok(orderId);
         }
 
         [HttpPost("{id:int}/void")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> VoidOrder(int id, [FromBody] VoidOrderRequest request)
         {
             if (id <= 0) return BadRequest("Invalid order ID.");
             if (string.IsNullOrWhiteSpace(request.Reason)) return BadRequest("Reason for voiding the order is required.");
 
-            try
-            {
-                var currentUser = _userContext.CurrentUsername ?? "API User";
-                var command = new VoidOrderCommand(id, request.Reason, currentUser);
-                await _mediator.Send(command);
-                return NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { Message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
+            var currentUser = _userContext.CurrentUsername ?? "API User";
+            var command = new VoidOrderCommand(id, request.Reason, currentUser);
+            await _mediator.Send(command);
+            return NoContent();
         }
     }
 

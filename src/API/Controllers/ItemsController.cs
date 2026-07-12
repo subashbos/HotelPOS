@@ -1,6 +1,7 @@
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Items.Queries;
+using HotelPOS.Domain.Common.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,25 +42,15 @@ namespace HotelPOS.Api.Controllers
 
         // POST body uses CreateItemRequest DTO — never the raw domain entity
         [HttpPost]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<ItemDto>> CreateItem([FromBody] CreateItemRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
-            {
-                var command = _mapper.Map<CreateItemCommand>(request);
+            var command = _mapper.Map<CreateItemCommand>(request);
 
-                var item = await _mediator.Send(command);
-                return CreatedAtAction(nameof(GetItem), new { id = item.Id }, _mapper.Map<ItemDto>(item));
-            }
-            catch (System.InvalidOperationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (System.ArgumentException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
+            var item = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetItem), new { id = item.Id }, _mapper.Map<ItemDto>(item));
         }
     }
 

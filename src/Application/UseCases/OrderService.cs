@@ -25,30 +25,7 @@ namespace HotelPOS.Application.UseCases
             _bomService = bomService;
         }
 
-        private bool IsProductionMediator()
-        {
-            return _mediator != null && _mediator.GetType().Assembly.GetName().Name != "DynamicProxyGenAssembly2";
-        }
-
-        public async Task<int> SaveOrderAsync(SaveOrderRequest request)
-        {
-            if (IsProductionMediator())
-            {
-                var command = new CreateOrderCommand(
-                    request.Items,
-                    request.TableNumber,
-                    request.Discount,
-                    request.PaymentMode,
-                    request.CustomerName,
-                    request.CustomerPhone,
-                    request.CustomerGstin,
-                    request.OrderType
-                );
-                return await _mediator.Send(command);
-            }
-
-            return await SaveOrderInternalAsync(request);
-        }
+        public Task<int> SaveOrderAsync(SaveOrderRequest request) => SaveOrderInternalAsync(request);
 
         public async Task<int> SaveOrderInternalAsync(SaveOrderRequest request)
         {
@@ -174,16 +151,7 @@ namespace HotelPOS.Application.UseCases
 
         public Task<Order?> GetOrderAsync(int id) => _repo.GetByIdWithItemsAsync(id);
 
-        public async Task UpdateOrderAsync(Order order)
-        {
-            if (IsProductionMediator())
-            {
-                await _mediator.Send(new UpdateOrderCommand(order));
-                return;
-            }
-
-            await UpdateOrderInternalAsync(order);
-        }
+        public Task UpdateOrderAsync(Order order) => UpdateOrderInternalAsync(order);
 
         public async Task UpdateOrderInternalAsync(Order order)
         {
@@ -237,16 +205,7 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
-        public async Task DeleteOrderAsync(int orderId)
-        {
-            if (IsProductionMediator())
-            {
-                await _mediator.Send(new DeleteOrderCommand(orderId));
-                return;
-            }
-
-            await DeleteOrderInternalAsync(orderId);
-        }
+        public Task DeleteOrderAsync(int orderId) => DeleteOrderInternalAsync(orderId);
 
         public async Task DeleteOrderInternalAsync(int orderId)
         {
@@ -267,16 +226,7 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
-        public async Task VoidOrderAsync(int orderId, string reason, string authorizedUser)
-        {
-            if (IsProductionMediator())
-            {
-                await _mediator.Send(new VoidOrderCommand(orderId, reason, authorizedUser));
-                return;
-            }
-
-            await VoidOrderInternalAsync(orderId, reason, authorizedUser);
-        }
+        public Task VoidOrderAsync(int orderId, string reason, string authorizedUser) => VoidOrderInternalAsync(orderId, reason, authorizedUser);
 
         public async Task VoidOrderInternalAsync(int orderId, string reason, string authorizedUser)
         {
@@ -321,16 +271,7 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
-        public async Task RefundOrderAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason)
-        {
-            if (IsProductionMediator())
-            {
-                await _mediator.Send(new RefundOrderCommand(orderId, itemsToRefund, reason));
-                return;
-            }
-
-            await RefundOrderInternalAsync(orderId, itemsToRefund, reason);
-        }
+        public Task RefundOrderAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason) => RefundOrderInternalAsync(orderId, itemsToRefund, reason);
 
         public async Task RefundOrderInternalAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason)
         {
@@ -415,16 +356,7 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
-        public async Task ProcessPartialPaymentAsync(int orderId, decimal cash, decimal card, decimal upi)
-        {
-            if (IsProductionMediator())
-            {
-                await _mediator.Send(new ProcessPartialPaymentCommand(orderId, cash, card, upi));
-                return;
-            }
-
-            await ProcessPartialPaymentInternalAsync(orderId, cash, card, upi);
-        }
+        public Task ProcessPartialPaymentAsync(int orderId, decimal cash, decimal card, decimal upi) => ProcessPartialPaymentInternalAsync(orderId, cash, card, upi);
 
         public async Task ProcessPartialPaymentInternalAsync(int orderId, decimal cash, decimal card, decimal upi)
         {

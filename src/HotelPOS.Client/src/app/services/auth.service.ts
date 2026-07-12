@@ -5,9 +5,15 @@ import { environment } from '../../environments/environment';
 
 interface LoginResponse {
   token: string;
+  refreshToken: string;
   username: string;
   role: string;
 }
+
+// ASP.NET Core writes System.Security.Claims.ClaimTypes.Role claims using this full URI
+// as the JWT payload key (it is not remapped to the short "role" name for tokens built
+// directly from a Claim[], as AuthController does).
+const ROLE_CLAIM_TYPE = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
 
 @Injectable({
   providedIn: 'root'
@@ -15,22 +21,42 @@ interface LoginResponse {
 export class AuthService {
   private readonly apiUrl = `${environment.apiBaseUrl}/auth`;
 
+  // Refresh tokens are kept in memory only, never localStorage: they are longer-lived
+  // than the access token, so persisting them would hand an XSS payload a durable way
+  // to mint fresh access tokens even after the tab is closed and reopened.
+  private refreshTokenValue: string | null = null;
+
   constructor(private readonly http: HttpClient) { }
 
   login(credentials: { username: string; password: string; totpCode?: string }): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
         if (response?.token) {
-          this.saveSession(response.token, response.username, response.role);
+          this.saveSession(response.token, response.username, response.refreshToken);
         }
       })
     );
   }
 
-  private saveSession(token: string, username: string, role: string): void {
+  /** Exchanges the in-memory refresh token for a new access/refresh token pair. */
+  refresh(): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/refresh`, { refreshToken: this.refreshTokenValue }).pipe(
+      tap(response => {
+        if (response?.token) {
+          this.saveSession(response.token, response.username, response.refreshToken);
+        }
+      })
+    );
+  }
+
+  hasRefreshToken(): boolean {
+    return !!this.refreshTokenValue;
+  }
+
+  private saveSession(token: string, username: string, refreshToken: string): void {
     localStorage.setItem('auth_token', token);
     localStorage.setItem('auth_username', username);
-    localStorage.setItem('auth_role', role);
+    this.refreshTokenValue = refreshToken;
   }
 
   getToken(): string | null {
@@ -41,8 +67,17 @@ export class AuthService {
     return localStorage.getItem('auth_username');
   }
 
+  /**
+   * Role is read from the current JWT's claims rather than a separate localStorage key,
+   * so it can't be spoofed by editing devtools storage without forging a signed token.
+   */
   getRole(): string | null {
-    return localStorage.getItem('auth_role');
+    const token = this.getToken();
+    if (!token) return null;
+
+    const payload = this.decodeToken(token);
+    const role = payload?.[ROLE_CLAIM_TYPE] ?? payload?.['role'];
+    return typeof role === 'string' ? role : null;
   }
 
   isLoggedIn(): boolean {
@@ -50,8 +85,25 @@ export class AuthService {
   }
 
   logout(): void {
+    const refreshToken = this.refreshTokenValue;
+
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_username');
-    localStorage.removeItem('auth_role');
+    this.refreshTokenValue = null;
+
+    if (refreshToken) {
+      // Best-effort server-side revocation; the client-side session is already cleared either way.
+      this.http.post(`${this.apiUrl}/logout`, { refreshToken }).subscribe({ error: () => { /* ignore */ } });
+    }
+  }
+
+  private decodeToken(token: string): Record<string, unknown> | null {
+    try {
+      const payload = token.split('.')[1];
+      const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(atob(normalized));
+    } catch {
+      return null;
+    }
   }
 }
