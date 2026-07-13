@@ -72,16 +72,16 @@ namespace HotelPOS.ViewModels
         private void ApplyFilter()
         {
             Employees.Clear();
-            var search = SearchText.Trim().ToLower();
+            var search = SearchText?.Trim();
 
             var filtered = _allEmployees.Where(e =>
                 string.IsNullOrEmpty(search) ||
-                e.EmployeeCode.ToLower().Contains(search) ||
-                e.FirstName.ToLower().Contains(search) ||
-                (e.LastName != null && e.LastName.ToLower().Contains(search)) ||
-                (e.Phone != null && e.Phone.Contains(search)) ||
-                (e.Department != null && e.Department.Name.ToLower().Contains(search)) ||
-                (e.Designation != null && e.Designation.Title.ToLower().Contains(search))
+                e.EmployeeCode.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                e.FirstName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                (e.LastName != null && e.LastName.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                (e.Phone != null && e.Phone.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                (e.Department != null && e.Department.Name.Contains(search, StringComparison.OrdinalIgnoreCase)) ||
+                (e.Designation != null && e.Designation.Title.Contains(search, StringComparison.OrdinalIgnoreCase))
             );
 
             foreach (var emp in filtered)

@@ -174,5 +174,80 @@ namespace HotelPOS.Tests.Unit.ViewModels
             Assert.True(closeFired);
             Assert.False(successResult);
         }
+
+        [Fact]
+        public async Task ExpenseViewModel_DeleteExpense_NoSelectedExpense_ShowsWarning()
+        {
+            // Arrange
+            var vm = new ExpenseViewModel(_expenseService, _notificationServiceMock.Object);
+            vm.SelectedExpense = null;
+
+            // Act
+            await vm.DeleteExpenseCommand.ExecuteAsync(null);
+
+            // Assert
+            _notificationServiceMock.Verify(n => n.ShowWarning("Please select an expense to delete."), Times.Once);
+        }
+
+        [Fact]
+        public async Task ExpenseViewModel_DeleteExpense_Confirmed_DeletesAndReloads()
+        {
+            // Arrange
+            var vm = new ExpenseViewModel(_expenseService, _notificationServiceMock.Object);
+            var expense = new Expense { Id = 10, Title = "To Delete", Amount = 100 };
+            vm.SelectedExpense = expense;
+
+            _expenseRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(expense);
+            _expenseRepoMock.Setup(r => r.DeleteAsync(10)).Returns(Task.CompletedTask);
+            _expenseRepoMock.Setup(r => r.GetAllAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>())).ReturnsAsync(new List<Expense>());
+
+            vm.ConfirmDeleteAsync = title => Task.FromResult(true);
+
+            // Act
+            await vm.DeleteExpenseCommand.ExecuteAsync(null);
+
+            // Assert
+            _expenseRepoMock.Verify(r => r.DeleteAsync(10), Times.Once);
+            _notificationServiceMock.Verify(n => n.ShowSuccess("Expense 'To Delete' deleted successfully."), Times.Once);
+        }
+
+        [Fact]
+        public async Task ExpenseViewModel_DeleteExpense_Cancelled_DoesNotDelete()
+        {
+            // Arrange
+            var vm = new ExpenseViewModel(_expenseService, _notificationServiceMock.Object);
+            var expense = new Expense { Id = 10, Title = "To Delete", Amount = 100 };
+            vm.SelectedExpense = expense;
+
+            vm.ConfirmDeleteAsync = title => Task.FromResult(false);
+
+            // Act
+            await vm.DeleteExpenseCommand.ExecuteAsync(null);
+
+            // Assert
+            _expenseRepoMock.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ExpenseViewModel_DeleteExpense_OnException_ShowsError()
+        {
+            // Arrange
+            var vm = new ExpenseViewModel(_expenseService, _notificationServiceMock.Object);
+            var expense = new Expense { Id = 10, Title = "To Delete", Amount = 100 };
+            vm.SelectedExpense = expense;
+
+            _expenseRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(expense);
+            _expenseRepoMock.Setup(r => r.DeleteAsync(10)).ThrowsAsync(new Exception("Database error"));
+            _expenseRepoMock.Setup(r => r.GetAllAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>())).ReturnsAsync(new List<Expense>());
+
+            vm.ConfirmDeleteAsync = title => Task.FromResult(true);
+
+            // Act
+            await vm.DeleteExpenseCommand.ExecuteAsync(null);
+
+            // Assert
+            _notificationServiceMock.Verify(n => n.ShowError(It.Is<string>(s => s.Contains("Failed to delete expense") && s.Contains("Database error"))), Times.Once);
+        }
     }
 }
+

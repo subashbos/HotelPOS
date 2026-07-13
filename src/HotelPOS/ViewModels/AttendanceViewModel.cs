@@ -157,10 +157,12 @@ namespace HotelPOS.ViewModels
             await LoadAttendanceForDateAsync();
         }
 
+        private static readonly string[] TimeFormats = { "hh\\:mm", "h\\:mm" };
+
         private static TimeSpan? TryParseTime(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return null;
-            return TimeSpan.TryParseExact(text.Trim(), new[] { "hh\\:mm", "h\\:mm" }, CultureInfo.InvariantCulture, out var result)
+            return TimeSpan.TryParseExact(text.Trim(), TimeFormats, CultureInfo.InvariantCulture, out var result)
                 ? result
                 : null;
         }

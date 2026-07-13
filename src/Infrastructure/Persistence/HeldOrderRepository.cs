@@ -26,12 +26,14 @@ namespace HotelPOS.Infrastructure.Persistence
 
             if (isSqlite)
             {
-                var count = await _context.Database.SqlQueryRaw<int>("SELECT COUNT(1) FROM HeldOrders WHERE Id = {0}", held.Id.ToString()).FirstOrDefaultAsync();
+                // EF composes SqlQueryRaw<T> scalars as "SELECT s.Value FROM (...) s", so the
+                // projected column must be aliased Value or the query throws at runtime.
+                var count = await _context.Database.SqlQueryRaw<int>("SELECT COUNT(1) AS Value FROM HeldOrders WHERE Id = {0}", held.Id.ToString()).FirstOrDefaultAsync();
                 exists = count > 0;
             }
             else
             {
-                var count = await _context.Database.SqlQueryRaw<int>("SELECT COUNT(1) FROM HeldOrders WHERE Id = {0}", held.Id).FirstOrDefaultAsync();
+                var count = await _context.Database.SqlQueryRaw<int>("SELECT COUNT(1) AS Value FROM HeldOrders WHERE Id = {0}", held.Id).FirstOrDefaultAsync();
                 exists = count > 0;
             }
 

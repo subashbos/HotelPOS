@@ -122,13 +122,13 @@ namespace HotelPOS.ViewModels
         private void ApplyFilter()
         {
             Expenses.Clear();
-            var search = SearchText.Trim().ToLower();
+            var search = SearchText?.Trim();
 
             var filtered = _allExpenses.Where(e =>
                 (SelectedCategory == "All Categories" || e.Category == SelectedCategory) &&
                 (string.IsNullOrEmpty(search) ||
-                 e.Title.ToLower().Contains(search) ||
-                 (e.Description != null && e.Description.ToLower().Contains(search)))
+                 e.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                 (e.Description != null && e.Description.Contains(search, StringComparison.OrdinalIgnoreCase)))
             );
 
             decimal total = 0;

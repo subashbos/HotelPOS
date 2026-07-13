@@ -78,7 +78,7 @@ namespace HotelPOS.Views
                 DragMove();
         }
 
-        private void Input_GotFocus(object sender, RoutedEventArgs e)
+        private void Input_GotFocus(object sender, RoutedEventArgs e) // NOSONAR
         {
             if (sender is TextBox tb)
             {

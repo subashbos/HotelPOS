@@ -10,6 +10,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <UserSecretsId>d0cd907b-e4ef-4033-81f8-731a590bdc73</UserSecretsId>
     <ApplicationIcon>Resources\app_icon.ico</ApplicationIcon>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <!-- Application Branding: Include the icon resource for UI windows -->
