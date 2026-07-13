@@ -242,6 +242,81 @@ namespace HotelPOS.Tests.Unit.ViewModels
             Assert.True(closeFired);
             Assert.False(successResult);
         }
+
+        [Fact]
+        public async Task SupplierViewModel_DeleteSupplier_NoSelectedSupplier_ShowsWarning()
+        {
+            // Arrange
+            var vm = new SupplierViewModel(_supplierService, _notificationServiceMock.Object);
+            vm.SelectedSupplier = null;
+
+            // Act
+            await vm.DeleteSupplierCommand.ExecuteAsync(null);
+
+            // Assert
+            _notificationServiceMock.Verify(n => n.ShowWarning("Please select a supplier to delete."), Times.Once);
+        }
+
+        [Fact]
+        public async Task SupplierViewModel_DeleteSupplier_Confirmed_DeletesAndReloads()
+        {
+            // Arrange
+            var vm = new SupplierViewModel(_supplierService, _notificationServiceMock.Object);
+            var supplier = new Supplier { Id = 10, Name = "To Delete" };
+            vm.SelectedSupplier = supplier;
+
+            _supplierRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(supplier);
+            _supplierRepoMock.Setup(r => r.DeleteAsync(10)).Returns(Task.CompletedTask);
+            _supplierRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Supplier>());
+
+            vm.ConfirmDeleteAsync = name => Task.FromResult(true);
+
+            // Act
+            await vm.DeleteSupplierCommand.ExecuteAsync(null);
+
+            // Assert
+            _supplierRepoMock.Verify(r => r.DeleteAsync(10), Times.Once);
+            _notificationServiceMock.Verify(n => n.ShowSuccess("Supplier 'To Delete' deleted successfully."), Times.Once);
+        }
+
+        [Fact]
+        public async Task SupplierViewModel_DeleteSupplier_Cancelled_DoesNotDelete()
+        {
+            // Arrange
+            var vm = new SupplierViewModel(_supplierService, _notificationServiceMock.Object);
+            var supplier = new Supplier { Id = 10, Name = "To Delete" };
+            vm.SelectedSupplier = supplier;
+
+            vm.ConfirmDeleteAsync = name => Task.FromResult(false);
+
+            // Act
+            await vm.DeleteSupplierCommand.ExecuteAsync(null);
+
+            // Assert
+            _supplierRepoMock.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SupplierViewModel_DeleteSupplier_OnException_ShowsError()
+        {
+            // Arrange
+            var vm = new SupplierViewModel(_supplierService, _notificationServiceMock.Object);
+            var supplier = new Supplier { Id = 10, Name = "To Delete" };
+            vm.SelectedSupplier = supplier;
+
+            _supplierRepoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(supplier);
+            _supplierRepoMock.Setup(r => r.DeleteAsync(10)).ThrowsAsync(new Exception("Database error"));
+            _supplierRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Supplier>());
+
+            vm.ConfirmDeleteAsync = name => Task.FromResult(true);
+
+            // Act
+            await vm.DeleteSupplierCommand.ExecuteAsync(null);
+
+            // Assert
+            _notificationServiceMock.Verify(n => n.ShowError(It.Is<string>(s => s.Contains("Failed to delete supplier") && s.Contains("Database error"))), Times.Once);
+        }
     }
 }
+
 
