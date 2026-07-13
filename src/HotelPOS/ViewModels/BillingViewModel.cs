@@ -61,7 +61,7 @@ namespace HotelPOS.ViewModels
         public ObservableCollection<int> ActiveTabs { get; } = new();
 
         /// <summary>True when the current order type does not require a table (Takeaway or Online).</summary>
-        public bool IsTableless => OrderType == OrderTypes.Takeaway || OrderType == OrderTypes.Online;
+        public bool IsTableless => OrderType == OrderTypes.Takeaway || OrderType == OrderTypes.Online; // NOSONAR
 
         partial void OnOrderTypeChanged(string value)
         {

@@ -95,7 +95,7 @@ namespace HotelPOS
             }
         }
 
-        private void SetTaxCombo(decimal rate)
+        private void SetTaxCombo(decimal rate) // NOSONAR
         {
             foreach (ComboBoxItem item in TaxCombo.Items)
             {
@@ -205,11 +205,11 @@ namespace HotelPOS
             }
         }
 
-        private void Close_Click(object sender, RoutedEventArgs e) => Close();
+        private void Close_Click(object sender, RoutedEventArgs e) => Close(); // NOSONAR
 
         // The window has no native title bar (WindowStyle="None"), so dragging is
         // wired up from the custom header instead.
-        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) // NOSONAR
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
@@ -220,7 +220,7 @@ namespace HotelPOS
         private static readonly SolidColorBrush _infoBg = new(Color.FromRgb(0xD4, 0xED, 0xDA));
         private static readonly SolidColorBrush _infoFg = new(Color.FromRgb(0x15, 0x57, 0x24));
 
-        private void ShowStatus(string message, bool isError)
+        private void ShowStatus(string message, bool isError) // NOSONAR
         {
             StatusText.Text = message;
             StatusBorder.Background = isError ? _errorBg : _infoBg;

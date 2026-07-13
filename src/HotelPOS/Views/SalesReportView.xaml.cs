@@ -105,9 +105,9 @@ namespace HotelPOS.Views
                 var categoryId = (int?)ComboCategory.SelectedValue;
 
                 string orderType = "All";
-                if (TypeDine.IsChecked is true) orderType = OrderTypes.DineIn;
-                else if (TypeTake.IsChecked is true) orderType = OrderTypes.Takeaway;
-                else if (TypeOnline.IsChecked is true) orderType = OrderTypes.Online;
+                if (TypeDine.IsChecked.GetValueOrDefault()) orderType = OrderTypes.DineIn;
+                else if (TypeTake.IsChecked.GetValueOrDefault()) orderType = OrderTypes.Takeaway;
+                else if (TypeOnline.IsChecked.GetValueOrDefault()) orderType = OrderTypes.Online;
 
                 // We use a large page size for the report or handle pagination
                 (IEnumerable<HotelPOS.Domain.Entities.Order> orders, int totalCount) result;
@@ -328,7 +328,7 @@ namespace HotelPOS.Views
                 FileName = $"Sales_Report_{DateTime.Now:yyyyMMdd}.xlsx"
             };
 
-            if (dlg.ShowDialog() is true)
+            if (dlg.ShowDialog().GetValueOrDefault())
             {
                 try
                 {

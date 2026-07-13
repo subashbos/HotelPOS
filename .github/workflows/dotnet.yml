@@ -31,7 +31,7 @@ jobs:
         run: dotnet build HotelPOS.sln --no-restore --configuration Release -warnaserror
 
       - name: Test
-        run: dotnet test HotelPOS.sln --no-build --configuration Release --logger trx --results-directory TestResults
+        run: dotnet test src/HotelPOS.Tests/HotelPOS.Tests.csproj --configuration Release --logger trx --results-directory TestResults -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=../../TestResults/coverage/ -p:Threshold=80 -p:ThresholdType=line -p:ThresholdStat=total
 
       - name: Publish test results
         uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc # v1
@@ -48,6 +48,13 @@ jobs:
         with:
           name: dotnet-test-results
           path: TestResults/*.trx
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dotnet-coverage-report
+          path: TestResults/coverage/*.cobertura.xml
 
   angular:
     name: Angular Test
@@ -70,4 +77,11 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npx ng test --watch=false --browsers=ChromeHeadlessCI
+        run: npx ng test --watch=false --browsers=ChromeHeadlessCI --code-coverage
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: angular-coverage-report
+          path: src/HotelPOS.Client/coverage/hotel-pos-client

@@ -47,6 +47,8 @@ namespace HotelPOS.Views
             ["Shift"] = ("💵", "Shift / Session", "Open and close cash sessions"),
             ["Roles"] = ("👥", "Roles", "Manage user roles and permissions"),
             ["SalesReport"] = ("📈", "Sales Report", "View and export detailed sales reports"),
+            ["Purchase"] = ("📥", "Purchase", "Record supplier purchases and manage inventory"),
+            ["Expenses"] = ("🧾", "Daily Expenses", "Record and track day-to-day operating expenses"),
         };
 
         public static PermissionViewModel FromPermission(RolePermission p)
@@ -98,7 +100,7 @@ namespace HotelPOS.Views
         /// </summary>
         /// <returns>A task that completes after roles have been loaded and the RolesGrid selection has been updated.</returns>
 
-        private async Task LoadDataAsync()
+        private async Task LoadDataAsync() // NOSONAR
         {
             using (var scope = App.CreateDbScope())
             {

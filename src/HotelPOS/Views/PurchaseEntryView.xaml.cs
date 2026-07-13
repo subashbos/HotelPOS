@@ -41,7 +41,7 @@ namespace HotelPOS.Views
             {
                 var element = Keyboard.FocusedElement as UIElement;
                 // Do not interfere with multi-line note inputs or data grids
-                if (element is TextBox tb && tb.AcceptsReturn is false && !IsDescendantOfDataGrid(tb))
+                if (element is TextBox tb && !tb.AcceptsReturn && !IsDescendantOfDataGrid(tb))
                 {
                     e.Handled = true;
                     element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));

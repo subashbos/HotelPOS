@@ -85,9 +85,9 @@ namespace HotelPOS.Api.Controllers
         // sonar: an omitted value defaults to 0, but CreateOrderCommandValidator already
         // rejects TableNumber == 0 for DineIn orders and caps Discount to [0, subtotal],
         // so under-posting either field can't produce an invalid or exploitable order.
-        public int TableNumber { get; set; }
+        public int TableNumber { get; set; } // NOSONAR
 
-        public decimal Discount { get; set; }
+        public decimal Discount { get; set; } // NOSONAR
 
         public string PaymentMode { get; set; } = PaymentModes.Cash;
 

@@ -8,8 +8,8 @@ namespace HotelPOS.Tests
 {
     /// <summary>
     /// Covers CartService edge cases missing from CartServiceTests.cs:
-    /// SetQuantity to 0/negative, UpdatePrice not-found, TransferTable same/empty,
-    /// ResumeHeldOrder invalid guid, and hold/resume round-trip.
+    /// TransferTable same/empty, ResumeHeldOrder invalid guid, and hold/resume
+    /// round-trip. SetQuantity/UpdatePrice edge cases live in CartServiceUpdateTests.
     /// </summary>
     public class CartServiceLoopholeTests
     {
@@ -20,61 +20,6 @@ namespace HotelPOS.Tests
 
         private static Item MakeItem(int id, string name, decimal price, decimal tax = 0m) =>
             new() { Id = id, Name = name, Price = price, TaxPercentage = tax };
-
-        // ── SetQuantity ──────────────────────────────────────────────────────
-
-        [Fact]
-        public void SetQuantity_ToZero_RemovesItem()
-        {
-            _cart.AddItem(T1, MakeItem(1, "Coffee", 50m));
-            _cart.SetQuantity(T1, 1, 0);
-            Assert.Empty(_cart.GetItems(T1));
-        }
-
-        [Fact]
-        public void SetQuantity_ToNegative_RemovesItem()
-        {
-            _cart.AddItem(T1, MakeItem(1, "Coffee", 50m));
-            _cart.SetQuantity(T1, 1, -5);
-            Assert.Empty(_cart.GetItems(T1));
-        }
-
-        [Fact]
-        public void SetQuantity_ToPositive_UpdatesQuantityAndTotal()
-        {
-            _cart.AddItem(T1, MakeItem(1, "Coffee", 50m));
-            _cart.SetQuantity(T1, 1, 4);
-            var item = _cart.GetItems(T1)[0];
-            Assert.Equal(4, item.Quantity);
-            Assert.Equal(200m, item.Total);
-        }
-
-        [Fact]
-        public void SetQuantity_NonExistentItem_DoesNotThrow()
-        {
-            var ex = Record.Exception(() => _cart.SetQuantity(T1, 999, 3));
-            Assert.Null(ex);
-        }
-
-        // ── UpdatePrice ──────────────────────────────────────────────────────
-
-        [Fact]
-        public void UpdatePrice_NonExistentItem_DoesNotThrow()
-        {
-            var ex = Record.Exception(() => _cart.UpdatePrice(T1, 999, 100m));
-            Assert.Null(ex);
-        }
-
-        [Fact]
-        public void UpdatePrice_ExistingItem_UpdatesPriceAndRecalculatesTotal()
-        {
-            _cart.AddItem(T1, MakeItem(1, "Tea", 30m));
-            _cart.AddItem(T1, MakeItem(1, "Tea", 30m)); // qty = 2
-            _cart.UpdatePrice(T1, 1, 50m);
-            var item = _cart.GetItems(T1)[0];
-            Assert.Equal(50m, item.Price);
-            Assert.Equal(100m, item.Total); // 50 * 2
-        }
 
         // ── TransferTable ────────────────────────────────────────────────────
 

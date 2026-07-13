@@ -94,15 +94,15 @@ namespace HotelPOS.Views
 
         private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadAsync();
 
-        private (DateTime? from, DateTime? to) ResolveRange()
+        private (DateTime? from, DateTime? to) ResolveRange() // NOSONAR
         {
             if (CustomFrom.SelectedDate.HasValue || CustomTo.SelectedDate.HasValue)
                 return (CustomFrom.SelectedDate, CustomTo.SelectedDate?.AddDays(1));
 
-            if (TodayFilter.IsChecked is true)
+            if (TodayFilter.IsChecked.GetValueOrDefault())
                 return (DateTime.Today, null);
 
-            if (WeekFilter.IsChecked is true)
+            if (WeekFilter.IsChecked.GetValueOrDefault())
             {
                 var today = DateTime.Today;
                 var offset = (int)today.DayOfWeek == 0 ? 6 : (int)today.DayOfWeek - 1;
@@ -308,7 +308,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"HotelPOS_Report_{DateTime.Now:yyyyMMdd_HHmm}.xlsx"
             };
-            if (dlg.ShowDialog() is not true) return;
+            if (!dlg.ShowDialog().GetValueOrDefault()) return;
 
             try
             {

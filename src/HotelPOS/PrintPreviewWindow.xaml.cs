@@ -38,7 +38,7 @@ namespace HotelPOS
         {
             if (_order == null) return;
 
-            bool isThermal = ThermalToggle.IsChecked is true;
+            bool isThermal = ThermalToggle.IsChecked.GetValueOrDefault();
 
             // Build the Flow Document
             FlowDocument document = ReceiptGenerator.CreateReceipt(_order, isThermal, _settings);
@@ -65,13 +65,13 @@ namespace HotelPOS
                 catch
                 {
                     // Fallback to dialog if printer not found
-                    shouldPrint = printDialog.ShowDialog() is true;
+                    shouldPrint = printDialog.ShowDialog().GetValueOrDefault();
                 }
             }
             else
             {
                 // No default printer, show dialog
-                shouldPrint = printDialog.ShowDialog() is true;
+                shouldPrint = printDialog.ShowDialog().GetValueOrDefault();
             }
 
             if (shouldPrint)

@@ -10,9 +10,9 @@ namespace HotelPOS.Tests
 {
     /// <summary>
     /// Covers ItemService edge cases missing from ItemServiceTests.cs:
-    /// TrackInventory=false skip, stock return (negative deduct), item-not-found,
-    /// UpdateItem not-found, DeleteItem invalid id, BulkAdd empty list,
-    /// and TaxPercentage > 100 accepted silently.
+    /// TrackInventory=false stock return, insufficient stock, DeleteItem invalid id,
+    /// BulkAdd empty list, and TaxPercentage validation. DeductStock/UpdateItem
+    /// not-found and stock-return paths live in ItemServiceUpdateTests.
     /// </summary>
     public class ItemServiceLoopholeTests
     {
@@ -22,35 +22,6 @@ namespace HotelPOS.Tests
         public ItemServiceLoopholeTests()
         {
             _service = new ItemService(_repo.Object);
-        }
-
-        // ── DeductStockAsync — TrackInventory = false ────────────────────────
-
-        [Fact]
-        public async Task DeductStockAsync_TrackInventoryFalse_DoesNotChangeStock()
-        {
-            var item = new Item { Id = 1, Name = "Napkin", StockQuantity = 100, TrackInventory = false };
-            _repo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(item);
-
-            await _service.DeductStockAsync(1, 10);
-
-            Assert.Equal(100, item.StockQuantity);
-            _repo.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
-        }
-
-        // ── DeductStockAsync — negative quantity (stock return) ──────────────
-
-        [Fact]
-        public async Task DeductStockAsync_NegativeQuantity_IncreasesStock()
-        {
-            var item = new Item { Id = 2, Name = "Coke", StockQuantity = 10, TrackInventory = true };
-            _repo.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(item);
-
-            // Returning 5 units (negative deduct)
-            await _service.DeductStockAsync(2, -5);
-
-            Assert.Equal(15, item.StockQuantity);
-            _repo.Verify(r => r.UpdateAsync(item), Times.Once);
         }
 
         [Fact]
@@ -63,17 +34,6 @@ namespace HotelPOS.Tests
 
             Assert.Equal(50, item.StockQuantity);
             _repo.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
-        }
-
-        // ── DeductStockAsync — item not found ────────────────────────────────
-
-        [Fact]
-        public async Task DeductStockAsync_ItemNotFound_DoesNotThrow()
-        {
-            _repo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Item?)null);
-
-            var ex = await Record.ExceptionAsync(() => _service.DeductStockAsync(999, 5));
-            Assert.Null(ex);
         }
 
         // ── DeductStockAsync — insufficient stock ────────────────────────────
@@ -97,20 +57,6 @@ namespace HotelPOS.Tests
             await _service.DeductStockAsync(5, 5);
 
             Assert.Equal(0, item.StockQuantity);
-        }
-
-        // ── UpdateItemAsync — item not found ─────────────────────────────────
-
-        [Fact]
-        public async Task UpdateItemAsync_ItemNotFound_ThrowsKeyNotFoundException()
-        {
-            _repo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
-            _repo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Item?)null);
-
-            var dto = new CreateItemDto { Name = "Ghost", Price = 100 };
-
-            await Assert.ThrowsAsync<KeyNotFoundException>(
-                () => _service.UpdateItemAsync(999, dto));
         }
 
         // ── DeleteItemAsync — invalid id ─────────────────────────────────────

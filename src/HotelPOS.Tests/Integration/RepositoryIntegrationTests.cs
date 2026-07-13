@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure.Persistence;
+using HotelPOS.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -16,6 +18,7 @@ namespace HotelPOS.Tests
         {
             var options = new DbContextOptionsBuilder<HotelDbContext>()
                 .UseInMemoryDatabase(databaseName: dbName)
+                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
             return new HotelDbContext(options);
         }
@@ -341,6 +344,87 @@ namespace HotelPOS.Tests
             var softDeleted = await repo.GetByIdAsync(1);
             Assert.NotNull(softDeleted);
             Assert.False(softDeleted.IsActive);
+        }
+
+        [Fact]
+        public async Task LoginLockoutRepository_Integration()
+        {
+            using var context = GetContext("LoginLockoutRepoDb");
+            var repo = new LoginLockoutRepository(context);
+
+            var lockout = new LoginLockout
+            {
+                NormalizedUsername = "ADMIN",
+                FailedAttempts = 3,
+                LockedUntilUtc = DateTime.UtcNow.AddMinutes(15),
+                LastAttemptUtc = DateTime.UtcNow
+            };
+
+            await repo.SaveAsync(lockout);
+
+            var retrieved = await repo.GetAsync("ADMIN");
+            Assert.NotNull(retrieved);
+            Assert.Equal(3, retrieved.FailedAttempts);
+
+            // Update existing
+            lockout.FailedAttempts = 5;
+            await repo.SaveAsync(lockout);
+            
+            retrieved = await repo.GetAsync("ADMIN");
+            Assert.Equal(5, retrieved!.FailedAttempts);
+
+            await repo.ClearAsync("ADMIN");
+            retrieved = await repo.GetAsync("ADMIN");
+            Assert.Null(retrieved);
+        }
+
+        [Fact]
+        public async Task OrderRepository_Integration_Extended()
+        {
+            using var context = GetContext("OrderRepoExtendedDb");
+            var repo = new OrderRepository(context);
+
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV/2026-27/0001",
+                FiscalYear = "2026-27",
+                TotalAmount = 500,
+                CreatedAt = DateTime.UtcNow,
+                IsDeleted = false,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 10, ItemName = "Burger", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+
+            await repo.AddAsync(order);
+
+            // Get next invoice
+            var nextInvoice = await repo.GetNextInvoiceNumberAsync("2026-27");
+            Assert.Equal("INV/2026-27/0002", nextInvoice);
+
+            // Get by ID with items
+            var retrieved = await repo.GetByIdWithItemsAsync(1);
+            Assert.NotNull(retrieved);
+            Assert.Single(retrieved.Items);
+
+            // Get paged
+            var filter = new OrderQueryFilter(Search: "INV/2026-27");
+            var (items, total) = await repo.GetPagedWithItemsAsync(1, 10, filter);
+            Assert.Single(items);
+            Assert.Equal(1, total);
+
+            // Begin/Commit/Rollback transactions
+            await repo.BeginTransactionAsync();
+            await repo.CommitTransactionAsync();
+            await repo.BeginTransactionAsync();
+            await repo.RollbackTransactionAsync();
+
+            // Delete
+            await repo.DeleteAsync(1);
+            var deleted = await repo.GetByIdWithItemsAsync(1);
+            Assert.Null(deleted);
         }
     }
 }

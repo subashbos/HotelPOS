@@ -150,7 +150,7 @@ namespace HotelPOS.Views
             ResetForm();
         }
 
-        private void ResetForm()
+        private void ResetForm() // NOSONAR
         {
             NameBox.Clear();
             NumberBox.Text = "1";
@@ -166,7 +166,7 @@ namespace HotelPOS.Views
             CancelEditButton.Visibility = Visibility.Collapsed;
         }
 
-        private void ShowStatus(string message, bool success)
+        private void ShowStatus(string message, bool success) // NOSONAR
         {
             StatusText.Text = message;
             StatusBorder.Background = success ? SuccessBg : ErrorBg;

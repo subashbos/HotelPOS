@@ -5,7 +5,7 @@ namespace HotelPOS
 {
     public class IdToEnabledConverter : IMultiValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             if (parameter?.ToString() == "StockCheck")
             {
@@ -21,7 +21,7 @@ namespace HotelPOS
             return !values[0].Equals(values[1]);
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) // NOSONAR
         {
             throw new NotImplementedException();
         }

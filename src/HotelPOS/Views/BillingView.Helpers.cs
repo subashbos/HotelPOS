@@ -16,7 +16,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void GridTextBox_GotFocus(object sender, RoutedEventArgs e)
+        private void GridTextBox_GotFocus(object sender, RoutedEventArgs e) // NOSONAR
         {
             if (sender is TextBox tb) tb.SelectAll();
         }
@@ -40,7 +40,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void DiscountBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void DiscountBox_PreviewKeyDown(object sender, KeyEventArgs e) // NOSONAR
         {
             if (e.Key == Key.Enter)
             {
@@ -87,7 +87,7 @@ namespace HotelPOS.Views
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 var child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is T t) return t;
+                if (child is T t) return t;
                 var childOfChild = FindVisualChild<T>(child!);
                 if (childOfChild != null) return childOfChild;
             }

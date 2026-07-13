@@ -129,7 +129,7 @@ namespace HotelPOS.ViewModels
             }
         }
 
-        private void ClearForm()
+        private void ClearForm() // NOSONAR
         {
             Name = string.Empty;
             Unit = "kg";

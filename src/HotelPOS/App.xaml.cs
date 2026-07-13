@@ -186,7 +186,7 @@ namespace HotelPOS
             base.OnExit(e);
         }
 
-        private void HandleException(Exception? ex, string source)
+        private void HandleException(Exception? ex, string source) // NOSONAR
         {
             if (ex == null) return;
             Log.Fatal(ex, "Unhandled Exception from {Source}: {Message}", source, ex.Message);

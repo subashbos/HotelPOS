@@ -44,13 +44,8 @@ namespace HotelPOS.Tests
             await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 1, OrderType: "DroneDelivery")));
         }
 
-        [Fact]
-        public async Task SaveOrderAsync_InvalidPaymentMode_ThrowsArgumentException()
-        {
-            var items = new List<OrderItem> { new OrderItem { ItemName = "Valid", Price = 10, Quantity = 1 } };
-            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 1, PaymentMode: "Bitcoin")));
-        }
-        
+        // Invalid payment mode is covered by OrderServiceLoopholeTests.
+
         [Fact]
         public async Task SaveOrderAsync_DineInWithoutTable_ThrowsArgumentException()
         {

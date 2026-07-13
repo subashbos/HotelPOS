@@ -218,7 +218,7 @@ namespace HotelPOS.Views
                 FileName = $"Item_Report_{DateTime.Now:yyyyMMdd}.xlsx"
             };
 
-            if (dlg.ShowDialog() is true)
+            if (dlg.ShowDialog().GetValueOrDefault())
             {
                 try
                 {

@@ -11,7 +11,7 @@ namespace HotelPOS.Tests
     /// <summary>
     /// Covers RoleService edge cases missing from RoleServiceTests.cs:
     /// empty name validation, delete non-existent, GetById null,
-    /// UpdatePermissions with empty list, and correct 12-module count.
+    /// UpdatePermissions with empty list, and correct per-module permission count.
     /// </summary>
     public class RoleServiceLoopholeTests
     {
@@ -59,10 +59,10 @@ namespace HotelPOS.Tests
             Assert.Equal(RoleNames.Manager, captured!.Name);
         }
 
-        // ── AddRoleAsync creates exactly 12 modules (including "Roles") ──────
+        // ── AddRoleAsync creates one permission entry per registered module ──
 
         [Fact]
-        public async Task AddRoleAsync_CreatesTwelveDefaultPermissions()
+        public async Task AddRoleAsync_CreatesOnePermissionPerModule()
         {
             _repo.Setup(r => r.GetRoleByNameAsync(It.IsAny<string>())).ReturnsAsync((Role?)null);
             Role? captured = null;
@@ -71,7 +71,7 @@ namespace HotelPOS.Tests
 
             await _service.AddRoleAsync("Supervisor", "desc");
 
-            Assert.Equal(12, captured!.Permissions.Count);
+            Assert.Equal(PermissionModules.All.Length, captured!.Permissions.Count);
         }
 
         [Fact]
@@ -97,8 +97,7 @@ namespace HotelPOS.Tests
 
             await _service.AddRoleAsync("Supervisor", "desc");
 
-            var expected = new[] { "Dashboard", "Billing", "Items", "Categories", "Tables", "Ledger", "Journal", "Settings", "Audit", "Shift", "Roles", "SalesReport" };
-            foreach (var module in expected)
+            foreach (var module in PermissionModules.All)
                 Assert.Contains(captured!.Permissions, p => p.ModuleName == module);
         }
 

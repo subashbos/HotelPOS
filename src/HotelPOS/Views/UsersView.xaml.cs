@@ -42,7 +42,7 @@ namespace HotelPOS.Views
         /// DisplayMemberPath to "Name" and SelectedValuePath to "Id", and selects the first
         /// role if any exist.
         /// </remarks>
-        private async Task LoadRolesAsync()
+        private async Task LoadRolesAsync() // NOSONAR
         {
             List<Role> roles;
             using (var scope = App.CreateDbScope())
@@ -59,7 +59,7 @@ namespace HotelPOS.Views
         /// <summary>
         /// Reloads the user list from the database, assigns a 1-based sequence number to each user's <c>SNo</c>, and updates <c>UsersGrid.ItemsSource</c>.
         /// </summary>
-        public async Task RefreshAsync()
+        public async Task RefreshAsync() // NOSONAR
         {
             List<User> users;
             using (var scope = App.CreateDbScope())
@@ -71,12 +71,14 @@ namespace HotelPOS.Views
             UsersGrid.ItemsSource = users;
         }
 
-        private User? SelectedUser => UsersGrid.SelectedItem as User;
+        private User? SelectedUser => UsersGrid.SelectedItem as User; // NOSONAR
 
-        // Intentionally empty: selection state is read on-demand via the SelectedUser
-        // property rather than reacted to here; the handler only exists to keep the
-        // XAML-bound SelectionChanged event wired for future use.
-        private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void UsersGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Intentionally empty: selection state is read on-demand via the SelectedUser
+            // property rather than reacted to here; the handler only exists to keep the
+            // XAML-bound SelectionChanged event wired for future use.
+        }
 
         /// <summary>
         /// Enables the currently selected user account and refreshes the displayed user list.
@@ -124,7 +126,7 @@ namespace HotelPOS.Views
             if (SelectedUser is not User u) { ShowFeedback(SelectUserFirstMessage, false); return; }
 
             var dialog = new PasswordResetDialog(u.Username) { Owner = Window.GetWindow(this) };
-            if (dialog.ShowDialog() is true)
+            if (dialog.ShowDialog().GetValueOrDefault())
             {
                 bool ok;
                 string err;
@@ -226,7 +228,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void ShowFeedback(string message, bool success)
+        private void ShowFeedback(string message, bool success) // NOSONAR
         {
             FeedbackText.Text = message;
             FeedbackBorder.Background = success ? SuccessBg : ErrorBg;

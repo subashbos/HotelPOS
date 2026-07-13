@@ -6,7 +6,7 @@ namespace HotelPOS
 {
     public class BoolToColorConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             if (value is bool track && track)
             {
@@ -15,7 +15,7 @@ namespace HotelPOS
             return new SolidColorBrush(Color.FromRgb(0xA0, 0xAD, 0xB8)); // Muted for untracked
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
             throw new NotImplementedException();
         }

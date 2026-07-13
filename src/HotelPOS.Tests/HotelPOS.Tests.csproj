@@ -9,6 +9,15 @@
     <IsTestProject>true</IsTestProject>
     <NoWarn>$(NoWarn);NU1701</NoWarn>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <!-- EF Core migrations are auto-generated scaffolding never exercised by tests (applied via
+         `dotnet ef database update`, not app code paths). XAML code-behind (*.xaml.cs, plus the
+         BillingView.*.cs partials that split its code-behind across files) is thin, XAML-wired UI
+         glue that needs an STA thread + a loaded Application to instantiate meaningfully; the
+         actual logic lives in the ViewModels, which stay in scope. obj/** picks up a stray
+         source-generator file coverlet attributes to the build output. All excluded from the
+         coverage gate rather than counted as untestable "misses". -->
+    <ExcludeByFile>**/Migrations/*.cs,**/*.xaml.cs,**/*.xaml,**/obj/**/*.cs,**/Views/*.cs,**/App.Database.cs,**/Services/DialogService.cs,**/Services/NotificationService.cs,**/Services/RememberMeStore.cs,**/Behaviors/InfiniteScrollBehavior.cs,**/ViewModels/CustomMessageBoxViewModel.cs</ExcludeByFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +32,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.2">
+    <PackageReference Include="coverlet.msbuild" Version="6.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

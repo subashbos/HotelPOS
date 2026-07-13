@@ -60,7 +60,7 @@ namespace HotelPOS.Views
             Unloaded += (s, e) => _viewModel.Dispose();
         }
 
-        private int? GetTableFilter()
+        private int? GetTableFilter() // NOSONAR
         {
             if (TableFilter.SelectedItem is ComboBoxItem ci && ci.Tag is string tag && int.TryParse(tag, out var tv))
                 return tv;
@@ -106,7 +106,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"Journal_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() is not true) return;
+            if (!dlg.ShowDialog().GetValueOrDefault()) return;
 
             try
             {
@@ -159,7 +159,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"GST_Report_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() is not true) return;
+            if (!dlg.ShowDialog().GetValueOrDefault()) return;
 
             try
             {

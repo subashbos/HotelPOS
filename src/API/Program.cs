@@ -43,6 +43,10 @@ builder.Services.AddScoped<ITableService>(provider => new TableService(provider.
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<ILeaveService, LeaveService>();
+builder.Services.AddScoped<IPayrollService, PayrollService>();
 
 // ── MediatR Configuration ─────────────────────────────────────────────────
 builder.Services.AddMediatR(cfg =>
@@ -128,4 +132,7 @@ app.MapControllers();
 await app.RunAsync();
 
 /// <summary>Exposed so WebApplicationFactory&lt;Program&gt; can host this API in integration tests.</summary>
-public partial class Program { }
+public partial class Program
+{
+    protected Program() { }
+}

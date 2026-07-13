@@ -67,23 +67,26 @@ namespace HotelPOS
             string receiptTitle = settings.IsCompositionScheme ? "BILL OF SUPPLY" : "TAX INVOICE";
             hdr.Inlines.Add(new Run(receiptTitle + "\n") { FontSize = headSz, FontWeight = FontWeights.Bold });
 
-            // B2B Customer Details
+            AppendCustomerDetails(hdr, order, isThermal, smallSz);
+
+            return hdr;
+        }
+
+        private static void AppendCustomerDetails(Paragraph hdr, Order order, bool isThermal, int smallSz)
+        {
             bool hasCustomer = !string.IsNullOrWhiteSpace(order.CustomerName) ||
                                !string.IsNullOrWhiteSpace(order.CustomerPhone) ||
                                !string.IsNullOrWhiteSpace(order.CustomerGstin);
-            if (hasCustomer)
-            {
-                hdr.Inlines.Add(new Run(new string('-', isThermal ? 38 : 86) + "\n") { FontSize = smallSz });
-                hdr.Inlines.Add(new Run("BILLED TO:\n") { FontSize = smallSz, FontWeight = FontWeights.Bold });
-                if (!string.IsNullOrWhiteSpace(order.CustomerName))
-                    hdr.Inlines.Add(new Run($"{order.CustomerName.ToUpper()}\n") { FontSize = smallSz });
-                if (!string.IsNullOrWhiteSpace(order.CustomerPhone))
-                    hdr.Inlines.Add(new Run($"Ph: {order.CustomerPhone}\n") { FontSize = smallSz });
-                if (!string.IsNullOrWhiteSpace(order.CustomerGstin))
-                    hdr.Inlines.Add(new Run($"GSTIN: {order.CustomerGstin}\n") { FontSize = smallSz, FontWeight = FontWeights.SemiBold });
-            }
+            if (!hasCustomer) return;
 
-            return hdr;
+            hdr.Inlines.Add(new Run(new string('-', isThermal ? 38 : 86) + "\n") { FontSize = smallSz });
+            hdr.Inlines.Add(new Run("BILLED TO:\n") { FontSize = smallSz, FontWeight = FontWeights.Bold });
+            if (!string.IsNullOrWhiteSpace(order.CustomerName))
+                hdr.Inlines.Add(new Run($"{order.CustomerName.ToUpper()}\n") { FontSize = smallSz });
+            if (!string.IsNullOrWhiteSpace(order.CustomerPhone))
+                hdr.Inlines.Add(new Run($"Ph: {order.CustomerPhone}\n") { FontSize = smallSz });
+            if (!string.IsNullOrWhiteSpace(order.CustomerGstin))
+                hdr.Inlines.Add(new Run($"GSTIN: {order.CustomerGstin}\n") { FontSize = smallSz, FontWeight = FontWeights.SemiBold });
         }
 
         private static System.Windows.Documents.Table BuildItemsTable(List<OrderItem> items, bool isThermal, int textSz)

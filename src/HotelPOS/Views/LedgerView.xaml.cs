@@ -183,7 +183,7 @@ namespace HotelPOS.Views
                 Filter = "Excel Files (*.xlsx)|*.xlsx",
                 FileName = $"Ledger_{DateTime.Now:yyyyMMdd}.xlsx"
             };
-            if (dlg.ShowDialog() is not true) return;
+            if (!dlg.ShowDialog().GetValueOrDefault()) return;
 
             try
             {

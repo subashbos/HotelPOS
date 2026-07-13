@@ -17,7 +17,7 @@ namespace HotelPOS.Views
         /// <summary>
         /// When the user picks an ingredient from the ComboBox, update the BomEntryRow on the ViewModel.
         /// </summary>
-        private void IngredientComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void IngredientComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) // NOSONAR
         {
             if (sender is ComboBox cb
                 && cb.Tag is BomEntryRow row

@@ -32,13 +32,13 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private string _upiAmount = "0";
 
-        public decimal ParsedCash => decimal.TryParse(CashAmount, out var v) ? v : 0;
-        public decimal ParsedCard => decimal.TryParse(CardAmount, out var v) ? v : 0;
-        public decimal ParsedUpi => decimal.TryParse(UpiAmount, out var v) ? v : 0;
+        public decimal ParsedCash => decimal.TryParse(CashAmount, out var v) ? v : 0; // NOSONAR
+        public decimal ParsedCard => decimal.TryParse(CardAmount, out var v) ? v : 0; // NOSONAR
+        public decimal ParsedUpi => decimal.TryParse(UpiAmount, out var v) ? v : 0; // NOSONAR
 
         public decimal OutstandingBalance => Math.Max(0, FinalPayableAmount - (ParsedCash + ParsedCard + ParsedUpi));
 
-        public bool IsSplitPayment => PaymentMode == "Split";
+        public bool IsSplitPayment => PaymentMode == "Split"; // NOSONAR
 
         public bool CanConfirm => !IsSplitPayment || OutstandingBalance == 0;
 

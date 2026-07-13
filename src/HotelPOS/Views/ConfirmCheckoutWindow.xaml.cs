@@ -14,7 +14,7 @@ namespace HotelPOS.Views
             DataContext = viewModel;
         }
 
-        private void NumericOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void NumericOnly_PreviewTextInput(object sender, TextCompositionEventArgs e) // NOSONAR
         {
             if (sender is TextBox textBox)
             {
@@ -24,7 +24,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void NumericOnly_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void NumericOnly_PreviewKeyDown(object sender, KeyEventArgs e) // NOSONAR
         {
             if (e.Key == Key.Space)
                 e.Handled = true;

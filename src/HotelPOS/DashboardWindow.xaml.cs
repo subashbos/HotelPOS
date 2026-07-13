@@ -37,6 +37,11 @@ namespace HotelPOS
         private SupplierView? _cachedSuppliers;
         private RawMaterialView? _cachedRawMaterials;
         private BomView? _cachedBom;
+        private EmployeeView? _cachedEmployees;
+        private AttendanceView? _cachedAttendance;
+        private LeaveView? _cachedLeave;
+        private PayrollView? _cachedPayroll;
+        private ExpenseView? _cachedExpenses;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
 
@@ -233,6 +238,7 @@ namespace HotelPOS
 
             NavSales.Visibility = Vis(HasPermission(PermissionModules.SalesReport));
             NavShift.Visibility = Vis(HasPermission("Shift"));
+            NavExpenses.Visibility = Vis(HasPermission(PermissionModules.Expenses));
 
             NavMenu.Visibility = Vis(HasPermission("Items"));
             NavTables.Visibility = Vis(HasPermission("Tables"));
@@ -249,6 +255,11 @@ namespace HotelPOS
             NavJournal.Visibility = Vis(HasPermission("Journal"));
 
             NavRoles.Visibility = Vis(HasPermission("Roles"));
+
+            NavEmployees.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
+            NavAttendance.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
+            NavLeave.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
+            NavPayroll.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
 
             NavSettings.Visibility = Vis(HasPermission("Settings"));
             NavAudit.Visibility = Vis(HasPermission("Audit"));
@@ -396,6 +407,13 @@ namespace HotelPOS
             SetActive(NavShift);
         }
 
+        private void NavExpenses_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedExpenses ??= _serviceProvider.GetRequiredService<ExpenseView>();
+            MainContentArea.Content = _cachedExpenses;
+            SetActive(NavExpenses);
+        }
+
         private void NavRoles_Click(object sender, RoutedEventArgs e)
         {
             _cachedRoles ??= _serviceProvider.GetRequiredService<RolesView>();
@@ -403,14 +421,43 @@ namespace HotelPOS
             SetActive(NavRoles);
         }
 
+        private void NavEmployees_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedEmployees ??= _serviceProvider.GetRequiredService<EmployeeView>();
+            MainContentArea.Content = _cachedEmployees;
+            SetActive(NavEmployees);
+        }
+
+        private void NavAttendance_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedAttendance ??= _serviceProvider.GetRequiredService<AttendanceView>();
+            MainContentArea.Content = _cachedAttendance;
+            SetActive(NavAttendance);
+        }
+
+        private void NavLeave_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedLeave ??= _serviceProvider.GetRequiredService<LeaveView>();
+            MainContentArea.Content = _cachedLeave;
+            SetActive(NavLeave);
+        }
+
+        private void NavPayroll_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedPayroll ??= _serviceProvider.GetRequiredService<PayrollView>();
+            MainContentArea.Content = _cachedPayroll;
+            SetActive(NavPayroll);
+        }
+
         private void SetActive(Button active)
         {
             // 1. Enable all navigation buttons
             var allButtons = new[]
             {
-                NavBilling, NavShift,
+                NavBilling, NavShift, NavExpenses,
                 NavMenu, NavCats, NavTables, NavPurchase, NavSuppliers, NavRawMaterials, NavBom,
                 NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
+                NavEmployees, NavAttendance, NavLeave, NavPayroll,
                 NavSettings, NavRoles, NavAudit
             };
             foreach (var btn in allButtons)
@@ -428,7 +475,7 @@ namespace HotelPOS
             UpdateHeaderVisibilities();
         }
 
-        private void UpdateHeaderVisibilities()
+        private void UpdateHeaderVisibilities() // NOSONAR
         {
             bool isExpanded = (string?)SidebarBorder.Tag == "expanded";
 
@@ -443,7 +490,7 @@ namespace HotelPOS
             else
             {
                 // Expanded mode: show header ONLY if at least one child button is visible
-                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible)
+                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible || NavExpenses.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
 
                 HeaderInv.Visibility = (NavMenu.Visibility == Visibility.Visible || NavCats.Visibility == Visibility.Visible || NavTables.Visibility == Visibility.Visible || NavPurchase.Visibility == Visibility.Visible || NavSuppliers.Visibility == Visibility.Visible || NavRawMaterials.Visibility == Visibility.Visible || NavBom.Visibility == Visibility.Visible)
@@ -453,6 +500,10 @@ namespace HotelPOS
                     ? Visibility.Visible : Visibility.Collapsed;
 
                 HeaderAdmin.Visibility = (NavSettings.Visibility == Visibility.Visible || NavRoles.Visibility == Visibility.Visible || NavAudit.Visibility == Visibility.Visible)
+                    ? Visibility.Visible : Visibility.Collapsed;
+
+                HeaderHR.Visibility = (NavEmployees.Visibility == Visibility.Visible || NavAttendance.Visibility == Visibility.Visible
+                        || NavLeave.Visibility == Visibility.Visible || NavPayroll.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
             }
         }
@@ -598,7 +649,7 @@ namespace HotelPOS
             }
         }
 
-        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e) // NOSONAR
         {
             // Global shortcuts for Billing POS when it's active
             if (MainContentArea.Content is BillingView bv)

@@ -1,6 +1,11 @@
 using AutoMapper;
+using HotelPOS.Application.DTOs.Attendance;
 using HotelPOS.Application.DTOs.Category;
+using HotelPOS.Application.DTOs.Employee;
+using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.DTOs.Item;
+using HotelPOS.Application.DTOs.Leave;
+using HotelPOS.Application.DTOs.Payroll;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application.UseCases.Items.Commands;
@@ -38,6 +43,9 @@ namespace HotelPOS.Application.Common.Mappings
             CreateMap<Supplier, SaveSupplierDto>();
             CreateMap<Supplier, SupplierDto>().ReverseMap();
 
+            // ── Expense ───────────────────────────────────────────────────────
+            CreateMap<Expense, SaveExpenseDto>();
+
             // ── User ──────────────────────────────────────────────────────────
             CreateMap<AddUserCommand, User>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username.Trim()))
@@ -53,6 +61,43 @@ namespace HotelPOS.Application.Common.Mappings
 
             // ── Audit ─────────────────────────────────────────────────────────
             CreateMap<AuditLog, HotelPOS.Application.DTOs.Audit.AuditLogDto>().ReverseMap();
+
+            // ── Human Resources: Employee / Department / Designation ────────────
+            CreateMap<Department, DepartmentDto>();
+            CreateMap<Designation, DesignationDto>()
+                .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department != null ? src.Department.Name : null));
+
+            CreateMap<Employee, EmployeeDto>()
+                .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department != null ? src.Department.Name : null))
+                .ForMember(dest => dest.DesignationTitle, opt => opt.MapFrom(src => src.Designation != null ? src.Designation.Title : null));
+
+            CreateMap<SaveEmployeeDto, Employee>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName.Trim()))
+                .ForMember(dest => dest.EmployeeCode, opt => opt.MapFrom(src => (src.EmployeeCode ?? string.Empty).Trim()));
+
+            // ── Human Resources: Attendance ──────────────────────────────────
+            CreateMap<Attendance, AttendanceDto>()
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
+                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null));
+            CreateMap<MarkAttendanceDto, Attendance>();
+
+            // ── Human Resources: Leave ────────────────────────────────────────
+            CreateMap<LeaveType, LeaveTypeDto>();
+            CreateMap<LeaveBalance, LeaveBalanceDto>()
+                .ForMember(dest => dest.LeaveTypeName, opt => opt.MapFrom(src => src.LeaveType != null ? src.LeaveType.Name : null));
+            CreateMap<LeaveRequest, LeaveRequestDto>()
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
+                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null))
+                .ForMember(dest => dest.LeaveTypeName, opt => opt.MapFrom(src => src.LeaveType != null ? src.LeaveType.Name : null));
+            CreateMap<ApplyLeaveDto, LeaveRequest>();
+
+            // ── Human Resources: Payroll ──────────────────────────────────────
+            CreateMap<SalaryStructure, SalaryStructureDto>();
+            CreateMap<SaveSalaryStructureDto, SalaryStructure>();
+            CreateMap<Payslip, PayslipDto>()
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
+                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null));
+            CreateMap<PayrollRun, PayrollRunDto>();
         }
     }
 }

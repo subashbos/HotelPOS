@@ -1,5 +1,5 @@
 import { HttpHandler, HttpRequest, HttpErrorResponse, HttpResponse, HttpEvent } from '@angular/common/http';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 import { AuthInterceptor } from './auth.interceptor';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
@@ -132,5 +132,55 @@ describe('AuthInterceptor', () => {
     expect(authServiceSpy.refresh).toHaveBeenCalledTimes(1);
     expect(authServiceSpy.logout).toHaveBeenCalled();
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('queues request when token refresh is in flight', () => {
+    authServiceSpy.getToken.and.returnValue('expired-token');
+    authServiceSpy.hasRefreshToken.and.returnValue(true);
+
+    const refreshSubject = new Subject<any>();
+    authServiceSpy.refresh.and.returnValue(refreshSubject);
+
+    const req1 = new HttpRequest('GET', '/api/orders/1');
+    const req2 = new HttpRequest('GET', '/api/orders/2');
+
+    let req1Attempts = 0;
+    let req2Attempts = 0;
+    let req1Retried = false;
+    let req2Retried = false;
+
+    const handler1 = {
+      handle: (r: HttpRequest<unknown>) => {
+        req1Attempts++;
+        if (req1Attempts === 1) {
+          return throwError(() => new HttpErrorResponse({ status: 401 }));
+        }
+        req1Retried = true;
+        return of(new HttpResponse({ status: 200 }));
+      }
+    } as HttpHandler;
+
+    const handler2 = {
+      handle: (r: HttpRequest<unknown>) => {
+        req2Attempts++;
+        if (req2Attempts === 1) {
+          return throwError(() => new HttpErrorResponse({ status: 401 }));
+        }
+        req2Retried = true;
+        return of(new HttpResponse({ status: 200 }));
+      }
+    } as HttpHandler;
+
+    interceptor.intercept(req1, handler1).subscribe();
+    interceptor.intercept(req2, handler2).subscribe();
+
+    expect(req1Retried).toBeFalse();
+    expect(req2Retried).toBeFalse();
+
+    refreshSubject.next({ token: 'new-token', refreshToken: 'new-refresh', username: 'u', role: 'Admin' });
+    refreshSubject.complete();
+
+    expect(req1Retried).toBeTrue();
+    expect(req2Retried).toBeTrue();
   });
 });

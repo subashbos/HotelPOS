@@ -102,4 +102,20 @@ describe('AuthService', () => {
     expect(req.request.body.refreshToken).toBe('refresh-abc');
     req.flush({});
   });
+
+  it('returns username from localStorage', () => {
+    localStorage.setItem('auth_username', 'admin');
+    expect(service.getUsername()).toBe('admin');
+  });
+
+  it('returns isLoggedIn status', () => {
+    expect(service.isLoggedIn()).toBeFalse();
+    localStorage.setItem('auth_token', 'token');
+    expect(service.isLoggedIn()).toBeTrue();
+  });
+
+  it('handles decodeToken catching error for malformed token', () => {
+    localStorage.setItem('auth_token', 'malformed-token');
+    expect(service.getRole()).toBeNull();
+  });
 });

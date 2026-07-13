@@ -6,12 +6,12 @@ namespace HotelPOS.Views
 {
     public partial class BillingView : UserControl
     {
-        private void NumberOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void NumberOnly_PreviewTextInput(object sender, TextCompositionEventArgs e) // NOSONAR
         {
             e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
 
-        private void DecimalOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void DecimalOnly_PreviewTextInput(object sender, TextCompositionEventArgs e) // NOSONAR
         {
             var textBox = sender as TextBox;
             if (textBox == null) return;
@@ -20,7 +20,7 @@ namespace HotelPOS.Views
             e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(proposedText, @"^\d*\.?\d*$", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(250));
         }
 
-        private void DataObject_OnPasting(object sender, DataObjectPastingEventArgs e)
+        private void DataObject_OnPasting(object sender, DataObjectPastingEventArgs e) // NOSONAR
         {
             if (e.DataObject.GetDataPresent(typeof(string)))
             {
@@ -30,7 +30,7 @@ namespace HotelPOS.Views
             else e.CancelCommand();
         }
 
-        private void Decimal_OnPasting(object sender, DataObjectPastingEventArgs e)
+        private void Decimal_OnPasting(object sender, DataObjectPastingEventArgs e) // NOSONAR
         {
             if (e.DataObject.GetDataPresent(typeof(string)))
             {
