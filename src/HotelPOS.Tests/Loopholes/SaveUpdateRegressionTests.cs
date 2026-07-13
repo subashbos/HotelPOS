@@ -367,16 +367,7 @@ namespace HotelPOS.Tests
             Assert.Contains("existing", error);
         }
 
-        [Fact]
-        public async Task ResetPasswordAsync_UserNotFound_ReturnsError()
-        {
-            _repoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((User?)null);
-
-            var (success, error) = await _service.ResetPasswordAsync(99, "NewSecure123!");
-
-            Assert.False(success);
-            Assert.Contains("not found", error, StringComparison.OrdinalIgnoreCase);
-        }
+        // Not-found and valid-password paths are covered by UserServiceLoopholeTests.
 
         [Fact]
         public async Task ResetPasswordAsync_ShortPassword_ReturnsError()
@@ -384,20 +375,6 @@ namespace HotelPOS.Tests
             var (success, error) = await _service.ResetPasswordAsync(1, "short");
             Assert.False(success);
             Assert.Contains("10", error);
-        }
-
-        [Fact]
-        public async Task ResetPasswordAsync_ValidPassword_UpdatesUser()
-        {
-            var user = new User { Id = 1, PasswordHash = "old", Salt = "old", MustChangePassword = true };
-            _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(user);
-
-            var (success, _) = await _service.ResetPasswordAsync(1, "NewSecure123!");
-
-            Assert.True(success);
-            Assert.False(user.MustChangePassword);
-            Assert.NotEqual("old", user.PasswordHash);
-            _repoMock.Verify(r => r.UpdateAsync(user), Times.Once);
         }
     }
 
@@ -416,15 +393,8 @@ namespace HotelPOS.Tests
             _service = new CategoryService(_repoMock.Object, _itemRepoMock.Object);
         }
 
-        [Fact]
-        public async Task UpdateCategoryAsync_NotFound_ThrowsKeyNotFoundException()
-        {
-            // Before fix: threw base Exception. After fix: KeyNotFoundException.
-            _repoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Category?)null);
-
-            await Assert.ThrowsAsync<KeyNotFoundException>(
-                () => _service.UpdateCategoryAsync(99, "New Name"));
-        }
+        // The not-found (KeyNotFoundException) and empty-name regressions are
+        // covered by CategoryServiceTests.
 
         [Fact]
         public async Task UpdateCategoryAsync_Valid_UpdatesNameAndTrims()
@@ -436,13 +406,6 @@ namespace HotelPOS.Tests
 
             Assert.Equal("Beverages", cat.Name);
             _repoMock.Verify(r => r.UpdateAsync(cat), Times.Once);
-        }
-
-        [Fact]
-        public async Task UpdateCategoryAsync_EmptyName_ThrowsArgumentException()
-        {
-            await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.UpdateCategoryAsync(1, "   "));
         }
 
         [Fact]
