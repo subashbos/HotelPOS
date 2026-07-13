@@ -64,7 +64,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private void Cancel_Click(object sender, RoutedEventArgs e)
+        private void Cancel_Click(object sender, RoutedEventArgs e) // NOSONAR
         {
             DialogResult = false;
             Close();
@@ -72,7 +72,7 @@ namespace HotelPOS.Views
 
         // The window has no native title bar (WindowStyle="None"), so dragging is
         // wired up from the custom header instead.
-        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) // NOSONAR
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();

@@ -9,8 +9,6 @@ namespace HotelPOS.ViewModels
 {
     public partial class PayrollViewModel : ObservableObject
     {
-        private readonly IPayrollService _payrollService;
-        private readonly IEmployeeService _employeeService;
         private readonly INotificationService _notificationService;
 
         [ObservableProperty]
@@ -58,8 +56,6 @@ namespace HotelPOS.ViewModels
 
         public PayrollViewModel(IPayrollService payrollService, IEmployeeService employeeService, INotificationService notificationService)
         {
-            _payrollService = payrollService;
-            _employeeService = employeeService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

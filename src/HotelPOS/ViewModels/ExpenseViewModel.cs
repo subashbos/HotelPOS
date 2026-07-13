@@ -10,7 +10,8 @@ namespace HotelPOS.ViewModels
 {
     public partial class ExpenseViewModel : ObservableObject
     {
-        private readonly IExpenseService _expenseService;
+        private const string AllCategoriesFilter = "All Categories";
+
         private readonly INotificationService _notificationService;
 
         [ObservableProperty]
@@ -20,7 +21,7 @@ namespace HotelPOS.ViewModels
         private DateTime? _filterTo = DateTime.Today;
 
         [ObservableProperty]
-        private string _selectedCategory = "All Categories";
+        private string _selectedCategory = AllCategoriesFilter;
 
         [ObservableProperty]
         private decimal _totalAmount;
@@ -33,7 +34,7 @@ namespace HotelPOS.ViewModels
             {
                 if (SetProperty(ref _searchText, value))
                 {
-                    ApplyFilter();
+                    FilterExpenses();
                 }
             }
         }
@@ -58,10 +59,9 @@ namespace HotelPOS.ViewModels
 
         public ExpenseViewModel(IExpenseService expenseService, INotificationService notificationService)
         {
-            _expenseService = expenseService;
             _notificationService = notificationService;
 
-            Categories.Add("All Categories");
+            Categories.Add(AllCategoriesFilter);
             foreach (var category in ExpenseCategories.All)
             {
                 Categories.Add(category);
@@ -89,7 +89,7 @@ namespace HotelPOS.ViewModels
                     var expenses = await expenseService.GetExpensesAsync(from, to);
                     _allExpenses.Clear();
                     _allExpenses.AddRange(expenses);
-                    ApplyFilter();
+                    FilterExpenses();
                 }
                 catch (Exception ex)
                 {
@@ -109,23 +109,23 @@ namespace HotelPOS.ViewModels
         {
             FilterFrom = DateTime.Today;
             FilterTo = DateTime.Today;
-            SelectedCategory = "All Categories";
+            SelectedCategory = AllCategoriesFilter;
             SearchText = string.Empty;
             await LoadExpensesAsync();
         }
 
         partial void OnSelectedCategoryChanged(string value)
         {
-            ApplyFilter();
+            FilterExpenses();
         }
 
-        private void ApplyFilter()
+        private void FilterExpenses()
         {
             Expenses.Clear();
             var search = SearchText?.Trim();
 
             var filtered = _allExpenses.Where(e =>
-                (SelectedCategory == "All Categories" || e.Category == SelectedCategory) &&
+                (SelectedCategory == AllCategoriesFilter || e.Category == SelectedCategory) &&
                 (string.IsNullOrEmpty(search) ||
                  e.Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
                  (e.Description != null && e.Description.Contains(search, StringComparison.OrdinalIgnoreCase)))

@@ -32,7 +32,7 @@ describe('ItemService', () => {
     ];
 
     service.getItems().subscribe(items => {
-      expect(items.length).toBe(2);
+      expect(items).toHaveSize(2);
       expect(items).toEqual(dummyItems);
     });
 

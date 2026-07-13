@@ -60,7 +60,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteAttendanceAsync(int id)
         {
-            var existing = await _repository.GetByIdAsync(id)
+            _ = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Attendance record #{id} not found.");
             await _repository.DeleteAsync(id);
         }

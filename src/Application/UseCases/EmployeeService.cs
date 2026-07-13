@@ -52,7 +52,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteEmployeeAsync(int id)
         {
-            var existing = await _repository.GetByIdAsync(id)
+            _ = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Employee #{id} not found.");
             await _repository.DeleteAsync(id);
         }
@@ -77,10 +77,10 @@ namespace HotelPOS.Application.UseCases
         {
             var all = await _repository.GetAllAsync() ?? new List<Employee>();
             var maxSeq = 0;
-            foreach (var e in all)
+            foreach (var code in all.Select(e => e.EmployeeCode))
             {
-                if (e.EmployeeCode.StartsWith("EMP", StringComparison.OrdinalIgnoreCase) &&
-                    int.TryParse(e.EmployeeCode.AsSpan(3), out var seq) && seq > maxSeq)
+                if (code.StartsWith("EMP", StringComparison.OrdinalIgnoreCase) &&
+                    int.TryParse(code.AsSpan(3), out var seq) && seq > maxSeq)
                 {
                     maxSeq = seq;
                 }

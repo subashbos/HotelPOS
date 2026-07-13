@@ -42,11 +42,11 @@ namespace HotelPOS.Views
                 };
 
                 var result = dialog.ShowDialog();
-                return result == true;
+                return result.GetValueOrDefault();
             }
             catch (Exception ex)
             {
-                App.CurrentApp!.ServiceProvider.GetRequiredService<IDialogService>().ShowMessage($"Error opening entry form: {ex.Message}", "Error", DialogButton.OK, DialogIcon.Error);
+                await App.CurrentApp!.ServiceProvider.GetRequiredService<IDialogService>().ShowMessageAsync($"Error opening entry form: {ex.Message}", "Error", DialogButton.OK, DialogIcon.Error);
                 return false;
             }
         }

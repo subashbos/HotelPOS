@@ -18,6 +18,14 @@ namespace HotelPOS.Application.Common.Mappings
     {
         public MappingProfile()
         {
+            CreateCatalogMaps();
+            CreateUserOrderAndAuditMaps();
+            CreateEmployeeAndAttendanceMaps();
+            CreateLeaveAndPayrollMaps();
+        }
+
+        private void CreateCatalogMaps()
+        {
             // ── Item ──────────────────────────────────────────────────────────
             CreateMap<CreateItemDto, CreateItemCommand>();
             CreateMap<CreateItemDto, Item>()
@@ -45,7 +53,10 @@ namespace HotelPOS.Application.Common.Mappings
 
             // ── Expense ───────────────────────────────────────────────────────
             CreateMap<Expense, SaveExpenseDto>();
+        }
 
+        private void CreateUserOrderAndAuditMaps()
+        {
             // ── User ──────────────────────────────────────────────────────────
             CreateMap<AddUserCommand, User>()
                 .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username.Trim()))
@@ -61,7 +72,10 @@ namespace HotelPOS.Application.Common.Mappings
 
             // ── Audit ─────────────────────────────────────────────────────────
             CreateMap<AuditLog, HotelPOS.Application.DTOs.Audit.AuditLogDto>().ReverseMap();
+        }
 
+        private void CreateEmployeeAndAttendanceMaps()
+        {
             // ── Human Resources: Employee / Department / Designation ────────────
             CreateMap<Department, DepartmentDto>();
             CreateMap<Designation, DesignationDto>()
@@ -80,7 +94,10 @@ namespace HotelPOS.Application.Common.Mappings
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
                     src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null));
             CreateMap<MarkAttendanceDto, Attendance>();
+        }
 
+        private void CreateLeaveAndPayrollMaps()
+        {
             // ── Human Resources: Leave ────────────────────────────────────────
             CreateMap<LeaveType, LeaveTypeDto>();
             CreateMap<LeaveBalance, LeaveBalanceDto>()

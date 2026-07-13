@@ -56,7 +56,7 @@ namespace HotelPOS.Application.UseCases
             if (existingRun != null)
                 throw new InvalidOperationException($"Payroll for {month:D2}/{year} has already been run.");
 
-            var monthStart = new DateTime(year, month, 1);
+            var monthStart = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Unspecified);
             var monthEnd = monthStart.AddMonths(1).AddDays(-1);
             var workingDays = DateTime.DaysInMonth(year, month);
 
