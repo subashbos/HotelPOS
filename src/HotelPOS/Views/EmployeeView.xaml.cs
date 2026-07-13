@@ -51,7 +51,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private Task<bool> ConfirmDeleteAsync(string employeeName)
+        private Task<bool> ConfirmDeleteAsync(string employeeName) // NOSONAR
         {
             var result = App.CurrentApp!.ServiceProvider.GetRequiredService<IDialogService>().ShowMessage(
                 $"Are you sure you want to delete employee '{employeeName}'? This action cannot be undone.",

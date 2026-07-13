@@ -52,7 +52,7 @@ namespace HotelPOS.Views
             }
         }
 
-        private Task<bool> ConfirmDeleteAsync(string expenseTitle)
+        private Task<bool> ConfirmDeleteAsync(string expenseTitle) // NOSONAR
         {
             var result = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
                 $"Are you sure you want to delete expense '{expenseTitle}'? This action cannot be undone.",

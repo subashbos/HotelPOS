@@ -201,6 +201,8 @@ namespace HotelPOS.ViewModels
             return true;
         }
 
+        private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
         public bool ValidateEmail()
         {
             if (string.IsNullOrWhiteSpace(Email))
@@ -208,8 +210,7 @@ namespace HotelPOS.ViewModels
                 EmailError = string.Empty;
                 return true;
             }
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
-            if (!emailRegex.IsMatch(Email.Trim()))
+            if (!EmailRegex.IsMatch(Email.Trim()))
             {
                 EmailError = "Please enter a valid Email ID";
                 return false;
