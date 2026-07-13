@@ -213,4 +213,122 @@ describe('BillingComponent', () => {
       expect(orderServiceSpy.createOrder).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('additional methods', () => {
+    it('loadItems successfully sets categories and items', () => {
+      const items = [
+        makeItem({ id: 1, name: 'Burger', category: { id: 1, name: 'Food', displayOrder: 1 } }),
+        makeItem({ id: 2, name: 'Coke', category: { id: 2, name: 'Drinks', displayOrder: 2 } }),
+        makeItem({ id: 3, name: 'Untracked', category: undefined })
+      ];
+      itemServiceSpy.getItems.and.returnValue(of(items));
+
+      component.ngOnInit(); // calls loadItems
+
+      expect(component.allItems).toEqual(items);
+      expect(component.categories).toEqual(['All', 'Food', 'Drinks']);
+      expect(component.isLoading).toBeFalse();
+    });
+
+    it('loadItems handles error', () => {
+      const err = new Error('Network error');
+      itemServiceSpy.getItems.and.returnValue(throwError(() => err));
+
+      component.loadItems();
+
+      expect(component.loadError).toBe('Failed to load menu items. Please check the server connection.');
+      expect(component.isLoading).toBeFalse();
+    });
+
+    it('increaseQty increments row quantity and updates total', () => {
+      component.addToCart(makeItem({ id: 1, price: 100, taxPercentage: 10 }));
+      component.increaseQty(component.cart[0]);
+
+      expect(component.cart[0].quantity).toBe(2);
+      expect(component.cart[0].total).toBe(220);
+    });
+
+    it('selectRow updates selectedCartRow', () => {
+      component.addToCart(makeItem({ id: 1 }));
+      const row = component.cart[0];
+      component.selectRow(row);
+
+      expect(component.selectedCartRow).toBe(row);
+    });
+
+    it('clearCart resets component state', () => {
+      component.addToCart(makeItem({ id: 1 }));
+      component.discountAmount = 10;
+      component.customerName = 'John';
+      component.tableNumber = '5';
+
+      component.clearCart();
+
+      expect(component.cart).toHaveSize(0);
+      expect(component.discountAmount).toBe(0);
+      expect(component.customerName).toBe('');
+      expect(component.tableNumber).toBe('');
+    });
+
+    it('holdOrder and resumeOrder manages held orders list', () => {
+      component.addToCart(makeItem({ id: 1, price: 100, taxPercentage: 0 }));
+      component.tableNumber = '4';
+      component.customerName = 'Alice';
+
+      // hold
+      component.holdOrder();
+      expect(component.heldOrders).toHaveSize(1);
+      expect(component.heldOrders[0].customerName).toBe('Alice');
+      expect(component.cart).toHaveSize(0);
+
+      // resume
+      component.resumeOrder(component.heldOrders[0]);
+      expect(component.cart).toHaveSize(1);
+      expect(component.cart[0].itemId).toBe(1);
+      expect(component.tableNumber).toBe('4');
+      expect(component.heldOrders).toHaveSize(0);
+    });
+
+    it('holdOrder does nothing if cart is empty', () => {
+      component.holdOrder();
+      expect(component.heldOrders).toHaveSize(0);
+    });
+
+    it('totalItemsCount sums quantities in cart', () => {
+      component.addToCart(makeItem({ id: 1 }));
+      component.increaseQty(component.cart[0]);
+      component.addToCart(makeItem({ id: 2 }));
+
+      expect(component.totalItemsCount).toBe(3); // 2 + 1
+    });
+
+    it('trackBy helpers return correct keys', () => {
+      expect(component.trackByItemId(0, makeItem({ id: 9 }))).toBe(9);
+      expect(component.trackByCartItemId(0, { sNo: 1, itemId: 12, itemName: 'i', quantity: 1, taxPercentage: 0, price: 10, total: 10 })).toBe(12);
+      expect(component.trackByHoldName(0, { holdName: 'H1', heldAt: new Date(), cart: [], discountAmount: 0, paymentMode: 'Cash', orderType: 'Takeaway', tableNumber: '', customerName: '', customerPhone: '', customerGstin: '' })).toBe('H1');
+    });
+
+    it('handleKeyboardShortcuts triggers focusSearch on F1/F3 and processCheckout on F4', () => {
+      spyOn(component, 'focusSearch');
+      spyOn(component, 'processCheckout');
+
+      const f1Event = new KeyboardEvent('keydown', { key: 'F1' });
+      const f3Event = new KeyboardEvent('keydown', { key: 'F3' });
+      const f4Event = new KeyboardEvent('keydown', { key: 'F4' });
+      const otherEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+
+      component.handleKeyboardShortcuts(f1Event);
+      expect(component.focusSearch).toHaveBeenCalledTimes(1);
+
+      component.handleKeyboardShortcuts(f3Event);
+      expect(component.focusSearch).toHaveBeenCalledTimes(2);
+
+      component.handleKeyboardShortcuts(f4Event);
+      expect(component.processCheckout).toHaveBeenCalledTimes(1);
+
+      component.handleKeyboardShortcuts(otherEvent);
+      expect(component.focusSearch).toHaveBeenCalledTimes(2);
+      expect(component.processCheckout).toHaveBeenCalledTimes(1);
+    });
+  });
 });
