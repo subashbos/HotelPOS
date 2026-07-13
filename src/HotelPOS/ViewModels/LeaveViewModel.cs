@@ -9,8 +9,6 @@ namespace HotelPOS.ViewModels
 {
     public partial class LeaveViewModel : ObservableObject
     {
-        private readonly ILeaveService _leaveService;
-        private readonly IEmployeeService _employeeService;
         private readonly INotificationService _notificationService;
 
         [ObservableProperty]
@@ -41,8 +39,6 @@ namespace HotelPOS.ViewModels
 
         public LeaveViewModel(ILeaveService leaveService, IEmployeeService employeeService, INotificationService notificationService)
         {
-            _leaveService = leaveService;
-            _employeeService = employeeService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

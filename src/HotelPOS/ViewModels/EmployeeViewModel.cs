@@ -9,7 +9,6 @@ namespace HotelPOS.ViewModels
 {
     public partial class EmployeeViewModel : ObservableObject
     {
-        private readonly IEmployeeService _employeeService;
         private readonly INotificationService _notificationService;
         private readonly List<Employee> _allEmployees = new();
 
@@ -40,7 +39,6 @@ namespace HotelPOS.ViewModels
 
         public EmployeeViewModel(IEmployeeService employeeService, INotificationService notificationService)
         {
-            _employeeService = employeeService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

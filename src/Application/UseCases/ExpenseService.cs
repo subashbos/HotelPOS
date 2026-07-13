@@ -88,7 +88,7 @@ namespace HotelPOS.Application.UseCases
                 return;
             }
 
-            var existing = await _expenseRepository!.GetByIdAsync(id)
+            _ = await _expenseRepository!.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Expense #{id} not found.");
             await _expenseRepository.DeleteAsync(id);
         }

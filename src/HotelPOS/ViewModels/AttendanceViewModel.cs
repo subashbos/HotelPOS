@@ -11,8 +11,6 @@ namespace HotelPOS.ViewModels
 {
     public partial class AttendanceViewModel : ObservableObject
     {
-        private readonly IAttendanceService _attendanceService;
-        private readonly IEmployeeService _employeeService;
         private readonly INotificationService _notificationService;
 
         [ObservableProperty]
@@ -39,8 +37,6 @@ namespace HotelPOS.ViewModels
 
         public AttendanceViewModel(IAttendanceService attendanceService, IEmployeeService employeeService, INotificationService notificationService)
         {
-            _attendanceService = attendanceService;
-            _employeeService = employeeService;
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)

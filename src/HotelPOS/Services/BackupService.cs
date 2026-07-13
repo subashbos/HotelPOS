@@ -111,7 +111,7 @@ namespace HotelPOS.Services
                     RESTORE DATABASE {quotedDb} FROM DISK = @backupPath WITH REPLACE;
                     ALTER DATABASE {quotedDb} SET MULTI_USER;";
 
-                using var cmd = new Microsoft.Data.SqlClient.SqlCommand(sql, masterConn);
+                using var cmd = new Microsoft.Data.SqlClient.SqlCommand(sql, masterConn); // NOSONAR - see comment above sql
                 cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@backupPath", backupFilePath));
                 cmd.CommandTimeout = 120;
                 await cmd.ExecuteNonQueryAsync();
@@ -145,7 +145,7 @@ namespace HotelPOS.Services
             // sonar: identifiers can't be SQL parameters; conn.Database is allowlist-validated above and quoted.
             // destPath is the only externally-influenced value and is passed as a real parameter ({0} -> @p0).
             var sql = $"BACKUP DATABASE {quotedDb} TO DISK = {{0}} WITH FORMAT, NAME = 'Full Backup of HotelPOS'";
-            await db.Database.ExecuteSqlRawAsync(sql, destPath);
+            await db.Database.ExecuteSqlRawAsync(sql, destPath); // NOSONAR - see comment above sql
             return destPath;
         }
 

@@ -16,7 +16,7 @@ namespace HotelPOS.Application.UseCases.Expenses.Commands
 
         public async Task Handle(DeleteExpenseCommand request, CancellationToken cancellationToken)
         {
-            var existing = await _repository.GetByIdAsync(request.Id)
+            _ = await _repository.GetByIdAsync(request.Id)
                 ?? throw new KeyNotFoundException($"Expense #{request.Id} not found.");
 
             await _repository.DeleteAsync(request.Id);
