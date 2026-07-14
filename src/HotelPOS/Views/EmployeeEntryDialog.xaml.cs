@@ -57,16 +57,13 @@ namespace HotelPOS.Views
             }
         }
 
-        private void Cancel_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-            Close();
-        }
+        // S2325 false positive: Cancel_Click sets this dialog instance's inherited Window.DialogResult; cannot be static.
+        private void Cancel_Click(object sender, RoutedEventArgs e) { DialogResult = false; Close(); } // NOSONAR
 
-        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        // S2325 false positive: DragMove() is an instance method on Window; cannot be static.
+        private void Header_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) // NOSONAR
         {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
+            if (e.ButtonState == MouseButtonState.Pressed) { DragMove(); }
         }
     }
 }
