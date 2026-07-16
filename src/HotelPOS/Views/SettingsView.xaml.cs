@@ -33,7 +33,6 @@ namespace HotelPOS.Views
             {
                 LoadPrinters();
                 await LoadSettingsAsync();
-                await _usersView.InitializeAsync();
             };
         }
 
