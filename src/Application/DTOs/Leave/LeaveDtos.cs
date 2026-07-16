@@ -19,6 +19,7 @@ namespace HotelPOS.Application.DTOs.Leave
         public int Year { get; set; }
         public decimal EntitledDays { get; set; }
         public decimal UsedDays { get; set; }
+        public decimal PendingDays { get; set; }
         public decimal AvailableDays { get; set; }
     }
 
