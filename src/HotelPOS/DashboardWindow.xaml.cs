@@ -256,10 +256,10 @@ namespace HotelPOS
 
             NavRoles.Visibility = Vis(HasPermission("Roles"));
 
-            NavEmployees.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
-            NavAttendance.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
-            NavLeave.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
-            NavPayroll.Visibility = Vis(HasPermission(PermissionModules.HumanResources));
+            NavEmployees.Visibility = Vis(HasPermission(PermissionModules.HrEmployees));
+            NavAttendance.Visibility = Vis(HasPermission(PermissionModules.HrAttendance));
+            NavLeave.Visibility = Vis(HasPermission(PermissionModules.HrLeave));
+            NavPayroll.Visibility = Vis(HasPermission(PermissionModules.HrPayroll));
 
             NavSettings.Visibility = Vis(HasPermission("Settings"));
             NavAudit.Visibility = Vis(HasPermission("Audit"));

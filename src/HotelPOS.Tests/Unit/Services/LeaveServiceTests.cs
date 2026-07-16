@@ -31,9 +31,9 @@ namespace HotelPOS.Tests.Unit.Services
         public async Task ApplyLeaveAsync_SufficientBalance_CreatesRequest()
         {
             var leaveType = CasualLeaveType();
+            var balance = new LeaveBalance { EmployeeId = 5, LeaveTypeId = 1, EntitledDays = 12, UsedDays = 0 };
             _repoMock.Setup(r => r.GetLeaveTypeByIdAsync(1)).ReturnsAsync(leaveType);
-            _repoMock.Setup(r => r.GetBalanceAsync(5, 1, It.IsAny<int>()))
-                .ReturnsAsync(new LeaveBalance { EmployeeId = 5, LeaveTypeId = 1, EntitledDays = 12, UsedDays = 0 });
+            _repoMock.Setup(r => r.GetBalanceAsync(5, 1, It.IsAny<int>())).ReturnsAsync(balance);
 
             var request = new LeaveRequest
             {
@@ -48,6 +48,12 @@ namespace HotelPOS.Tests.Unit.Services
             Assert.Equal(2, request.TotalDays);
             Assert.Equal(LeaveRequestStatuses.Pending, request.Status);
             _repoMock.Verify(r => r.AddRequestAsync(request), Times.Once);
+
+            // The applied-for days are reserved on the balance immediately, so a second
+            // overlapping application can't also pass the balance check before this one
+            // is actioned.
+            Assert.Equal(2, balance.PendingDays);
+            _repoMock.Verify(r => r.UpdateBalanceAsync(balance), Times.Once);
         }
 
         [Fact]
@@ -68,6 +74,39 @@ namespace HotelPOS.Tests.Unit.Services
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ApplyLeaveAsync(request));
             _repoMock.Verify(r => r.AddRequestAsync(It.IsAny<LeaveRequest>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ApplyLeaveAsync_OverlappingPendingRequest_SecondApplicationFails()
+        {
+            // Simulates two applications for the same balance: the first reserves the days
+            // (PendingDays), so the second — checked against the same balance instance,
+            // as a fresh fetch from the repository would be after the first's UpdateBalanceAsync —
+            // must see them as unavailable rather than both passing the check.
+            var leaveType = CasualLeaveType();
+            var balance = new LeaveBalance { EmployeeId = 5, LeaveTypeId = 1, EntitledDays = 12, UsedDays = 5 };
+            _repoMock.Setup(r => r.GetLeaveTypeByIdAsync(1)).ReturnsAsync(leaveType);
+            _repoMock.Setup(r => r.GetBalanceAsync(5, 1, It.IsAny<int>())).ReturnsAsync(balance);
+
+            var firstRequest = new LeaveRequest
+            {
+                EmployeeId = 5,
+                LeaveTypeId = 1,
+                FromDate = new DateTime(2026, 1, 5),
+                ToDate = new DateTime(2026, 1, 9) // 5 days — leaves exactly 2 available
+            };
+            await _service.ApplyLeaveAsync(firstRequest);
+            Assert.Equal(5, balance.PendingDays);
+
+            var secondRequest = new LeaveRequest
+            {
+                EmployeeId = 5,
+                LeaveTypeId = 1,
+                FromDate = new DateTime(2026, 2, 1),
+                ToDate = new DateTime(2026, 2, 3) // 3 days — only 2 remain after the first hold
+            };
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ApplyLeaveAsync(secondRequest));
         }
 
         [Fact]
@@ -105,7 +144,8 @@ namespace HotelPOS.Tests.Unit.Services
                 Status = LeaveRequestStatuses.Pending,
                 LeaveType = leaveType
             };
-            var balance = new LeaveBalance { EmployeeId = 5, LeaveTypeId = 1, EntitledDays = 12, UsedDays = 0 };
+            // PendingDays = 2 simulates the hold placed on the balance when this request was applied for.
+            var balance = new LeaveBalance { EmployeeId = 5, LeaveTypeId = 1, EntitledDays = 12, UsedDays = 0, PendingDays = 2 };
 
             _repoMock.Setup(r => r.GetRequestByIdAsync(10)).ReturnsAsync(request);
             _repoMock.Setup(r => r.GetBalanceAsync(5, 1, It.IsAny<int>())).ReturnsAsync(balance);
@@ -114,6 +154,7 @@ namespace HotelPOS.Tests.Unit.Services
 
             Assert.Equal(LeaveRequestStatuses.Approved, request.Status);
             Assert.Equal(2, balance.UsedDays);
+            Assert.Equal(0, balance.PendingDays);
             _repoMock.Verify(r => r.UpdateBalanceAsync(balance), Times.Once);
             _repoMock.Verify(r => r.UpdateRequestAsync(request), Times.Once);
         }
@@ -130,13 +171,26 @@ namespace HotelPOS.Tests.Unit.Services
         [Fact]
         public async Task RejectLeaveAsync_Pending_SetsRejectedWithReason()
         {
-            var request = new LeaveRequest { Id = 10, Status = LeaveRequestStatuses.Pending };
+            var request = new LeaveRequest
+            {
+                Id = 10,
+                EmployeeId = 5,
+                LeaveTypeId = 1,
+                TotalDays = 2,
+                Status = LeaveRequestStatuses.Pending,
+                LeaveType = CasualLeaveType()
+            };
+            // PendingDays = 2 simulates the hold placed on the balance when this request was applied for.
+            var balance = new LeaveBalance { EmployeeId = 5, LeaveTypeId = 1, EntitledDays = 12, UsedDays = 0, PendingDays = 2 };
             _repoMock.Setup(r => r.GetRequestByIdAsync(10)).ReturnsAsync(request);
+            _repoMock.Setup(r => r.GetBalanceAsync(5, 1, It.IsAny<int>())).ReturnsAsync(balance);
 
             await _service.RejectLeaveAsync(10, approverEmployeeId: 1, reason: "Short-staffed that week");
 
             Assert.Equal(LeaveRequestStatuses.Rejected, request.Status);
             Assert.Equal("Short-staffed that week", request.RejectionReason);
+            Assert.Equal(0, balance.PendingDays);
+            _repoMock.Verify(r => r.UpdateBalanceAsync(balance), Times.Once);
             _repoMock.Verify(r => r.UpdateRequestAsync(request), Times.Once);
         }
     }

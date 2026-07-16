@@ -88,12 +88,14 @@ HalfDay, OnLeave, Holiday, WeekOff).
   employee/year, a `LeaveBalance` row is created with `EntitledDays = LeaveType.AnnualQuota`.
 - `ApplyLeaveAsync`: computes `TotalDays` from the date range if not supplied, validates,
   and — for any leave type other than **LWP (Leave Without Pay)** — checks sufficient
-  balance *before* allowing submission (balance is only checked, not decremented, at
-  apply time).
-- `ApproveLeaveAsync`: re-checks balance sufficiency at approval time and only then
-  decrements `LeaveBalance.UsedDays` — meaning balance is reserved only on approval, not
-  on application, so two pending overlapping requests could both pass the apply-time
-  check (a minor race/overbooking edge case worth being aware of, discussed in §7).
+  balance *before* allowing submission, then **reserves** the requested days on
+  `LeaveBalance.PendingDays` immediately (see below).
+- `ApproveLeaveAsync` converts the hold into committed usage
+  (`PendingDays -= TotalDays`, `UsedDays += TotalDays`); `RejectLeaveAsync` releases it
+  (`PendingDays -= TotalDays`). `AvailableDays = EntitledDays - UsedDays - PendingDays`,
+  so a second, overlapping application can no longer pass the balance check while the
+  first is still pending — the reservation closes the race described in the original
+  version of this document (fixed; see §7 for history).
 - Only `Pending` requests can be approved or rejected (guarded with
   `InvalidOperationException`).
 
@@ -119,8 +121,11 @@ Computation logic lives in `CalculatePayslip`, driven by Indian statutory consta
    table for that month — **note**: leave-approved days use the `OnLeave` attendance
    status, which is *not* counted toward LOP, so approved paid leave doesn't reduce pay
    (consistent with leave balances already gating the leave itself).
-5. Proration is `paidDays / workingDays` (`workingDays` = calendar days in month, not
-   business days — weekends/holidays are not distinguished at the payroll layer).
+5. Proration is `paidDays / workingDays`, where `workingDays` is per-employee calendar
+   days in the month **minus** that employee's own `WeekOff`/`Holiday` attendance rows
+   for the month (floored at 1) — so a weekly-off pattern tracked in `Attendance`
+   correctly shrinks the payable-day denominator instead of treating every calendar day
+   as payable (fixed; see §7 for history).
 6. `MarkRunAsPaidAsync` flips the run and all its payslips to `Paid`, stamping `PaidOn`;
    only a `Processed` run can be marked paid.
 
@@ -139,11 +144,15 @@ concerns out of the Application layer.
 
 ## 5. Permissions & UI Wiring
 
-- A single coarse-grained permission module, `PermissionModules.HumanResources`, gates
-  all four HR nav items in the WPF shell (`DashboardWindow.xaml.cs`): Employees,
-  Attendance, Leave, Payroll share one on/off switch — there's no finer-grained
-  permission split between, say, viewing payroll vs. running it (that finer control
-  exists only at the API layer via `[Authorize(Roles = ...)]`).
+- HR nav visibility in the WPF shell (`DashboardWindow.xaml.cs`) is gated by four
+  separate permission modules — `PermissionModules.HrEmployees`, `HrAttendance`,
+  `HrLeave`, `HrPayroll` — one per screen, so a role can be granted (for example)
+  Attendance and Leave without also seeing Payroll (fixed; see §7 for history). This
+  replaced the original single `HumanResources` flag; existing Admin/Cashier role rows
+  were migrated to the four new module rows via
+  `20260716090000_SplitHumanResourcesPermission`. Action-level restrictions (e.g. who can
+  *run* payroll vs. just view it) still live only at the API layer via
+  `[Authorize(Roles = ...)]`.
 - Views are lazily created and cached per dashboard session
   (`_cachedEmployees`, `_cachedAttendance`, etc.), consistent with how other modules
   (Billing, Inventory) are wired.
@@ -169,29 +178,45 @@ concerns out of the Application layer.
 
 ## 7. Observations & Gaps (for future work)
 
-1. **No web UI for HR.** Only the WPF desktop app exposes Employee/Attendance/Leave/
+Fixed since the original version of this document:
+
+1. ~~**Leave balance is reserved at approval, not at application.**~~ **Fixed.**
+   `LeaveBalance` now has a `PendingDays` column; `ApplyLeaveAsync` reserves the
+   requested days on submission (`AvailableDays = EntitledDays - UsedDays - PendingDays`),
+   `ApproveLeaveAsync` converts the hold to `UsedDays`, and `RejectLeaveAsync` releases
+   it. A second overlapping application can no longer pass the balance check while the
+   first is still pending. Schema change shipped in migration
+   `20260716093000_AddLeaveBalancePendingDays`.
+2. ~~**Payroll proration uses calendar days, not working days.**~~ **Fixed.**
+   `RunPayrollAsync` now computes `workingDays` per employee as calendar days in the
+   month minus that employee's `WeekOff`/`Holiday` attendance rows for the month
+   (floored at 1), so a tracked weekly-off pattern is excluded from the payable-day
+   denominator instead of every calendar day being treated as payable.
+3. ~~**Coarse HR permission.**~~ **Fixed.** The single `PermissionModules.HumanResources`
+   flag was split into `HrEmployees`, `HrAttendance`, `HrLeave`, `HrPayroll`, each
+   independently gating its own WPF nav item. Existing Admin/Cashier role data was
+   migrated via `20260716090000_SplitHumanResourcesPermission`; custom roles created
+   through the Roles screen already pick up the four new modules automatically since
+   role creation iterates `PermissionModules.All`.
+
+Still open:
+
+4. **No web UI for HR.** Only the WPF desktop app exposes Employee/Attendance/Leave/
    Payroll screens; the REST API is otherwise unused by `HotelPOS.Client`.
-2. **PII stored unencrypted.** PAN, Aadhaar, UAN, ESIC number, and bank account details
+5. **PII stored unencrypted.** PAN, Aadhaar, UAN, ESIC number, and bank account details
    are plain `nvarchar` columns with no column-level encryption or masking — worth a
    security review if this ever handles real employee data at scale.
-3. **TDS is not computed.** `PayrollService.CalculatePayslip` hardcodes TDS to 0;
+6. **TDS is not computed.** `PayrollService.CalculatePayslip` hardcodes TDS to 0;
    income-tax withholding must be entered/adjusted manually elsewhere (no mechanism to
    do so is visible in the current Payslip write path — it's effectively always 0 today).
-4. **Leave balance is reserved at approval, not at application.** Two pending leave
-   requests that individually pass the balance check at `ApplyLeaveAsync` time could
-   both later fail (or one could succeed and unfairly exhaust balance) at approval time
-   if they overlap — there's no soft-hold/reservation on submission.
-5. **Payroll proration uses calendar days, not working days.** `workingDays =
-   DateTime.DaysInMonth(...)`, so weekly offs/holidays aren't excluded from the
-   denominator; only `Absent`/`HalfDay` attendance rows reduce paid days.
-6. **Coarse HR permission.** One `PermissionModules.HumanResources` flag controls
-   visibility of all four HR screens in the desktop client; anyone with the module
-   enabled can see Payroll if they can see Employees, unless further restricted by the
-   API's role-based checks on individual actions.
 7. **No employee self-service / notifications.** Applying for leave, viewing payslips,
    etc. all go through the same admin-facing WPF screens — there's no notification (e.g.
    email) when a leave request is approved/rejected, and no dedicated "my profile" view
    for a logged-in employee tied via `Employee.UserId`.
+8. **Action-level HR permissions still coarse.** The new per-screen flags gate
+   visibility, but finer distinctions (e.g. view payroll vs. run payroll) still rely
+   solely on the API's `[Authorize(Roles = ...)]` checks, not the desktop permission
+   model.
 
 ## 8. Test Coverage
 

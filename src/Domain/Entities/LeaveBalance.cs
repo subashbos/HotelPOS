@@ -22,7 +22,10 @@ namespace HotelPOS.Domain.Entities
 
         public decimal UsedDays { get; set; }
 
+        /// <summary>Days held by requests that are still Pending — not yet approved or rejected.</summary>
+        public decimal PendingDays { get; set; }
+
         [NotMapped]
-        public decimal AvailableDays => EntitledDays - UsedDays;
+        public decimal AvailableDays => EntitledDays - UsedDays - PendingDays;
     }
 }
