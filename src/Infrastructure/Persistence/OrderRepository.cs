@@ -149,6 +149,11 @@ namespace HotelPOS.Infrastructure.Persistence
                 query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId)));
             }
 
+            if (filter.CustomerId.HasValue)
+            {
+                query = query.Where(o => o.CustomerId == filter.CustomerId.Value);
+            }
+
             return query;
         }
 

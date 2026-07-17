@@ -129,6 +129,7 @@ namespace HotelPOS.ViewModels
             CustomerName = order.CustomerName;
             CustomerPhone = order.CustomerPhone;
             CustomerGstin = order.CustomerGstin;
+            CustomerId = order.CustomerId;
             UpdateCart();
             StatusMessage = $"✏ Editing Order #{order.Id}";
         }
@@ -280,7 +281,7 @@ namespace HotelPOS.ViewModels
                     }
                     else
                     {
-                        orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, finalPaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType));
+                        orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, finalPaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType, CustomerId));
                     }
 
                     // Trigger Print
@@ -301,6 +302,7 @@ namespace HotelPOS.ViewModels
             _editingOrder.CustomerName = CustomerName;
             _editingOrder.CustomerPhone = CustomerPhone;
             _editingOrder.CustomerGstin = CustomerGstin;
+            _editingOrder.CustomerId = CustomerId;
 
             if (finalPaymentMode == PaymentModes.Split)
             {
@@ -325,7 +327,7 @@ namespace HotelPOS.ViewModels
         // Save order first (initially cash mode to bypass validation), then apply the real split payment details.
         private async Task<int> CreateSplitPaymentOrderAsync(IOrderService orderService, List<OrderItem> rawItems, decimal finalCash, decimal finalCard, decimal finalUpi) // NOSONAR
         {
-            int orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, PaymentModes.Cash, CustomerName, CustomerPhone, CustomerGstin, OrderType));
+            int orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, PaymentModes.Cash, CustomerName, CustomerPhone, CustomerGstin, OrderType, CustomerId));
             var createdOrder = await orderService.GetOrderAsync(orderId);
             if (createdOrder != null)
             {
@@ -356,6 +358,40 @@ namespace HotelPOS.ViewModels
             CustomerName = null;
             CustomerPhone = null;
             CustomerGstin = null;
+            CustomerId = null;
+        }
+
+        // Any manual edit of the phone number invalidates a previously resolved customer link,
+        // so the cashier must re-run the lookup (or explicitly save a new profile) before it applies again.
+        partial void OnCustomerPhoneChanged(string? value)
+        {
+            CustomerId = null;
+        }
+
+        /// <summary>Looks up a saved CRM customer profile by phone and, if found, links the order and fills in Name/GSTIN.</summary>
+        [RelayCommand]
+        private async Task LookupCustomerAsync()
+        {
+            if (string.IsNullOrWhiteSpace(CustomerPhone))
+            {
+                _notificationService.ShowInfo("Enter a phone number to look up a customer.");
+                return;
+            }
+
+            using var scope = App.CreateDbScope();
+            var customerService = scope.ServiceProvider.GetRequiredService<ICustomerService>();
+            var customer = await customerService.GetCustomerByPhoneAsync(CustomerPhone);
+
+            if (customer == null)
+            {
+                _notificationService.ShowInfo("No matching customer profile found. It will be saved as a walk-in order.");
+                return;
+            }
+
+            CustomerId = customer.Id;
+            CustomerName = customer.Name;
+            CustomerGstin = customer.Gstin;
+            _notificationService.ShowSuccess($"Linked to customer '{customer.Name}'.");
         }
 
         /// <summary>

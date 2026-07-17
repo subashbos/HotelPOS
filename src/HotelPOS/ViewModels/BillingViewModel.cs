@@ -55,6 +55,10 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private string? _customerGstin;
 
+        // Links the order to a saved CRM Customer profile once resolved via the phone lookup. Null for walk-ins.
+        [ObservableProperty]
+        private int? _customerId;
+
         public ObservableCollection<Item> Items { get; } = new();
         public ObservableCollection<Category> Categories { get; } = new();
         public ObservableCollection<CartRow> Cart { get; } = new();
