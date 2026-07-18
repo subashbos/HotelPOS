@@ -37,6 +37,7 @@ import { ShiftSessionComponent } from './views/admin/shift-session/shift-session
 import { ExpensesComponent } from './views/admin/expenses/expenses.component';
 import { EmployeesComponent } from './views/admin/employees/employees.component';
 import { AttendanceComponent } from './views/admin/attendance/attendance.component';
+import { LeaveComponent } from './views/admin/leave/leave.component';
 
 @NgModule({
   declarations: [
@@ -68,7 +69,8 @@ import { AttendanceComponent } from './views/admin/attendance/attendance.compone
     ShiftSessionComponent,
     ExpensesComponent,
     EmployeesComponent,
-    AttendanceComponent
+    AttendanceComponent,
+    LeaveComponent
   ],
   imports: [
     CommonModule,
@@ -105,7 +107,8 @@ import { AttendanceComponent } from './views/admin/attendance/attendance.compone
     ShiftSessionComponent,
     ExpensesComponent,
     EmployeesComponent,
-    AttendanceComponent
+    AttendanceComponent,
+    LeaveComponent
   ]
 })
 export class TemplateModule { }

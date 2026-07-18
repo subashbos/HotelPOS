@@ -1,0 +1,186 @@
+<div class="flex flex-wrap mt-4">
+
+  <!-- Balances -->
+  <div class="w-full lg:w-5/12 mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-umbrella-beach text-blueGray-400 mr-2"></i> Leave Balances
+          </h3>
+          <button (click)="openApplyForm()" [disabled]="!selectedEmployeeId"
+            class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+            <i class="fas fa-plus mr-1"></i> Apply Leave
+          </button>
+        </div>
+      </div>
+      <div class="px-6 py-4">
+        <div class="mb-4">
+          <label for="leave-employee" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Employee</label>
+          <select id="leave-employee" [(ngModel)]="selectedEmployeeId" name="selectedEmployeeId" (ngModelChange)="load()"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+            <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</option>
+          </select>
+        </div>
+
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading balances...</p>
+
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Type</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Entitled</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Used</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Pending</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Available</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let balance of balances; trackBy: trackByBalanceId">
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 font-semibold">{{ balance.leaveTypeName }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ balance.entitledDays }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ balance.usedDays }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ balance.pendingDays }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right font-bold">{{ balance.availableDays }}</td>
+              </tr>
+              <tr *ngIf="balances.length === 0">
+                <td colspan="5" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No balances found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requests -->
+  <div class="w-full lg:w-7/12 mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-lg text-blueGray-700">
+          <i class="fas fa-clipboard-list text-blueGray-400 mr-2"></i> Leave Requests
+        </h3>
+      </div>
+      <div class="px-6 py-4">
+        <p *ngIf="actionError" class="text-red-600 text-sm mb-4">{{ actionError }}</p>
+
+        <div class="mb-4">
+          <label for="approver" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Approving As</label>
+          <select id="approver" [(ngModel)]="approverEmployeeId" name="approverEmployeeId"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full max-w-xs focus:outline-none focus:ring">
+            <option [ngValue]="null">— Select approver —</option>
+            <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+          </select>
+        </div>
+
+        <div class="block w-full overflow-x-auto">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Employee</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Type</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Dates</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Days</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Status</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let request of requests; trackBy: trackByRequestId">
+                <tr>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ request.employeeName }}</td>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ request.leaveTypeName }}</td>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ request.fromDate | date:'mediumDate' }} – {{ request.toDate | date:'mediumDate' }}</td>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ request.totalDays }}</td>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">
+                    <span class="px-2 py-1 rounded text-xs font-bold uppercase"
+                      [ngClass]="{
+                        'bg-amber-100 text-amber-600': request.status === 'Pending',
+                        'bg-emerald-100 text-emerald-600': request.status === 'Approved',
+                        'bg-red-100 text-red-600': request.status === 'Rejected',
+                        'bg-blueGray-100 text-blueGray-500': request.status === 'Cancelled'
+                      }">
+                      {{ request.status }}
+                    </span>
+                  </td>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">
+                    <ng-container *ngIf="request.status === 'Pending'">
+                      <button (click)="approve(request)" class="text-emerald-600 hover:text-emerald-700 font-bold mr-3"><i class="fas fa-check"></i></button>
+                      <button (click)="startReject(request)" class="text-red-500 hover:text-red-700 font-bold"><i class="fas fa-times"></i></button>
+                    </ng-container>
+                  </td>
+                </tr>
+                <tr *ngIf="rejectingRequestId === request.id">
+                  <td colspan="6" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 bg-blueGray-50">
+                    <div class="flex items-center gap-2">
+                      <input type="text" [(ngModel)]="rejectReason" name="rejectReason" placeholder="Rejection reason"
+                        class="border-0 px-3 py-2 text-blueGray-600 bg-white rounded text-xs shadow flex-1 focus:outline-none focus:ring" />
+                      <button (click)="confirmReject(request)" [disabled]="!rejectReason.trim()"
+                        class="bg-red-600 text-white text-xs font-bold uppercase px-3 py-2 rounded shadow disabled:opacity-50">Confirm</button>
+                      <button (click)="cancelReject()" class="text-blueGray-500 text-xs font-bold uppercase px-3 py-2">Cancel</button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="requests.length === 0">
+                <td colspan="6" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No leave requests.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Apply leave modal -->
+<div *ngIf="showForm" class="fixed z-50 inset-0 overflow-y-auto flex items-center justify-center p-4">
+  <button type="button" class="fixed inset-0 bg-black opacity-50 border-0 cursor-default focus-visible:ring-2 focus-visible:ring-red-500" (click)="closeForm()" aria-label="Close leave form"></button>
+  <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm mx-auto z-10 overflow-hidden">
+    <div class="bg-red-600 px-6 py-4 text-white flex justify-between items-center">
+      <h3 class="font-bold text-base uppercase">Apply Leave</h3>
+      <button (click)="closeForm()" class="text-white hover:text-blueGray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="applyLeave()" class="p-6 space-y-4">
+      <div>
+        <label for="apply-type" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Leave Type</label>
+        <select id="apply-type" [(ngModel)]="formLeaveTypeId" name="formLeaveTypeId"
+          class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+          <option *ngFor="let t of leaveTypes" [ngValue]="t.id">{{ t.name }}</option>
+        </select>
+      </div>
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="apply-from" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">From</label>
+          <input id="apply-from" type="date" [(ngModel)]="formFromDate" name="formFromDate" required
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="apply-to" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">To</label>
+          <input id="apply-to" type="date" [(ngModel)]="formToDate" name="formToDate" required
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+      <div>
+        <label for="apply-reason" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Reason</label>
+        <input id="apply-reason" type="text" [(ngModel)]="formReason" name="formReason"
+          class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+
+      <p *ngIf="actionError" class="text-red-600 text-sm">{{ actionError }}</p>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" (click)="closeForm()" class="text-blueGray-500 text-xs font-bold uppercase px-4 py-2">Cancel</button>
+        <button type="submit" [disabled]="isSaving || !formLeaveTypeId"
+          class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+          {{ isSaving ? 'Saving...' : 'Submit' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
