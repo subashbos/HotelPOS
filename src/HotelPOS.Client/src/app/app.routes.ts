@@ -28,10 +28,12 @@ import { JournalComponent } from "./views/admin/journal/journal.component";
 import { RolesComponent } from "./views/admin/roles/roles.component";
 import { UsersComponent } from "./views/admin/users/users.component";
 import { AuditComponent } from "./views/admin/audit/audit.component";
+import { AccountComponent } from "./views/admin/account/account.component";
 
 // auth views
 import { LoginComponent } from "./views/auth/login/login.component";
 import { RegisterComponent } from "./views/auth/register/register.component";
+import { ForgotPasswordComponent } from "./views/auth/forgot-password/forgot-password.component";
 
 export const routes: Routes = [
   // admin views
@@ -63,6 +65,7 @@ export const routes: Routes = [
       { path: "roles", component: RolesComponent },
       { path: "users", component: UsersComponent },
       { path: "audit", component: AuditComponent },
+      { path: "account", component: AccountComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },
@@ -74,6 +77,7 @@ export const routes: Routes = [
       { path: "", component: LoginComponent },
       { path: "login", component: LoginComponent },
       { path: "register", component: RegisterComponent },
+      { path: "forgot-password", component: ForgotPasswordComponent },
     ],
   },
   { path: "**", redirectTo: "", pathMatch: "full" },

@@ -26,6 +26,9 @@ export class UsersComponent implements OnInit {
   resettingUserId: number | null = null;
   resetPasswordValue = '';
 
+  editingEmailUserId: number | null = null;
+  emailValue = '';
+
   constructor(
     private readonly userService: UserService,
     private readonly roleService: RoleService
@@ -116,6 +119,27 @@ export class UsersComponent implements OnInit {
       error: (err) => {
         this.actionError = err.error?.message || err.error?.Message || err.error || 'Failed to reset password.';
         console.error('Reset password error:', err);
+      }
+    });
+  }
+
+  startEditEmail(user: AppUser): void {
+    this.editingEmailUserId = user.id;
+    this.emailValue = '';
+  }
+
+  cancelEditEmail(): void {
+    this.editingEmailUserId = null;
+  }
+
+  confirmEditEmail(user: AppUser): void {
+    this.userService.setEmail(user.id, this.emailValue || null).subscribe({
+      next: () => {
+        this.editingEmailUserId = null;
+      },
+      error: (err) => {
+        this.actionError = err.error?.message || err.error?.Message || err.error || 'Failed to set email.';
+        console.error('Set email error:', err);
       }
     });
   }

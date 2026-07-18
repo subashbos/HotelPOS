@@ -2,6 +2,7 @@ using HotelPOS.Api.Configuration;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,7 @@ namespace HotelPOS.Api.Controllers
         private readonly IAuthService _authService;
         private readonly IUserRepository _userRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IPasswordResetService _passwordResetService;
         private readonly JwtOptions _jwtOptions;
 
         private const int RefreshTokenDays = 30;
@@ -27,11 +29,13 @@ namespace HotelPOS.Api.Controllers
             IAuthService authService,
             IUserRepository userRepository,
             IRefreshTokenRepository refreshTokenRepository,
+            IPasswordResetService passwordResetService,
             IOptions<JwtOptions> jwtOptions)
         {
             _authService = authService;
             _userRepository = userRepository;
             _refreshTokenRepository = refreshTokenRepository;
+            _passwordResetService = passwordResetService;
             _jwtOptions = jwtOptions.Value;
         }
 
@@ -136,6 +140,45 @@ namespace HotelPOS.Api.Controllers
             return Ok();
         }
 
+        // Always returns 200 regardless of whether the account exists, to avoid leaking
+        // account/email existence to an unauthenticated caller.
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            await _passwordResetService.RequestResetAsync(dto?.Username ?? string.Empty);
+            return Ok();
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPasswordWithCode([FromBody] ResetPasswordWithCodeDto dto)
+        {
+            var (success, error) = await _passwordResetService.ConfirmResetAsync(
+                dto?.Username ?? string.Empty, dto?.Code ?? string.Empty, dto?.NewPassword ?? string.Empty);
+
+            if (!success) return BadRequest(new { Message = error });
+            return Ok();
+        }
+
+        // Generates a new TOTP secret for the caller to scan/enter into an authenticator app.
+        // Nothing is persisted here — the secret is only saved once confirmed via /2fa/verify
+        // and POST /api/users/{id}/two-factor, so an abandoned enrollment can't lock anyone out.
+        [Authorize]
+        [HttpPost("2fa/new-secret")]
+        public IActionResult NewTwoFactorSecret()
+        {
+            var username = User.FindFirst(JwtRegisteredClaimNames.UniqueName)?.Value ?? "user";
+            var secret = TotpGenerator.GenerateSecret();
+            return Ok(new { Secret = secret, OtpAuthUri = TotpGenerator.BuildOtpAuthUri(secret, username) });
+        }
+
+        [Authorize]
+        [HttpPost("2fa/verify")]
+        public IActionResult VerifyTwoFactorCode([FromBody] VerifyTwoFactorDto dto)
+        {
+            var isValid = TotpGenerator.ValidateCode(dto?.Secret, dto?.Code);
+            return Ok(new { Valid = isValid });
+        }
+
         private async Task<string> IssueRefreshTokenAsync(int userId)
         {
             var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
@@ -200,5 +243,32 @@ namespace HotelPOS.Api.Controllers
     {
         [Required]
         public string RefreshToken { get; set; } = string.Empty;
+    }
+
+    public class ForgotPasswordDto
+    {
+        [Required]
+        public string Username { get; set; } = string.Empty;
+    }
+
+    public class ResetPasswordWithCodeDto
+    {
+        [Required]
+        public string Username { get; set; } = string.Empty;
+
+        [Required]
+        public string Code { get; set; } = string.Empty;
+
+        [Required]
+        public string NewPassword { get; set; } = string.Empty;
+    }
+
+    public class VerifyTwoFactorDto
+    {
+        [Required]
+        public string Secret { get; set; } = string.Empty;
+
+        [Required]
+        public string Code { get; set; } = string.Empty;
     }
 }

@@ -47,6 +47,8 @@ import { JournalComponent } from './views/admin/journal/journal.component';
 import { RolesComponent } from './views/admin/roles/roles.component';
 import { UsersComponent } from './views/admin/users/users.component';
 import { AuditComponent } from './views/admin/audit/audit.component';
+import { ForgotPasswordComponent } from './views/auth/forgot-password/forgot-password.component';
+import { AccountComponent } from './views/admin/account/account.component';
 
 @NgModule({
   declarations: [
@@ -88,7 +90,9 @@ import { AuditComponent } from './views/admin/audit/audit.component';
     JournalComponent,
     RolesComponent,
     UsersComponent,
-    AuditComponent
+    AuditComponent,
+    ForgotPasswordComponent,
+    AccountComponent
   ],
   imports: [
     CommonModule,
@@ -135,7 +139,9 @@ import { AuditComponent } from './views/admin/audit/audit.component';
     JournalComponent,
     RolesComponent,
     UsersComponent,
-    AuditComponent
+    AuditComponent,
+    ForgotPasswordComponent,
+    AccountComponent
   ]
 })
 export class TemplateModule { }

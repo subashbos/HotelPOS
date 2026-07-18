@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelPOS.Api.Controllers
 {
-    /// <summary>User accounts — requires a valid JWT token on all endpoints.</summary>
-    [Authorize(Roles = RoleNames.Admin)]
+    /// <summary>User accounts — requires a valid JWT token on all endpoints; most actions are Admin-only.</summary>
+    [Authorize]
     public class UsersController : BaseApiController
     {
         private readonly IUserService _userService;
@@ -23,6 +23,7 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
         {
             var users = await _userService.GetAllUsersAsync();
@@ -30,6 +31,7 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> CreateUser([FromBody] AddUserRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
@@ -42,6 +44,7 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("{id:int}/toggle-active")]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> ToggleActive(int id, [FromBody] ToggleActiveRequest request)
         {
             if (id <= 0) return BadRequest("Invalid user ID.");
@@ -50,6 +53,7 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("{id:int}/set-email")]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> SetEmail(int id, [FromBody] SetEmailRequest request)
         {
             if (id <= 0) return BadRequest("Invalid user ID.");
@@ -57,6 +61,8 @@ namespace HotelPOS.Api.Controllers
             return NoContent();
         }
 
+        // Self-service: a user may reset their own password; EnsureSelfOrPermission in the
+        // service layer allows this for the authenticated user's own ID, Admin otherwise.
         [HttpPost("{id:int}/reset-password")]
         public async Task<IActionResult> ResetPassword(int id, [FromBody] ResetPasswordRequest request)
         {
@@ -69,6 +75,7 @@ namespace HotelPOS.Api.Controllers
             return NoContent();
         }
 
+        // Self-service: a user may enroll/disable 2FA on their own account (see ResetPassword note above).
         [HttpPost("{id:int}/two-factor")]
         public async Task<IActionResult> SetTwoFactor(int id, [FromBody] SetTwoFactorRequest request)
         {
@@ -78,6 +85,7 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteUser(int id)
         {
             if (id <= 0) return BadRequest("Invalid user ID.");

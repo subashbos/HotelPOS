@@ -45,6 +45,7 @@
                     <button (click)="toggleActive(user)" class="text-blueGray-500 hover:text-blueGray-700 font-bold mr-3">
                       <i class="fas" [ngClass]="user.isActive ? 'fa-user-slash' : 'fa-user-check'"></i>
                     </button>
+                    <button (click)="startEditEmail(user)" class="text-blueGray-500 hover:text-blueGray-700 font-bold mr-3"><i class="fas fa-envelope"></i></button>
                     <button (click)="startReset(user)" class="text-blueGray-500 hover:text-blueGray-700 font-bold mr-3"><i class="fas fa-key"></i></button>
                     <button (click)="deleteUser(user)" class="text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash"></i></button>
                   </td>
@@ -57,6 +58,17 @@
                       <button (click)="confirmReset(user)" [disabled]="!resetPasswordValue"
                         class="bg-red-600 text-white text-xs font-bold uppercase px-3 py-2 rounded shadow disabled:opacity-50">Reset</button>
                       <button (click)="cancelReset()" class="text-blueGray-500 text-xs font-bold uppercase px-3 py-2">Cancel</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="editingEmailUserId === user.id">
+                  <td colspan="4" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 bg-blueGray-50">
+                    <div class="flex items-center gap-2">
+                      <input type="email" [(ngModel)]="emailValue" name="emailValue" placeholder="user@example.com"
+                        class="border-0 px-3 py-2 text-blueGray-600 bg-white rounded text-xs shadow flex-1 focus:outline-none focus:ring" />
+                      <button (click)="confirmEditEmail(user)"
+                        class="bg-red-600 text-white text-xs font-bold uppercase px-3 py-2 rounded shadow">Save</button>
+                      <button (click)="cancelEditEmail()" class="text-blueGray-500 text-xs font-bold uppercase px-3 py-2">Cancel</button>
                     </div>
                   </td>
                 </tr>

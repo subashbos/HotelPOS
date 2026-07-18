@@ -28,6 +28,14 @@ export class UserService {
     return this.http.post<void>(`${this.apiUrl}/${id}/reset-password`, { newPassword });
   }
 
+  setTwoFactor(id: number, enabled: boolean, secret: string | null): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/two-factor`, { enabled, secret });
+  }
+
+  setEmail(id: number, email: string | null): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/set-email`, { email });
+  }
+
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
