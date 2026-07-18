@@ -104,10 +104,22 @@
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/session']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminSession="routerLinkActive"
+            [ngClass]="
+              adminSession.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-user-clock mr-2 text-sm text-blueGray-300"></i>
+            <i
+              class="fas fa-user-clock mr-2 text-sm"
+              [ngClass]="
+                adminSession.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
             Shift Session
           </a>
         </li>

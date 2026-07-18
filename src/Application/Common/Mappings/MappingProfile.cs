@@ -1,5 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.Attendance;
+using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.DTOs.Category;
 using HotelPOS.Application.DTOs.Employee;
 using HotelPOS.Application.DTOs.Expense;
@@ -55,6 +56,9 @@ namespace HotelPOS.Application.Common.Mappings
 
             // ── Expense ───────────────────────────────────────────────────────
             CreateMap<Expense, SaveExpenseDto>();
+
+            // ── Cash Session (Shift) ─────────────────────────────────────────
+            CreateMap<CashSession, CashSessionDto>();
         }
 
         private void CreateUserOrderAndAuditMaps()
