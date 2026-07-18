@@ -39,6 +39,11 @@ import { EmployeesComponent } from './views/admin/employees/employees.component'
 import { AttendanceComponent } from './views/admin/attendance/attendance.component';
 import { LeaveComponent } from './views/admin/leave/leave.component';
 import { PayrollComponent } from './views/admin/payroll/payroll.component';
+import { SalesReportComponent } from './views/admin/sales-report/sales-report.component';
+import { ItemReportComponent } from './views/admin/item-report/item-report.component';
+import { PurchaseReportComponent } from './views/admin/purchase-report/purchase-report.component';
+import { LedgerComponent } from './views/admin/ledger/ledger.component';
+import { JournalComponent } from './views/admin/journal/journal.component';
 
 @NgModule({
   declarations: [
@@ -72,7 +77,12 @@ import { PayrollComponent } from './views/admin/payroll/payroll.component';
     EmployeesComponent,
     AttendanceComponent,
     LeaveComponent,
-    PayrollComponent
+    PayrollComponent,
+    SalesReportComponent,
+    ItemReportComponent,
+    PurchaseReportComponent,
+    LedgerComponent,
+    JournalComponent
   ],
   imports: [
     CommonModule,
@@ -111,7 +121,12 @@ import { PayrollComponent } from './views/admin/payroll/payroll.component';
     EmployeesComponent,
     AttendanceComponent,
     LeaveComponent,
-    PayrollComponent
+    PayrollComponent,
+    SalesReportComponent,
+    ItemReportComponent,
+    PurchaseReportComponent,
+    LedgerComponent,
+    JournalComponent
   ]
 })
 export class TemplateModule { }

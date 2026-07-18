@@ -296,46 +296,106 @@
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/sales-report']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminSalesReport="routerLinkActive"
+            [ngClass]="
+              adminSalesReport.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-chart-line mr-2 text-sm text-blueGray-300"></i>
+            <i
+              class="fas fa-chart-line mr-2 text-sm"
+              [ngClass]="
+                adminSalesReport.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
             Sales Report
           </a>
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/item-report']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminItemReport="routerLinkActive"
+            [ngClass]="
+              adminItemReport.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-chart-pie mr-2 text-sm text-blueGray-300"></i>
+            <i
+              class="fas fa-chart-pie mr-2 text-sm"
+              [ngClass]="
+                adminItemReport.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
             Item Report
           </a>
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/purchase-report']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminPurchaseReport="routerLinkActive"
+            [ngClass]="
+              adminPurchaseReport.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-chart-area mr-2 text-sm text-blueGray-300"></i>
+            <i
+              class="fas fa-chart-area mr-2 text-sm"
+              [ngClass]="
+                adminPurchaseReport.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
             Purchase Report
           </a>
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/ledger']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminLedger="routerLinkActive"
+            [ngClass]="
+              adminLedger.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-book mr-2 text-sm text-blueGray-300"></i>
+            <i
+              class="fas fa-book mr-2 text-sm"
+              [ngClass]="
+                adminLedger.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
             Ledger
           </a>
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/journal']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminJournal="routerLinkActive"
+            [ngClass]="
+              adminJournal.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-pen-fancy mr-2 text-sm text-blueGray-300"></i>
+            <i
+              class="fas fa-pen-fancy mr-2 text-sm"
+              [ngClass]="
+                adminJournal.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
             Journal
           </a>
         </li>

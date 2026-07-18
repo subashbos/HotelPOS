@@ -20,6 +20,11 @@ import { EmployeesComponent } from "./views/admin/employees/employees.component"
 import { AttendanceComponent } from "./views/admin/attendance/attendance.component";
 import { LeaveComponent } from "./views/admin/leave/leave.component";
 import { PayrollComponent } from "./views/admin/payroll/payroll.component";
+import { SalesReportComponent } from "./views/admin/sales-report/sales-report.component";
+import { ItemReportComponent } from "./views/admin/item-report/item-report.component";
+import { PurchaseReportComponent } from "./views/admin/purchase-report/purchase-report.component";
+import { LedgerComponent } from "./views/admin/ledger/ledger.component";
+import { JournalComponent } from "./views/admin/journal/journal.component";
 
 // auth views
 import { LoginComponent } from "./views/auth/login/login.component";
@@ -47,6 +52,11 @@ export const routes: Routes = [
       { path: "attendance", component: AttendanceComponent },
       { path: "leave", component: LeaveComponent },
       { path: "payroll", component: PayrollComponent },
+      { path: "sales-report", component: SalesReportComponent },
+      { path: "item-report", component: ItemReportComponent },
+      { path: "purchase-report", component: PurchaseReportComponent },
+      { path: "ledger", component: LedgerComponent },
+      { path: "journal", component: JournalComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },
