@@ -1,0 +1,195 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-file-invoice-dollar text-blueGray-400 mr-2"></i> Purchase Entry
+          </h3>
+          <button (click)="openForm()"
+            class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow">
+            <i class="fas fa-plus mr-1"></i> New Purchase
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-4">
+        <p *ngIf="actionError" class="text-red-600 text-sm mb-4">{{ actionError }}</p>
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading purchases...</p>
+
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Invoice #</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Date</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Supplier</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Payment</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Grand Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let purchase of purchases; trackBy: trackByPurchaseId">
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold">{{ purchase.invoiceNumber }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ purchase.purchaseDate | date:'mediumDate' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ purchase.supplierName || '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ purchase.paymentType }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right font-semibold">{{ purchase.grandTotal | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="purchases.length === 0">
+                <td colspan="5" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">
+                  No purchases recorded yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Purchase modal -->
+<div *ngIf="showForm" class="fixed z-50 inset-0 overflow-y-auto flex items-center justify-center p-4">
+  <button type="button" class="fixed inset-0 bg-black opacity-50 border-0 cursor-default focus-visible:ring-2 focus-visible:ring-red-500" (click)="closeForm()" aria-label="Close purchase form"></button>
+  <div class="relative bg-white rounded-lg shadow-xl w-full max-w-3xl mx-auto z-10 overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div class="bg-red-600 px-6 py-4 text-white flex justify-between items-center">
+      <h3 class="font-bold text-base uppercase">New Purchase Entry</h3>
+      <button (click)="closeForm()" class="text-white hover:text-blueGray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="p-6 space-y-4">
+      <div class="flex flex-wrap gap-3">
+        <div class="flex-1 min-w-[180px]">
+          <label for="p-supplier" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Supplier</label>
+          <select id="p-supplier" [(ngModel)]="supplierId" name="supplierId"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+            <option [ngValue]="null">— Select —</option>
+            <option *ngFor="let s of suppliers" [ngValue]="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+        <div class="flex-1 min-w-[150px]">
+          <label for="p-invoice" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Invoice Number</label>
+          <input id="p-invoice" type="text" [(ngModel)]="invoiceNumber" name="invoiceNumber"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="w-40">
+          <label for="p-date" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Date</label>
+          <input id="p-date" type="date" [(ngModel)]="purchaseDate" name="purchaseDate"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="w-36">
+          <label for="p-payment" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Payment</label>
+          <select id="p-payment" [(ngModel)]="paymentType" name="paymentType"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+            <option *ngFor="let pt of paymentTypes" [value]="pt">{{ pt }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Line entry -->
+      <div class="border border-blueGray-200 rounded p-4">
+        <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Add Item</h4>
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="flex-1 min-w-[180px]">
+            <label for="p-item" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Item</label>
+            <select id="p-item" [(ngModel)]="selectedItemId" name="selectedItemId" (ngModelChange)="onItemSelected()"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+              <option [ngValue]="null">— Select —</option>
+              <option *ngFor="let it of catalogItems" [ngValue]="it.id">{{ it.name }}</option>
+            </select>
+          </div>
+          <div class="w-24">
+            <label for="p-qty" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Qty</label>
+            <input id="p-qty" type="number" min="1" [(ngModel)]="lineQuantity" name="lineQuantity"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-28">
+            <label for="p-price" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Unit Price</label>
+            <input id="p-price" type="number" step="0.01" min="0" [(ngModel)]="lineUnitPrice" name="lineUnitPrice"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-24">
+            <label for="p-tax" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Tax %</label>
+            <input id="p-tax" type="number" step="0.01" min="0" [(ngModel)]="lineTaxPercentage" name="lineTaxPercentage"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-24">
+            <label for="p-linediscount" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Discount</label>
+            <input id="p-linediscount" type="number" step="0.01" min="0" [(ngModel)]="lineDiscount" name="lineDiscount"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <button type="button" (click)="addLine()" [disabled]="!selectedItemId"
+            class="bg-emerald-500 text-white text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+            Add
+          </button>
+        </div>
+      </div>
+
+      <!-- Line items table -->
+      <div class="block w-full overflow-x-auto">
+        <table class="items-center w-full bg-transparent border-collapse">
+          <thead>
+            <tr>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Item</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Qty</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Price</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Tax %</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Total</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let line of lines; let i = index">
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ line.itemName }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ line.quantity }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ line.unitPrice | number:'1.2-2' }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ line.taxPercentage }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ line.total | number:'1.2-2' }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">
+                <button type="button" (click)="removeLine(i)" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+            <tr *ngIf="lines.length === 0">
+              <td colspan="6" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No items added.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex flex-wrap justify-end gap-6 items-end">
+        <div class="w-40">
+          <label for="p-extra-discount" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Extra Discount</label>
+          <input id="p-extra-discount" type="number" step="0.01" min="0" [(ngModel)]="extraDiscount" name="extraDiscount"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="text-right text-sm text-blueGray-600">
+          <div>Subtotal: <span class="font-semibold">{{ subtotal | number:'1.2-2' }}</span></div>
+          <div>Tax: <span class="font-semibold">{{ taxTotal | number:'1.2-2' }}</span></div>
+          <div class="text-lg font-bold text-blueGray-800">Grand Total: {{ grandTotal | number:'1.2-2' }}</div>
+        </div>
+      </div>
+
+      <div>
+        <label for="p-notes" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Notes</label>
+        <input id="p-notes" type="text" [(ngModel)]="notes" name="notes"
+          class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+
+      <p *ngIf="actionError" class="text-red-600 text-sm">{{ actionError }}</p>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" (click)="closeForm()" class="text-blueGray-500 text-xs font-bold uppercase px-4 py-2">Cancel</button>
+        <button type="button" (click)="savePurchase()" [disabled]="isSaving || !supplierId || !invoiceNumber.trim() || lines.length === 0"
+          class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+          {{ isSaving ? 'Saving...' : 'Save Purchase' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

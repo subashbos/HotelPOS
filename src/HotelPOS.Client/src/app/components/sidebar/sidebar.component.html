@@ -188,10 +188,22 @@
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/purchases']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminPurchases="routerLinkActive"
+            [ngClass]="
+              adminPurchases.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-file-invoice-dollar mr-2 text-sm text-blueGray-300"></i>
+            <i
+              class="fas fa-file-invoice-dollar mr-2 text-sm"
+              [ngClass]="
+                adminPurchases.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
             Purchase Entry
           </a>
         </li>

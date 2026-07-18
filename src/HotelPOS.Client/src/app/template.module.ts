@@ -32,6 +32,7 @@ import { BillingComponent } from './views/admin/billing/billing.component';
 import { CategoriesComponent } from './views/admin/categories/categories.component';
 import { ItemsComponent } from './views/admin/items/items.component';
 import { SuppliersComponent } from './views/admin/suppliers/suppliers.component';
+import { PurchasesComponent } from './views/admin/purchases/purchases.component';
 
 @NgModule({
   declarations: [
@@ -58,7 +59,8 @@ import { SuppliersComponent } from './views/admin/suppliers/suppliers.component'
     BillingComponent,
     CategoriesComponent,
     ItemsComponent,
-    SuppliersComponent
+    SuppliersComponent,
+    PurchasesComponent
   ],
   imports: [
     CommonModule,
@@ -90,7 +92,8 @@ import { SuppliersComponent } from './views/admin/suppliers/suppliers.component'
     BillingComponent,
     CategoriesComponent,
     ItemsComponent,
-    SuppliersComponent
+    SuppliersComponent,
+    PurchasesComponent
   ]
 })
 export class TemplateModule { }
