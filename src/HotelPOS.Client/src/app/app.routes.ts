@@ -10,6 +10,7 @@ import { DashboardComponent } from "./views/admin/dashboard/dashboard.component"
 import { SettingsComponent } from "./views/admin/settings/settings.component";
 import { TablesComponent } from "./views/admin/tables/tables.component";
 import { BillingComponent } from "./views/admin/billing/billing.component";
+import { CategoriesComponent } from "./views/admin/categories/categories.component";
 
 // auth views
 import { LoginComponent } from "./views/auth/login/login.component";
@@ -27,6 +28,7 @@ export const routes: Routes = [
       { path: "settings", component: SettingsComponent },
       { path: "tables", component: TablesComponent },
       { path: "billing", component: BillingComponent },
+      { path: "categories", component: CategoriesComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },
