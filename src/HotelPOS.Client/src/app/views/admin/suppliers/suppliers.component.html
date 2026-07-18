@@ -1,0 +1,158 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-truck text-blueGray-400 mr-2"></i> Suppliers
+          </h3>
+          <button (click)="openAddForm()"
+            class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow">
+            <i class="fas fa-plus mr-1"></i> Add Supplier
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-4">
+        <p *ngIf="actionError" class="text-red-600 text-sm mb-4">{{ actionError }}</p>
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading suppliers...</p>
+
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Name</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Contact</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Phone</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">GSTIN</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Credit Limit</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let supplier of suppliers; trackBy: trackBySupplierId">
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold">{{ supplier.name }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ supplier.contactPerson || '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ supplier.phone || '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ supplier.gstin || '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ supplier.creditLimit | number:'1.2-2' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
+                  <button (click)="openEditForm(supplier)" class="text-blueGray-500 hover:text-blueGray-700 font-bold mr-3"><i class="fas fa-pen"></i></button>
+                  <button (click)="deleteSupplier(supplier)" class="text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="suppliers.length === 0">
+                <td colspan="6" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">
+                  No suppliers yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit modal -->
+<div *ngIf="showForm" class="fixed z-50 inset-0 overflow-y-auto flex items-center justify-center p-4">
+  <button type="button" class="fixed inset-0 bg-black opacity-50 border-0 cursor-default focus-visible:ring-2 focus-visible:ring-red-500" (click)="closeForm()" aria-label="Close supplier form"></button>
+  <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto z-10 overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div class="bg-red-600 px-6 py-4 text-white flex justify-between items-center">
+      <h3 class="font-bold text-base uppercase">{{ editingId ? 'Edit Supplier' : 'Add Supplier' }}</h3>
+      <button (click)="closeForm()" class="text-white hover:text-blueGray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="save()" class="p-6 space-y-4">
+      <div>
+        <label for="sup-name" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Name</label>
+        <input id="sup-name" type="text" [(ngModel)]="form.name" name="name" required
+          class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="sup-contact" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Contact Person</label>
+          <input id="sup-contact" type="text" [(ngModel)]="form.contactPerson" name="contactPerson"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="sup-phone" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Phone</label>
+          <input id="sup-phone" type="text" [(ngModel)]="form.phone" name="phone"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+
+      <div>
+        <label for="sup-email" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Email</label>
+        <input id="sup-email" type="email" [(ngModel)]="form.email" name="email"
+          class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+
+      <div>
+        <label for="sup-address" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Address</label>
+        <input id="sup-address" type="text" [(ngModel)]="form.address" name="address"
+          class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="sup-city" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">City</label>
+          <input id="sup-city" type="text" [(ngModel)]="form.city" name="city"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="sup-state" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">State</label>
+          <input id="sup-state" type="text" [(ngModel)]="form.state" name="state"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="w-28">
+          <label for="sup-pincode" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Pincode</label>
+          <input id="sup-pincode" type="text" [(ngModel)]="form.pincode" name="pincode"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="sup-gstin" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">GSTIN</label>
+          <input id="sup-gstin" type="text" [(ngModel)]="form.gstin" name="gstin"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="sup-terms" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Payment Terms</label>
+          <input id="sup-terms" type="text" [(ngModel)]="form.paymentTerms" name="paymentTerms"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="sup-opening" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Opening Balance</label>
+          <input id="sup-opening" type="number" step="0.01" [(ngModel)]="form.openingBalance" name="openingBalance"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="sup-credit" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Credit Limit</label>
+          <input id="sup-credit" type="number" step="0.01" [(ngModel)]="form.creditLimit" name="creditLimit"
+            class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+
+      <p *ngIf="actionError" class="text-red-600 text-sm">{{ actionError }}</p>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" (click)="closeForm()" class="text-blueGray-500 text-xs font-bold uppercase px-4 py-2">Cancel</button>
+        <button type="submit" [disabled]="isSaving || !form.name.trim()"
+          class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+          {{ isSaving ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
