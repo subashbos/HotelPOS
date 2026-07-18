@@ -15,6 +15,7 @@ import { ItemsComponent } from "./views/admin/items/items.component";
 import { SuppliersComponent } from "./views/admin/suppliers/suppliers.component";
 import { PurchasesComponent } from "./views/admin/purchases/purchases.component";
 import { ShiftSessionComponent } from "./views/admin/shift-session/shift-session.component";
+import { ExpensesComponent } from "./views/admin/expenses/expenses.component";
 
 // auth views
 import { LoginComponent } from "./views/auth/login/login.component";
@@ -37,6 +38,7 @@ export const routes: Routes = [
       { path: "suppliers", component: SuppliersComponent },
       { path: "purchases", component: PurchasesComponent },
       { path: "session", component: ShiftSessionComponent },
+      { path: "expenses", component: ExpensesComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },

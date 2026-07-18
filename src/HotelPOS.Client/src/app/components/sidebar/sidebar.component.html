@@ -240,6 +240,27 @@
             Suppliers
           </a>
         </li>
+        <li class="items-center">
+          <a
+            [routerLink]="['/admin/expenses']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminExpenses="routerLinkActive"
+            [ngClass]="
+              adminExpenses.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <i
+              class="fas fa-receipt mr-2 text-sm"
+              [ngClass]="
+                adminExpenses.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
+            Expenses
+          </a>
+        </li>
       </ul>
 
       <!-- Divider -->

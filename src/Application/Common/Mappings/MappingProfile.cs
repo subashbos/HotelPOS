@@ -56,6 +56,11 @@ namespace HotelPOS.Application.Common.Mappings
 
             // ── Expense ───────────────────────────────────────────────────────
             CreateMap<Expense, SaveExpenseDto>();
+            CreateMap<SaveExpenseDto, Expense>()
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title.Trim()))
+                .ForMember(dest => dest.User, opt => opt.Ignore());
+            CreateMap<Expense, ExpenseDto>()
+                .ForMember(dest => dest.CreatedByUsername, opt => opt.MapFrom(src => src.User != null ? src.User.Username : null));
 
             // ── Cash Session (Shift) ─────────────────────────────────────────
             CreateMap<CashSession, CashSessionDto>();

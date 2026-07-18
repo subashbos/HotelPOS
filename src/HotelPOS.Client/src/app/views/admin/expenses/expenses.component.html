@@ -1,0 +1,128 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-receipt text-blueGray-400 mr-2"></i> Expenses
+            <span class="text-xs text-blueGray-400 normal-case ml-2 font-normal">Total: {{ totalAmount | number:'1.2-2' }}</span>
+          </h3>
+          <button (click)="openAddForm()"
+            class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow">
+            <i class="fas fa-plus mr-1"></i> Add Expense
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-4">
+        <p *ngIf="actionError" class="text-red-600 text-sm mb-4">{{ actionError }}</p>
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading expenses...</p>
+
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Date</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Title</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Category</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Payment</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Amount</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let expense of expenses; trackBy: trackByExpenseId">
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ expense.date | date:'mediumDate' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold">{{ expense.title }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ expense.category }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ expense.paymentMode || '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right font-semibold">{{ expense.amount | number:'1.2-2' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
+                  <button (click)="openEditForm(expense)" class="text-blueGray-500 hover:text-blueGray-700 font-bold mr-3"><i class="fas fa-pen"></i></button>
+                  <button (click)="deleteExpense(expense)" class="text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="expenses.length === 0">
+                <td colspan="6" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">
+                  No expenses recorded yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit modal -->
+<div *ngIf="showForm" class="fixed z-50 inset-0 overflow-y-auto flex items-center justify-center p-4">
+  <button type="button" class="fixed inset-0 bg-black opacity-50 border-0 cursor-default focus-visible:ring-2 focus-visible:ring-red-500" (click)="closeForm()" aria-label="Close expense form"></button>
+  <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto z-10 overflow-hidden">
+    <div class="bg-red-600 px-6 py-4 text-white flex justify-between items-center">
+      <h3 class="font-bold text-base uppercase">{{ editingId ? 'Edit Expense' : 'Add Expense' }}</h3>
+      <button (click)="closeForm()" class="text-white hover:text-blueGray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="save()" class="p-6 space-y-4">
+      <div>
+        <label for="exp-title" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Title</label>
+        <input id="exp-title" type="text" [(ngModel)]="form.title" name="title" required
+          class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="exp-date" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Date</label>
+          <input id="exp-date" type="date" [(ngModel)]="form.date" name="date"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="exp-amount" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Amount</label>
+          <input id="exp-amount" type="number" step="0.01" min="0.01" [(ngModel)]="form.amount" name="amount" required
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="exp-category" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Category</label>
+          <select id="exp-category" [(ngModel)]="form.category" name="category"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <label for="exp-payment" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Payment Mode</label>
+          <select id="exp-payment" [(ngModel)]="form.paymentMode" name="paymentMode"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+            <option value="Cash">Cash</option>
+            <option value="Card">Card</option>
+            <option value="UPI">UPI</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="exp-description" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Description</label>
+        <input id="exp-description" type="text" [(ngModel)]="form.description" name="description"
+          class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+
+      <p *ngIf="actionError" class="text-red-600 text-sm">{{ actionError }}</p>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" (click)="closeForm()" class="text-blueGray-500 text-xs font-bold uppercase px-4 py-2">Cancel</button>
+        <button type="submit" [disabled]="isSaving || !form.title.trim() || form.amount <= 0"
+          class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+          {{ isSaving ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
