@@ -434,19 +434,64 @@
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/roles']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminRoles="routerLinkActive"
+            [ngClass]="
+              adminRoles.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-user-shield mr-2 text-sm text-blueGray-300"></i>
-            Roles & Access
+            <i
+              class="fas fa-user-shield mr-2 text-sm"
+              [ngClass]="
+                adminRoles.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
+            Roles &amp; Access
           </a>
         </li>
         <li class="items-center">
           <a
-            [routerLink]="['/admin/dashboard']"
-            class="text-xs uppercase py-3 font-bold block text-blueGray-700 hover:text-blueGray-500"
+            [routerLink]="['/admin/users']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminUsers="routerLinkActive"
+            [ngClass]="
+              adminUsers.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
           >
-            <i class="fas fa-history mr-2 text-sm text-blueGray-300"></i>
+            <i
+              class="fas fa-users-cog mr-2 text-sm"
+              [ngClass]="
+                adminUsers.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
+            Users
+          </a>
+        </li>
+        <li class="items-center">
+          <a
+            [routerLink]="['/admin/audit']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminAudit="routerLinkActive"
+            [ngClass]="
+              adminAudit.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <i
+              class="fas fa-history mr-2 text-sm"
+              [ngClass]="
+                adminAudit.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
             Security Audit
           </a>
         </li>

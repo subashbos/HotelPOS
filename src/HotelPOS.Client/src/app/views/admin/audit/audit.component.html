@@ -1,0 +1,55 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-history text-blueGray-400 mr-2"></i> Security Audit
+          </h3>
+          <div class="flex items-end gap-3">
+            <div>
+              <label for="audit-from" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">From</label>
+              <input id="audit-from" type="date" [(ngModel)]="fromDate" name="fromDate" (change)="load()"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+            </div>
+            <div>
+              <label for="audit-to" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">To</label>
+              <input id="audit-to" type="date" [(ngModel)]="toDate" name="toDate" (change)="load()"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4">
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading audit log...</p>
+
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Timestamp</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">User</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Action</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Entity</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of logs; trackBy: trackByLogId">
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ log.timestamp | date:'short' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ log.username || '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold">{{ log.action }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ log.entityName }} #{{ log.entityId }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4">{{ log.details || '—' }}</td>
+              </tr>
+              <tr *ngIf="logs.length === 0">
+                <td colspan="5" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">No audit entries in this range.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

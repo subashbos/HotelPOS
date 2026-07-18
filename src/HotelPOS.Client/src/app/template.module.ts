@@ -44,6 +44,9 @@ import { ItemReportComponent } from './views/admin/item-report/item-report.compo
 import { PurchaseReportComponent } from './views/admin/purchase-report/purchase-report.component';
 import { LedgerComponent } from './views/admin/ledger/ledger.component';
 import { JournalComponent } from './views/admin/journal/journal.component';
+import { RolesComponent } from './views/admin/roles/roles.component';
+import { UsersComponent } from './views/admin/users/users.component';
+import { AuditComponent } from './views/admin/audit/audit.component';
 
 @NgModule({
   declarations: [
@@ -82,7 +85,10 @@ import { JournalComponent } from './views/admin/journal/journal.component';
     ItemReportComponent,
     PurchaseReportComponent,
     LedgerComponent,
-    JournalComponent
+    JournalComponent,
+    RolesComponent,
+    UsersComponent,
+    AuditComponent
   ],
   imports: [
     CommonModule,
@@ -126,7 +132,10 @@ import { JournalComponent } from './views/admin/journal/journal.component';
     ItemReportComponent,
     PurchaseReportComponent,
     LedgerComponent,
-    JournalComponent
+    JournalComponent,
+    RolesComponent,
+    UsersComponent,
+    AuditComponent
   ]
 })
 export class TemplateModule { }

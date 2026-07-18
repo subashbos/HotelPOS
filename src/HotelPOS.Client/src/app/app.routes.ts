@@ -25,6 +25,9 @@ import { ItemReportComponent } from "./views/admin/item-report/item-report.compo
 import { PurchaseReportComponent } from "./views/admin/purchase-report/purchase-report.component";
 import { LedgerComponent } from "./views/admin/ledger/ledger.component";
 import { JournalComponent } from "./views/admin/journal/journal.component";
+import { RolesComponent } from "./views/admin/roles/roles.component";
+import { UsersComponent } from "./views/admin/users/users.component";
+import { AuditComponent } from "./views/admin/audit/audit.component";
 
 // auth views
 import { LoginComponent } from "./views/auth/login/login.component";
@@ -57,6 +60,9 @@ export const routes: Routes = [
       { path: "purchase-report", component: PurchaseReportComponent },
       { path: "ledger", component: LedgerComponent },
       { path: "journal", component: JournalComponent },
+      { path: "roles", component: RolesComponent },
+      { path: "users", component: UsersComponent },
+      { path: "audit", component: AuditComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },
