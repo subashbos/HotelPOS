@@ -19,6 +19,7 @@ import { ExpensesComponent } from "./views/admin/expenses/expenses.component";
 import { EmployeesComponent } from "./views/admin/employees/employees.component";
 import { AttendanceComponent } from "./views/admin/attendance/attendance.component";
 import { LeaveComponent } from "./views/admin/leave/leave.component";
+import { PayrollComponent } from "./views/admin/payroll/payroll.component";
 
 // auth views
 import { LoginComponent } from "./views/auth/login/login.component";
@@ -45,6 +46,7 @@ export const routes: Routes = [
       { path: "employees", component: EmployeesComponent },
       { path: "attendance", component: AttendanceComponent },
       { path: "leave", component: LeaveComponent },
+      { path: "payroll", component: PayrollComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },

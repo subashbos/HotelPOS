@@ -38,6 +38,7 @@ import { ExpensesComponent } from './views/admin/expenses/expenses.component';
 import { EmployeesComponent } from './views/admin/employees/employees.component';
 import { AttendanceComponent } from './views/admin/attendance/attendance.component';
 import { LeaveComponent } from './views/admin/leave/leave.component';
+import { PayrollComponent } from './views/admin/payroll/payroll.component';
 
 @NgModule({
   declarations: [
@@ -70,7 +71,8 @@ import { LeaveComponent } from './views/admin/leave/leave.component';
     ExpensesComponent,
     EmployeesComponent,
     AttendanceComponent,
-    LeaveComponent
+    LeaveComponent,
+    PayrollComponent
   ],
   imports: [
     CommonModule,
@@ -108,7 +110,8 @@ import { LeaveComponent } from './views/admin/leave/leave.component';
     ExpensesComponent,
     EmployeesComponent,
     AttendanceComponent,
-    LeaveComponent
+    LeaveComponent,
+    PayrollComponent
   ]
 })
 export class TemplateModule { }
