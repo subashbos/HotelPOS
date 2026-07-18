@@ -36,6 +36,7 @@ import { PurchasesComponent } from './views/admin/purchases/purchases.component'
 import { ShiftSessionComponent } from './views/admin/shift-session/shift-session.component';
 import { ExpensesComponent } from './views/admin/expenses/expenses.component';
 import { EmployeesComponent } from './views/admin/employees/employees.component';
+import { AttendanceComponent } from './views/admin/attendance/attendance.component';
 
 @NgModule({
   declarations: [
@@ -66,7 +67,8 @@ import { EmployeesComponent } from './views/admin/employees/employees.component'
     PurchasesComponent,
     ShiftSessionComponent,
     ExpensesComponent,
-    EmployeesComponent
+    EmployeesComponent,
+    AttendanceComponent
   ],
   imports: [
     CommonModule,
@@ -102,7 +104,8 @@ import { EmployeesComponent } from './views/admin/employees/employees.component'
     PurchasesComponent,
     ShiftSessionComponent,
     ExpensesComponent,
-    EmployeesComponent
+    EmployeesComponent,
+    AttendanceComponent
   ]
 })
 export class TemplateModule { }
