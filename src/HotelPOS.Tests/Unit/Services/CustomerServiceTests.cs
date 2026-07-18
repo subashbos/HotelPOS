@@ -24,6 +24,62 @@ namespace HotelPOS.Tests.Unit.Services
         }
 
         [Fact]
+        public async Task GetCustomersAsync_ReturnsRepositoryResult()
+        {
+            var customers = new List<Customer> { new Customer { Id = 1, Name = "Asha" } };
+            _repoMock.Setup(r => r.GetAllAsync(false)).ReturnsAsync(customers);
+
+            var result = await _service.GetCustomersAsync();
+
+            Assert.Same(customers, result);
+        }
+
+        [Fact]
+        public async Task GetCustomerByIdAsync_ReturnsRepositoryResult()
+        {
+            var customer = new Customer { Id = 3, Name = "Rohit" };
+            _repoMock.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(customer);
+
+            var result = await _service.GetCustomerByIdAsync(3);
+
+            Assert.Same(customer, result);
+        }
+
+        [Fact]
+        public async Task GetCustomerByPhoneAsync_BlankPhone_ReturnsNullWithoutCallingRepository()
+        {
+            var result = await _service.GetCustomerByPhoneAsync("  ");
+
+            Assert.Null(result);
+            _repoMock.Verify(r => r.GetByPhoneAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetCustomerByPhoneAsync_TrimsAndDelegatesToRepository()
+        {
+            var customer = new Customer { Id = 4, Name = "Meera", Phone = "9876543210" };
+            _repoMock.Setup(r => r.GetByPhoneAsync("9876543210")).ReturnsAsync(customer);
+
+            var result = await _service.GetCustomerByPhoneAsync(" 9876543210 ");
+
+            Assert.Same(customer, result);
+        }
+
+        [Fact]
+        public async Task SaveCustomerAsync_ExistingCustomer_PreservesCreatedAtAndSetsUpdatedAt()
+        {
+            var existing = new Customer { Id = 8, Name = "Old Name", CreatedAt = new DateTime(2025, 1, 1), IsActive = true };
+            _repoMock.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(existing);
+
+            var updated = new Customer { Id = 8, Name = "New Name" };
+            await _service.SaveCustomerAsync(updated);
+
+            _repoMock.Verify(r => r.UpdateAsync(updated), Times.Once);
+            Assert.Equal(new DateTime(2025, 1, 1), updated.CreatedAt);
+            Assert.NotNull(updated.UpdatedAt);
+        }
+
+        [Fact]
         public async Task SaveCustomerAsync_ValidNewCustomer_ShouldSaveSuccessfully()
         {
             var customer = new Customer { Id = 0, Name = "Asha Rao", Phone = "9876543210" };
