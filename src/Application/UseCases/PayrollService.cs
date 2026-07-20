@@ -58,7 +58,7 @@ namespace HotelPOS.Application.UseCases
 
             var monthStart = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
             var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-            var workingDays = DateTime.DaysInMonth(year, month);
+            var calendarDays = DateTime.DaysInMonth(year, month);
 
             var employees = await _employeeRepository.GetAllAsync();
             var run = new PayrollRun
@@ -76,6 +76,13 @@ namespace HotelPOS.Application.UseCases
                 if (structure == null) continue; // no salary structure on file yet — skip
 
                 var attendance = await _attendanceRepository.GetByEmployeeAsync(employee.Id, monthStart, monthEnd);
+
+                // Weekly offs and holidays are marked attendance for the employee and are excluded
+                // from the payable-day denominator so proration reflects actual working days rather
+                // than raw calendar days.
+                var nonWorkingDays = attendance.Count(a => a.Status is AttendanceStatuses.WeekOff or AttendanceStatuses.Holiday);
+                var workingDays = Math.Max(1, calendarDays - nonWorkingDays);
+
                 var absentDays = attendance.Count(a => a.Status == AttendanceStatuses.Absent);
                 var halfDays = attendance.Count(a => a.Status == AttendanceStatuses.HalfDay);
                 var lopDays = absentDays + (halfDays * 0.5m);

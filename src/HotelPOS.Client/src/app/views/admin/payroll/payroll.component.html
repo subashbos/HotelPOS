@@ -1,0 +1,238 @@
+<div class="flex flex-wrap mt-4">
+
+  <!-- Salary structures -->
+  <div class="w-full lg:w-6/12 mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-money-check-alt text-blueGray-400 mr-2"></i> Salary Structures
+          </h3>
+          <button (click)="openSalaryForm()" [disabled]="!selectedEmployeeId"
+            class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+            <i class="fas fa-plus mr-1"></i> New Structure
+          </button>
+        </div>
+      </div>
+      <div class="px-6 py-4">
+        <div class="mb-4">
+          <label for="pay-employee" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Employee</label>
+          <select id="pay-employee" [(ngModel)]="selectedEmployeeId" name="selectedEmployeeId" (ngModelChange)="loadSalaryStructures()"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+            <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</option>
+          </select>
+        </div>
+
+        <p *ngIf="actionError" class="text-red-600 text-sm mb-4">{{ actionError }}</p>
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading salary structures...</p>
+
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Effective From</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Basic</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Gross Monthly</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of salaryStructures; trackBy: trackByStructureId">
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ s.effectiveFrom | date:'mediumDate' }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ s.basic | number:'1.2-2' }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right font-bold">{{ s.grossMonthly | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="salaryStructures.length === 0">
+                <td colspan="3" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No salary structure defined.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payroll runs -->
+  <div class="w-full lg:w-6/12 mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-lg text-blueGray-700">
+          <i class="fas fa-file-invoice text-blueGray-400 mr-2"></i> Payroll Runs
+        </h3>
+      </div>
+      <div class="px-6 py-4">
+        <div class="flex flex-wrap items-end gap-3 mb-4">
+          <div class="w-28">
+            <label for="run-month" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Month</label>
+            <input id="run-month" type="number" min="1" max="12" [(ngModel)]="runMonth" name="runMonth"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-28">
+            <label for="run-year" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Year</label>
+            <input id="run-year" type="number" [(ngModel)]="runYear" name="runYear"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <button (click)="runPayroll()" [disabled]="isRunningPayroll"
+            class="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+            <i class="fas fa-play mr-1"></i> {{ isRunningPayroll ? 'Running...' : 'Run Payroll' }}
+          </button>
+        </div>
+
+        <div class="block w-full overflow-x-auto">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Period</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Status</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let run of runs; trackBy: trackByRunId">
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ run.month }}/{{ run.year }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">
+                  <span class="px-2 py-1 rounded text-xs font-bold uppercase"
+                    [ngClass]="run.status === 'Paid' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'">
+                    {{ run.status }}
+                  </span>
+                </td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">
+                  <button (click)="viewRun(run)" class="text-blueGray-500 hover:text-blueGray-700 font-bold mr-3"><i class="fas fa-eye"></i></button>
+                  <button *ngIf="run.status !== 'Paid'" (click)="markPaid(run)" class="text-emerald-600 hover:text-emerald-700 font-bold"><i class="fas fa-check"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="runs.length === 0">
+                <td colspan="3" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No payroll runs yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selected run payslips -->
+  <div class="w-full mb-12 px-4" *ngIf="selectedRun">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-lg text-blueGray-700">
+          <i class="fas fa-receipt text-blueGray-400 mr-2"></i> Payslips — {{ selectedRun.month }}/{{ selectedRun.year }}
+        </h3>
+      </div>
+      <div class="px-6 py-4">
+        <div class="block w-full overflow-x-auto">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Employee</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Gross</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Paid Days</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">PF</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">ESI</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">PT</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">TDS</th>
+                <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Net Pay</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of selectedRun.payslips">
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 font-semibold">{{ p.employeeName }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ p.grossEarnings | number:'1.2-2' }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ p.paidDays }}/{{ p.workingDays }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ p.pfEmployee | number:'1.2-2' }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ p.esiEmployee | number:'1.2-2' }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ p.professionalTax | number:'1.2-2' }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ p.tds | number:'1.2-2' }}</td>
+                <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right font-bold">{{ p.netPay | number:'1.2-2' }}</td>
+              </tr>
+              <tr *ngIf="selectedRun.payslips.length === 0">
+                <td colspan="8" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No payslips in this run.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New salary structure modal -->
+<div *ngIf="showSalaryForm" class="fixed z-50 inset-0 overflow-y-auto flex items-center justify-center p-4">
+  <button type="button" class="fixed inset-0 bg-black opacity-50 border-0 cursor-default focus-visible:ring-2 focus-visible:ring-red-500" (click)="closeSalaryForm()" aria-label="Close salary structure form"></button>
+  <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-auto z-10 overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div class="bg-red-600 px-6 py-4 text-white flex justify-between items-center">
+      <h3 class="font-bold text-base uppercase">New Salary Structure</h3>
+      <button (click)="closeSalaryForm()" class="text-white hover:text-blueGray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="saveSalaryStructure()" class="p-6 space-y-4">
+      <div>
+        <label for="sal-effective" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Effective From</label>
+        <input id="sal-effective" type="date" [(ngModel)]="salaryForm.effectiveFrom" name="effectiveFrom" required
+          class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="sal-basic" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Basic</label>
+          <input id="sal-basic" type="number" step="0.01" min="0.01" [(ngModel)]="salaryForm.basic" name="basic" required
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="sal-hra" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">HRA</label>
+          <input id="sal-hra" type="number" step="0.01" min="0" [(ngModel)]="salaryForm.hra" name="hra"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="sal-da" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">DA</label>
+          <input id="sal-da" type="number" step="0.01" min="0" [(ngModel)]="salaryForm.da" name="da"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="sal-conveyance" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Conveyance</label>
+          <input id="sal-conveyance" type="number" step="0.01" min="0" [(ngModel)]="salaryForm.conveyanceAllowance" name="conveyanceAllowance"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="sal-medical" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Medical</label>
+          <input id="sal-medical" type="number" step="0.01" min="0" [(ngModel)]="salaryForm.medicalAllowance" name="medicalAllowance"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+        <div class="flex-1">
+          <label for="sal-special" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Special</label>
+          <input id="sal-special" type="number" step="0.01" min="0" [(ngModel)]="salaryForm.specialAllowance" name="specialAllowance"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+        </div>
+      </div>
+
+      <p class="text-sm text-blueGray-600">Gross Monthly: <span class="font-bold">{{ grossMonthly | number:'1.2-2' }}</span></p>
+
+      <div class="flex flex-wrap gap-4">
+        <label class="flex items-center gap-2 text-sm text-blueGray-600">
+          <input type="checkbox" [(ngModel)]="salaryForm.pfApplicable" name="pfApplicable" class="rounded" /> PF Applicable
+        </label>
+        <label class="flex items-center gap-2 text-sm text-blueGray-600">
+          <input type="checkbox" [(ngModel)]="salaryForm.esiApplicable" name="esiApplicable" class="rounded" /> ESI Applicable
+        </label>
+        <label class="flex items-center gap-2 text-sm text-blueGray-600">
+          <input type="checkbox" [(ngModel)]="salaryForm.professionalTaxApplicable" name="professionalTaxApplicable" class="rounded" /> PT Applicable
+        </label>
+      </div>
+
+      <p *ngIf="actionError" class="text-red-600 text-sm">{{ actionError }}</p>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" (click)="closeSalaryForm()" class="text-blueGray-500 text-xs font-bold uppercase px-4 py-2">Cancel</button>
+        <button type="submit" [disabled]="isSaving || salaryForm.basic <= 0"
+          class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+          {{ isSaving ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

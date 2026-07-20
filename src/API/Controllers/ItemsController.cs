@@ -52,6 +52,65 @@ namespace HotelPOS.Api.Controllers
             var item = await _mediator.Send(command);
             return CreatedAtAction(nameof(GetItem), new { id = item.Id }, _mapper.Map<ItemDto>(item));
         }
+
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
+        public async Task<ActionResult<ItemDto>> UpdateItem(int id, [FromBody] CreateItemRequest request)
+        {
+            if (id <= 0) return BadRequest("Invalid item ID.");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var command = new UpdateItemCommand(
+                id,
+                request.Name,
+                request.Price,
+                request.TaxPercentage,
+                request.CategoryId,
+                request.HsnCode,
+                request.Barcode,
+                request.StockQuantity,
+                request.TrackInventory);
+
+            try
+            {
+                var item = await _mediator.Send(command);
+                return Ok(_mapper.Map<ItemDto>(item));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = RoleNames.Admin)]
+        public async Task<IActionResult> DeleteItem(int id)
+        {
+            if (id <= 0) return BadRequest("Invalid item ID.");
+
+            try
+            {
+                await _mediator.Send(new DeleteItemCommand(id));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            return NoContent();
+        }
     }
 
     /// <summary>DTO to prevent binding raw domain entities from HTTP requests.</summary>

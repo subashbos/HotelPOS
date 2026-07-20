@@ -22,6 +22,7 @@ namespace HotelPOS.Views
         public UsersView(IUserService userService, IRoleService roleService)
         {
             InitializeComponent();
+            Loaded += async (s, e) => await InitializeAsync();
         }
 
         /// <summary>

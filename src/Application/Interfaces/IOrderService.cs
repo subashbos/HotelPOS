@@ -33,7 +33,8 @@ namespace HotelPOS.Application.Interfaces
         string? CustomerName = null,
         string? CustomerPhone = null,
         string? CustomerGstin = null,
-        string OrderType = OrderTypes.DineIn
+        string OrderType = OrderTypes.DineIn,
+        int? CustomerId = null
     );
 
     public record PagedOrdersRequest(

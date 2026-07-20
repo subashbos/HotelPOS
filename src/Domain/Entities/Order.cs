@@ -54,6 +54,10 @@ namespace HotelPOS.Domain.Entities
         public string? CustomerPhone { get; set; }
         public string? CustomerGstin { get; set; }
 
+        /// <summary>Optional link to a CRM <see cref="Customer"/> profile. Null for walk-in orders without a saved profile.</summary>
+        public int? CustomerId { get; set; }
+        public Customer? Customer { get; set; }
+
         // Auditing & Soft Delete
         public bool IsDeleted { get; set; }
         public DateTime? DeletedAt { get; set; }

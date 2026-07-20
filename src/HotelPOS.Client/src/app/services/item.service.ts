@@ -23,4 +23,12 @@ export class ItemService {
   createItem(item: Partial<Item>): Observable<Item> {
     return this.http.post<Item>(this.apiUrl, item);
   }
+
+  updateItem(id: number, item: Partial<Item>): Observable<Item> {
+    return this.http.put<Item>(`${this.apiUrl}/${id}`, item);
+  }
+
+  deleteItem(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

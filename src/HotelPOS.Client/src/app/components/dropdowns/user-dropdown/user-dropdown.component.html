@@ -1,6 +1,6 @@
 <a
   class="text-blueGray-500 block"
-  href="#pablo"
+  href="javascript:void(0)"
   (click)="toggleDropdown($event)"
   #btnDropdownRef
 >
@@ -21,30 +21,26 @@
     class="bg-white text-base z-50 float-left py-2 list-none text-left rounded shadow-lg mt-1 min-w-48"
     [ngClass]="dropdownPopoverShow ? 'block' : 'hidden'"
   >
-    <a
-      href="#pablo"
-      class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700"
+    <span
+      *ngIf="username"
+      class="text-xs py-2 px-4 font-bold block w-full whitespace-nowrap text-blueGray-400 uppercase"
     >
-      Action
-    </a>
+      {{ username }}
+    </span>
     <a
-      href="#pablo"
-      class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700"
+      [routerLink]="['/admin/account']"
+      (click)="dropdownPopoverShow = false"
+      class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700 hover:bg-blueGray-100"
     >
-      Another action
-    </a>
-    <a
-      href="#pablo"
-      class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700"
-    >
-      Something else here
+      <i class="fas fa-user-cog mr-2 text-blueGray-400"></i> My Account
     </a>
     <div class="h-0 my-2 border border-solid border-blueGray-100"></div>
     <a
-      href="#pablo"
-      class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700"
+      href="javascript:void(0)"
+      (click)="logout($event)"
+      class="text-sm py-2 px-4 font-normal block w-full whitespace-nowrap bg-transparent text-blueGray-700 hover:bg-blueGray-100"
     >
-      Seprated link
+      <i class="fas fa-sign-out-alt mr-2 text-blueGray-400"></i> Logout
     </a>
   </div>
 </div>

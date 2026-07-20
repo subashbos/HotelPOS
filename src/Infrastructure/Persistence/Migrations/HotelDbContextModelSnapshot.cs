@@ -198,6 +198,55 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Gstin")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Phone");
+
+                    b.ToTable("Customers");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.Department", b =>
                 {
                     b.Property<int>("Id")
@@ -545,6 +594,10 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Property<int>("LeaveTypeId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("PendingDays")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("UsedDays")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -749,6 +802,9 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Property<string>("CustomerGstin")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CustomerName")
                         .HasColumnType("nvarchar(max)");
 
@@ -830,6 +886,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("IsDeleted");
 
@@ -1441,11 +1499,38 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 29,
+                            Id = 31,
                             CanAccess = true,
                             CanDelete = true,
                             CanEdit = true,
-                            ModuleName = "HumanResources",
+                            ModuleName = "HrEmployees",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 32,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrAttendance",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 33,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrLeave",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 34,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrPayroll",
                             RoleId = 1
                         },
                         new
@@ -1576,11 +1661,38 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 30,
+                            Id = 35,
                             CanAccess = false,
                             CanDelete = true,
                             CanEdit = true,
-                            ModuleName = "HumanResources",
+                            ModuleName = "HrEmployees",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 36,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrAttendance",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 37,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrLeave",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 38,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrPayroll",
                             RoleId = 2
                         });
                 });
@@ -2273,6 +2385,13 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.Order", b =>
                 {
+                    b.HasOne("HotelPOS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Customer");
+
                     b.Navigation("Items");
                 });
 

@@ -15,10 +15,10 @@ namespace HotelPOS.Application.UseCases
         private readonly IMapper _mapper;
 
         /// <summary>DI constructor — uses MediatR pipeline (validators + handlers).</summary>
-        public ExpenseService(IMediator mediator, IMapper? mapper = null)
+        public ExpenseService(IMediator mediator, IMapper mapper)
         {
             _mediator = mediator;
-            _mapper = mapper ?? CreateDefaultMapper();
+            _mapper = mapper;
         }
 
         /// <summary>Legacy constructor for unit tests that inject a repository directly.</summary>

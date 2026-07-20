@@ -58,6 +58,11 @@ namespace HotelPOS.Application.UseCases
                 if (balance.AvailableDays < request.TotalDays)
                     throw new InvalidOperationException(
                         $"Insufficient {leaveType.Name} balance: {balance.AvailableDays} day(s) available, {request.TotalDays} requested.");
+
+                // Reserve the days immediately so a second, overlapping application can't also
+                // pass this same check before either request is approved or rejected.
+                balance.PendingDays += request.TotalDays;
+                await _repository.UpdateBalanceAsync(balance);
             }
 
             await _repository.AddRequestAsync(request);
@@ -76,11 +81,11 @@ namespace HotelPOS.Application.UseCases
 
             if (leaveType.Code != LeaveTypeCodes.LeaveWithoutPay)
             {
+                // The days were already reserved in PendingDays when the request was applied for,
+                // so approval just converts the hold into a committed usage — no fresh
+                // insufficiency check is needed (or possible to race).
                 var balance = await EnsureBalanceInitializedAsync(request.EmployeeId, leaveType, request.FromDate.Year);
-                if (balance.AvailableDays < request.TotalDays)
-                    throw new InvalidOperationException(
-                        $"Insufficient {leaveType.Name} balance: {balance.AvailableDays} day(s) available, {request.TotalDays} requested.");
-
+                balance.PendingDays = Math.Max(0, balance.PendingDays - request.TotalDays);
                 balance.UsedDays += request.TotalDays;
                 await _repository.UpdateBalanceAsync(balance);
             }
@@ -98,6 +103,17 @@ namespace HotelPOS.Application.UseCases
 
             if (request.Status != LeaveRequestStatuses.Pending)
                 throw new InvalidOperationException("Only pending leave requests can be rejected.");
+
+            var leaveType = request.LeaveType ?? await _repository.GetLeaveTypeByIdAsync(request.LeaveTypeId)
+                ?? throw new ArgumentException("The selected leave type does not exist.");
+
+            if (leaveType.Code != LeaveTypeCodes.LeaveWithoutPay)
+            {
+                // Release the hold placed on the balance when the request was applied for.
+                var balance = await EnsureBalanceInitializedAsync(request.EmployeeId, leaveType, request.FromDate.Year);
+                balance.PendingDays = Math.Max(0, balance.PendingDays - request.TotalDays);
+                await _repository.UpdateBalanceAsync(balance);
+            }
 
             request.Status = LeaveRequestStatuses.Rejected;
             request.ApprovedByEmployeeId = approverEmployeeId;

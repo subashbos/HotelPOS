@@ -84,6 +84,33 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  /** User ID is read from the JWT's "sub" claim, set once at login and never persisted separately. */
+  getUserId(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    const payload = this.decodeToken(token);
+    const sub = payload?.['sub'];
+    const id = typeof sub === 'string' ? Number.parseInt(sub, 10) : null;
+    return id !== null && !Number.isNaN(id) ? id : null;
+  }
+
+  forgotPassword(username: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/forgot-password`, { username });
+  }
+
+  resetPasswordWithCode(username: string, code: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/reset-password`, { username, code, newPassword });
+  }
+
+  newTwoFactorSecret(): Observable<{ secret: string; otpAuthUri: string }> {
+    return this.http.post<{ secret: string; otpAuthUri: string }>(`${this.apiUrl}/2fa/new-secret`, {});
+  }
+
+  verifyTwoFactorCode(secret: string, code: string): Observable<{ valid: boolean }> {
+    return this.http.post<{ valid: boolean }>(`${this.apiUrl}/2fa/verify`, { secret, code });
+  }
+
   logout(): void {
     const refreshToken = this.refreshTokenValue;
 

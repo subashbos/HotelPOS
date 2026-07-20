@@ -118,4 +118,85 @@ describe('AuthService', () => {
     localStorage.setItem('auth_token', 'malformed-token');
     expect(service.getRole()).toBeNull();
   });
+
+  describe('getUserId', () => {
+    it('returns null if there is no token', () => {
+      expect(service.getUserId()).toBeNull();
+    });
+
+    it('returns parsed integer user ID if sub claim is a valid numeric string', () => {
+      localStorage.setItem('auth_token', buildToken({ sub: '123' }));
+      expect(service.getUserId()).toBe(123);
+    });
+
+    it('returns null if sub claim is not a numeric string', () => {
+      localStorage.setItem('auth_token', buildToken({ sub: 'abc' }));
+      expect(service.getUserId()).toBeNull();
+    });
+
+    it('returns null if sub claim is missing', () => {
+      localStorage.setItem('auth_token', buildToken({ other: 'value' }));
+      expect(service.getUserId()).toBeNull();
+    });
+  });
+
+  describe('logout without refresh token', () => {
+    it('does not send logout API call if there is no refresh token in memory', () => {
+      service.logout();
+      expect(service.getToken()).toBeNull();
+      expect(service.hasRefreshToken()).toBeFalse();
+      httpMock.expectNone(`${environment.apiBaseUrl}/auth/logout`);
+    });
+  });
+
+  describe('password reset flows', () => {
+    it('sends POST request to forgot-password endpoint', () => {
+      service.forgotPassword('user1').subscribe();
+      const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/forgot-password`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ username: 'user1' });
+      req.flush({});
+    });
+
+    it('sends POST request to reset-password endpoint', () => {
+      service.resetPasswordWithCode('user1', '123456', 'newPass').subscribe();
+      const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/reset-password`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ username: 'user1', code: '123456', newPassword: 'newPass' });
+      req.flush({});
+    });
+  });
+
+  describe('2FA flows', () => {
+    it('sends POST request to new-secret endpoint', () => {
+      service.newTwoFactorSecret().subscribe(res => {
+        expect(res).toEqual({ secret: 'sec', otpAuthUri: 'uri' });
+      });
+      const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/2fa/new-secret`);
+      expect(req.request.method).toBe('POST');
+      req.flush({ secret: 'sec', otpAuthUri: 'uri' });
+    });
+
+    it('sends POST request to verify endpoint', () => {
+      service.verifyTwoFactorCode('sec', '123456').subscribe(res => {
+        expect(res.valid).toBeTrue();
+      });
+      const req = httpMock.expectOne(`${environment.apiBaseUrl}/auth/2fa/verify`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ secret: 'sec', code: '123456' });
+      req.flush({ valid: true });
+    });
+  });
+
+  describe('getRole additional branches', () => {
+    it('returns role from fallback role claim key if ROLE_CLAIM_TYPE is not present', () => {
+      localStorage.setItem('auth_token', buildToken({ role: 'Manager' }));
+      expect(service.getRole()).toBe('Manager');
+    });
+
+    it('returns null if role claim is not a string', () => {
+      localStorage.setItem('auth_token', buildToken({ role: 123 }));
+      expect(service.getRole()).toBeNull();
+    });
+  });
 });

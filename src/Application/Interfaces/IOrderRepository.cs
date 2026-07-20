@@ -32,6 +32,7 @@ namespace HotelPOS.Application.Interfaces
         string? Search = null,
         string? PaymentMode = null,
         string? OrderType = null,
-        int? CategoryId = null
+        int? CategoryId = null,
+        int? CustomerId = null
     );
 }

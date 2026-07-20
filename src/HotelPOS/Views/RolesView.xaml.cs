@@ -49,6 +49,10 @@ namespace HotelPOS.Views
             ["SalesReport"] = ("📈", "Sales Report", "View and export detailed sales reports"),
             ["Purchase"] = ("📥", "Purchase", "Record supplier purchases and manage inventory"),
             ["Expenses"] = ("🧾", "Daily Expenses", "Record and track day-to-day operating expenses"),
+            ["HrEmployees"] = ("🧑\u200D💼", "HR: Employees", "View and manage employee master data"),
+            ["HrAttendance"] = ("🕒", "HR: Attendance", "Mark and review employee attendance"),
+            ["HrLeave"] = ("🌴", "HR: Leave", "Apply for, approve, or reject employee leave"),
+            ["HrPayroll"] = ("💰", "HR: Payroll", "Manage salary structures and run payroll"),
         };
 
         public static PermissionViewModel FromPermission(RolePermission p)

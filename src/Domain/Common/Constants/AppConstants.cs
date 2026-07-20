@@ -64,13 +64,18 @@ namespace HotelPOS.Domain.Common.Constants
         public const string Shift = "Shift";
         public const string Roles = "Roles";
         public const string SalesReport = "SalesReport";
-        public const string HumanResources = "HumanResources";
+        public const string HrEmployees = "HrEmployees";
+        public const string HrAttendance = "HrAttendance";
+        public const string HrLeave = "HrLeave";
+        public const string HrPayroll = "HrPayroll";
         public const string Expenses = "Expenses";
+        public const string Customers = "Customers";
 
         public static readonly string[] All =
         {
             Dashboard, Billing, Items, Categories, Tables,
-            Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport, HumanResources, Expenses
+            Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport,
+            HrEmployees, HrAttendance, HrLeave, HrPayroll, Expenses, Customers
         };
     }
 
