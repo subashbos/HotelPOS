@@ -1,0 +1,147 @@
+<Window x:Class="HotelPOS.AddItemWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Menu Item Management — Hotel POS"
+        Height="580" Width="680"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="{DynamicResource AppBackground}"
+        BorderThickness="1"
+        BorderBrush="{DynamicResource BorderBrush}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Loaded="Window_Loaded"
+        Icon="/Resources/app_icon.png">
+
+    <Window.Resources>
+        <!-- Resources moved to global dictionaries -->
+    </Window.Resources>
+
+    <Border CornerRadius="16" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}"
+            Background="{DynamicResource SurfaceBrush}" Margin="1">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" CornerRadius="15,15,0,0" Padding="24,20" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="/Resources/app_icon.png" Width="32" Height="32" Margin="0,0,16,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="FormTitle" Text="Add New Menu Item"
+                                   Style="{StaticResource H2TextBlockStyle}" Foreground="White"/>
+                        <TextBlock Text="Fill in catalog details to save a menu item."
+                                   Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+                    </StackPanel>
+                </StackPanel>
+                <Button Grid.Column="1" Content="✕" Click="Close_Click"
+                        Background="Transparent" Foreground="White" FontSize="18" FontWeight="Bold"
+                        Padding="10" VerticalAlignment="Center" BorderThickness="0" Cursor="Hand"/>
+            </Grid>
+        </Border>
+
+        <!-- ══ MAIN CONTENT ══ -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Border Padding="24">
+                <StackPanel>
+                    <Border Background="{DynamicResource SurfaceBrush}" 
+                            BorderBrush="{DynamicResource BorderBrush}" 
+                            BorderThickness="1" 
+                            Padding="24" 
+                            CornerRadius="8">
+                        <StackPanel>
+                            <!-- 2-Column Section Layout -->
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="24"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Column 1: Basic Info & Pricing -->
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Basic Info" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                        <TextBlock Text="ITEM NAME" Style="{StaticResource FieldLabel}" Margin="0"/>
+                                        <TextBlock Text=" *" Foreground="{DynamicResource DangerBrush}" FontWeight="Bold" FontSize="12"/>
+                                    </StackPanel>
+                                    <TextBox x:Name="ItemNameBox" Tag="e.g., Spicy Grilled Chicken" Margin="0,0,0,16"/>
+
+                                    <TextBlock Text="CATEGORY" Style="{StaticResource FieldLabel}"/>
+                                    <ComboBox x:Name="ItemCategoryCombo" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,0,24"/>
+
+                                    <TextBlock Text="Pricing" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                        <TextBlock Text="BASE PRICE (RS.)" Style="{StaticResource FieldLabel}" Margin="0"/>
+                                        <TextBlock Text=" *" Foreground="{DynamicResource DangerBrush}" FontWeight="Bold" FontSize="12"/>
+                                    </StackPanel>
+                                    <TextBox x:Name="ItemPriceBox" Tag="e.g., 250.00" TextChanged="PriceOrTax_Changed" Margin="0,0,0,16"/>
+
+                                    <TextBlock Text="TAX PERCENTAGE (%)" Style="{StaticResource FieldLabel}"/>
+                                    <ComboBox x:Name="TaxCombo" SelectedIndex="0" SelectionChanged="PriceOrTax_Changed" Margin="0,0,0,16">
+                                        <ComboBoxItem Content="0% GST" Tag="0"/>
+                                        <ComboBoxItem Content="5% GST" Tag="5"/>
+                                        <ComboBoxItem Content="12% GST" Tag="12"/>
+                                        <ComboBoxItem Content="18% GST" Tag="18"/>
+                                        <ComboBoxItem Content="28% GST" Tag="28"/>
+                                    </ComboBox>
+
+                                    <!-- Final Price Preview -->
+                                    <Border Background="{DynamicResource AppBackground}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,8,0,0">
+                                        <TextBlock x:Name="FinalPriceBlock" Text="Final Price: RS. 0.00" FontWeight="SemiBold" Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <!-- Column 2: Inventory -->
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Inventory" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
+
+                                    <TextBlock Text="BARCODE / SKU" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="BarcodeBox" Tag="Scan SKU or barcode" Margin="0,0,0,16"/>
+
+                                    <CheckBox x:Name="TrackStockCheck" Content="Track Inventory" 
+                                              Style="{StaticResource ToggleSwitchStyle}"
+                                              Margin="0,8,0,16" VerticalContentAlignment="Center"/>
+
+                                    <StackPanel x:Name="StockPanel" IsEnabled="{Binding IsChecked, ElementName=TrackStockCheck}">
+                                        <TextBlock Text="INITIAL STOCK QUANTITY" Style="{StaticResource FieldLabel}"/>
+                                        <TextBox x:Name="StockQuantityBox" Tag="e.g., 100" Margin="0,0,0,16"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+
+                            <Border x:Name="StatusBorder" CornerRadius="8" Padding="14,10" Margin="0,8,0,0" Visibility="Collapsed">
+                                <TextBlock x:Name="StatusText" TextWrapping="Wrap" FontSize="13"/>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+
+        <!-- ══ STICKY FOOTER ══ -->
+        <Border Grid.Row="2" Background="{DynamicResource AppBackground}" CornerRadius="0,0,15,15" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Content="Cancel" Click="Close_Click" Style="{StaticResource SecondaryBtn}" Grid.Column="0"/>
+                <Button x:Name="SubmitBtn" Content="💾  Save Menu Item" Style="{StaticResource PrimaryBtn}" Click="AddItem_Click" IsDefault="True" Grid.Column="2"/>
+            </Grid>
+        </Border>
+    </Grid>
+    </Border>
+</Window>

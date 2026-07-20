@@ -1,0 +1,165 @@
+<UserControl x:Class="HotelPOS.Views.ItemView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ctrl="clr-namespace:HotelPOS.Controls"
+             mc:Ignorable="d" d:DesignHeight="900" d:DesignWidth="1400">
+
+
+    <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Hero header -->
+            <RowDefinition Height="*"/>     <!-- Content -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ HERO HEADER ══ -->
+        <Border Background="{DynamicResource HeaderBrush}" Padding="32,22">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="📋  Menu Items" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                    <TextBlock Text="Manage your restaurant catalog — add, edit, delete and bulk import items."
+                               Margin="0,6,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+                </StackPanel>
+                <!-- Stats badges -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Background="{DynamicResource SecondaryBrush}" CornerRadius="20" Padding="18,10" Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="TotalCountBadge" Text="0" Style="{StaticResource H2TextBlockStyle}"
+                                       Foreground="White" Margin="0,0,6,0"/>
+                            <TextBlock Text="Items" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{DynamicResource SuccessBrush}" CornerRadius="20" Padding="18,10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="FilteredCountBadge" Text="0" Style="{StaticResource H2TextBlockStyle}"
+                                       Foreground="White" Margin="0,0,6,0"/>
+                            <TextBlock Text="Shown" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" VerticalAlignment="Bottom" Margin="0,0,0,2"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ══ CONTENT ══ -->
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ── MAIN CATALOG ── -->
+            <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>  <!-- Toolbar -->
+                        <RowDefinition Height="*"/>     <!-- DataGrid -->
+                        <RowDefinition Height="Auto"/>  <!-- Pagination -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Toolbar -->
+                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="20,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel>
+                                    <TextBlock Text="Item Catalog" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                                    <TextBlock Text="Click Edit to modify • Click row to select" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,3,0,0"/>
+                                </StackPanel>
+                                <Button Content="➕  Add Item" 
+                                         Click="AddItem_Click"
+                                         Style="{StaticResource PrimaryBtn}" Margin="32,0,0,0"
+                                         VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Right Side Tools -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <!-- Search Box -->
+                                <Border Background="{DynamicResource AppBackground}" CornerRadius="20" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="14,2">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="🔍" Padding="10,0,0,0" VerticalAlignment="Center" Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource TextMuted}"/>
+                                        <TextBox x:Name="SearchBox" Width="220" Padding="10,8"
+                                                 Background="Transparent" BorderThickness="0"
+                                                 VerticalContentAlignment="Center"
+                                                 Foreground="{DynamicResource TextPrimary}"
+                                                 TextChanged="Search_Changed"/>
+                                        <Button x:Name="ClearSearch" Content="✕" Click="ClearSearch_Click" 
+                                                Background="Transparent" BorderThickness="0" 
+                                                Foreground="{DynamicResource TextMuted}" 
+                                                Cursor="Hand" Visibility="Collapsed" Padding="6,0,12,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Button Content="📤  Import Excel" Click="Import_Click" 
+                                        Style="{StaticResource SecondaryBtn}" Margin="16,0,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- DataGrid -->
+                    <DataGrid x:Name="ItemGrid" Grid.Row="1"
+                              ItemsSource="{Binding Items}"
+                              Style="{StaticResource PremiumGrid}"
+                              ScrollViewer.ScrollChanged="ItemGrid_ScrollChanged">
+
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            <DataGridTextColumn Header="ITEM NAME" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="CATEGORY" Binding="{Binding Category.Name}" Width="120"/>
+                            <DataGridTemplateColumn Header="STOCK" Width="100" HeaderStyle="{StaticResource CenterHeader}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding StockQuantity}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <TextBlock.Foreground>
+                                                <MultiBinding Converter="{StaticResource StockToColorMultiConverter}">
+                                                    <Binding Path="StockQuantity"/>
+                                                    <Binding Path="TrackInventory"/>
+                                                </MultiBinding>
+                                            </TextBlock.Foreground>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="PRICE" Width="130" HeaderStyle="{StaticResource RightHeader}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="12,5" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="16" Background="{DynamicResource SecondaryBrush}" Margin="0,0,14,0">
+                                            <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="White"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="TAX" Width="90" HeaderStyle="{StaticResource CenterHeader}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding TaxPercentage, StringFormat={}{0}%}" 
+                                                   VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                   Foreground="{DynamicResource TextMuted}" Style="{StaticResource BodySmallTextBlockStyle}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="ACTIONS" Width="130" HeaderStyle="{StaticResource CenterHeader}">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Style="{StaticResource ActionBtn}" Content="✎" Click="Edit_Click" Tag="{Binding}" ToolTip="Edit Item"/>
+                                            <Button Style="{StaticResource ActionBtn}" Content="🗑" Click="Delete_Click" Tag="{Binding Id}" 
+                                                    Foreground="{DynamicResource DangerBrush}" ToolTip="Delete Item" Margin="6,0,0,0"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,143 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-6 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-chart-line text-blueGray-400 mr-2"></i> Sales Report
+          </h3>
+          <div class="flex items-end gap-3">
+            <div>
+              <label for="sr-from" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">From</label>
+              <input id="sr-from" type="date" [(ngModel)]="fromDate" name="fromDate" (change)="load()"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+            </div>
+            <div>
+              <label for="sr-to" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">To</label>
+              <input id="sr-to" type="date" [(ngModel)]="toDate" name="toDate" (change)="load()"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4">
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading sales report...</p>
+
+        <ng-container *ngIf="report && !isLoading">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-blueGray-50 rounded p-4 text-center">
+              <p class="text-xs uppercase text-blueGray-400">Total Revenue</p>
+              <p class="text-xl font-bold text-blueGray-700">{{ report.totalRevenue | number:'1.2-2' }}</p>
+            </div>
+            <div class="bg-blueGray-50 rounded p-4 text-center">
+              <p class="text-xs uppercase text-blueGray-400">Total Orders</p>
+              <p class="text-xl font-bold text-blueGray-700">{{ report.totalOrders }}</p>
+            </div>
+            <div class="bg-blueGray-50 rounded p-4 text-center">
+              <p class="text-xs uppercase text-blueGray-400">Avg Order Value</p>
+              <p class="text-xl font-bold text-blueGray-700">{{ report.averageOrderValue | number:'1.2-2' }}</p>
+            </div>
+            <div class="bg-blueGray-50 rounded p-4 text-center">
+              <p class="text-xs uppercase text-blueGray-400">Most Popular</p>
+              <p class="text-xl font-bold text-blueGray-700 truncate">{{ report.mostPopularItem }}</p>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full lg:w-6/12 mb-6 px-4" *ngIf="report">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-base text-blueGray-700">Sales by Category</h3>
+      </div>
+      <div class="px-6 py-4 block w-full overflow-x-auto">
+        <table class="items-center w-full bg-transparent border-collapse">
+          <thead>
+            <tr>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Category</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Revenue</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.salesByCategory">
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.categoryName }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ row.revenue | number:'1.2-2' }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ row.percentage | number:'1.1-1' }}%</td>
+            </tr>
+            <tr *ngIf="report.salesByCategory.length === 0">
+              <td colspan="3" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No data.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full lg:w-6/12 mb-6 px-4" *ngIf="report">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-base text-blueGray-700">Sales by Payment Mode</h3>
+      </div>
+      <div class="px-6 py-4 block w-full overflow-x-auto">
+        <table class="items-center w-full bg-transparent border-collapse">
+          <thead>
+            <tr>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Mode</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Orders</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.salesByPaymentMode">
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.paymentMode }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ row.orderCount }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ row.revenue | number:'1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="report.salesByPaymentMode.length === 0">
+              <td colspan="3" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No data.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full mb-6 px-4" *ngIf="report">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-base text-blueGray-700">Recent Orders</h3>
+      </div>
+      <div class="px-6 py-4 block w-full overflow-x-auto">
+        <table class="items-center w-full bg-transparent border-collapse">
+          <thead>
+            <tr>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Invoice</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Date</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Table</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Type</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Status</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.recentOrders">
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.invoiceNumber || row.orderId }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.createdAt | date:'short' }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ row.tableNumber }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.orderType }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.status }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right font-semibold">{{ row.total | number:'1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="report.recentOrders.length === 0">
+              <td colspan="6" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No recent orders.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

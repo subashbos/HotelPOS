@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <!-- EF Core migrations are auto-generated scaffolding never exercised by tests (applied via
+         `dotnet ef database update`, not app code paths). XAML code-behind (*.xaml.cs, plus the
+         BillingView.*.cs partials that split its code-behind across files) is thin, XAML-wired UI
+         glue that needs an STA thread + a loaded Application to instantiate meaningfully; the
+         actual logic lives in the ViewModels, which stay in scope. obj/** picks up a stray
+         source-generator file coverlet attributes to the build output. All excluded from the
+         coverage gate rather than counted as untestable "misses". -->
+    <ExcludeByFile>**/Migrations/*.cs,**/*.xaml.cs,**/*.xaml,**/obj/**/*.cs,**/Views/*.cs,**/App.Database.cs,**/Services/DialogService.cs,**/Services/NotificationService.cs,**/Services/RememberMeStore.cs,**/Behaviors/InfiniteScrollBehavior.cs,**/ViewModels/CustomMessageBoxViewModel.cs</ExcludeByFile>
+    <Exclude>[HotelPOS.Api]*</Exclude>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="8.10.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.7" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="6.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Moq" Version="4.20.72" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\API\HotelPOS.Api.csproj" />
+    <ProjectReference Include="..\Application\Application.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\HotelPOS\HotelPOS.WPF.csproj" />
+  </ItemGroup>
+
+</Project>

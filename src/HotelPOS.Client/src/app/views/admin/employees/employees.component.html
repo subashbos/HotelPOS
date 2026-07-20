@@ -1,0 +1,248 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-users text-blueGray-400 mr-2"></i> Employees
+          </h3>
+          <button (click)="openAddForm()"
+            class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow">
+            <i class="fas fa-plus mr-1"></i> Add Employee
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-4">
+        <p *ngIf="actionError" class="text-red-600 text-sm mb-4">{{ actionError }}</p>
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading employees...</p>
+
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Code</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Name</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Department</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Designation</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Status</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let employee of employees; trackBy: trackByEmployeeId">
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ employee.employeeCode }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold">{{ employee.firstName }} {{ employee.lastName }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ employee.departmentName || '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ employee.designationTitle || '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                  <span class="px-2 py-1 rounded text-xs font-bold uppercase"
+                    [ngClass]="employee.status === 'Active' ? 'bg-emerald-100 text-emerald-600' : 'bg-blueGray-100 text-blueGray-500'">
+                    {{ employee.status }}
+                  </span>
+                </td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
+                  <button (click)="openEditForm(employee)" class="text-blueGray-500 hover:text-blueGray-700 font-bold mr-3"><i class="fas fa-pen"></i></button>
+                  <button (click)="deleteEmployee(employee)" class="text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+              <tr *ngIf="employees.length === 0">
+                <td colspan="6" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">
+                  No employees yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit modal -->
+<div *ngIf="showForm" class="fixed z-50 inset-0 overflow-y-auto flex items-center justify-center p-4">
+  <button type="button" class="fixed inset-0 bg-black opacity-50 border-0 cursor-default focus-visible:ring-2 focus-visible:ring-red-500" (click)="closeForm()" aria-label="Close employee form"></button>
+  <div class="relative bg-white rounded-lg shadow-xl w-full max-w-2xl mx-auto z-10 overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div class="bg-red-600 px-6 py-4 text-white flex justify-between items-center">
+      <h3 class="font-bold text-base uppercase">{{ editingId ? 'Edit Employee' : 'Add Employee' }}</h3>
+      <button (click)="closeForm()" class="text-white hover:text-blueGray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form (ngSubmit)="save()" class="p-6 space-y-5">
+      <div>
+        <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Basic Info</h4>
+        <div class="flex flex-wrap gap-3">
+          <div class="w-32">
+            <label for="emp-code" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Code</label>
+            <input id="emp-code" type="text" [(ngModel)]="form.employeeCode" name="employeeCode"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-first" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">First Name</label>
+            <input id="emp-first" type="text" [(ngModel)]="form.firstName" name="firstName" required
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-last" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Last Name</label>
+            <input id="emp-last" type="text" [(ngModel)]="form.lastName" name="lastName"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-28">
+            <label for="emp-gender" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Gender</label>
+            <select id="emp-gender" [(ngModel)]="form.gender" name="gender"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+              <option value="">—</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="w-40">
+            <label for="emp-dob" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Date of Birth</label>
+            <input id="emp-dob" type="date" [(ngModel)]="form.dateOfBirth" name="dateOfBirth"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Employment</h4>
+        <div class="flex flex-wrap gap-3">
+          <div class="w-40">
+            <label for="emp-doj" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Date of Joining</label>
+            <input id="emp-doj" type="date" [(ngModel)]="form.dateOfJoining" name="dateOfJoining" required
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-40">
+            <label for="emp-doe" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Date of Exit</label>
+            <input id="emp-doe" type="date" [(ngModel)]="form.dateOfExit" name="dateOfExit"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-dept" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Department</label>
+            <select id="emp-dept" [(ngModel)]="form.departmentId" name="departmentId"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+              <option [ngValue]="undefined">— None —</option>
+              <option *ngFor="let d of departments" [ngValue]="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-designation" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Designation</label>
+            <select id="emp-designation" [(ngModel)]="form.designationId" name="designationId"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+              <option [ngValue]="undefined">— None —</option>
+              <option *ngFor="let d of designationsFor(form.departmentId)" [ngValue]="d.id">{{ d.title }}</option>
+            </select>
+          </div>
+          <div class="w-36">
+            <label for="emp-type" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Employment Type</label>
+            <select id="emp-type" [(ngModel)]="form.employmentType" name="employmentType"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+              <option *ngFor="let t of employmentTypes" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="w-32">
+            <label for="emp-status" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Status</label>
+            <select id="emp-status" [(ngModel)]="form.status" name="status"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+              <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Contact</h4>
+        <div class="flex flex-wrap gap-3">
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-phone" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Phone</label>
+            <input id="emp-phone" type="text" [(ngModel)]="form.phone" name="phone"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="flex-1 min-w-[180px]">
+            <label for="emp-email" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Email</label>
+            <input id="emp-email" type="email" [(ngModel)]="form.email" name="email"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-full">
+            <label for="emp-address" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Address</label>
+            <input id="emp-address" type="text" [(ngModel)]="form.address" name="address"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Bank &amp; Statutory IDs</h4>
+        <div class="flex flex-wrap gap-3">
+          <div class="w-32">
+            <label for="emp-pan" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">PAN</label>
+            <input id="emp-pan" type="text" [(ngModel)]="form.pan" name="pan"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-36">
+            <label for="emp-aadhaar" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Aadhaar</label>
+            <input id="emp-aadhaar" type="text" [(ngModel)]="form.aadhaar" name="aadhaar"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-32">
+            <label for="emp-uan" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">UAN</label>
+            <input id="emp-uan" type="text" [(ngModel)]="form.uan" name="uan"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-32">
+            <label for="emp-esic" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">ESIC No.</label>
+            <input id="emp-esic" type="text" [(ngModel)]="form.esicNumber" name="esicNumber"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-bank" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Bank Name</label>
+            <input id="emp-bank" type="text" [(ngModel)]="form.bankName" name="bankName"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-acc" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Account Number</label>
+            <input id="emp-acc" type="text" [(ngModel)]="form.bankAccountNumber" name="bankAccountNumber"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="w-32">
+            <label for="emp-ifsc" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">IFSC</label>
+            <input id="emp-ifsc" type="text" [(ngModel)]="form.bankIfsc" name="bankIfsc"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Emergency Contact</h4>
+        <div class="flex flex-wrap gap-3">
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-emg-name" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Name</label>
+            <input id="emp-emg-name" type="text" [(ngModel)]="form.emergencyContactName" name="emergencyContactName"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div class="flex-1 min-w-[140px]">
+            <label for="emp-emg-phone" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Phone</label>
+            <input id="emp-emg-phone" type="text" [(ngModel)]="form.emergencyContactPhone" name="emergencyContactPhone"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+        </div>
+      </div>
+
+      <p *ngIf="actionError" class="text-red-600 text-sm">{{ actionError }}</p>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" (click)="closeForm()" class="text-blueGray-500 text-xs font-bold uppercase px-4 py-2">Cancel</button>
+        <button type="submit" [disabled]="isSaving || !form.firstName.trim() || !form.dateOfJoining"
+          class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+          {{ isSaving ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

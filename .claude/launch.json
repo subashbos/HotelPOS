@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "angular-client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start", "--prefix", "src/HotelPOS.Client"],
+      "port": 4200
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/API/HotelPOS.Api.csproj"],
+      "port": 55982
+    }
+  ]
+}

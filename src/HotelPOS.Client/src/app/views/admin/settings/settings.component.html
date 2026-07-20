@@ -1,0 +1,160 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-lg text-blueGray-700">
+          <i class="fas fa-tools text-blueGray-400 mr-2"></i> Settings
+        </h3>
+      </div>
+
+      <div class="px-6 py-4">
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading settings...</p>
+
+        <form *ngIf="settings && !isLoading" (ngSubmit)="save()" class="space-y-6">
+          <div>
+            <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Hotel Profile</h4>
+            <div class="flex flex-wrap gap-3">
+              <div class="flex-1 min-w-[180px]">
+                <label for="set-name" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Hotel Name</label>
+                <input id="set-name" type="text" [(ngModel)]="settings.hotelName" name="hotelName"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="flex-1 min-w-[140px]">
+                <label for="set-phone" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Phone</label>
+                <input id="set-phone" type="text" [(ngModel)]="settings.hotelPhone" name="hotelPhone"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="w-40">
+                <label for="set-gst" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">GSTIN</label>
+                <input id="set-gst" type="text" [(ngModel)]="settings.hotelGst" name="hotelGst"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="w-full">
+                <label for="set-address" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Address</label>
+                <input id="set-address" type="text" [(ngModel)]="settings.hotelAddress" name="hotelAddress"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Receipt</h4>
+            <div class="flex flex-wrap gap-3 mb-3">
+              <div class="flex-1 min-w-[160px]">
+                <label for="set-printer" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Default Printer</label>
+                <input id="set-printer" type="text" [(ngModel)]="settings.defaultPrinter" name="defaultPrinter"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="w-40">
+                <label for="set-format" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Receipt Format</label>
+                <select id="set-format" [(ngModel)]="settings.receiptFormat" name="receiptFormat"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+                  <option value="Thermal">Thermal (80mm)</option>
+                  <option value="A4">A4</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-4">
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.showPrintPreview" name="showPrintPreview" class="rounded" /> Show Print Preview
+              </label>
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.showGstBreakdown" name="showGstBreakdown" class="rounded" /> Show GST Breakdown
+              </label>
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.showItemsOnBill" name="showItemsOnBill" class="rounded" /> Show Items on Bill
+              </label>
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.showDiscountLine" name="showDiscountLine" class="rounded" /> Show Discount Line
+              </label>
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.showPhoneOnReceipt" name="showPhoneOnReceipt" class="rounded" /> Show Phone on Receipt
+              </label>
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.showThankYouFooter" name="showThankYouFooter" class="rounded" /> Show Thank-You Footer
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Billing</h4>
+            <div class="flex flex-wrap gap-4">
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.enableRoundOff" name="enableRoundOff" class="rounded" /> Enable Round-Off
+              </label>
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.isCompositionScheme" name="isCompositionScheme" class="rounded" /> GST Composition Scheme
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Backup &amp; Security</h4>
+            <div class="flex flex-wrap gap-3 items-end">
+              <label class="flex items-center gap-2 text-sm text-blueGray-600">
+                <input type="checkbox" [(ngModel)]="settings.enableAutomatedBackups" name="enableAutomatedBackups" class="rounded" /> Enable Automated Backups
+              </label>
+              <div class="flex-1 min-w-[200px]">
+                <label for="set-backup-path" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Offsite Backup Path</label>
+                <input id="set-backup-path" type="text" [(ngModel)]="settings.offsiteBackupPath" name="offsiteBackupPath"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="w-40">
+                <label for="set-idle" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Idle Timeout (min)</label>
+                <input id="set-idle" type="number" min="0" [(ngModel)]="settings.idleTimeoutMinutes" name="idleTimeoutMinutes"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Outgoing Email (SMTP)</h4>
+            <div class="flex flex-wrap gap-3">
+              <div class="flex-1 min-w-[160px]">
+                <label for="set-smtp-host" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">SMTP Host</label>
+                <input id="set-smtp-host" type="text" [(ngModel)]="settings.smtpHost" name="smtpHost"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="w-28">
+                <label for="set-smtp-port" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Port</label>
+                <input id="set-smtp-port" type="number" [(ngModel)]="settings.smtpPort" name="smtpPort"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="flex-1 min-w-[160px]">
+                <label for="set-smtp-user" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Username</label>
+                <input id="set-smtp-user" type="text" [(ngModel)]="settings.smtpUsername" name="smtpUsername"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="flex-1 min-w-[160px]">
+                <label for="set-smtp-pass" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">
+                  Password {{ settings.smtpPasswordSet ? '(set — leave blank to keep)' : '' }}
+                </label>
+                <input id="set-smtp-pass" type="password" [(ngModel)]="smtpPassword" name="smtpPassword" autocomplete="new-password"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <div class="flex-1 min-w-[160px]">
+                <label for="set-smtp-from" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">From Address</label>
+                <input id="set-smtp-from" type="email" [(ngModel)]="settings.smtpFromAddress" name="smtpFromAddress"
+                  class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+              </div>
+              <label class="flex items-center gap-2 text-sm text-blueGray-600 self-end mb-2">
+                <input type="checkbox" [(ngModel)]="settings.smtpUseSsl" name="smtpUseSsl" class="rounded" /> Use SSL
+              </label>
+            </div>
+          </div>
+
+          <p *ngIf="actionError" class="text-red-600 text-sm">{{ actionError }}</p>
+          <p *ngIf="savedMessage" class="text-emerald-600 text-sm">{{ savedMessage }}</p>
+
+          <div class="flex justify-end pt-2">
+            <button type="submit" [disabled]="isSaving"
+              class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+              {{ isSaving ? 'Saving...' : 'Save Settings' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

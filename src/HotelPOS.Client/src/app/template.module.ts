@@ -1,0 +1,150 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
+// Components
+import { AdminNavbarComponent } from './components/navbars/admin-navbar/admin-navbar.component';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { HeaderStatsComponent } from './components/headers/header-stats/header-stats.component';
+import { FooterAdminComponent } from './components/footers/footer-admin/footer-admin.component';
+import { FooterSmallComponent } from './components/footers/footer-small/footer-small.component';
+import { CardStatsComponent } from './components/cards/card-stats/card-stats.component';
+import { CardLineChartComponent } from './components/cards/card-line-chart/card-line-chart.component';
+import { CardBarChartComponent } from './components/cards/card-bar-chart/card-bar-chart.component';
+import { CardSettingsComponent } from './components/cards/card-settings/card-settings.component';
+import { CardTableComponent } from './components/cards/card-table/card-table.component';
+import { TableDropdownComponent } from './components/dropdowns/table-dropdown/table-dropdown.component';
+import { NotificationDropdownComponent } from './components/dropdowns/notification-dropdown/notification-dropdown.component';
+import { UserDropdownComponent } from './components/dropdowns/user-dropdown/user-dropdown.component';
+
+// Layouts
+import { AdminComponent } from './layouts/admin/admin.component';
+import { AuthComponent } from './layouts/auth/auth.component';
+
+// Views
+import { DashboardComponent } from './views/admin/dashboard/dashboard.component';
+import { SettingsComponent } from './views/admin/settings/settings.component';
+import { TablesComponent } from './views/admin/tables/tables.component';
+import { LoginComponent } from './views/auth/login/login.component';
+import { RegisterComponent } from './views/auth/register/register.component';
+import { BillingComponent } from './views/admin/billing/billing.component';
+import { CategoriesComponent } from './views/admin/categories/categories.component';
+import { ItemsComponent } from './views/admin/items/items.component';
+import { SuppliersComponent } from './views/admin/suppliers/suppliers.component';
+import { PurchasesComponent } from './views/admin/purchases/purchases.component';
+import { ShiftSessionComponent } from './views/admin/shift-session/shift-session.component';
+import { ExpensesComponent } from './views/admin/expenses/expenses.component';
+import { EmployeesComponent } from './views/admin/employees/employees.component';
+import { AttendanceComponent } from './views/admin/attendance/attendance.component';
+import { LeaveComponent } from './views/admin/leave/leave.component';
+import { PayrollComponent } from './views/admin/payroll/payroll.component';
+import { SalesReportComponent } from './views/admin/sales-report/sales-report.component';
+import { ItemReportComponent } from './views/admin/item-report/item-report.component';
+import { PurchaseReportComponent } from './views/admin/purchase-report/purchase-report.component';
+import { LedgerComponent } from './views/admin/ledger/ledger.component';
+import { JournalComponent } from './views/admin/journal/journal.component';
+import { RolesComponent } from './views/admin/roles/roles.component';
+import { UsersComponent } from './views/admin/users/users.component';
+import { AuditComponent } from './views/admin/audit/audit.component';
+import { ForgotPasswordComponent } from './views/auth/forgot-password/forgot-password.component';
+import { AccountComponent } from './views/admin/account/account.component';
+import { CustomersComponent } from './views/admin/customers/customers.component';
+
+@NgModule({
+  declarations: [
+    AdminNavbarComponent,
+    SidebarComponent,
+    HeaderStatsComponent,
+    FooterAdminComponent,
+    FooterSmallComponent,
+    CardStatsComponent,
+    CardLineChartComponent,
+    CardBarChartComponent,
+    CardSettingsComponent,
+    CardTableComponent,
+    TableDropdownComponent,
+    NotificationDropdownComponent,
+    UserDropdownComponent,
+    AdminComponent,
+    AuthComponent,
+    DashboardComponent,
+    SettingsComponent,
+    TablesComponent,
+    LoginComponent,
+    RegisterComponent,
+    BillingComponent,
+    CategoriesComponent,
+    ItemsComponent,
+    SuppliersComponent,
+    PurchasesComponent,
+    ShiftSessionComponent,
+    ExpensesComponent,
+    EmployeesComponent,
+    AttendanceComponent,
+    LeaveComponent,
+    PayrollComponent,
+    SalesReportComponent,
+    ItemReportComponent,
+    PurchaseReportComponent,
+    LedgerComponent,
+    JournalComponent,
+    RolesComponent,
+    UsersComponent,
+    AuditComponent,
+    ForgotPasswordComponent,
+    AccountComponent,
+    CustomersComponent
+  ],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule
+  ],
+  exports: [
+    FormsModule,
+    AdminNavbarComponent,
+    SidebarComponent,
+    HeaderStatsComponent,
+    FooterAdminComponent,
+    FooterSmallComponent,
+    CardStatsComponent,
+    CardLineChartComponent,
+    CardBarChartComponent,
+    CardSettingsComponent,
+    CardTableComponent,
+    TableDropdownComponent,
+    NotificationDropdownComponent,
+    UserDropdownComponent,
+    AdminComponent,
+    AuthComponent,
+    DashboardComponent,
+    SettingsComponent,
+    TablesComponent,
+    LoginComponent,
+    RegisterComponent,
+    BillingComponent,
+    CategoriesComponent,
+    ItemsComponent,
+    SuppliersComponent,
+    PurchasesComponent,
+    ShiftSessionComponent,
+    ExpensesComponent,
+    EmployeesComponent,
+    AttendanceComponent,
+    LeaveComponent,
+    PayrollComponent,
+    SalesReportComponent,
+    ItemReportComponent,
+    PurchaseReportComponent,
+    LedgerComponent,
+    JournalComponent,
+    RolesComponent,
+    UsersComponent,
+    AuditComponent,
+    ForgotPasswordComponent,
+    AccountComponent,
+    CustomersComponent
+  ]
+})
+export class TemplateModule { }

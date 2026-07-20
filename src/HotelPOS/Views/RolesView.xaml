@@ -1,0 +1,141 @@
+<UserControl x:Class="HotelPOS.Views.RolesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="900">
+
+
+    <Grid Background="{DynamicResource AppBackground}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ══ LEFT: Roles List ══ -->
+        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="Roles" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Define access levels for your team." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <DataGrid x:Name="RolesGrid" Grid.Row="2"
+                          Style="{StaticResource PremiumGrid}"
+                          SelectionChanged="RolesGrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ROLE NAME" Binding="{Binding Name}" Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Padding" Value="14,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="DESCRIPTION" Binding="{Binding Description}" Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Padding" Value="8,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextMuted}"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                    <TextBlock Text="NEW ROLE NAME" Style="{StaticResource FieldLabel}"/>
+                    <TextBox x:Name="NewRoleNameBox" Margin="0,0,0,10"/>
+                    <Button Content="➕ Add Role" Style="{StaticResource PrimaryBtn}" Click="AddRole_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ══ RIGHT: Permissions Panel ══ -->
+        <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="24">
+            <Grid>
+                <!-- Placeholder: shown when no role is selected -->
+                <StackPanel x:Name="NoRolePlaceholder" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Visible">
+                    <TextBlock Text="👥" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                    <TextBlock Text="Select a role to manage permissions" Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource TextMuted}"
+                               HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                </StackPanel>
+
+                <!-- Permissions Editor: shown when a role is selected -->
+                <Grid x:Name="PermissionEditor" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel>
+                        <TextBlock x:Name="EditingRoleTitle" Text="Role Permissions" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Control window-wise access for this role." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Select All / Clear All shortcuts -->
+                    <Border Grid.Row="2" Background="{DynamicResource AppBackground}" CornerRadius="8" Padding="12,8">
+                        <Grid>
+                            <TextBlock Text="QUICK ACTIONS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Content="✅  Grant All" Style="{StaticResource SecondaryBtn}" Padding="10,5" FontSize="11" Click="GrantAll_Click" Margin="0,0,8,0"/>
+                                <Button Content="🚫  Revoke All" Style="{StaticResource SecondaryBtn}" Padding="10,5" FontSize="11" Click="RevokeAll_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Permissions List -->
+                    <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="PermissionsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <!-- Module icon -->
+                                            <TextBlock Text="{Binding Icon}" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource TextPrimary}"/>
+                                                <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
+                                            </StackPanel>
+                                            <CheckBox Grid.Column="2" IsChecked="{Binding CanAccess}" VerticalAlignment="Center">
+                                                <CheckBox.LayoutTransform>
+                                                    <ScaleTransform ScaleX="1.3" ScaleY="1.3"/>
+                                                </CheckBox.LayoutTransform>
+                                            </CheckBox>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                        <Button Content="💾  Save Permissions" Style="{StaticResource PrimaryBtn}" Click="SavePermissions_Click" Margin="0,0,12,0"/>
+                        <Button x:Name="DeleteRoleBtn" Content="🗑  Delete Role" Style="{StaticResource DangerBtn}" Click="DeleteRole_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

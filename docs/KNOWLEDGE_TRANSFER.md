@@ -23,20 +23,21 @@ Primary startup flow:
 
 ## 2) Architecture Overview
 
-The solution follows a layered structure:
+The solution follows a strict **Clean Architecture** with **CQRS** and **MVVM** patterns:
 
-- `HotelPOS/`: WPF presentation and composition root
-- `HotelPOS.Domain/`: entities and repository contracts
-- `HotelPOS.Application/`: business services and use-case orchestration
-- `HotelPOS.Persistence/`: EF Core `DbContext`, repositories, migrations
-- `HotelPOS.Infrastructure/`: cross-cutting utilities (theme, notifications, backup)
-- `HotelPOS.Tests/`: unit/integration-style tests
+- `HotelPOS/`: WPF presentation (MVVM ViewModels, UI XAML, and DI composition root)
+- `HotelPOS.Domain/`: Core entities (`Item`, `Order`) and repository contracts
+- `HotelPOS.Application/`: Business services, MediatR Commands/Queries, and Data Transfer Objects (DTOs)
+- `HotelPOS.Persistence/`: EF Core `DbContext`, `GenericRepository<T>`, and specific repository implementations
+- `HotelPOS.Infrastructure/`: Cross-cutting utilities (theme, notifications, backup)
+- `HotelPOS.Tests/`: Unit, integration, and loophole-focused tests
 
-Dependency direction:
+Dependency direction and Data Flow:
 
-- UI -> Application -> Domain contracts
-- Persistence implements Domain contracts
-- Infrastructure supports UI/Application concerns
+- UI binds to ViewModels (MVVM)
+- ViewModels dispatch MediatR Commands/Queries or call Application Services
+- Application Services orchestrate logic and map Entities to DTOs before returning to the UI/API
+- Persistence implements Domain contracts using a unified `GenericRepository<T>` base
 
 ## 3) Key Runtime Components
 
@@ -51,9 +52,10 @@ Defined in `HotelPOS/App.xaml.cs`.
 
 ### Thread-Safety & DbContext Synchronization
 
-To prevent EF Core concurrent `DbContext` access errors inside the WPF application (where multiple user events or background tasks might hit the database simultaneously), the application utilizes a global semaphore lock `App.DbLock`.
-- All service and repository database operations initiated from WPF Views, Windows, Dialogs, or ViewModels must be wrapped in `await App.DbLock.WaitAsync(); try { ... } finally { App.DbLock.Release(); }` blocks.
-- This ensures complete thread-safety across active user sessions.
+To prevent EF Core concurrent `DbContext` access errors inside the WPF application (where multiple user events or background tasks might hit the database simultaneously), the application utilizes dynamic scoped service resolution.
+- All service and repository database operations initiated from WPF Views, Windows, Dialogs, or ViewModels are executed inside a temporary scope retrieved via `using (var scope = App.CreateDbScope())`.
+- This ensures separate, isolated database context instances are used per transaction/operation, guaranteeing thread safety.
+- For unit testing, a built-in fallback automatically routes calls to constructor-injected service fields when the WPF app context is not running.
 
 ### Category DisplayOrder & Custom Sorting
 

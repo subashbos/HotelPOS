@@ -1,0 +1,57 @@
+using HotelPOS.Application;
+using HotelPOS.Application.UseCases;
+using HotelPOS.Domain.Common.Constants;
+using HotelPOS.Domain.Entities;
+using HotelPOS.Application.Interfaces;
+using Moq;
+using Xunit;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using MediatR;
+
+namespace HotelPOS.Tests
+{
+    public class LoopholesFinalTests
+    {
+        private readonly Mock<IOrderRepository> _orderRepo = new();
+        private readonly Mock<IMediator> _mediator = new();
+        private readonly Mock<IItemService> _itemService = new();
+        private readonly OrderService _service;
+
+        public LoopholesFinalTests()
+        {
+            _service = new OrderService(_orderRepo.Object, _mediator.Object, _itemService.Object);
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_NegativePrice_ThrowsArgumentException()
+        {
+            var items = new List<OrderItem> { new OrderItem { ItemName = "Buggy", Price = -10, Quantity = 1 } };
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 1)));
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_ZeroQuantity_ThrowsArgumentException()
+        {
+            var items = new List<OrderItem> { new OrderItem { ItemName = "Buggy", Price = 10, Quantity = 0 } };
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 1)));
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_InvalidOrderType_ThrowsArgumentException()
+        {
+            var items = new List<OrderItem> { new OrderItem { ItemName = "Valid", Price = 10, Quantity = 1 } };
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 1, OrderType: "DroneDelivery")));
+        }
+
+        // Invalid payment mode is covered by OrderServiceLoopholeTests.
+
+        [Fact]
+        public async Task SaveOrderAsync_DineInWithoutTable_ThrowsArgumentException()
+        {
+            var items = new List<OrderItem> { new OrderItem { ItemName = "Valid", Price = 10, Quantity = 1 } };
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.SaveOrderAsync(new SaveOrderRequest(items, 0, OrderType: OrderTypes.DineIn)));
+        }
+    }
+}
+

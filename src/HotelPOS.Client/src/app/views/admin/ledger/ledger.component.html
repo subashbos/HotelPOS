@@ -1,0 +1,72 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-book text-blueGray-400 mr-2"></i> Ledger (Daily GST &amp; Net Income)
+          </h3>
+          <div class="flex items-end gap-3">
+            <div>
+              <label for="lg-from" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">From</label>
+              <input id="lg-from" type="date" [(ngModel)]="fromDate" name="fromDate" (change)="load()"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+            </div>
+            <div>
+              <label for="lg-to" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">To</label>
+              <input id="lg-to" type="date" [(ngModel)]="toDate" name="toDate" (change)="load()"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4">
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading ledger...</p>
+
+        <ng-container *ngIf="!isLoading">
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-blueGray-50 rounded p-4 text-center">
+              <p class="text-xs uppercase text-blueGray-400">Gross Revenue</p>
+              <p class="text-lg font-bold text-blueGray-700">{{ totals.gross | number:'1.2-2' }}</p>
+            </div>
+            <div class="bg-blueGray-50 rounded p-4 text-center">
+              <p class="text-xs uppercase text-blueGray-400">GST</p>
+              <p class="text-lg font-bold text-blueGray-700">{{ totals.gst | number:'1.2-2' }}</p>
+            </div>
+            <div class="bg-blueGray-50 rounded p-4 text-center">
+              <p class="text-xs uppercase text-blueGray-400">Net Income</p>
+              <p class="text-lg font-bold text-blueGray-700">{{ totals.net | number:'1.2-2' }}</p>
+            </div>
+          </div>
+
+          <div class="block w-full overflow-x-auto">
+            <table class="items-center w-full bg-transparent border-collapse">
+              <thead>
+                <tr>
+                  <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Date</th>
+                  <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Orders</th>
+                  <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Gross Revenue</th>
+                  <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">GST</th>
+                  <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Net Income</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of rows">
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ row.date | date:'mediumDate' }}</td>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.orderCount }}</td>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.grossRevenue | number:'1.2-2' }}</td>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.gstAmount | number:'1.2-2' }}</td>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right font-semibold">{{ row.netIncome | number:'1.2-2' }}</td>
+                </tr>
+                <tr *ngIf="rows.length === 0">
+                  <td colspan="5" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">No data in this range.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

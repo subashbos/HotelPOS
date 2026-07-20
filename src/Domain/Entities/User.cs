@@ -1,0 +1,51 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using HotelPOS.Domain.Common.Constants;
+
+namespace HotelPOS.Domain.Entities
+{
+    public class User
+    {
+        [NotMapped]
+        public int SNo { get; set; }
+
+        [Key]
+        public int Id { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string Username { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(255)]
+        public string PasswordHash { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(255)]
+        public string Salt { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(50)]
+        public string Role { get; set; } = RoleNames.Cashier;
+
+        public int? RoleId { get; set; }
+        
+        [ForeignKey("RoleId")]
+        public Role? RoleDetails { get; set; }
+
+        /// <summary>Allows admins to disable a user account without deleting it.</summary>
+        public bool IsActive { get; set; } = true;
+
+        public bool MustChangePassword { get; set; } = false;
+
+        public DateTime? LastLoginUtc { get; set; }
+
+        [MaxLength(255)]
+        public string? Email { get; set; }
+
+        public bool TwoFactorEnabled { get; set; } = false;
+
+        [MaxLength(64)]
+        public string? TwoFactorSecret { get; set; }
+    }
+}

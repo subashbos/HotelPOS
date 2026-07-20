@@ -1,0 +1,121 @@
+using HotelPOS.Application.DTOs.Order;
+using HotelPOS.Application.Interfaces;
+using HotelPOS.Application.UseCases.Orders.Commands;
+using HotelPOS.Application.UseCases.Orders.Queries;
+using HotelPOS.Domain.Common.Constants;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace HotelPOS.Api.Controllers
+{
+    [Authorize]
+    public class OrdersController : BaseApiController
+    {
+        private readonly IMediator _mediator;
+        private readonly IUserContext _userContext;
+        private readonly AutoMapper.IMapper _mapper;
+
+        public OrdersController(IMediator mediator, IUserContext userContext, AutoMapper.IMapper mapper)
+        {
+            _mediator = mediator;
+            _userContext = userContext;
+            _mapper = mapper;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<PagedOrdersResponse>> GetPagedOrders([FromQuery] GetOrdersQueryRequest request)
+        {
+            var query = new GetOrdersQuery(
+                request.PageNumber ?? 1,
+                request.PageSize ?? 10,
+                request.From,
+                request.To,
+                request.TableNumber,
+                request.Search,
+                request.PaymentMode,
+                request.OrderType,
+                request.CategoryId
+            );
+
+            var (items, totalCount) = await _mediator.Send(query);
+            return Ok(new PagedOrdersResponse
+            {
+                Items = _mapper.Map<List<OrderDto>>(items),
+                TotalCount = totalCount
+            });
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<int>> CreateOrder([FromBody] CreateOrderRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var command = _mapper.Map<CreateOrderCommand>(request);
+
+            var orderId = await _mediator.Send(command);
+            return Ok(orderId);
+        }
+
+        [HttpPost("{id:int}/void")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
+        public async Task<IActionResult> VoidOrder(int id, [FromBody] VoidOrderRequest request)
+        {
+            if (id <= 0) return BadRequest("Invalid order ID.");
+            if (string.IsNullOrWhiteSpace(request.Reason)) return BadRequest("Reason for voiding the order is required.");
+
+            var currentUser = _userContext.CurrentUsername ?? "API User";
+            var command = new VoidOrderCommand(id, request.Reason, currentUser);
+            await _mediator.Send(command);
+            return NoContent();
+        }
+    }
+
+    public sealed class PagedOrdersResponse
+    {
+        public List<OrderDto> Items { get; set; } = new();
+        public int TotalCount { get; set; }
+    }
+
+    public sealed class CreateOrderRequest
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        public List<OrderItemDto> Items { get; set; } = new();
+
+        // sonar: an omitted value defaults to 0, but CreateOrderCommandValidator already
+        // rejects TableNumber == 0 for DineIn orders and caps Discount to [0, subtotal],
+        // so under-posting either field can't produce an invalid or exploitable order.
+        public int TableNumber { get; set; } // NOSONAR
+
+        public decimal Discount { get; set; } // NOSONAR
+
+        public string PaymentMode { get; set; } = PaymentModes.Cash;
+
+        public string? CustomerName { get; set; }
+
+        public string? CustomerPhone { get; set; }
+
+        public string? CustomerGstin { get; set; }
+
+        public string OrderType { get; set; } = OrderTypes.DineIn;
+    }
+
+    public sealed class VoidOrderRequest
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Reason { get; set; } = string.Empty;
+    }
+
+    public sealed class GetOrdersQueryRequest
+    {
+        public int? PageNumber { get; set; } = 1;
+        public int? PageSize { get; set; } = 10;
+        public DateTime? From { get; set; }
+        public DateTime? To { get; set; }
+        public int? TableNumber { get; set; }
+        public string? Search { get; set; }
+        public string? PaymentMode { get; set; }
+        public string? OrderType { get; set; }
+        public int? CategoryId { get; set; }
+    }
+}

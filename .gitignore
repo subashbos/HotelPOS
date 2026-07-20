@@ -147,6 +147,9 @@ coverage*.json
 coverage*.xml
 coverage*.info
 
+# Angular/karma coverage output
+src/HotelPOS.Client/coverage/
+
 # Visual Studio code coverage results
 *.coverage
 *.coveragexml
@@ -369,6 +372,8 @@ FodyWeavers.xsd
 # Compiled application output (publish/release builds)
 Build/
 build/
+.codex-build/
+*.sarif
 
 # SQLite database files (runtime data, not source)
 *.db
@@ -378,7 +383,8 @@ build/
 *.sqlite3
 
 # Local / development app settings (may contain secrets)
-appsettings.Development.json
+# appsettings.Development.json is tracked as a template with no secrets -
+# actual secrets (e.g. Jwt:Key) go through dotnet user-secrets instead.
 appsettings.Local.json
 secrets.json
 
@@ -395,6 +401,11 @@ backups/
 [Tt]mp/
 .DS_Store
 Thumbs.db
+
+# Claude Code local/runtime state (launch.json is shared config, keep that tracked)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/desktop.ini
 
 # ==========================================
 # Angular & Node.js

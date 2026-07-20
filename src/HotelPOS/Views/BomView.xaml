@@ -1,0 +1,235 @@
+<UserControl x:Class="HotelPOS.Views.BomView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:HotelPOS.ViewModels"
+             xmlns:local="clr-namespace:HotelPOS"
+             mc:Ignorable="d" d:DesignHeight="750" d:DesignWidth="1200">
+
+    <UserControl.Resources>
+        <local:NullToBoolConverter x:Key="NullToBoolConverter"/>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="📋  Bill of Materials — Recipe Management" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Define ingredients and wastage percentages for each menu item. The system calculates effective food cost and gross margin automatically."
+                           Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ══ MAIN CONTENT ══ -->
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ── LEFT: Menu Item Selector ── -->
+            <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="🍽 Menu Items" Style="{StaticResource H3TextBlockStyle}" Margin="0,0,0,12"/>
+
+                    <TextBox Grid.Row="1" Padding="8,6" FontSize="13" Margin="0,0,0,10"
+                             Text="{Binding ItemSearchText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="{DynamicResource AppBackground}"
+                             BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                             ToolTip="Search menu item"/>
+
+                    <ListBox Grid.Row="2"
+                             ItemsSource="{Binding MenuItems}"
+                             SelectedItem="{Binding SelectedItem}"
+                             Background="Transparent" BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="4,6">
+                                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Medium"
+                                               Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Price, StringFormat='₹{0:N2}'}"
+                                               FontSize="11" Foreground="{DynamicResource TextMuted}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- ── RIGHT: BOM Editor ── -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Action Bar -->
+                <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1" CornerRadius="8" Padding="16,10" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}">
+                            <TextBlock.Text>
+                                <Binding Path="SelectedItem.Name" FallbackValue="Select a menu item to view or edit its recipe"/>
+                            </TextBlock.Text>
+                        </TextBlock>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Content="＋  Add Ingredient" Command="{Binding AddIngredientCommand}"
+                                    Style="{StaticResource SecondaryBtn}" Padding="12,8" Margin="0,0,8,0"
+                                    IsEnabled="{Binding SelectedItem, Converter={StaticResource NullToBoolConverter}}"/>
+                            <Button Content="💾  Save Recipe" Command="{Binding SaveBomCommand}"
+                                    Style="{StaticResource PrimaryBtn}" Padding="12,8" Margin="0,0,8,0"
+                                    IsEnabled="{Binding SelectedItem, Converter={StaticResource NullToBoolConverter}}"/>
+                            <Button Content="🗑  Clear" Command="{Binding ClearBomCommand}"
+                                    Style="{StaticResource DangerBtn}" Padding="12,8"
+                                    IsEnabled="{Binding SelectedItem, Converter={StaticResource NullToBoolConverter}}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Ingredient DataGrid -->
+                <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1" CornerRadius="8" Margin="0,0,0,12">
+                    <DataGrid x:Name="BomGrid"
+                              ItemsSource="{Binding BomRows}"
+                              SelectedItem="{Binding SelectedBomRow}"
+                              AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                              SelectionMode="Single" GridLinesVisibility="Horizontal"
+                              HeadersVisibility="Column" Background="Transparent"
+                              RowBackground="Transparent"
+                              AlternatingRowBackground="{DynamicResource AppBackground}"
+                              EnableRowVirtualization="True">
+                        <DataGrid.Columns>
+
+                            <!-- Ingredient selector -->
+                            <DataGridTemplateColumn Header="Ingredient" Width="200">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding RawMaterialName}" Padding="8,4" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox ItemsSource="{Binding DataContext.AllRawMaterials, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                  DisplayMemberPath="Name"
+                                                  SelectionChanged="IngredientComboBox_SelectionChanged"
+                                                  Tag="{Binding}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" IsReadOnly="True" Width="60"/>
+
+                            <DataGridTextColumn Header="Qty Required" Width="110"
+                                               Binding="{Binding QuantityRequired, UpdateSourceTrigger=PropertyChanged, StringFormat=N3}"/>
+
+                            <DataGridTextColumn Header="Wastage %" Width="90"
+                                               Binding="{Binding WastagePercentage, UpdateSourceTrigger=PropertyChanged, StringFormat=N1}">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding WastagePercentage}" Value="0">
+                                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Header="Eff. Qty" Binding="{Binding EffectiveQuantity, StringFormat=N3}" IsReadOnly="True" Width="90"/>
+                            <DataGridTextColumn Header="Cost/Unit (₹)" Binding="{Binding CostPerUnit, StringFormat=N2}" IsReadOnly="True" Width="100"/>
+                            <DataGridTextColumn Header="Wastage Cost (₹)" Binding="{Binding WastageCost, StringFormat=N2}" IsReadOnly="True" Width="115"/>
+                            <DataGridTextColumn Header="Total Cost (₹)" Binding="{Binding IngredientCost, StringFormat=N2}" IsReadOnly="True" Width="110"/>
+
+                            <!-- Delete row -->
+                            <DataGridTemplateColumn Header="" Width="50">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="✕" Foreground="Red" Background="Transparent" BorderThickness="0"
+                                                FontSize="14" FontWeight="Bold" Cursor="Hand"
+                                                Command="{Binding DataContext.RemoveIngredientCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+
+                <!-- ── Cost Summary Footer ── -->
+                <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1" CornerRadius="10" Padding="24,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                            <TextBlock Text="Net Ingredient Cost" Style="{StaticResource FieldLabel}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding TotalNetCost, StringFormat='₹{0:N2}'}"
+                                       FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="0" Text="＋" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource TextMuted}" Margin="0,0,-8,0"/>
+
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                            <TextBlock Text="Wastage Cost" Style="{StaticResource FieldLabel}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding TotalWastageCost, StringFormat='₹{0:N2}'}"
+                                       FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource DangerBrush}"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="1" Text="=" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource TextMuted}" Margin="0,0,-8,0"/>
+
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                            <TextBlock Text="Total Food Cost" Style="{StaticResource FieldLabel}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding TotalFoodCost, StringFormat='₹{0:N2}'}"
+                                       FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource PrimaryBrush}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                            <TextBlock Text="Menu Price" Style="{StaticResource FieldLabel}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding MenuPrice, StringFormat='₹{0:N2}'}"
+                                       FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimary}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="4" HorizontalAlignment="Center">
+                            <TextBlock Text="Gross Margin" Style="{StaticResource FieldLabel}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding GrossMargin, StringFormat='{}{0:N1}%'}"
+                                       FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource SuccessBrush}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

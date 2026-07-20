@@ -1,0 +1,141 @@
+<UserControl x:Class="HotelPOS.Views.UsersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="900">
+
+    <Grid Background="{DynamicResource AppBackground}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ══ LEFT: User List ══ -->
+        <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="All Users" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Manage team accounts, roles and access." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <DataGrid x:Name="UsersGrid" Grid.Row="2"
+                          Style="{StaticResource PremiumGrid}"
+                          ItemsSource="{Binding Users}"
+                          SelectionChanged="UsersGrid_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Padding"           Value="14,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="USERNAME"  Binding="{Binding Username}"  Width="*">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Padding"           Value="14,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    <Setter Property="FontWeight"        Value="SemiBold"/>
+                                    
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="ROLE"      Binding="{Binding Role}"       Width="110">
+                             <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                    
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="LAST LOGIN" Binding="{Binding LastLoginUtc, StringFormat='{}{0:dd-MMM-yyyy HH:mm}'}" Width="160">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Padding"           Value="14,0"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTemplateColumn Header="STATUS" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="{DynamicResource ControlCornerRadius}" Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                        <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock VerticalAlignment="Center" FontSize="{StaticResource FontSizeCaption}" FontWeight="SemiBold" Foreground="White">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Text" Value="Active"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsActive}" Value="False">
+                                                            <Setter Property="Text" Value="Disabled"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Action bar below grid -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,12,0,0">
+                    <Button Content="✅  Enable" Style="{StaticResource PrimaryBtn}" Click="Enable_Click" Margin="0,0,10,0"/>
+                    <Button Content="🚫  Disable" Style="{StaticResource PrimaryBtn}" Click="Disable_Click" Margin="0,0,10,0"/>
+                    <Button Content="🔑  Reset Password" Style="{StaticResource SecondaryBtn}" Click="ResetPwd_Click" Margin="0,0,10,0"/>
+                    <Button Content="✉  Set Email" Style="{StaticResource SecondaryBtn}" Click="SetEmail_Click" Margin="0,0,10,0"/>
+                    <Button Content="🗑  Delete" Style="{StaticResource DangerBtn}" Click="Delete_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ══ RIGHT: Add New User ══ -->
+        <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Border Padding="24">
+                    <StackPanel>
+                    <TextBlock Text="Add New User" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="Create a new team member account." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,20"/>
+
+                    <TextBlock Text="USERNAME" Style="{StaticResource Label}"/>
+                    <TextBox x:Name="NewUsernameBox" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="PASSWORD" Style="{StaticResource Label}"/>
+                    <PasswordBox x:Name="NewPasswordBox" Margin="0,0,0,16"/>
+
+                    <TextBlock Text="ROLE" Style="{StaticResource Label}"/>
+                    <ComboBox x:Name="NewRoleCombo" Margin="0,0,0,24"/>
+
+                    <Button Content="➕  Create User" Style="{StaticResource PrimaryBtn}" Click="AddUser_Click" HorizontalAlignment="Stretch"/>
+
+                    <!-- Feedback -->
+                    <Border x:Name="FeedbackBorder" Margin="0,16,0,0" Padding="14,10" CornerRadius="6" Visibility="Collapsed">
+                        <TextBlock x:Name="FeedbackText" TextWrapping="Wrap" FontSize="13"/>
+                    </Border>
+                    </StackPanel>
+                </Border>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>
