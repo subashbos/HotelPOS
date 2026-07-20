@@ -5,14 +5,17 @@ using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace HotelPOS.ViewModels
 {
-    public partial class ExpenseEntryViewModel : ObservableObject
+    public partial class ExpenseEntryViewModel : ObservableObject, IEntryDialogViewModel
     {
         private readonly INotificationService _notificationService;
 
         public event EventHandler<bool>? RequestClose;
+
+        ICommand IEntryDialogViewModel.SaveCommand => SaveCommand;
 
         [ObservableProperty]
         private int _id;
@@ -88,13 +91,9 @@ namespace HotelPOS.ViewModels
 
         public bool ValidateTitle() // NOSONAR
         {
-            if (string.IsNullOrWhiteSpace(Title))
-            {
-                TitleError = "Title is required";
-                return false;
-            }
-            TitleError = string.Empty;
-            return true;
+            var isValid = EntryValidation.ValidateRequired(Title, "Title", out var error);
+            TitleError = error;
+            return isValid;
         }
 
         public bool ValidateAmount() // NOSONAR

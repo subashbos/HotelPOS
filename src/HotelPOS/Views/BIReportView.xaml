@@ -35,22 +35,26 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Title & Filter Bar -->
+            <RowDefinition Height="Auto"/> <!-- Header Banner -->
+            <RowDefinition Height="Auto"/> <!-- Filter Bar -->
             <RowDefinition Height="*"/>    <!-- Tabs Content -->
         </Grid.RowDefinitions>
 
-        <!-- Header and Date Filters -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,20">
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="📈  Reporting &amp; Business Intelligence" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Eliminate blind spots, monitor margins, track wastage, and plan inventory" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Date Filters -->
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-
-                <StackPanel>
-                    <TextBlock Text="Reporting &amp; Business Intelligence" Style="{StaticResource HeroTextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Eliminate blind spots, monitor margins, track wastage, and plan inventory" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
-                </StackPanel>
 
                 <!-- Global Date Filter -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -64,7 +68,7 @@
                             </StackPanel>
                         </Border>
                     </StackPanel>
-                    
+
                     <Button Click="Refresh_Click" Style="{StaticResource PrimaryBtn}" Width="36" Height="36" Padding="0" Margin="0,15,0,0" ToolTip="Refresh BI Analytics">
                         <TextBlock Text="↻" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Button>
@@ -73,7 +77,7 @@
         </Border>
 
         <!-- Main Tab Area -->
-        <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="16">
+        <TabControl Grid.Row="2" Background="Transparent" BorderThickness="0" Margin="16">
             <TabControl.Resources>
                 <Style TargetType="TabItem">
                     <Setter Property="HeaderTemplate">
@@ -137,7 +141,7 @@
                             <Border Grid.Column="6" Style="{StaticResource MetricCardBorder}">
                                 <StackPanel>
                                     <TextBlock Text="Total Wastage Cost" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtWastageCost" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#E53935"/>
+                                    <TextBlock x:Name="TxtWastageCost" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="{DynamicResource DangerBrush}"/>
                                     <TextBlock Text="Inventory lost or spoiled" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -192,8 +196,8 @@
                                                             <ColumnDefinition Width="2"/>
                                                             <ColumnDefinition Width="*"/>
                                                         </Grid.ColumnDefinitions>
-                                                        <Border Grid.Column="0" Height="{Binding BarHeightRevenue}" Width="14" Background="#4facfe" CornerRadius="4,4,0,0" ToolTip="{Binding ToolTipRevenue}" VerticalAlignment="Bottom"/>
-                                                        <Border Grid.Column="2" Height="{Binding BarHeightProfit}" Width="14" Background="#2ecc71" CornerRadius="4,4,0,0" ToolTip="{Binding ToolTipProfit}" VerticalAlignment="Bottom"/>
+                                                        <Border Grid.Column="0" Height="{Binding BarHeightRevenue}" Width="14" Background="{DynamicResource ChartRevenueBarBrush}" CornerRadius="4,4,0,0" ToolTip="{Binding ToolTipRevenue}" VerticalAlignment="Bottom"/>
+                                                        <Border Grid.Column="2" Height="{Binding BarHeightProfit}" Width="14" Background="{DynamicResource ChartProfitBarBrush}" CornerRadius="4,4,0,0" ToolTip="{Binding ToolTipProfit}" VerticalAlignment="Bottom"/>
                                                     </Grid>
                                                     <TextBlock Grid.Row="2" Text="{Binding MonthName}" FontSize="9" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 </Grid>
@@ -282,16 +286,16 @@
                                                     <Style TargetType="Border">
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding MarginPercentage, Converter={StaticResource MarginConverter}}" Value="Low">
-                                                                <Setter Property="Background" Value="#FFEBEE"/>
-                                                                <Setter Property="BorderBrush" Value="#FFCDD2"/>
+                                                                <Setter Property="Background" Value="{DynamicResource BadgeDangerBg}"/>
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource BadgeDangerBorder}"/>
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding MarginPercentage, Converter={StaticResource MarginConverter}}" Value="Mid">
-                                                                <Setter Property="Background" Value="#FFF3E0"/>
-                                                                <Setter Property="BorderBrush" Value="#FFE0B2"/>
+                                                                <Setter Property="Background" Value="{DynamicResource BadgeWarningBg}"/>
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource BadgeWarningBorder}"/>
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding MarginPercentage, Converter={StaticResource MarginConverter}}" Value="High">
-                                                                <Setter Property="Background" Value="#E8F5E9"/>
-                                                                <Setter Property="BorderBrush" Value="#C8E6C9"/>
+                                                                <Setter Property="Background" Value="{DynamicResource BadgeSuccessBg}"/>
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource BadgeSuccessBorder}"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -301,13 +305,13 @@
                                                         <Style TargetType="TextBlock">
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding MarginPercentage, Converter={StaticResource MarginConverter}}" Value="Low">
-                                                                    <Setter Property="Foreground" Value="#C62828"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource BadgeDangerFg}"/>
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding MarginPercentage, Converter={StaticResource MarginConverter}}" Value="Mid">
-                                                                    <Setter Property="Foreground" Value="#EF6C00"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource BadgeWarningFg}"/>
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding MarginPercentage, Converter={StaticResource MarginConverter}}" Value="High">
-                                                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource BadgeSuccessFg}"/>
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -428,16 +432,16 @@
                                                     <Style TargetType="Border">
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding AlertLevel}" Value="Critical">
-                                                                <Setter Property="Background" Value="#FFEBEE"/>
-                                                                <Setter Property="BorderBrush" Value="#FFCDD2"/>
+                                                                <Setter Property="Background" Value="{DynamicResource BadgeDangerBg}"/>
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource BadgeDangerBorder}"/>
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding AlertLevel}" Value="Warning">
-                                                                <Setter Property="Background" Value="#FFF3E0"/>
-                                                                <Setter Property="BorderBrush" Value="#FFE0B2"/>
+                                                                <Setter Property="Background" Value="{DynamicResource BadgeWarningBg}"/>
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource BadgeWarningBorder}"/>
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding AlertLevel}" Value="Normal">
-                                                                <Setter Property="Background" Value="#E8F5E9"/>
-                                                                <Setter Property="BorderBrush" Value="#C8E6C9"/>
+                                                                <Setter Property="Background" Value="{DynamicResource BadgeSuccessBg}"/>
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource BadgeSuccessBorder}"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -447,13 +451,13 @@
                                                         <Style TargetType="TextBlock">
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding AlertLevel}" Value="Critical">
-                                                                    <Setter Property="Foreground" Value="#C62828"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource BadgeDangerFg}"/>
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding AlertLevel}" Value="Warning">
-                                                                    <Setter Property="Foreground" Value="#EF6C00"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource BadgeWarningFg}"/>
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding AlertLevel}" Value="Normal">
-                                                                    <Setter Property="Foreground" Value="#2E7D32"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource BadgeSuccessFg}"/>
                                                                 </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
@@ -477,7 +481,7 @@
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding DaysRemaining}" Value="0">
                                                                 <Setter Property="Text" Value="Out of Stock"/>
-                                                                <Setter Property="Foreground" Value="#C62828"/>
+                                                                <Setter Property="Foreground" Value="{DynamicResource BadgeDangerFg}"/>
                                                                 <Setter Property="FontWeight" Value="Bold"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>

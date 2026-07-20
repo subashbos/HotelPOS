@@ -17,27 +17,23 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Filters Header -->
+            <RowDefinition Height="Auto"/> <!-- Header Banner -->
+            <RowDefinition Height="Auto"/> <!-- Filters -->
             <RowDefinition Height="*"/>    <!-- DataGrid -->
         </Grid.RowDefinitions>
 
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="🧾  Detailed Sales Report" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Analyze your transaction history with granular filters" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
         <!-- Top Filter Bar -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,24">
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,16">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="20"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- Title -->
-                <StackPanel>
-                    <TextBlock Text="Detailed Sales Report" Style="{StaticResource HeroTextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Analyze your transaction history with granular filters" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
-                </StackPanel>
-
                 <!-- Filters Grid -->
-                <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/> <!-- Date -->
                         <ColumnDefinition Width="16"/>
@@ -116,12 +112,11 @@
                             <TextBlock Text="↻" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
                         </Button>
                     </StackPanel>
-                </Grid>
             </Grid>
         </Border>
 
         <!-- Main Content (Grid) -->
-        <Border Grid.Row="1" Padding="32,24">
+        <Border Grid.Row="2" Padding="32,24">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -137,7 +132,7 @@
                         <DataGridTemplateColumn Header="TYPE" Width="85" HeaderStyle="{StaticResource CenterHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Border Background="#F0F4F8" CornerRadius="6" Padding="8,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Background="{DynamicResource BadgeNeutralBg}" CornerRadius="6" Padding="8,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding OrderType}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                                     </Border>
                                 </DataTemplate>
@@ -156,22 +151,22 @@
                                     <Border CornerRadius="6" Padding="8,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <Border.Style>
                                             <Style TargetType="Border">
-                                                <Setter Property="Background" Value="#E2E8F0"/>
+                                                <Setter Property="Background" Value="{DynamicResource BadgeNeutralBg}"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Status}" Value="Paid">
-                                                        <Setter Property="Background" Value="#D4EDDA"/>
+                                                        <Setter Property="Background" Value="{DynamicResource BadgeSuccessBg}"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding Status}" Value="Partial">
-                                                        <Setter Property="Background" Value="#FFF3CD"/>
+                                                        <Setter Property="Background" Value="{DynamicResource BadgeWarningBg}"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding Status}" Value="Void">
-                                                        <Setter Property="Background" Value="#F8D7DA"/>
+                                                        <Setter Property="Background" Value="{DynamicResource BadgeDangerBg}"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding Status}" Value="Refunded">
-                                                        <Setter Property="Background" Value="#CCE5FF"/>
+                                                        <Setter Property="Background" Value="{DynamicResource BadgeInfoBg}"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding Status}" Value="PartiallyRefunded">
-                                                        <Setter Property="Background" Value="#E8F4F8"/>
+                                                        <Setter Property="Background" Value="{DynamicResource BadgeTealBg}"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -179,22 +174,22 @@
                                         <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="Bold">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="#495057"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource BadgeNeutralFg}"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Status}" Value="Paid">
-                                                            <Setter Property="Foreground" Value="#155724"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource BadgeSuccessFg}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Status}" Value="Partial">
-                                                            <Setter Property="Foreground" Value="#856404"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource BadgeWarningFg}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Status}" Value="Void">
-                                                            <Setter Property="Foreground" Value="#721C24"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource BadgeDangerFg}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Status}" Value="Refunded">
-                                                            <Setter Property="Foreground" Value="#004085"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource BadgeInfoFg}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Status}" Value="PartiallyRefunded">
-                                                            <Setter Property="Foreground" Value="#104F55"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource BadgeTealFg}"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
