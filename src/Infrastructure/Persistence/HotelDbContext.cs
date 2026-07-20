@@ -41,6 +41,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public DbSet<SalaryStructure> SalaryStructures { get; set; }
         public DbSet<PayrollRun> PayrollRuns { get; set; }
         public DbSet<Payslip> Payslips { get; set; }
+        public DbSet<Customer> Customers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -156,6 +157,15 @@ namespace HotelPOS.Infrastructure.Persistence
             modelBuilder.Entity<Employee>()
                 .HasIndex(e => e.EmployeeCode)
                 .IsUnique();
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Customer)
+                .WithMany()
+                .HasForeignKey(o => o.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Customer>()
+                .HasIndex(c => c.Phone);
 
             modelBuilder.Entity<Attendance>()
                 .HasOne(a => a.Employee)
@@ -280,6 +290,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 32, RoleId = 1, ModuleName = PermissionModules.HrAttendance, CanAccess = true },
                 new RolePermission { Id = 33, RoleId = 1, ModuleName = PermissionModules.HrLeave, CanAccess = true },
                 new RolePermission { Id = 34, RoleId = 1, ModuleName = PermissionModules.HrPayroll, CanAccess = true },
+                new RolePermission { Id = 39, RoleId = 1, ModuleName = PermissionModules.Customers, CanAccess = true },
 
                 // Cashier: Restricted access
                 new RolePermission { Id = 11, RoleId = 2, ModuleName = PermissionModules.Dashboard, CanAccess = false },
@@ -299,7 +310,8 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 35, RoleId = 2, ModuleName = PermissionModules.HrEmployees, CanAccess = false },
                 new RolePermission { Id = 36, RoleId = 2, ModuleName = PermissionModules.HrAttendance, CanAccess = false },
                 new RolePermission { Id = 37, RoleId = 2, ModuleName = PermissionModules.HrLeave, CanAccess = false },
-                new RolePermission { Id = 38, RoleId = 2, ModuleName = PermissionModules.HrPayroll, CanAccess = false }
+                new RolePermission { Id = 38, RoleId = 2, ModuleName = PermissionModules.HrPayroll, CanAccess = false },
+                new RolePermission { Id = 40, RoleId = 2, ModuleName = PermissionModules.Customers, CanAccess = true }
             );
 
 

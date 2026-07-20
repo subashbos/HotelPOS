@@ -2,6 +2,7 @@ using AutoMapper;
 using HotelPOS.Application.DTOs.Attendance;
 using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.DTOs.Category;
+using HotelPOS.Application.DTOs.Customer;
 using HotelPOS.Application.DTOs.Employee;
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.DTOs.Item;
@@ -64,6 +65,13 @@ namespace HotelPOS.Application.Common.Mappings
 
             // ── Cash Session (Shift) ─────────────────────────────────────────
             CreateMap<CashSession, CashSessionDto>();
+
+            // ── Customer ──────────────────────────────────────────────────────
+            CreateMap<SaveCustomerDto, Customer>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()))
+                .ForMember(dest => dest.Gstin, opt => opt.MapFrom(src =>
+                    string.IsNullOrWhiteSpace(src.Gstin) ? null : src.Gstin.Trim().ToUpperInvariant()));
+            CreateMap<Customer, CustomerDto>().ReverseMap();
         }
 
         private void CreateUserOrderAndAuditMaps()

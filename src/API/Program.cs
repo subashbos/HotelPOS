@@ -50,6 +50,7 @@ builder.Services.AddScoped<IPayrollService, PayrollService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IEmailService, HotelPOS.Infrastructure.Services.SmtpEmailService>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 // ── MediatR Configuration ─────────────────────────────────────────────────
 builder.Services.AddMediatR(cfg =>

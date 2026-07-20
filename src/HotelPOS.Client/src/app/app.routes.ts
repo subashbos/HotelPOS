@@ -29,6 +29,7 @@ import { RolesComponent } from "./views/admin/roles/roles.component";
 import { UsersComponent } from "./views/admin/users/users.component";
 import { AuditComponent } from "./views/admin/audit/audit.component";
 import { AccountComponent } from "./views/admin/account/account.component";
+import { CustomersComponent } from "./views/admin/customers/customers.component";
 
 // auth views
 import { LoginComponent } from "./views/auth/login/login.component";
@@ -66,6 +67,7 @@ export const routes: Routes = [
       { path: "users", component: UsersComponent },
       { path: "audit", component: AuditComponent },
       { path: "account", component: AccountComponent },
+      { path: "customers", component: CustomersComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },

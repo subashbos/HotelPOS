@@ -43,6 +43,7 @@ namespace HotelPOS
         private LeaveView? _cachedLeave;
         private PayrollView? _cachedPayroll;
         private ExpenseView? _cachedExpenses;
+        private CustomerView? _cachedCustomers;
         private readonly IThemeService _themeService;
         private readonly INotificationService _notificationService;
 
@@ -240,6 +241,7 @@ namespace HotelPOS
             NavSales.Visibility = Vis(HasPermission(PermissionModules.SalesReport));
             NavShift.Visibility = Vis(HasPermission("Shift"));
             NavExpenses.Visibility = Vis(HasPermission(PermissionModules.Expenses));
+            NavCustomers.Visibility = Vis(HasPermission(PermissionModules.Customers));
 
             NavMenu.Visibility = Vis(HasPermission("Items"));
             NavTables.Visibility = Vis(HasPermission("Tables"));
@@ -458,12 +460,19 @@ namespace HotelPOS
             SetActive(NavPayroll);
         }
 
+        private void NavCustomers_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedCustomers ??= _serviceProvider.GetRequiredService<CustomerView>();
+            MainContentArea.Content = _cachedCustomers;
+            SetActive(NavCustomers);
+        }
+
         private void SetActive(Button active)
         {
             // 1. Enable all navigation buttons
             var allButtons = new[]
             {
-                NavBilling, NavShift, NavExpenses,
+                NavBilling, NavShift, NavExpenses, NavCustomers,
                 NavMenu, NavCats, NavTables, NavPurchase, NavSuppliers, NavRawMaterials, NavBom,
                 NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
                 NavEmployees, NavAttendance, NavLeave, NavPayroll,
@@ -499,7 +508,7 @@ namespace HotelPOS
             else
             {
                 // Expanded mode: show header ONLY if at least one child button is visible
-                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible || NavExpenses.Visibility == Visibility.Visible)
+                HeaderOps.Visibility = (NavBilling.Visibility == Visibility.Visible || NavShift.Visibility == Visibility.Visible || NavExpenses.Visibility == Visibility.Visible || NavCustomers.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
 
                 HeaderInv.Visibility = (NavMenu.Visibility == Visibility.Visible || NavCats.Visibility == Visibility.Visible || NavTables.Visibility == Visibility.Visible || NavPurchase.Visibility == Visibility.Visible || NavSuppliers.Visibility == Visibility.Visible || NavRawMaterials.Visibility == Visibility.Visible || NavBom.Visibility == Visibility.Visible)
