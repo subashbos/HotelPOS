@@ -5,14 +5,17 @@ using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 
 namespace HotelPOS.ViewModels
 {
-    public partial class SupplierEntryViewModel : ObservableObject
+    public partial class SupplierEntryViewModel : ObservableObject, IEntryDialogViewModel
     {
         private readonly INotificationService _notificationService;
 
         public event EventHandler<bool>? RequestClose;
+
+        ICommand IEntryDialogViewModel.SaveCommand => SaveCommand;
 
         [ObservableProperty]
         private int _id;
@@ -122,47 +125,23 @@ namespace HotelPOS.ViewModels
 
         public bool ValidateName() // NOSONAR
         {
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                NameError = "Supplier Name is required";
-                return false;
-            }
-            NameError = string.Empty;
-            return true;
+            var isValid = EntryValidation.ValidateRequired(Name, "Supplier Name", out var error);
+            NameError = error;
+            return isValid;
         }
 
         public bool ValidatePhone() // NOSONAR
         {
-            if (string.IsNullOrWhiteSpace(Phone))
-            {
-                PhoneError = string.Empty;
-                return true;
-            }
-            var cleanPhone = Regex.Replace(Phone, @"[^\d]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
-            if (cleanPhone.Length < 10 || cleanPhone.Length > 15)
-            {
-                PhoneError = "Invalid phone number (must be 10-15 digits)";
-                return false;
-            }
-            PhoneError = string.Empty;
-            return true;
+            var isValid = EntryValidation.ValidatePhone(Phone, out var error);
+            PhoneError = error;
+            return isValid;
         }
 
         public bool ValidateEmail() // NOSONAR
         {
-            if (string.IsNullOrWhiteSpace(Email))
-            {
-                EmailError = string.Empty;
-                return true;
-            }
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
-            if (!emailRegex.IsMatch(Email.Trim()))
-            {
-                EmailError = "Please enter a valid Email ID";
-                return false;
-            }
-            EmailError = string.Empty;
-            return true;
+            var isValid = EntryValidation.ValidateEmail(Email, out var error);
+            EmailError = error;
+            return isValid;
         }
 
         /// <summary>

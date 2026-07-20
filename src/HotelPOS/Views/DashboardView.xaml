@@ -38,7 +38,7 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel>
-                        <TextBlock Text="Executive Dashboard" Style="{StaticResource H1TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                        <TextBlock Text="Executive Dashboard" Style="{StaticResource HeroTextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
                         <TextBlock Text="Real-time business performance analytics" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                     </StackPanel>
 
@@ -98,7 +98,7 @@
                             <StaticResource ResourceKey="RevenueGradient"/>
                         </Border.Background>
                         <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="#0083B0"/>
+                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="{DynamicResource RevenueAccentColor}"/>
                         </Border.Effect>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -109,7 +109,7 @@
                                 <TextBlock Text="TOTAL REVENUE" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
                                 <TextBlock x:Name="RevenueValueText" Text="Rs. 0.00" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                             </StackPanel>
-                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="#25FFFFFF" VerticalAlignment="Center">
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="{DynamicResource IconBadgeOverlayBrush}" VerticalAlignment="Center">
                                 <TextBlock Text="💰" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
@@ -121,7 +121,7 @@
                             <StaticResource ResourceKey="OrdersGradient"/>
                         </Border.Background>
                         <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="#7028E4"/>
+                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="{DynamicResource OrdersAccentColor}"/>
                         </Border.Effect>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -132,7 +132,7 @@
                                 <TextBlock Text="ORDERS PLACED" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
                                 <TextBlock x:Name="OrdersValueText" Text="0" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                             </StackPanel>
-                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="#25FFFFFF" VerticalAlignment="Center">
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="{DynamicResource IconBadgeOverlayBrush}" VerticalAlignment="Center">
                                 <TextBlock Text="🧾" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
@@ -144,7 +144,7 @@
                             <StaticResource ResourceKey="AvgTicketGradient"/>
                         </Border.Background>
                         <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="#11998E"/>
+                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="{DynamicResource AvgTicketAccentColor}"/>
                         </Border.Effect>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -155,7 +155,7 @@
                                 <TextBlock Text="AVG. TICKET" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
                                 <TextBlock x:Name="AvgValueText" Text="Rs. 0.00" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                             </StackPanel>
-                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="#25FFFFFF" VerticalAlignment="Center">
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="{DynamicResource IconBadgeOverlayBrush}" VerticalAlignment="Center">
                                 <TextBlock Text="📈" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
@@ -167,7 +167,7 @@
                             <StaticResource ResourceKey="TopItemGradient"/>
                         </Border.Background>
                         <Border.Effect>
-                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="#EB3349"/>
+                            <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.2" Color="{DynamicResource TopItemAccentColor}"/>
                         </Border.Effect>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -178,7 +178,7 @@
                                 <TextBlock Text="TOP ITEM" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
                                 <TextBlock x:Name="TopItemText" Text="—" Style="{StaticResource H2TextBlockStyle}" Foreground="White" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
-                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="#25FFFFFF" VerticalAlignment="Center">
+                            <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="{DynamicResource IconBadgeOverlayBrush}" VerticalAlignment="Center">
                                 <TextBlock Text="⭐" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                         </Grid>
@@ -226,7 +226,7 @@
                                                                     <Setter Property="Opacity" Value="0.9"/>
                                                                     <Setter Property="Effect">
                                                                         <Setter.Value>
-                                                                            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="#00C6FB" Opacity="0.5"/>
+                                                                            <DropShadowEffect BlurRadius="10" ShadowDepth="0" Color="{DynamicResource ChartBarAccentColor}" Opacity="0.5"/>
                                                                         </Setter.Value>
                                                                     </Setter>
                                                                 </Trigger>

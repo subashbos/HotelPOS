@@ -7,6 +7,22 @@
 
 
     <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header Banner -->
+            <RowDefinition Height="*"/>     <!-- Content -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="🔐  Roles &amp; Permissions" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Define access levels and control module permissions for your team."
+                           Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ══ MAIN CONTENT ══ -->
+        <Grid Grid.Row="1" Margin="24">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="20"/>
@@ -137,5 +153,6 @@
                 </Grid>
             </Grid>
         </Border>
+        </Grid>
     </Grid>
 </UserControl>

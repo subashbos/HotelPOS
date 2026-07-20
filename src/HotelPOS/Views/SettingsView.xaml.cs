@@ -10,24 +10,17 @@ namespace HotelPOS.Views
     public partial class SettingsView : UserControl
     {
         private readonly INotificationService _notificationService;
-        private readonly UsersView _usersView;
         private SystemSetting? _current;
 
-        public SettingsView(IUserService userService, IRoleService roleService, INotificationService notificationService)
+        public SettingsView(INotificationService notificationService)
         {
             InitializeComponent();
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
             {
-                App.RegisterTestService(userService);
-                App.RegisterTestService(roleService);
                 App.RegisterTestService(notificationService);
             }
-
-            // Embed UsersView into the Users tab
-            _usersView = new UsersView(userService, roleService);
-            UsersHost.Content = _usersView;
 
             Loaded += async (s, e) =>
             {
