@@ -29,6 +29,26 @@ import { TablesComponent } from './views/admin/tables/tables.component';
 import { LoginComponent } from './views/auth/login/login.component';
 import { RegisterComponent } from './views/auth/register/register.component';
 import { BillingComponent } from './views/admin/billing/billing.component';
+import { CategoriesComponent } from './views/admin/categories/categories.component';
+import { ItemsComponent } from './views/admin/items/items.component';
+import { SuppliersComponent } from './views/admin/suppliers/suppliers.component';
+import { PurchasesComponent } from './views/admin/purchases/purchases.component';
+import { ShiftSessionComponent } from './views/admin/shift-session/shift-session.component';
+import { ExpensesComponent } from './views/admin/expenses/expenses.component';
+import { EmployeesComponent } from './views/admin/employees/employees.component';
+import { AttendanceComponent } from './views/admin/attendance/attendance.component';
+import { LeaveComponent } from './views/admin/leave/leave.component';
+import { PayrollComponent } from './views/admin/payroll/payroll.component';
+import { SalesReportComponent } from './views/admin/sales-report/sales-report.component';
+import { ItemReportComponent } from './views/admin/item-report/item-report.component';
+import { PurchaseReportComponent } from './views/admin/purchase-report/purchase-report.component';
+import { LedgerComponent } from './views/admin/ledger/ledger.component';
+import { JournalComponent } from './views/admin/journal/journal.component';
+import { RolesComponent } from './views/admin/roles/roles.component';
+import { UsersComponent } from './views/admin/users/users.component';
+import { AuditComponent } from './views/admin/audit/audit.component';
+import { ForgotPasswordComponent } from './views/auth/forgot-password/forgot-password.component';
+import { AccountComponent } from './views/admin/account/account.component';
 import { CustomersComponent } from './views/admin/customers/customers.component';
 
 @NgModule({
@@ -54,6 +74,26 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
     LoginComponent,
     RegisterComponent,
     BillingComponent,
+    CategoriesComponent,
+    ItemsComponent,
+    SuppliersComponent,
+    PurchasesComponent,
+    ShiftSessionComponent,
+    ExpensesComponent,
+    EmployeesComponent,
+    AttendanceComponent,
+    LeaveComponent,
+    PayrollComponent,
+    SalesReportComponent,
+    ItemReportComponent,
+    PurchaseReportComponent,
+    LedgerComponent,
+    JournalComponent,
+    RolesComponent,
+    UsersComponent,
+    AuditComponent,
+    ForgotPasswordComponent,
+    AccountComponent,
     CustomersComponent
   ],
   imports: [
@@ -84,6 +124,26 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
     LoginComponent,
     RegisterComponent,
     BillingComponent,
+    CategoriesComponent,
+    ItemsComponent,
+    SuppliersComponent,
+    PurchasesComponent,
+    ShiftSessionComponent,
+    ExpensesComponent,
+    EmployeesComponent,
+    AttendanceComponent,
+    LeaveComponent,
+    PayrollComponent,
+    SalesReportComponent,
+    ItemReportComponent,
+    PurchaseReportComponent,
+    LedgerComponent,
+    JournalComponent,
+    RolesComponent,
+    UsersComponent,
+    AuditComponent,
+    ForgotPasswordComponent,
+    AccountComponent,
     CustomersComponent
   ]
 })

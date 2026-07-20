@@ -174,6 +174,8 @@ namespace HotelPOS.Tests.Integration
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
+            services.AddScoped<IEmailService, HotelPOS.Infrastructure.Services.SmtpEmailService>();
+            services.AddScoped<IPasswordResetService, PasswordResetService>();
 
             // AutoMapper
             var mapperCfg = new AutoMapper.MapperConfiguration(

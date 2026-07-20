@@ -1,5 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.Attendance;
+using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.DTOs.Category;
 using HotelPOS.Application.DTOs.Customer;
 using HotelPOS.Application.DTOs.Employee;
@@ -7,6 +8,7 @@ using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.DTOs.Leave;
 using HotelPOS.Application.DTOs.Payroll;
+using HotelPOS.Application.DTOs.Purchase;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application.UseCases.Items.Commands;
@@ -23,6 +25,7 @@ namespace HotelPOS.Application.Common.Mappings
             CreateUserOrderAndAuditMaps();
             CreateEmployeeAndAttendanceMaps();
             CreateLeaveAndPayrollMaps();
+            CreatePurchaseMaps();
         }
 
         private void CreateCatalogMaps()
@@ -54,6 +57,14 @@ namespace HotelPOS.Application.Common.Mappings
 
             // ── Expense ───────────────────────────────────────────────────────
             CreateMap<Expense, SaveExpenseDto>();
+            CreateMap<SaveExpenseDto, Expense>()
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title.Trim()))
+                .ForMember(dest => dest.User, opt => opt.Ignore());
+            CreateMap<Expense, ExpenseDto>()
+                .ForMember(dest => dest.CreatedByUsername, opt => opt.MapFrom(src => src.User != null ? src.User.Username : null));
+
+            // ── Cash Session (Shift) ─────────────────────────────────────────
+            CreateMap<CashSession, CashSessionDto>();
 
             // ── Customer ──────────────────────────────────────────────────────
             CreateMap<SaveCustomerDto, Customer>()
@@ -123,6 +134,15 @@ namespace HotelPOS.Application.Common.Mappings
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
                     src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null));
             CreateMap<PayrollRun, PayrollRunDto>();
+        }
+
+        private void CreatePurchaseMaps()
+        {
+            // ── Purchases ─────────────────────────────────────────────────────
+            CreateMap<Purchase, PurchaseDto>()
+                .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : null))
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.PurchaseItems));
+            CreateMap<PurchaseItem, PurchaseItemDto>();
         }
     }
 }

@@ -1,8 +1,98 @@
-<div class="flex flex-wrap">
-  <div class="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
-    <app-card-line-chart></app-card-line-chart>
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-6 px-4">
+    <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+    <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading dashboard...</p>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" *ngIf="report && !isLoading">
+      <div class="relative flex flex-col min-w-0 break-words bg-white rounded shadow-lg p-4">
+        <p class="text-xs uppercase text-blueGray-400 font-bold">Revenue (MTD)</p>
+        <p class="text-2xl font-bold text-blueGray-700">{{ report.totalRevenue | number:'1.2-2' }}</p>
+      </div>
+      <div class="relative flex flex-col min-w-0 break-words bg-white rounded shadow-lg p-4">
+        <p class="text-xs uppercase text-blueGray-400 font-bold">Orders (MTD)</p>
+        <p class="text-2xl font-bold text-blueGray-700">{{ report.totalOrders }}</p>
+      </div>
+      <div class="relative flex flex-col min-w-0 break-words bg-white rounded shadow-lg p-4">
+        <p class="text-xs uppercase text-blueGray-400 font-bold">Avg Order Value</p>
+        <p class="text-2xl font-bold text-blueGray-700">{{ report.averageOrderValue | number:'1.2-2' }}</p>
+      </div>
+      <div class="relative flex flex-col min-w-0 break-words bg-white rounded shadow-lg p-4">
+        <p class="text-xs uppercase text-blueGray-400 font-bold">Most Popular Item</p>
+        <p class="text-2xl font-bold text-blueGray-700 truncate">{{ report.mostPopularItem }}</p>
+      </div>
+    </div>
   </div>
+
+  <!-- Monthly revenue trend -->
+  <div class="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-base text-blueGray-700">Monthly Revenue (Last 12 Months)</h3>
+      </div>
+      <div class="px-6 py-4">
+        <div class="flex items-end gap-2 h-48" *ngIf="monthlyChart.length > 0">
+          <div class="flex-1 flex flex-col items-center justify-end h-full" *ngFor="let m of monthlyChart">
+            <div class="w-full bg-red-500 rounded-t" [style.height.%]="(m.revenue / maxMonthlyRevenue) * 100"></div>
+            <span class="text-[10px] text-blueGray-400 mt-1 rotate-0">{{ m.monthName }}</span>
+          </div>
+        </div>
+        <p *ngIf="monthlyChart.length === 0" class="text-blueGray-400 text-sm">No trend data yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Low stock alerts -->
   <div class="w-full xl:w-4/12 px-4">
-    <app-card-bar-chart></app-card-bar-chart>
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-base text-blueGray-700">
+          <i class="fas fa-exclamation-triangle text-amber-500 mr-2"></i> Low Stock Alerts
+        </h3>
+      </div>
+      <div class="px-6 py-4">
+        <ul class="divide-y divide-blueGray-100">
+          <li *ngFor="let alert of lowStock" class="py-2 flex justify-between items-center text-sm">
+            <span class="text-blueGray-700">{{ alert.itemName }}</span>
+            <span class="px-2 py-1 rounded text-xs font-bold uppercase"
+              [ngClass]="alert.alertLevel === 'Critical' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'">
+              {{ alert.currentStock }} left
+            </span>
+          </li>
+          <li *ngIf="lowStock.length === 0" class="py-2 text-sm text-blueGray-400">All stock levels healthy.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent orders -->
+  <div class="w-full mb-12 px-4" *ngIf="report">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <h3 class="font-semibold text-base text-blueGray-700">Recent Orders</h3>
+      </div>
+      <div class="px-6 py-4 block w-full overflow-x-auto">
+        <table class="items-center w-full bg-transparent border-collapse">
+          <thead>
+            <tr>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Invoice</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Date</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Type</th>
+              <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.recentOrders.slice(0, 8)">
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.invoiceNumber || row.orderId }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.createdAt | date:'short' }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ row.orderType }}</td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right font-semibold">{{ row.total | number:'1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="report.recentOrders.length === 0">
+              <td colspan="4" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center text-blueGray-400">No recent orders.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>

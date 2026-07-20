@@ -47,6 +47,9 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddScoped<IPayrollService, PayrollService>();
+builder.Services.AddScoped<IExpenseService>(provider => new ExpenseService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
+builder.Services.AddScoped<IEmailService, HotelPOS.Infrastructure.Services.SmtpEmailService>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 // ── MediatR Configuration ─────────────────────────────────────────────────

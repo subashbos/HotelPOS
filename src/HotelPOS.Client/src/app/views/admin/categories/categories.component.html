@@ -1,0 +1,88 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-tags text-blueGray-400 mr-2"></i> Categories
+          </h3>
+        </div>
+      </div>
+
+      <div class="px-6 py-4">
+        <!-- Add form -->
+        <form (ngSubmit)="addCategory()" class="flex flex-wrap items-end gap-3 mb-6">
+          <div class="flex-1 min-w-[200px]">
+            <label for="cat-name" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Name</label>
+            <input id="cat-name" type="text" [(ngModel)]="newName" name="newName" required
+              class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow w-full focus:outline-none focus:ring"
+              placeholder="e.g. Beverages" />
+          </div>
+          <div class="w-32">
+            <label for="cat-order" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Display Order</label>
+            <input id="cat-order" type="number" [(ngModel)]="newDisplayOrder" name="newDisplayOrder"
+              class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <button type="submit" [disabled]="isSaving || !newName.trim()"
+            class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+            <i class="fas fa-plus mr-1"></i> Add Category
+          </button>
+        </form>
+
+        <p *ngIf="saveError" class="text-red-600 text-sm mb-4">{{ saveError }}</p>
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading categories...</p>
+
+        <!-- Table -->
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+          <table class="items-center w-full bg-transparent border-collapse">
+            <thead>
+              <tr>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">S.No</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Name</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Display Order</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let category of categories; let i = index; trackBy: trackByCategoryId">
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ i + 1 }}</td>
+
+                <ng-container *ngIf="editingId === category.id; else viewName">
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                    <input type="text" [(ngModel)]="editName" name="editName"
+                      class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-xs w-full" />
+                  </td>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
+                    <input type="number" [(ngModel)]="editDisplayOrder" name="editDisplayOrder"
+                      class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-xs w-20" />
+                  </td>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
+                    <button (click)="saveEdit(category)" class="text-emerald-600 font-bold mr-3"><i class="fas fa-check"></i></button>
+                    <button (click)="cancelEdit()" class="text-blueGray-400 font-bold"><i class="fas fa-times"></i></button>
+                  </td>
+                </ng-container>
+
+                <ng-template #viewName>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold">{{ category.name }}</td>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ category.displayOrder }}</td>
+                  <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
+                    <button (click)="startEdit(category)" class="text-blueGray-500 hover:text-blueGray-700 font-bold mr-3"><i class="fas fa-pen"></i></button>
+                    <button (click)="deleteCategory(category)" class="text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash"></i></button>
+                  </td>
+                </ng-template>
+              </tr>
+              <tr *ngIf="categories.length === 0">
+                <td colspan="4" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">
+                  No categories yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
