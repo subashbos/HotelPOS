@@ -104,7 +104,7 @@
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ session.closedAt ? (session.closedAt | date:'short') : '—' }}</td>
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ session.openedBy }}</td>
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ session.openingBalance | number:'1.2-2' }}</td>
-                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ session.actualCash != null ? (session.actualCash | number:'1.2-2') : '—' }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ session.actualCash !== null && session.actualCash !== undefined ? (session.actualCash | number:'1.2-2') : '—' }}</td>
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                   <span class="px-2 py-1 rounded text-xs font-bold uppercase"
                     [ngClass]="session.status === 'Open' ? 'bg-emerald-100 text-emerald-600' : 'bg-blueGray-100 text-blueGray-500'">
