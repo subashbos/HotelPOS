@@ -64,9 +64,16 @@ namespace HotelPOS.Application.UseCases
                 await ApplyPurchaseToStockAsync(purchase);
                 await _purchaseRepository.CommitTransactionAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                await _purchaseRepository.RollbackTransactionAsync();
+                try
+                {
+                    await _purchaseRepository.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
                 throw;
             }
         }

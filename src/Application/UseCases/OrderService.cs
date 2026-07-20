@@ -122,9 +122,16 @@ namespace HotelPOS.Application.UseCases
                 }
                 return orderId;
             }
-            catch
+            catch (Exception ex)
             {
-                await _repo.RollbackTransactionAsync();
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
                 throw;
             }
         }
@@ -204,9 +211,16 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                await _repo.RollbackTransactionAsync();
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
                 throw;
             }
         }
@@ -270,9 +284,16 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                await _repo.RollbackTransactionAsync();
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
                 throw;
             }
         }
@@ -315,9 +336,16 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                await _repo.RollbackTransactionAsync();
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
                 throw;
             }
         }
@@ -402,9 +430,16 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                await _repo.RollbackTransactionAsync();
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
                 throw;
             }
         }

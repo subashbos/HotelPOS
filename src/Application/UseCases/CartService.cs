@@ -2,7 +2,7 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
-using System.Collections.Concurrent;
+
 using System;
 using System.IO;
 using System.Linq;
@@ -14,8 +14,8 @@ namespace HotelPOS.Application.UseCases
 {
     public class CartService : ICartService
     {
-        // ConcurrentDictionary for safe outer table-key access across threads
-        private readonly ConcurrentDictionary<int, List<OrderItem>> _tableCarts = new();
+        // Per-table cart storage, guarded by _lock for thread safety
+        private readonly Dictionary<int, List<OrderItem>> _tableCarts = new();
         private readonly Lock _lock = new();
         private readonly IServiceScopeFactory? _scopeFactory;
 
@@ -71,7 +71,7 @@ namespace HotelPOS.Application.UseCases
                 if (File.Exists(_cartsFilePath))
                 {
                     var json = File.ReadAllText(_cartsFilePath);
-                    var data = JsonSerializer.Deserialize<ConcurrentDictionary<int, List<OrderItem>>>(json);
+                    var data = JsonSerializer.Deserialize<Dictionary<int, List<OrderItem>>>(json);
                     if (data != null)
                     {
                         _tableCarts.Clear();
@@ -325,13 +325,25 @@ namespace HotelPOS.Application.UseCases
 
         public decimal GetGrandTotal(int tableNumber)
         {
-            var subtotal = GetSubtotal(tableNumber);
-            return subtotal + GetGstAmount(tableNumber);
+            lock (_lock)
+            {
+                var items = GetOrCreateCart(tableNumber);
+                var subtotal = items.Sum(CalculateLineTotal);
+                var gst = Math.Round(
+                    items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / MoneyPrecision.PercentDivisor)),
+                    MoneyPrecision.CurrencyDecimals);
+                return subtotal + gst;
+            }
         }
 
         private List<OrderItem> GetOrCreateCart(int tableNumber)
         {
-            return _tableCarts.GetOrAdd(tableNumber, _ => new List<OrderItem>());
+            if (!_tableCarts.TryGetValue(tableNumber, out var cart))
+            {
+                cart = new List<OrderItem>();
+                _tableCarts[tableNumber] = cart;
+            }
+            return cart;
         }
 
         public void LoadItems(int tableNumber, List<OrderItem> items)
