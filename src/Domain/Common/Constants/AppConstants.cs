@@ -69,12 +69,13 @@ namespace HotelPOS.Domain.Common.Constants
         public const string HrLeave = "HrLeave";
         public const string HrPayroll = "HrPayroll";
         public const string Expenses = "Expenses";
+        public const string Customers = "Customers";
 
         public static readonly string[] All =
         {
             Dashboard, Billing, Items, Categories, Tables,
             Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport,
-            HrEmployees, HrAttendance, HrLeave, HrPayroll, Expenses
+            HrEmployees, HrAttendance, HrLeave, HrPayroll, Expenses, Customers
         };
     }
 

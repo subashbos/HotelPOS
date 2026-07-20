@@ -16,7 +16,8 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
         string? CustomerName = null,
         string? CustomerPhone = null,
         string? CustomerGstin = null,
-        string OrderType = OrderTypes.DineIn
+        string OrderType = OrderTypes.DineIn,
+        int? CustomerId = null
     ) : IRequest<int>;
 
     public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, int>
@@ -38,7 +39,8 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
                 request.CustomerName,
                 request.CustomerPhone,
                 request.CustomerGstin,
-                request.OrderType
+                request.OrderType,
+                request.CustomerId
             ));
         }
     }

@@ -31,7 +31,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<int> SaveOrderInternalAsync(SaveOrderRequest request)
         {
-            var (items, tableNumber, discount, paymentMode, customerName, customerPhone, customerGstin, orderType) = request;
+            var (items, tableNumber, discount, paymentMode, customerName, customerPhone, customerGstin, orderType, customerId) = request;
 
             var command = new CreateOrderCommand(
                 items,
@@ -41,7 +41,8 @@ namespace HotelPOS.Application.UseCases
                 customerName,
                 customerPhone,
                 customerGstin,
-                orderType
+                orderType,
+                customerId
             );
 
             var valResult = _validator.Validate(command);
@@ -98,6 +99,7 @@ namespace HotelPOS.Application.UseCases
                 order.CustomerName = customerName;
                 order.CustomerPhone = customerPhone;
                 order.CustomerGstin = customerGstin;
+                order.CustomerId = customerId;
                 order.Status = OrderStatuses.Paid;
                 order.AmountPaid = order.TotalAmount;
                 if (paymentMode == PaymentModes.Cash) order.CashPaid = order.TotalAmount;

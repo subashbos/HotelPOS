@@ -1,0 +1,182 @@
+<div class="flex flex-wrap px-4 md:px-6 w-full">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-users text-blueGray-400 mr-2"></i> Customers
+          </h3>
+
+          <div class="flex items-center gap-3">
+            <div class="flex items-center bg-blueGray-50 rounded border border-solid border-blueGray-200 px-3 py-2">
+              <i class="fas fa-search text-blueGray-400 mr-2 text-sm"></i>
+              <label for="customer-search" class="sr-only">Search customers</label>
+              <input
+                id="customer-search"
+                type="text"
+                placeholder="Search by name, phone, email, GSTIN..."
+                class="bg-transparent border-0 outline-none text-xs text-blueGray-700 w-64 font-normal focus:ring-0 focus:outline-none"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChanged()"
+              />
+            </div>
+
+            <button
+              (click)="openAddForm()"
+              class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150"
+            >
+              <i class="fas fa-plus mr-1"></i> Add Customer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="block w-full overflow-x-auto">
+        <div *ngIf="isLoading" class="px-6 py-8 text-center text-blueGray-400 text-sm">Loading customers...</div>
+        <div *ngIf="loadError" class="px-6 py-4 text-center text-red-600 text-sm">{{ loadError }}</div>
+
+        <table *ngIf="!isLoading" class="items-center w-full bg-transparent border-collapse">
+          <thead>
+            <tr>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500">Name</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500">Phone</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500">Email</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500">GSTIN</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-right bg-blueGray-50 text-blueGray-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let customer of filteredCustomers">
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold text-blueGray-600">{{ customer.name }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-blueGray-600">{{ customer.phone }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-blueGray-600">{{ customer.email }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-blueGray-600">{{ customer.gstin }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
+                <button (click)="viewHistory(customer)" class="text-blueGray-500 hover:text-blueGray-700 text-xs font-bold uppercase mr-3"><i class="fas fa-receipt mr-1"></i>History</button>
+                <button (click)="openEditForm(customer)" class="text-blueGray-500 hover:text-blueGray-700 text-xs font-bold uppercase mr-3"><i class="fas fa-pen mr-1"></i>Edit</button>
+                <button (click)="deactivateCustomer(customer)" class="text-red-500 hover:text-red-700 text-xs font-bold uppercase"><i class="fas fa-ban mr-1"></i>Deactivate</button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredCustomers.length === 0">
+              <td colspan="5" class="border-t-0 px-6 py-8 text-center text-xs text-blueGray-400">No customers found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD / EDIT FORM MODAL ══ -->
+<div *ngIf="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-blueGray-800 bg-opacity-50">
+  <div class="bg-white w-full max-w-lg mx-4 rounded shadow-lg">
+    <div class="px-6 py-4 border-b border-solid border-blueGray-200 flex items-center justify-between">
+      <h3 class="font-semibold text-lg text-blueGray-700">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</h3>
+      <button (click)="cancelForm()" class="text-blueGray-400 hover:text-blueGray-600"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="px-6 py-4">
+      <div *ngIf="formError" class="mb-4 text-xs text-red-600 font-semibold">{{ formError }}</div>
+
+      <div class="mb-3">
+        <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="customer-name">Customer Name *</label>
+        <input id="customer-name" type="text" [(ngModel)]="form.name" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" />
+      </div>
+
+      <div class="mb-3">
+        <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="customer-phone">Phone</label>
+        <input id="customer-phone" type="text" [(ngModel)]="form.phone" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" />
+      </div>
+
+      <div class="mb-3">
+        <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="customer-email">Email</label>
+        <input id="customer-email" type="text" [(ngModel)]="form.email" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" />
+      </div>
+
+      <div class="mb-3">
+        <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="customer-gstin">GSTIN</label>
+        <input id="customer-gstin" type="text" [(ngModel)]="form.gstin" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" />
+      </div>
+
+      <div class="mb-3">
+        <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="customer-address">Address</label>
+        <textarea id="customer-address" [(ngModel)]="form.address" rows="2" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="customer-notes">Notes</label>
+        <textarea id="customer-notes" [(ngModel)]="form.notes" rows="2" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full"></textarea>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t border-solid border-blueGray-200 flex justify-end gap-3">
+      <button (click)="cancelForm()" class="bg-blueGray-200 text-blueGray-700 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md">Cancel</button>
+      <button (click)="saveCustomer()" [disabled]="isSaving" class="bg-red-600 text-white text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md disabled:opacity-50">
+        {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Customer' : 'Save Customer') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ORDER HISTORY MODAL ══ -->
+<div *ngIf="showHistory" class="fixed inset-0 z-50 flex items-center justify-center bg-blueGray-800 bg-opacity-50">
+  <div class="bg-white w-full max-w-2xl mx-4 rounded shadow-lg max-h-[85vh] flex flex-col">
+    <div class="px-6 py-4 border-b border-solid border-blueGray-200 flex items-center justify-between">
+      <h3 class="font-semibold text-lg text-blueGray-700">Order History{{ history ? ' — ' + history.customerName : '' }}</h3>
+      <button (click)="closeHistory()" class="text-blueGray-400 hover:text-blueGray-600"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="px-6 py-4 overflow-y-auto">
+      <div *ngIf="isHistoryLoading" class="text-center text-blueGray-400 text-sm py-8">Loading history...</div>
+
+      <div *ngIf="!isHistoryLoading && history">
+        <div class="grid grid-cols-4 gap-3 mb-4">
+          <div class="bg-blueGray-50 rounded p-3">
+            <div class="text-[10px] uppercase text-blueGray-400">Total Orders</div>
+            <div class="text-lg font-bold text-blueGray-700">{{ history.totalOrders }}</div>
+          </div>
+          <div class="bg-blueGray-50 rounded p-3">
+            <div class="text-[10px] uppercase text-blueGray-400">Total Spent</div>
+            <div class="text-lg font-bold text-blueGray-700">₹{{ history.totalSpent | number:'1.2-2' }}</div>
+          </div>
+          <div class="bg-blueGray-50 rounded p-3">
+            <div class="text-[10px] uppercase text-blueGray-400">First Order</div>
+            <div class="text-sm font-semibold text-blueGray-700">{{ history.firstOrderDate ? (history.firstOrderDate | date:'dd MMM yyyy') : '-' }}</div>
+          </div>
+          <div class="bg-blueGray-50 rounded p-3">
+            <div class="text-[10px] uppercase text-blueGray-400">Last Order</div>
+            <div class="text-sm font-semibold text-blueGray-700">{{ history.lastOrderDate ? (history.lastOrderDate | date:'dd MMM yyyy') : '-' }}</div>
+          </div>
+        </div>
+
+        <table class="items-center w-full bg-transparent border-collapse">
+          <thead>
+            <tr>
+              <th class="px-4 py-2 text-xs uppercase font-semibold text-left bg-blueGray-50 text-blueGray-500">Invoice #</th>
+              <th class="px-4 py-2 text-xs uppercase font-semibold text-left bg-blueGray-50 text-blueGray-500">Date</th>
+              <th class="px-4 py-2 text-xs uppercase font-semibold text-left bg-blueGray-50 text-blueGray-500">Status</th>
+              <th class="px-4 py-2 text-xs uppercase font-semibold text-right bg-blueGray-50 text-blueGray-500">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let order of history.orders">
+              <td class="px-4 py-2 text-xs text-blueGray-600">{{ order.invoiceNumber }}</td>
+              <td class="px-4 py-2 text-xs text-blueGray-600">{{ order.createdAt | date:'dd MMM yyyy hh:mm a' }}</td>
+              <td class="px-4 py-2 text-xs text-blueGray-600">{{ order.status }}</td>
+              <td class="px-4 py-2 text-xs text-blueGray-600 text-right">₹{{ order.totalAmount | number:'1.2-2' }}</td>
+            </tr>
+            <tr *ngIf="history.orders.length === 0">
+              <td colspan="4" class="px-4 py-6 text-center text-xs text-blueGray-400">No orders yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t border-solid border-blueGray-200 flex justify-end">
+      <button (click)="closeHistory()" class="bg-blueGray-200 text-blueGray-700 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md">Close</button>
+    </div>
+  </div>
+</div>

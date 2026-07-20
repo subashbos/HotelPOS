@@ -121,9 +121,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         private IQueryable<Order> ApplyOrderFilters(IQueryable<Order> query, OrderQueryFilter filter)
         {
-            if (filter.From.HasValue) query = query.Where(o => o.CreatedAt >= filter.From.Value);
-            if (filter.To.HasValue) query = query.Where(o => o.CreatedAt <= filter.To.Value);
-            if (filter.TableNumber.HasValue) query = query.Where(o => o.TableNumber == filter.TableNumber.Value);
+            query = ApplyBasicFilters(query, filter);
 
             if (!string.IsNullOrWhiteSpace(filter.Search))
             {
@@ -132,6 +130,21 @@ namespace HotelPOS.Infrastructure.Persistence
                                          (o.CustomerName != null && o.CustomerName.Contains(search)) ||
                                          (o.CustomerPhone != null && o.CustomerPhone.Contains(search)));
             }
+
+            if (filter.CategoryId.HasValue && filter.CategoryId > 0)
+            {
+                var categoryId = filter.CategoryId.Value;
+                query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId)));
+            }
+
+            return query;
+        }
+
+        private IQueryable<Order> ApplyBasicFilters(IQueryable<Order> query, OrderQueryFilter filter)
+        {
+            if (filter.From.HasValue) query = query.Where(o => o.CreatedAt >= filter.From.Value);
+            if (filter.To.HasValue) query = query.Where(o => o.CreatedAt <= filter.To.Value);
+            if (filter.TableNumber.HasValue) query = query.Where(o => o.TableNumber == filter.TableNumber.Value);
 
             if (!string.IsNullOrWhiteSpace(filter.PaymentMode) && filter.PaymentMode != "All")
             {
@@ -143,10 +156,9 @@ namespace HotelPOS.Infrastructure.Persistence
                 query = query.Where(o => o.OrderType == filter.OrderType);
             }
 
-            if (filter.CategoryId.HasValue && filter.CategoryId > 0)
+            if (filter.CustomerId.HasValue)
             {
-                var categoryId = filter.CategoryId.Value;
-                query = query.Where(o => o.Items.Any(i => _context.Items.Any(item => item.Id == i.ItemId && item.CategoryId == categoryId)));
+                query = query.Where(o => o.CustomerId == filter.CustomerId.Value);
             }
 
             return query;
