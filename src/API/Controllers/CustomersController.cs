@@ -12,6 +12,8 @@ namespace HotelPOS.Api.Controllers
     [Authorize]
     public class CustomersController : BaseApiController
     {
+        private const string InvalidCustomerId = "Invalid customer ID.";
+
         private readonly ICustomerService _customerService;
         private readonly IMapper _mapper;
 
@@ -31,7 +33,7 @@ namespace HotelPOS.Api.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<CustomerDto>> GetCustomer(int id)
         {
-            if (id <= 0) return BadRequest("Invalid customer ID.");
+            if (id <= 0) return BadRequest(InvalidCustomerId);
             var customer = await _customerService.GetCustomerByIdAsync(id);
             if (customer == null) return NotFound();
             return Ok(_mapper.Map<CustomerDto>(customer));
@@ -48,7 +50,7 @@ namespace HotelPOS.Api.Controllers
         [HttpGet("{id:int}/history")]
         public async Task<ActionResult<CustomerHistoryDto>> GetCustomerHistory(int id)
         {
-            if (id <= 0) return BadRequest("Invalid customer ID.");
+            if (id <= 0) return BadRequest(InvalidCustomerId);
             try
             {
                 return Ok(await _customerService.GetCustomerHistoryAsync(id));
@@ -83,7 +85,7 @@ namespace HotelPOS.Api.Controllers
         [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager},{RoleNames.Cashier}")]
         public async Task<IActionResult> UpdateCustomer(int id, [FromBody] SaveCustomerDto request)
         {
-            if (id <= 0) return BadRequest("Invalid customer ID.");
+            if (id <= 0) return BadRequest(InvalidCustomerId);
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var customer = _mapper.Map<Customer>(request);
@@ -108,7 +110,7 @@ namespace HotelPOS.Api.Controllers
         [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> DeleteCustomer(int id)
         {
-            if (id <= 0) return BadRequest("Invalid customer ID.");
+            if (id <= 0) return BadRequest(InvalidCustomerId);
             try
             {
                 await _customerService.DeleteCustomerAsync(id);

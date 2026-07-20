@@ -175,7 +175,7 @@ namespace HotelPOS.ViewModels
                     }
                     catch (ArgumentException ex)
                     {
-                        // Covers cases the client-side checks above don't catch (e.g. duplicate phone, invalid GSTIN).
+                        // This handles server-side validation errors not caught by client-side checks, such as duplicate phone or invalid GSTIN.
                         _notificationService.ShowWarning(ex.Message);
                         return;
                     }

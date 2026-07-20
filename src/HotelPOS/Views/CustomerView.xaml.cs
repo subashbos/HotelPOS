@@ -27,7 +27,7 @@ namespace HotelPOS.Views
             Loaded += async (s, e) => await _viewModel.LoadCustomersAsync();
         }
 
-        private Task<bool> ShowCustomerEntryDialogAsync(Customer? customer)
+        private async Task<bool> ShowCustomerEntryDialogAsync(Customer? customer)
         {
             try
             {
@@ -43,12 +43,13 @@ namespace HotelPOS.Views
                 };
 
                 var result = dialog.ShowDialog();
-                return Task.FromResult(result.GetValueOrDefault());
+                return result.GetValueOrDefault();
             }
             catch (Exception ex)
             {
-                App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Error opening entry form: {ex.Message}", "Error", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Error);
-                return Task.FromResult(false);
+                await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>()
+                    .ShowMessageAsync($"Error opening entry form: {ex.Message}", "Error", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Error);
+                return false;
             }
         }
 
@@ -67,19 +68,20 @@ namespace HotelPOS.Views
             }
             catch (Exception ex)
             {
-                App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage($"Error opening customer history: {ex.Message}", "Error", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Error);
+                await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>()
+                    .ShowMessageAsync($"Error opening customer history: {ex.Message}", "Error", HotelPOS.Application.Interfaces.DialogButton.OK, HotelPOS.Application.Interfaces.DialogIcon.Error);
             }
         }
 
-        private static Task<bool> ConfirmDeactivateAsync(string customerName)
+        private static async Task<bool> ConfirmDeactivateAsync(string customerName)
         {
-            var result = App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessage(
+            var result = await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                 $"Are you sure you want to deactivate customer '{customerName}'? Their order history will be preserved.",
                 "Confirm Deactivate",
                 HotelPOS.Application.Interfaces.DialogButton.YesNo,
                 HotelPOS.Application.Interfaces.DialogIcon.Warning);
 
-            return Task.FromResult(result == HotelPOS.Application.Interfaces.DialogResult.Yes);
+            return result == HotelPOS.Application.Interfaces.DialogResult.Yes;
         }
     }
 }

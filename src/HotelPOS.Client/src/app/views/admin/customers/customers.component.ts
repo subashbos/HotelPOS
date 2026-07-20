@@ -96,7 +96,7 @@ export class CustomersComponent implements OnInit {
   }
 
   saveCustomer(): void {
-    if (!this.form.name || !this.form.name.trim()) {
+    if (!this.form.name?.trim()) {
       this.formError = 'Customer Name is required.';
       return;
     }
