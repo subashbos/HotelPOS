@@ -43,17 +43,17 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private string _nameError = string.Empty;
 
-        public bool IsNameInvalid => NameError.Length > 0;
+        public bool IsNameInvalid => NameError.Length > 0; // NOSONAR S2325 — uses source-generated ObservableProperty
 
         [ObservableProperty]
         private string _phoneError = string.Empty;
 
-        public bool IsPhoneInvalid => PhoneError.Length > 0;
+        public bool IsPhoneInvalid => PhoneError.Length > 0; // NOSONAR S2325 — uses source-generated ObservableProperty
 
         [ObservableProperty]
         private string _emailError = string.Empty;
 
-        public bool IsEmailInvalid => EmailError.Length > 0;
+        public bool IsEmailInvalid => EmailError.Length > 0; // NOSONAR S2325 — uses source-generated ObservableProperty
 
         public CustomerEntryViewModel(ICustomerService customerService, INotificationService notificationService)
         {
@@ -86,21 +86,21 @@ namespace HotelPOS.ViewModels
         partial void OnPhoneChanged(string? value) => ValidatePhone();
         partial void OnEmailChanged(string? value) => ValidateEmail();
 
-        public bool ValidateName()
+        public bool ValidateName() // NOSONAR S2325 — uses source-generated ObservableProperty
         {
             bool ok = EntryValidation.ValidateRequired(Name, "Customer Name", out string err);
             NameError = err;
             return ok;
         }
 
-        public bool ValidatePhone()
+        public bool ValidatePhone() // NOSONAR S2325 — uses source-generated ObservableProperty
         {
             bool ok = EntryValidation.ValidatePhone(Phone, out string err);
             PhoneError = err;
             return ok;
         }
 
-        public bool ValidateEmail()
+        public bool ValidateEmail() // NOSONAR S2325 — uses source-generated ObservableProperty
         {
             bool ok = EntryValidation.ValidateEmail(Email, out string err);
             EmailError = err;
@@ -112,7 +112,11 @@ namespace HotelPOS.ViewModels
         {
             try
             {
-                bool isFormValid = ValidateName() & ValidatePhone() & ValidateEmail();
+                // Run all validators so every field shows its error simultaneously.
+                bool nameOk = ValidateName();
+                bool phoneOk = ValidatePhone();
+                bool emailOk = ValidateEmail();
+                bool isFormValid = nameOk && phoneOk && emailOk;
 
                 if (!isFormValid)
                 {
