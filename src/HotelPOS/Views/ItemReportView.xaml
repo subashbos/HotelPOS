@@ -17,27 +17,23 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Filters Header -->
+            <RowDefinition Height="Auto"/> <!-- Header Banner -->
+            <RowDefinition Height="Auto"/> <!-- Filters -->
             <RowDefinition Height="*"/>    <!-- DataGrid -->
         </Grid.RowDefinitions>
 
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="📊  Item Sales Report" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Analyze individual item sales volume and revenue generation with granular filters" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
         <!-- Top Filter Bar -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,24">
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,16">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="20"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-
-                <!-- Title -->
-                <StackPanel>
-                    <TextBlock Text="Item Sales Report" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
-                    <TextBlock Text="Analyze individual item sales volume and revenue generation with granular filters" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
-                </StackPanel>
-
                 <!-- Filters Grid -->
-                <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/> <!-- Date -->
                         <ColumnDefinition Width="20"/>
@@ -90,12 +86,11 @@
                             <TextBlock Text="↻" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
                         </Button>
                     </StackPanel>
-                </Grid>
             </Grid>
         </Border>
 
         <!-- Main Content (Grid) -->
-        <Border Grid.Row="1" Padding="32,24">
+        <Border Grid.Row="2" Padding="32,24">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>

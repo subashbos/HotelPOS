@@ -4,14 +4,17 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
+using System.Windows.Input;
 
 namespace HotelPOS.ViewModels
 {
-    public partial class CustomerEntryViewModel : ObservableObject
+    public partial class CustomerEntryViewModel : ObservableObject, IEntryDialogViewModel
     {
         private readonly INotificationService _notificationService;
 
         public event EventHandler<bool>? RequestClose;
+
+        ICommand IEntryDialogViewModel.SaveCommand => SaveCommand;
 
         [ObservableProperty]
         private int _id;
@@ -40,17 +43,17 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private string _nameError = string.Empty;
 
-        public bool IsNameInvalid => !string.IsNullOrEmpty(NameError); // NOSONAR
+        public bool IsNameInvalid => NameError.Length > 0;
 
         [ObservableProperty]
         private string _phoneError = string.Empty;
 
-        public bool IsPhoneInvalid => !string.IsNullOrEmpty(PhoneError); // NOSONAR
+        public bool IsPhoneInvalid => PhoneError.Length > 0;
 
         [ObservableProperty]
         private string _emailError = string.Empty;
 
-        public bool IsEmailInvalid => !string.IsNullOrEmpty(EmailError); // NOSONAR
+        public bool IsEmailInvalid => EmailError.Length > 0;
 
         public CustomerEntryViewModel(ICustomerService customerService, INotificationService notificationService)
         {
@@ -79,64 +82,29 @@ namespace HotelPOS.ViewModels
             EmailError = string.Empty;
         }
 
-        partial void OnNameChanged(string value)
+        partial void OnNameChanged(string value) => ValidateName();
+        partial void OnPhoneChanged(string? value) => ValidatePhone();
+        partial void OnEmailChanged(string? value) => ValidateEmail();
+
+        public bool ValidateName()
         {
-            ValidateName();
+            bool ok = EntryValidation.ValidateRequired(Name, "Customer Name", out string err);
+            NameError = err;
+            return ok;
         }
 
-        partial void OnPhoneChanged(string? value)
+        public bool ValidatePhone()
         {
-            ValidatePhone();
+            bool ok = EntryValidation.ValidatePhone(Phone, out string err);
+            PhoneError = err;
+            return ok;
         }
 
-        partial void OnEmailChanged(string? value)
+        public bool ValidateEmail()
         {
-            ValidateEmail();
-        }
-
-        public bool ValidateName() // NOSONAR
-        {
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                NameError = "Customer Name is required";
-                return false;
-            }
-            NameError = string.Empty;
-            return true;
-        }
-
-        public bool ValidatePhone() // NOSONAR
-        {
-            if (string.IsNullOrWhiteSpace(Phone))
-            {
-                PhoneError = string.Empty;
-                return true;
-            }
-            var cleanPhone = Regex.Replace(Phone, @"[^\d]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
-            if (cleanPhone.Length < 10 || cleanPhone.Length > 15)
-            {
-                PhoneError = "Invalid phone number (must be 10-15 digits)";
-                return false;
-            }
-            PhoneError = string.Empty;
-            return true;
-        }
-
-        public bool ValidateEmail() // NOSONAR
-        {
-            if (string.IsNullOrWhiteSpace(Email))
-            {
-                EmailError = string.Empty;
-                return true;
-            }
-            var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.None, TimeSpan.FromSeconds(1));
-            if (!emailRegex.IsMatch(Email.Trim()))
-            {
-                EmailError = "Please enter a valid Email ID";
-                return false;
-            }
-            EmailError = string.Empty;
-            return true;
+            bool ok = EntryValidation.ValidateEmail(Email, out string err);
+            EmailError = err;
+            return ok;
         }
 
         [RelayCommand]
@@ -144,11 +112,9 @@ namespace HotelPOS.ViewModels
         {
             try
             {
-                bool isNameValid = ValidateName();
-                bool isPhoneValid = ValidatePhone();
-                bool isEmailValid = ValidateEmail();
+                bool isFormValid = ValidateName() & ValidatePhone() & ValidateEmail();
 
-                if (!isNameValid || !isPhoneValid || !isEmailValid)
+                if (!isFormValid)
                 {
                     _notificationService.ShowWarning("Please correct the errors in the form before saving.");
                     return;

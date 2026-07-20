@@ -9,37 +9,45 @@
              d:DesignHeight="800" d:DesignWidth="1200"
              Background="{DynamicResource AppBackground}">
 
-    <Grid Margin="20">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>  <!-- Header Banner -->
+            <RowDefinition Height="*"/>     <!-- Content -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                    <TextBlock Text="📦  Purchase Report" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                    <TextBlock Text="Analyze purchases, vendor expenses, and stock inflow." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="⟳ Refresh" Command="{Binding ApplyFilterCommand}"
+                            Style="{StaticResource SecondaryBtn}" Margin="0,0,8,0" Padding="16,8"/>
+
+                    <Button Content="📥 Export Excel" Click="ExportExcel_Click"
+                            Style="{StaticResource PrimaryBtn}" Background="{DynamicResource SuccessBrush}" Padding="16,8"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ══ MAIN CONTENT ══ -->
+        <Grid Grid.Row="1" Margin="24">
+        <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- HEADER -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            
-            <StackPanel Orientation="Vertical" VerticalAlignment="Center">
-                <TextBlock Text="Purchase Report" Style="{StaticResource H2TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
-                <TextBlock Text="Analyze purchases, vendor expenses, and stock inflow." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="⟳ Refresh" Command="{Binding ApplyFilterCommand}" 
-                        Style="{StaticResource SecondaryBtn}" Margin="0,0,8,0" Padding="16,8"/>
-                
-                <Button Content="📥 Export Excel" Click="ExportExcel_Click" 
-                        Style="{StaticResource PrimaryBtn}" Background="{DynamicResource SuccessBrush}" Padding="16,8"/>
-            </StackPanel>
-        </Grid>
-
         <!-- FILTERS -->
-        <Border Grid.Row="1" Style="{StaticResource PremiumCard}" Margin="0,0,0,16" Padding="16">
+        <Border Grid.Row="0" Style="{StaticResource PremiumCard}" Margin="0,0,0,16" Padding="16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -96,7 +104,7 @@
         </Border>
 
         <!-- DATAGRID -->
-        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Margin="0,0,0,16">
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Margin="0,0,0,16">
             <DataGrid x:Name="ReportGrid" ItemsSource="{Binding ReportRows}" Style="{StaticResource PremiumGrid}" IsReadOnly="True" Margin="0" ScrollViewer.ScrollChanged="ReportGrid_ScrollChanged">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="#" Binding="{Binding SNo}" Width="50" ElementStyle="{StaticResource CenterCell}"/>
@@ -123,7 +131,7 @@
         </Border>
 
         <!-- FOOTER: Pagination & Summary -->
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -157,6 +165,7 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
+        </Grid>
         </Grid>
     </Grid>
 </UserControl>

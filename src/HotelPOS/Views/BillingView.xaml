@@ -66,7 +66,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock Text="🧾  POS Billing" Style="{StaticResource H3TextBlockStyle}" Foreground="White"/>
-                    <TextBlock Text="F1: Search • F4: Checkout • Esc: Close" Style="{StaticResource CaptionTextBlockStyle}" Foreground="#BDD5E7" Margin="0,2,0,0"/>
+                    <TextBlock Text="F1: Search • F4: Checkout • Esc: Close" Style="{StaticResource CaptionTextBlockStyle}" Foreground="White" Opacity="0.8" Margin="0,2,0,0"/>
                 </StackPanel>
                 <Border Grid.Column="1" Background="{DynamicResource SecondaryBrush}" Padding="12,6" CornerRadius="6" VerticalAlignment="Center">
                     <TextBlock Text="{Binding StatusMessage, StringFormat='Status: {0}'}" Foreground="White" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="SemiBold"/>
@@ -302,7 +302,7 @@
                                                     </TextBlock>
                                                 </StackPanel>
                                             </StackPanel>
-                                            <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="#E67E22"/></StackPanel></Border>
+                                            <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{DynamicResource TaxAccentBrush}"/></StackPanel></Border>
                                             <Button Grid.Column="2" Content="+" Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource PrimaryBtn}" Width="38" Height="38" Padding="0" FontSize="20" FontWeight="Bold">
                                                 <Button.IsEnabled>
                                                     <MultiBinding Converter="{StaticResource IdToEnabledConverter}" ConverterParameter="StockCheck">
@@ -491,7 +491,7 @@
                                                             </Trigger.ExitActions>
                                                         </Trigger>
                                                         <Trigger Property="IsEnabled" Value="False">
-                                                            <Setter TargetName="bd" Property="Background" Value="#BDC3C7"/>
+                                                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource DisabledBrush}"/>
                                                             <Setter TargetName="bd" Property="Opacity" Value="0.6"/>
                                                         </Trigger>
                                                     </ControlTemplate.Triggers>

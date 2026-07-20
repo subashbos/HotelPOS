@@ -5,15 +5,17 @@ using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
+using System.Windows.Input;
 
 namespace HotelPOS.ViewModels
 {
-    public partial class EmployeeEntryViewModel : ObservableObject
+    public partial class EmployeeEntryViewModel : ObservableObject, IEntryDialogViewModel
     {
         private readonly INotificationService _notificationService;
 
         public event EventHandler<bool>? RequestClose;
+
+        ICommand IEntryDialogViewModel.SaveCommand => SaveCommand;
 
         [ObservableProperty]
         private int _id;
@@ -173,48 +175,23 @@ namespace HotelPOS.ViewModels
 
         public bool ValidateFirstName() // NOSONAR
         {
-            if (string.IsNullOrWhiteSpace(FirstName))
-            {
-                FirstNameError = "First Name is required";
-                return false;
-            }
-            FirstNameError = string.Empty;
-            return true;
+            var isValid = EntryValidation.ValidateRequired(FirstName, "First Name", out var error);
+            FirstNameError = error;
+            return isValid;
         }
 
         public bool ValidatePhone() // NOSONAR
         {
-            if (string.IsNullOrWhiteSpace(Phone))
-            {
-                PhoneError = string.Empty;
-                return true;
-            }
-            var digits = Regex.Replace(Phone, @"[^\d]", "", RegexOptions.None, TimeSpan.FromMilliseconds(250));
-            if (digits.Length < 10 || digits.Length > 15)
-            {
-                PhoneError = "Invalid phone number (must be 10-15 digits)";
-                return false;
-            }
-            PhoneError = string.Empty;
-            return true;
+            var isValid = EntryValidation.ValidatePhone(Phone, out var error);
+            PhoneError = error;
+            return isValid;
         }
-
-        private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         public bool ValidateEmail() // NOSONAR
         {
-            if (string.IsNullOrWhiteSpace(Email))
-            {
-                EmailError = string.Empty;
-                return true;
-            }
-            if (!EmailRegex.IsMatch(Email.Trim()))
-            {
-                EmailError = "Please enter a valid Email ID";
-                return false;
-            }
-            EmailError = string.Empty;
-            return true;
+            var isValid = EntryValidation.ValidateEmail(Email, out var error);
+            EmailError = error;
+            return isValid;
         }
 
         [RelayCommand]
