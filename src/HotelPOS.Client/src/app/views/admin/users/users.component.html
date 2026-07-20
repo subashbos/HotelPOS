@@ -53,7 +53,8 @@
                 <tr *ngIf="resettingUserId === user.id">
                   <td colspan="4" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 bg-blueGray-50">
                     <div class="flex items-center gap-2">
-                      <input type="password" [(ngModel)]="resetPasswordValue" name="resetPasswordValue" placeholder="New password"
+                      <label [attr.for]="'reset-password-' + user.id" class="sr-only">New password</label>
+                      <input [attr.id]="'reset-password-' + user.id" type="password" [(ngModel)]="resetPasswordValue" name="resetPasswordValue" placeholder="New password"
                         class="border-0 px-3 py-2 text-blueGray-600 bg-white rounded text-xs shadow flex-1 focus:outline-none focus:ring" />
                       <button (click)="confirmReset(user)" [disabled]="!resetPasswordValue"
                         class="bg-red-600 text-white text-xs font-bold uppercase px-3 py-2 rounded shadow disabled:opacity-50">Reset</button>
@@ -64,7 +65,8 @@
                 <tr *ngIf="editingEmailUserId === user.id">
                   <td colspan="4" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 bg-blueGray-50">
                     <div class="flex items-center gap-2">
-                      <input type="email" [(ngModel)]="emailValue" name="emailValue" placeholder="user@example.com"
+                      <label [attr.for]="'edit-email-' + user.id" class="sr-only">Email address</label>
+                      <input [attr.id]="'edit-email-' + user.id" type="email" [(ngModel)]="emailValue" name="emailValue" placeholder="user@example.com"
                         class="border-0 px-3 py-2 text-blueGray-600 bg-white rounded text-xs shadow flex-1 focus:outline-none focus:ring" />
                       <button (click)="confirmEditEmail(user)"
                         class="bg-red-600 text-white text-xs font-bold uppercase px-3 py-2 rounded shadow">Save</button>

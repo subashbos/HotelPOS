@@ -115,7 +115,8 @@
                 <tr *ngIf="rejectingRequestId === request.id">
                   <td colspan="6" class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 bg-blueGray-50">
                     <div class="flex items-center gap-2">
-                      <input type="text" [(ngModel)]="rejectReason" name="rejectReason" placeholder="Rejection reason"
+                      <label [attr.for]="'reject-reason-' + request.id" class="sr-only">Rejection reason</label>
+                      <input [attr.id]="'reject-reason-' + request.id" type="text" [(ngModel)]="rejectReason" name="rejectReason" placeholder="Rejection reason"
                         class="border-0 px-3 py-2 text-blueGray-600 bg-white rounded text-xs shadow flex-1 focus:outline-none focus:ring" />
                       <button (click)="confirmReject(request)" [disabled]="!rejectReason.trim()"
                         class="bg-red-600 text-white text-xs font-bold uppercase px-3 py-2 rounded shadow disabled:opacity-50">Confirm</button>

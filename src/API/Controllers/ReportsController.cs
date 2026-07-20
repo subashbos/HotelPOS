@@ -91,9 +91,9 @@ namespace HotelPOS.Api.Controllers
         public async Task<IActionResult> LogWastage([FromBody] LogWastageRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Reason)) return BadRequest("A wastage reason is required.");
-            if (request.Quantity <= 0) return BadRequest("Quantity must be greater than zero.");
+            if ((request.Quantity ?? 0) <= 0) return BadRequest("Quantity must be greater than zero.");
 
-            await _biReportService.LogWastageAsync(request.ItemId, request.Quantity, request.Reason, request.Notes);
+            await _biReportService.LogWastageAsync(request.ItemId ?? 0, request.Quantity ?? 0, request.Reason, request.Notes);
             return NoContent();
         }
 
@@ -134,8 +134,8 @@ namespace HotelPOS.Api.Controllers
 
     public sealed class LogWastageRequest
     {
-        public int ItemId { get; set; }
-        public int Quantity { get; set; }
+        public int? ItemId { get; set; }
+        public int? Quantity { get; set; }
         public string Reason { get; set; } = string.Empty;
         public string? Notes { get; set; }
     }

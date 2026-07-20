@@ -91,8 +91,8 @@ export class AuthService {
 
     const payload = this.decodeToken(token);
     const sub = payload?.['sub'];
-    const id = typeof sub === 'string' ? parseInt(sub, 10) : null;
-    return id !== null && !isNaN(id) ? id : null;
+    const id = typeof sub === 'string' ? Number.parseInt(sub, 10) : null;
+    return id !== null && !Number.isNaN(id) ? id : null;
   }
 
   forgotPassword(username: string): Observable<void> {

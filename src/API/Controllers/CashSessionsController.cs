@@ -50,7 +50,7 @@ namespace HotelPOS.Api.Controllers
 
             try
             {
-                var id = await _cashService.OpenSessionAsync(request.OpeningBalance, username);
+                var id = await _cashService.OpenSessionAsync(request.OpeningBalance ?? 0, username);
                 return Ok(id);
             }
             catch (InvalidOperationException ex)
@@ -66,7 +66,7 @@ namespace HotelPOS.Api.Controllers
 
             try
             {
-                await _cashService.CloseSessionAsync(request.ActualCash, request.Notes, username);
+                await _cashService.CloseSessionAsync(request.ActualCash ?? 0, request.Notes, username);
             }
             catch (InvalidOperationException ex)
             {
@@ -80,13 +80,13 @@ namespace HotelPOS.Api.Controllers
     /// <summary>OpenedBy comes from the authenticated user, never the request body.</summary>
     public sealed class OpenSessionRequest
     {
-        public decimal OpeningBalance { get; set; }
+        public decimal? OpeningBalance { get; set; }
     }
 
     /// <summary>ClosedBy comes from the authenticated user, never the request body.</summary>
     public sealed class CloseSessionRequest
     {
-        public decimal ActualCash { get; set; }
+        public decimal? ActualCash { get; set; }
         public string? Notes { get; set; }
     }
 }

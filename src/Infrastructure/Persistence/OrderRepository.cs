@@ -140,7 +140,7 @@ namespace HotelPOS.Infrastructure.Persistence
             return query;
         }
 
-        private IQueryable<Order> ApplyBasicFilters(IQueryable<Order> query, OrderQueryFilter filter)
+        private static IQueryable<Order> ApplyBasicFilters(IQueryable<Order> query, OrderQueryFilter filter)
         {
             if (filter.From.HasValue) query = query.Where(o => o.CreatedAt >= filter.From.Value);
             if (filter.To.HasValue) query = query.Where(o => o.CreatedAt <= filter.To.Value);

@@ -102,9 +102,9 @@
           <tbody>
             <tr *ngFor="let perm of editingPermissions">
               <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ perm.moduleName }}</td>
-              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center"><input type="checkbox" [(ngModel)]="perm.canAccess" [name]="'access-' + perm.moduleName" class="rounded" /></td>
-              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center"><input type="checkbox" [(ngModel)]="perm.canEdit" [name]="'edit-' + perm.moduleName" class="rounded" /></td>
-              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center"><input type="checkbox" [(ngModel)]="perm.canDelete" [name]="'delete-' + perm.moduleName" class="rounded" /></td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center"><input type="checkbox" [(ngModel)]="perm.canAccess" [name]="'access-' + perm.moduleName" [attr.aria-label]="'Access to ' + perm.moduleName" class="rounded" /></td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center"><input type="checkbox" [(ngModel)]="perm.canEdit" [name]="'edit-' + perm.moduleName" [attr.aria-label]="'Edit ' + perm.moduleName" class="rounded" /></td>
+              <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-center"><input type="checkbox" [(ngModel)]="perm.canDelete" [name]="'delete-' + perm.moduleName" [attr.aria-label]="'Delete ' + perm.moduleName" class="rounded" /></td>
             </tr>
           </tbody>
         </table>

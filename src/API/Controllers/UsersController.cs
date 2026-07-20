@@ -11,6 +11,7 @@ namespace HotelPOS.Api.Controllers
     [Authorize]
     public class UsersController : BaseApiController
     {
+        private const string InvalidUserId = "Invalid user ID.";
         private readonly IUserService _userService;
         private readonly IUserContext _userContext;
         private readonly IMapper _mapper;
@@ -37,7 +38,7 @@ namespace HotelPOS.Api.Controllers
             if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
                 return BadRequest("Username and password are required.");
 
-            var (success, error) = await _userService.AddUserAsync(request.Username, request.Password, request.Role, request.RoleId);
+            var (success, error) = await _userService.AddUserAsync(request.Username, request.Password, request.Role, request.RoleId ?? 0);
             if (!success) return BadRequest(error);
 
             return NoContent();
@@ -47,8 +48,8 @@ namespace HotelPOS.Api.Controllers
         [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> ToggleActive(int id, [FromBody] ToggleActiveRequest request)
         {
-            if (id <= 0) return BadRequest("Invalid user ID.");
-            await _userService.ToggleActiveAsync(id, request.IsActive);
+            if (id <= 0) return BadRequest(InvalidUserId);
+            await _userService.ToggleActiveAsync(id, request.IsActive ?? false);
             return NoContent();
         }
 
@@ -56,7 +57,7 @@ namespace HotelPOS.Api.Controllers
         [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> SetEmail(int id, [FromBody] SetEmailRequest request)
         {
-            if (id <= 0) return BadRequest("Invalid user ID.");
+            if (id <= 0) return BadRequest(InvalidUserId);
             await _userService.SetEmailAsync(id, request.Email);
             return NoContent();
         }
@@ -66,7 +67,7 @@ namespace HotelPOS.Api.Controllers
         [HttpPost("{id:int}/reset-password")]
         public async Task<IActionResult> ResetPassword(int id, [FromBody] ResetPasswordRequest request)
         {
-            if (id <= 0) return BadRequest("Invalid user ID.");
+            if (id <= 0) return BadRequest(InvalidUserId);
             if (string.IsNullOrWhiteSpace(request.NewPassword)) return BadRequest("A new password is required.");
 
             var (success, error) = await _userService.ResetPasswordAsync(id, request.NewPassword);
@@ -79,8 +80,8 @@ namespace HotelPOS.Api.Controllers
         [HttpPost("{id:int}/two-factor")]
         public async Task<IActionResult> SetTwoFactor(int id, [FromBody] SetTwoFactorRequest request)
         {
-            if (id <= 0) return BadRequest("Invalid user ID.");
-            await _userService.SetTwoFactorAsync(id, request.Enabled, request.Secret);
+            if (id <= 0) return BadRequest(InvalidUserId);
+            await _userService.SetTwoFactorAsync(id, request.Enabled ?? false, request.Secret);
             return NoContent();
         }
 
@@ -88,7 +89,7 @@ namespace HotelPOS.Api.Controllers
         [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            if (id <= 0) return BadRequest("Invalid user ID.");
+            if (id <= 0) return BadRequest(InvalidUserId);
             var currentUserId = _userContext.CurrentUserId ?? 0;
 
             try
@@ -109,12 +110,12 @@ namespace HotelPOS.Api.Controllers
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Role { get; set; } = RoleNames.Cashier;
-        public int RoleId { get; set; }
+        public int? RoleId { get; set; }
     }
 
     public sealed class ToggleActiveRequest
     {
-        public bool IsActive { get; set; }
+        public bool? IsActive { get; set; }
     }
 
     public sealed class SetEmailRequest
@@ -129,7 +130,7 @@ namespace HotelPOS.Api.Controllers
 
     public sealed class SetTwoFactorRequest
     {
-        public bool Enabled { get; set; }
+        public bool? Enabled { get; set; }
         public string? Secret { get; set; }
     }
 }

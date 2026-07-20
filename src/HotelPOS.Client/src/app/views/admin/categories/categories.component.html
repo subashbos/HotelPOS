@@ -52,11 +52,13 @@
 
                 <ng-container *ngIf="editingId === category.id; else viewName">
                   <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                    <input type="text" [(ngModel)]="editName" name="editName"
+                    <label [attr.for]="'edit-name-' + category.id" class="sr-only">Category name</label>
+                    <input [attr.id]="'edit-name-' + category.id" type="text" [(ngModel)]="editName" name="editName"
                       class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-xs w-full" />
                   </td>
                   <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
-                    <input type="number" [(ngModel)]="editDisplayOrder" name="editDisplayOrder"
+                    <label [attr.for]="'edit-display-order-' + category.id" class="sr-only">Display order</label>
+                    <input [attr.id]="'edit-display-order-' + category.id" type="number" [(ngModel)]="editDisplayOrder" name="editDisplayOrder"
                       class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-xs w-20" />
                   </td>
                   <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
