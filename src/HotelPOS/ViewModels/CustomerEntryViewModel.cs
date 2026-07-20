@@ -43,17 +43,17 @@ namespace HotelPOS.ViewModels
         [ObservableProperty]
         private string _nameError = string.Empty;
 
-        public bool IsNameInvalid => !string.IsNullOrEmpty(NameError); // NOSONAR
+        public bool IsNameInvalid => NameError.Length > 0;
 
         [ObservableProperty]
         private string _phoneError = string.Empty;
 
-        public bool IsPhoneInvalid => !string.IsNullOrEmpty(PhoneError); // NOSONAR
+        public bool IsPhoneInvalid => PhoneError.Length > 0;
 
         [ObservableProperty]
         private string _emailError = string.Empty;
 
-        public bool IsEmailInvalid => !string.IsNullOrEmpty(EmailError); // NOSONAR
+        public bool IsEmailInvalid => EmailError.Length > 0;
 
         public CustomerEntryViewModel(ICustomerService customerService, INotificationService notificationService)
         {
@@ -82,40 +82,29 @@ namespace HotelPOS.ViewModels
             EmailError = string.Empty;
         }
 
-        partial void OnNameChanged(string value)
+        partial void OnNameChanged(string value) => ValidateName();
+        partial void OnPhoneChanged(string? value) => ValidatePhone();
+        partial void OnEmailChanged(string? value) => ValidateEmail();
+
+        public bool ValidateName()
         {
-            ValidateName();
+            bool ok = EntryValidation.ValidateRequired(Name, "Customer Name", out string err);
+            NameError = err;
+            return ok;
         }
 
-        partial void OnPhoneChanged(string? value)
+        public bool ValidatePhone()
         {
-            ValidatePhone();
+            bool ok = EntryValidation.ValidatePhone(Phone, out string err);
+            PhoneError = err;
+            return ok;
         }
 
-        partial void OnEmailChanged(string? value)
+        public bool ValidateEmail()
         {
-            ValidateEmail();
-        }
-
-        public bool ValidateName() // NOSONAR
-        {
-            var isValid = EntryValidation.ValidateRequired(Name, "Customer Name", out var error);
-            NameError = error;
-            return isValid;
-        }
-
-        public bool ValidatePhone() // NOSONAR
-        {
-            var isValid = EntryValidation.ValidatePhone(Phone, out var error);
-            PhoneError = error;
-            return isValid;
-        }
-
-        public bool ValidateEmail() // NOSONAR
-        {
-            var isValid = EntryValidation.ValidateEmail(Email, out var error);
-            EmailError = error;
-            return isValid;
+            bool ok = EntryValidation.ValidateEmail(Email, out string err);
+            EmailError = err;
+            return ok;
         }
 
         [RelayCommand]
@@ -123,11 +112,9 @@ namespace HotelPOS.ViewModels
         {
             try
             {
-                bool isNameValid = ValidateName();
-                bool isPhoneValid = ValidatePhone();
-                bool isEmailValid = ValidateEmail();
+                bool isFormValid = ValidateName() & ValidatePhone() & ValidateEmail();
 
-                if (!isNameValid || !isPhoneValid || !isEmailValid)
+                if (!isFormValid)
                 {
                     _notificationService.ShowWarning("Please correct the errors in the form before saving.");
                     return;
