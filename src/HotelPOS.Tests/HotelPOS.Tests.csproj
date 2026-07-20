@@ -17,7 +17,7 @@
          actual logic lives in the ViewModels, which stay in scope. obj/** picks up a stray
          source-generator file coverlet attributes to the build output. All excluded from the
          coverage gate rather than counted as untestable "misses". -->
-    <ExcludeByFile>**/Migrations/*.cs,**/*.xaml.cs,**/*.xaml,**/obj/**/*.cs,**/Views/*.cs,**/App.Database.cs,**/Services/DialogService.cs,**/Services/NotificationService.cs,**/Services/RememberMeStore.cs,**/Behaviors/InfiniteScrollBehavior.cs,**/ViewModels/CustomMessageBoxViewModel.cs</ExcludeByFile>
+    <ExcludeByFile>**/Migrations/*.cs,**/*.xaml.cs,**/*.xaml,**/obj/**/*.cs,**/Views/**/*.cs,**/App.Database.cs,**/Services/DialogService.cs,**/Services/NotificationService.cs,**/Services/RememberMeStore.cs,**/Behaviors/InfiniteScrollBehavior.cs,**/ViewModels/CustomMessageBoxViewModel.cs</ExcludeByFile>
     <Exclude>[HotelPOS.Api]*</Exclude>
   </PropertyGroup>
 
