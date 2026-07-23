@@ -13,6 +13,7 @@ namespace HotelPOS.Application.UseCases
         private readonly IItemRepository _itemRepo;
         private readonly ICategoryRepository _categoryRepo;
         private readonly IPurchaseRepository _purchaseRepo;
+        private readonly IAuthorizationService _authorization;
         private readonly IMediator? _mediator;
 
         public ReportService(
@@ -20,18 +21,22 @@ namespace HotelPOS.Application.UseCases
             IItemRepository itemRepo,
             ICategoryRepository categoryRepo,
             IPurchaseRepository purchaseRepo,
+            IAuthorizationService authorization,
             IMediator? mediator = null)
         {
             _orderRepo = orderRepo;
             _itemRepo = itemRepo;
             _categoryRepo = categoryRepo;
             _purchaseRepo = purchaseRepo;
+            _authorization = authorization;
             _mediator = mediator;
         }
 
         public async Task<SalesReportDto> GetSalesReportAsync(
             DateTime? from = null, DateTime? to = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             if (_mediator != null)
             {
                 return await _mediator.Send(new GetSalesReportQuery(from, to));
@@ -85,6 +90,8 @@ namespace HotelPOS.Application.UseCases
         public async Task<List<ItemReportRowDto>> GetItemReportAsync(
             DateTime? from = null, DateTime? to = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             if (_mediator != null)
             {
                 return await _mediator.Send(new GetItemReportQuery(from, to));
@@ -120,6 +127,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<GstReportRowDto>> GetGstReportAsync(DateTime from, DateTime to)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             if (_mediator != null)
             {
                 return await _mediator.Send(new GetGstReportQuery(from, to));
@@ -155,6 +164,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<MonthlySalesChartDto>> GetMonthlyChartDataAsync()
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             if (_mediator != null)
             {
                 return await _mediator.Send(new GetMonthlySalesChartQuery());
@@ -201,6 +212,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)> GetPagedPurchaseReportAsync(PagedPurchaseReportRequest request)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             if (_mediator != null)
             {
                 return await _mediator.Send(new GetPagedPurchaseReportQuery(request.Page, request.PageSize, request.From, request.To, request.SupplierId, request.ItemName, request.PaymentType, request.InvoiceNo));

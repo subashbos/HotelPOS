@@ -62,7 +62,7 @@ namespace HotelPOS.Services
                 catch (Exception ex)
                 {
                     // Log off-site replication failure but don't crash the main pipeline
-                    System.Diagnostics.Debug.WriteLine($"Failed to replicate backup off-site: {ex.Message}");
+                    Serilog.Log.Warning(ex, "Failed to replicate backup off-site");
                 }
             }
 

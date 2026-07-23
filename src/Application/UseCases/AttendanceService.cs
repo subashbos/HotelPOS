@@ -7,14 +7,17 @@ namespace HotelPOS.Application.UseCases
     public class AttendanceService : IAttendanceService
     {
         private readonly IAttendanceRepository _repository;
+        private readonly IAuthorizationService _authorization;
 
-        public AttendanceService(IAttendanceRepository repository)
+        public AttendanceService(IAttendanceRepository repository, IAuthorizationService authorization)
         {
             _repository = repository;
+            _authorization = authorization;
         }
 
         public async Task<List<Attendance>> GetAttendanceAsync(int employeeId, DateTime fromDate, DateTime toDate)
         {
+            _authorization.EnsurePermission(PermissionModules.HrAttendance);
             if (employeeId <= 0) throw new ArgumentException("A valid employee is required.");
             if (toDate.Date < fromDate.Date) throw new ArgumentException("To Date cannot be before From Date.");
 

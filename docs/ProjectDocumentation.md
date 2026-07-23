@@ -55,7 +55,7 @@ HotelPOS is a modern, high-performance Point of Sale (POS) and billing applicati
 - Microsoft SQL Server (LocalDB or full instance).
 
 ### Building the Project
-1. Open the modern `HotelPOS/HotelPOS.slnx` (or `HotelPOS.sln` at the root) in Visual Studio.
+1. Open `HotelPOS.sln` at the repo root (or the modern `src/HotelPOS/HotelPOS.slnx`) in Visual Studio.
 2. Ensure the solution configuration is set to `Debug` or `Release`.
 3. Right-click the **HotelPOS** project and select **Set as Startup Project**.
 4. Press **F5** or `Ctrl + F5` to run.
@@ -80,9 +80,11 @@ HotelPOS is a modern, high-performance Point of Sale (POS) and billing applicati
 ## 6. Project Structure
 For detailed architectural info, refer to [SystemDesign.md](SystemDesign.md).
 
-- **HotelPOS**: The main UI (WPF/XAML) containing views and view-models.
-- **HotelPOS.Domain**: Core data models and database entities.
-- **HotelPOS.Application**: Business logic, DTOs, and service interfaces.
-- **HotelPOS.Persistence**: Entity Framework DbContext, database migrations, and repositories.
-- **HotelPOS.Infrastructure**: Core infrastructure implementations.
-- **HotelPOS.Tests**: Comprehensive unit and integration test suite (504 tests).
+All projects live under `src/`:
+- **src/HotelPOS** (`HotelPOS.WPF`): The main desktop UI (WPF/XAML) containing views and view-models.
+- **src/Domain**: Core data models and database entities (namespace `HotelPOS.Domain`).
+- **src/Application**: Business logic, DTOs, and service interfaces (namespace `HotelPOS.Application`).
+- **src/Infrastructure**: Entity Framework DbContext, database migrations, and repositories (namespace `HotelPOS.Infrastructure.Persistence`) plus other infrastructure implementations. This project absorbed the former standalone `HotelPOS.Persistence` project.
+- **src/API** (`HotelPOS.Api`): JWT-secured ASP.NET Core REST API exposing the same Application layer.
+- **src/HotelPOS.Client**: Angular web client (currently no HR UI; billing/admin features are WPF-only — see [HUMAN_RESOURCES_DEEP_DIVE.md](HUMAN_RESOURCES_DEEP_DIVE.md)).
+- **src/HotelPOS.Tests** / **src/HotelPOS.Api.Tests**: Comprehensive unit and integration test suite (1,196 tests total: 423 core/WPF + 773 API).

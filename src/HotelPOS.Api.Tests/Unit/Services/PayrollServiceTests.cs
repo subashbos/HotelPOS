@@ -17,6 +17,7 @@ namespace HotelPOS.Tests.Unit.Services
         private readonly Mock<IPayrollRepository> _payrollRepoMock = new();
         private readonly Mock<IEmployeeRepository> _employeeRepoMock = new();
         private readonly Mock<IAttendanceRepository> _attendanceRepoMock = new();
+        private readonly Mock<IAuthorizationService> _authorizationMock = TestAuthorization.AllowAll();
         private readonly PayrollService _service;
 
         public PayrollServiceTests()
@@ -24,7 +25,8 @@ namespace HotelPOS.Tests.Unit.Services
             _service = new PayrollService(
                 _payrollRepoMock.Object,
                 _employeeRepoMock.Object,
-                _attendanceRepoMock.Object);
+                _attendanceRepoMock.Object,
+                _authorizationMock.Object);
         }
 
         [Fact]

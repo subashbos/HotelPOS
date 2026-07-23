@@ -56,8 +56,8 @@ The desktop interface supports instant dark/light themes.
 
 ---
 
-## 5. Persistence & Migrations (EF Core 10)
-Database synchronization and history tracking are automated on application initialization.
+## 6. Persistence & Migrations (EF Core 10)
+Database synchronization and history tracking are automated on application initialization. The `HotelDbContext` and repositories live under `src/Infrastructure/Persistence` (namespace `HotelPOS.Infrastructure.Persistence`) — the former standalone `HotelPOS.Persistence` project was merged into `HotelPOS.Infrastructure`.
 
 ### Schema Safeguards
 - **Baseline Migration Strategy**: To prevent database collision crashes (such as `Table Already Exists`), `App.xaml.cs` inspects database states at startup.

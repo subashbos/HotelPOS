@@ -15,22 +15,26 @@ namespace HotelPOS.Application.UseCases
         private readonly IPayrollRepository _payrollRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IAttendanceRepository _attendanceRepository;
+        private readonly IAuthorizationService _authorization;
         private readonly IValidator<SalaryStructure> _validator;
 
         public PayrollService(
             IPayrollRepository payrollRepository,
             IEmployeeRepository employeeRepository,
             IAttendanceRepository attendanceRepository,
+            IAuthorizationService authorization,
             IValidator<SalaryStructure>? validator = null)
         {
             _payrollRepository = payrollRepository;
             _employeeRepository = employeeRepository;
             _attendanceRepository = attendanceRepository;
+            _authorization = authorization;
             _validator = validator ?? new SalaryStructureValidator();
         }
 
         public async Task<List<SalaryStructure>> GetSalaryStructuresAsync(int employeeId)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetSalaryStructuresAsync(employeeId);
         }
 
@@ -131,6 +135,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<Payslip>> GetPayslipsByEmployeeAsync(int employeeId)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetPayslipsByEmployeeAsync(employeeId);
         }
 

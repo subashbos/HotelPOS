@@ -31,9 +31,10 @@ namespace HotelPOS.Services
                 // Adding to the end of the list overrides any identical keys from the base Theme.xaml
                 dicts.Add(new ResourceDictionary { Source = colorsUri });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // In test/runner environment, the resource file might not be resolvable, which is acceptable
+                Serilog.Log.Warning(ex, "Failed to apply theme resource: {ColorsUri}", colorsUri);
             }
         }
     }

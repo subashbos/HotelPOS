@@ -8,6 +8,7 @@ using HotelPOS.Infrastructure.Persistence;
 using HotelPOS.Application.Interfaces;
 using Xunit;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace HotelPOS.Tests
 {
@@ -25,7 +26,7 @@ namespace HotelPOS.Tests
         public async Task ProfitMarginSummary_CalculatesCOGSAndExpenses()
         {
             using var context = GetContext("BI_ProfitMarginDb");
-            var service = new BIReportService(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
 
             var item1 = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 40, TrackInventory = true };
             var item2 = new Item { Id = 2, Name = "Item B", Price = 200, CostPrice = 120, TrackInventory = true };
@@ -65,7 +66,7 @@ namespace HotelPOS.Tests
         public async Task LogWastage_DeductsInventoryCorrectly()
         {
             using var context = GetContext("BI_WastageDb");
-            var service = new BIReportService(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
 
             var item = new Item { Id = 10, Name = "Burger", StockQuantity = 100, TrackInventory = true, CostPrice = 50 };
             context.Items.Add(item);
@@ -90,7 +91,7 @@ namespace HotelPOS.Tests
         public async Task LogWastage_FallsBackToPriceIfCostPriceIsZero()
         {
             using var context = GetContext("BI_WastageFallbackDb");
-            var service = new BIReportService(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
 
             var item = new Item { Id = 20, Name = "Porotta", StockQuantity = 100, TrackInventory = true, CostPrice = 0, Price = 100 };
             context.Items.Add(item);
@@ -109,7 +110,7 @@ namespace HotelPOS.Tests
         public async Task LowStockAlerts_ProvidesAlertLevels()
         {
             using var context = GetContext("BI_LowStockDb");
-            var service = new BIReportService(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
 
             var item1 = new Item { Id = 1, Name = "Item A", StockQuantity = 0, MinStockThreshold = 10, TrackInventory = true };
             var item2 = new Item { Id = 2, Name = "Item B", StockQuantity = 50, MinStockThreshold = 10, TrackInventory = true };
@@ -131,7 +132,7 @@ namespace HotelPOS.Tests
         public async Task GetItemMarginsAsync_CalculatesCorrectly()
         {
             using var context = GetContext("BI_ItemMarginsDb");
-            var service = new BIReportService(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
 
             var category = new Category { Id = 1, Name = "Food" };
             context.Categories.Add(category);
@@ -173,7 +174,7 @@ namespace HotelPOS.Tests
         public async Task GetWastageSummaryAsync_AggregatesAndFiltersCorrectly()
         {
             using var context = GetContext("BI_WastageSummaryDb");
-            var service = new BIReportService(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
 
             var item = new Item { Id = 1, Name = "Milk", Price = 50, CostPrice = 40 };
             context.Items.Add(item);
@@ -202,7 +203,7 @@ namespace HotelPOS.Tests
         public async Task GetMonthlyTrendDataAsync_CollectsTrailingMonthsCorrectly()
         {
             using var context = GetContext("BI_MonthlyTrendsDb");
-            var service = new BIReportService(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
 
             var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 50 };
             context.Items.Add(item);
@@ -237,6 +238,15 @@ namespace HotelPOS.Tests
             Assert.Equal(200m, currentMonthTrend.Revenue);
             Assert.Equal(100m, currentMonthTrend.GrossProfit); // 200 rev - 100 cogs (2 * 50) = 100
             Assert.Equal(70m, currentMonthTrend.NetProfit); // 100 gross - 30 expense = 70
+        }
+
+        [Fact]
+        public async Task GetProfitMarginSummaryAsync_WhenUnauthorized_Throws()
+        {
+            using var context = GetContext("BI_UnauthorizedDb");
+            var service = new BIReportService(context, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetProfitMarginSummaryAsync());
         }
     }
 }

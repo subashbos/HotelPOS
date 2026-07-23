@@ -22,7 +22,7 @@ namespace HotelPOS.Tests
             _itemRepoMock = new Mock<IItemRepository>();
             _categoryRepoMock = new Mock<ICategoryRepository>();
             _purchaseRepoMock = new Mock<IPurchaseRepository>();
-            _service = new ReportService(_orderRepoMock.Object, _itemRepoMock.Object, _categoryRepoMock.Object, _purchaseRepoMock.Object);
+            _service = new ReportService(_orderRepoMock.Object, _itemRepoMock.Object, _categoryRepoMock.Object, _purchaseRepoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

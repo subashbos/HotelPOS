@@ -93,8 +93,9 @@ namespace HotelPOS.Application.UseCases
                 await LogAuditAsync(user.Id, user.Username, AuditActions.LoginFailed, "Invalid password");
                 return null;
             }
-            catch (FormatException)
+            catch (FormatException ex)
             {
+                Serilog.Log.Warning(ex, "Invalid password format during authentication for key {LockoutKey}", lockoutKey);
                 await RegisterFailedAttemptAsync(lockoutKey);
                 return null;
             }
@@ -180,9 +181,10 @@ namespace HotelPOS.Application.UseCases
             {
                 await _auditService.LogActionAsync("User", userId, action, details ?? $"{action}: {username}");
             }
-            catch
+            catch (Exception ex)
             {
                 // Auditing must never block authentication.
+                Serilog.Log.Warning(ex, "Failed to write audit log for user action {Action}", action);
             }
         }
     }
