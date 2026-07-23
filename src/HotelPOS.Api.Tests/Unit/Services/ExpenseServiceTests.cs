@@ -1,9 +1,15 @@
+using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.UseCases;
+using HotelPOS.Application.UseCases.Expenses.Commands;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
+using AutoMapper;
+using MediatR;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -131,6 +137,43 @@ namespace HotelPOS.Tests.Unit.Services
 
             // Assert
             _expenseRepoMock.Verify(r => r.DeleteAsync(7), Times.Once);
+        }
+
+        // ── Audit trail: mediator path publishes EntityActionEvent ──────────
+
+        [Fact]
+        public async Task SaveExpenseAsync_MediatorPath_PublishesCreateEvent()
+        {
+            var mediatorMock = new Mock<IMediator>();
+            var mapperMock = new Mock<IMapper>();
+            mapperMock.Setup(m => m.Map<SaveExpenseDto>(It.IsAny<Expense>()))
+                .Returns(new SaveExpenseDto { Title = "Veg", Category = "Raw Material", Amount = 1500 });
+            mediatorMock.Setup(m => m.Send(It.IsAny<SaveExpenseCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(77);
+
+            var service = new ExpenseService(mediatorMock.Object, mapperMock.Object);
+            var expense = new Expense { Id = 0, Title = "Veg", Category = "Raw Material", Amount = 1500 };
+
+            await service.SaveExpenseAsync(expense);
+
+            mediatorMock.Verify(
+                m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "Expense" && e.EntityId == 77 && e.Action == "Create"), default),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteExpenseAsync_MediatorPath_PublishesDeleteEvent()
+        {
+            var mediatorMock = new Mock<IMediator>();
+            var mapperMock = new Mock<IMapper>();
+
+            var service = new ExpenseService(mediatorMock.Object, mapperMock.Object);
+
+            await service.DeleteExpenseAsync(42);
+
+            mediatorMock.Verify(
+                m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "Expense" && e.EntityId == 42 && e.Action == "Delete"), default),
+                Times.Once);
         }
     }
 }

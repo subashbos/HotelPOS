@@ -3,6 +3,8 @@ using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
+using MediatR;
 
 namespace HotelPOS.Application.UseCases
 {
@@ -12,17 +14,20 @@ namespace HotelPOS.Application.UseCases
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IAuthorizationService _authorization;
         private readonly IValidator<LeaveRequest> _validator;
+        private readonly IMediator? _mediator;
 
         public LeaveService(
             ILeaveRepository repository,
             IEmployeeRepository employeeRepository,
             IAuthorizationService authorization,
-            IValidator<LeaveRequest>? validator = null)
+            IValidator<LeaveRequest>? validator = null,
+            IMediator? mediator = null)
         {
             _repository = repository;
             _employeeRepository = employeeRepository;
             _authorization = authorization;
             _validator = validator ?? new LeaveRequestValidator();
+            _mediator = mediator;
         }
 
         public async Task<List<LeaveType>> GetLeaveTypesAsync()
@@ -111,6 +116,12 @@ namespace HotelPOS.Application.UseCases
             request.ApprovedByEmployeeId = approverEmployeeId;
             request.ActionedOn = DateTime.UtcNow;
             await _repository.UpdateRequestAsync(request);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent("LeaveRequest", request.Id, "Approve",
+                    $"Employee: {request.EmployeeId}, Days: {request.TotalDays}, ApprovedBy: {approverEmployeeId}"));
+            }
         }
 
         public async Task RejectLeaveAsync(int requestId, int approverEmployeeId, string reason)
@@ -137,6 +148,12 @@ namespace HotelPOS.Application.UseCases
             request.ActionedOn = DateTime.UtcNow;
             request.RejectionReason = reason?.Trim();
             await _repository.UpdateRequestAsync(request);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent("LeaveRequest", request.Id, "Reject",
+                    $"Employee: {request.EmployeeId}, RejectedBy: {approverEmployeeId}, Reason: {request.RejectionReason}"));
+            }
         }
 
         private async Task EnsureBalancesInitializedAsync(int employeeId, int year)

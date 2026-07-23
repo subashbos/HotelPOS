@@ -1,8 +1,12 @@
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
+using HotelPOS.Application.UseCases.Settings.Commands;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
 using HotelPOS.Application.Interfaces;
+using MediatR;
 using Moq;
+using System.Threading;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -184,6 +188,23 @@ namespace HotelPOS.Tests
                 s.ReceiptFormat == "Thermal" &&
                 s.ShowPrintPreview == false
             )), Times.Once);
+        }
+
+        // ── Audit trail: mediator path publishes EntityActionEvent ─────────
+
+        [Fact]
+        public async Task SaveSettingsAsync_MediatorPath_PublishesUpdateEvent()
+        {
+            var mediatorMock = new Mock<IMediator>();
+            var service = new SettingService(mediatorMock.Object, TestAuthorization.AllowAll().Object);
+
+            var settings = new SystemSetting { Id = 1, HotelName = "Sunrise Inn" };
+            await service.SaveSettingsAsync(settings);
+
+            mediatorMock.Verify(m => m.Send(It.IsAny<SaveSettingsCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+            mediatorMock.Verify(
+                m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "Setting" && e.EntityId == 1 && e.Action == "Update"), default),
+                Times.Once);
         }
     }
 }
