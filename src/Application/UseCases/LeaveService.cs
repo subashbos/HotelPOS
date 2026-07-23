@@ -3,26 +3,33 @@ using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
+using MediatR;
 
 namespace HotelPOS.Application.UseCases
 {
     public class LeaveService : ILeaveService
     {
+        private const string LeaveRequestEntityType = "LeaveRequest";
+
         private readonly ILeaveRepository _repository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IAuthorizationService _authorization;
         private readonly IValidator<LeaveRequest> _validator;
+        private readonly IMediator? _mediator;
 
         public LeaveService(
             ILeaveRepository repository,
             IEmployeeRepository employeeRepository,
             IAuthorizationService authorization,
-            IValidator<LeaveRequest>? validator = null)
+            IValidator<LeaveRequest>? validator = null,
+            IMediator? mediator = null)
         {
             _repository = repository;
             _employeeRepository = employeeRepository;
             _authorization = authorization;
             _validator = validator ?? new LeaveRequestValidator();
+            _mediator = mediator;
         }
 
         public async Task<List<LeaveType>> GetLeaveTypesAsync()
@@ -83,6 +90,13 @@ namespace HotelPOS.Application.UseCases
             }
 
             await _repository.AddRequestAsync(request);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    LeaveRequestEntityType, request.Id, "Create",
+                    $"Employee: {request.EmployeeId}, Type: {leaveType.Name}, Days: {request.TotalDays}"));
+            }
         }
 
         public async Task ApproveLeaveAsync(int requestId, int approverEmployeeId)
@@ -111,6 +125,13 @@ namespace HotelPOS.Application.UseCases
             request.ApprovedByEmployeeId = approverEmployeeId;
             request.ActionedOn = DateTime.UtcNow;
             await _repository.UpdateRequestAsync(request);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    LeaveRequestEntityType, request.Id, "Update",
+                    $"Status: {LeaveRequestStatuses.Approved}, Approver: {approverEmployeeId}"));
+            }
         }
 
         public async Task RejectLeaveAsync(int requestId, int approverEmployeeId, string reason)
@@ -137,6 +158,13 @@ namespace HotelPOS.Application.UseCases
             request.ActionedOn = DateTime.UtcNow;
             request.RejectionReason = reason?.Trim();
             await _repository.UpdateRequestAsync(request);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    LeaveRequestEntityType, request.Id, "Update",
+                    $"Status: {LeaveRequestStatuses.Rejected}, Approver: {approverEmployeeId}"));
+            }
         }
 
         private async Task EnsureBalancesInitializedAsync(int employeeId, int year)
