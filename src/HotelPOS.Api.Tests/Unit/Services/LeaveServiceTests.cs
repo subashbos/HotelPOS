@@ -15,7 +15,7 @@ namespace HotelPOS.Tests.Unit.Services
         public LeaveServiceTests()
         {
             _repoMock = new Mock<ILeaveRepository>();
-            _service = new LeaveService(_repoMock.Object);
+            _service = new LeaveService(_repoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         private static LeaveType CasualLeaveType() => new()

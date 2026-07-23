@@ -15,7 +15,7 @@ namespace HotelPOS.Tests.Unit.Services
         public AttendanceServiceTests()
         {
             _repoMock = new Mock<IAttendanceRepository>();
-            _service = new AttendanceService(_repoMock.Object);
+            _service = new AttendanceService(_repoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

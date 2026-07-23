@@ -9,11 +9,13 @@ namespace HotelPOS.Application.UseCases
     public class LeaveService : ILeaveService
     {
         private readonly ILeaveRepository _repository;
+        private readonly IAuthorizationService _authorization;
         private readonly IValidator<LeaveRequest> _validator;
 
-        public LeaveService(ILeaveRepository repository, IValidator<LeaveRequest>? validator = null)
+        public LeaveService(ILeaveRepository repository, IAuthorizationService authorization, IValidator<LeaveRequest>? validator = null)
         {
             _repository = repository;
+            _authorization = authorization;
             _validator = validator ?? new LeaveRequestValidator();
         }
 
@@ -24,12 +26,14 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<LeaveBalance>> GetBalancesAsync(int employeeId, int year)
         {
+            _authorization.EnsurePermission(PermissionModules.HrLeave);
             await EnsureBalancesInitializedAsync(employeeId, year);
             return await _repository.GetBalancesAsync(employeeId, year);
         }
 
         public async Task<List<LeaveRequest>> GetRequestsAsync(int? employeeId = null, string? status = null)
         {
+            _authorization.EnsurePermission(PermissionModules.HrLeave);
             return await _repository.GetRequestsAsync(employeeId, status);
         }
 
