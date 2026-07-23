@@ -124,12 +124,14 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
+                Serilog.Log.Error(ex, "Transaction failed in OrderService");
                 try
                 {
                     await _repo.RollbackTransactionAsync();
                 }
                 catch (Exception rollbackEx)
                 {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed in OrderService");
                     throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
                 }
                 throw;
@@ -213,12 +215,14 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
+                Serilog.Log.Error(ex, "Transaction failed while updating order");
                 try
                 {
                     await _repo.RollbackTransactionAsync();
                 }
                 catch (Exception rollbackEx)
                 {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while updating order");
                     throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
                 }
                 throw;
@@ -286,12 +290,14 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
+                Serilog.Log.Error(ex, "Transaction failed while voiding order");
                 try
                 {
                     await _repo.RollbackTransactionAsync();
                 }
                 catch (Exception rollbackEx)
                 {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while voiding order");
                     throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
                 }
                 throw;
@@ -338,12 +344,14 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
+                Serilog.Log.Error(ex, "Transaction failed while refunding order");
                 try
                 {
                     await _repo.RollbackTransactionAsync();
                 }
                 catch (Exception rollbackEx)
                 {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while refunding order");
                     throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
                 }
                 throw;
@@ -432,12 +440,14 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
+                Serilog.Log.Error(ex, "Transaction failed while processing partial payment");
                 try
                 {
                     await _repo.RollbackTransactionAsync();
                 }
                 catch (Exception rollbackEx)
                 {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while processing partial payment");
                     throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
                 }
                 throw;

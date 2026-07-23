@@ -66,12 +66,14 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
+                Serilog.Log.Error(ex, "Transaction failed while creating purchase");
                 try
                 {
                     await _purchaseRepository.RollbackTransactionAsync();
                 }
                 catch (Exception rollbackEx)
                 {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while creating purchase");
                     throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
                 }
                 throw;

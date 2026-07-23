@@ -9,6 +9,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace HotelPOS.Application.UseCases
 {
@@ -18,6 +19,7 @@ namespace HotelPOS.Application.UseCases
         private readonly Dictionary<int, List<OrderItem>> _tableCarts = new();
         private readonly Lock _lock = new();
         private readonly IServiceScopeFactory? _scopeFactory;
+        private readonly Microsoft.Extensions.Logging.ILogger<CartService>? _logger;
 
         /// <summary>
         /// Path to the cart persistence file. Overridable for testing.
@@ -30,21 +32,34 @@ namespace HotelPOS.Application.UseCases
         /// default carts.json path in the application's base directory.
         /// </summary>
         public CartService(IServiceScopeFactory? scopeFactory = null)
-            : this(scopeFactory, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "carts.json"))
+            : this(scopeFactory, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "carts.json"), null)
         {
         }
 
-        /// <summary>
-        /// Testable constructor: callers can supply a custom file path (or null
-        /// to disable persistence) so test runs never share or pollute each
-        /// other's on-disk state.
-        /// </summary>
         internal CartService(IServiceScopeFactory? scopeFactory, string? cartsFilePath)
+            : this(scopeFactory, cartsFilePath, null)
+        {
+        }
+
+        internal CartService(IServiceScopeFactory? scopeFactory, string? cartsFilePath, Microsoft.Extensions.Logging.ILogger<CartService>? logger)
         {
             _scopeFactory = scopeFactory;
             _cartsFilePath = cartsFilePath;
+            _logger = logger;
             RestoreCarts();
             RestoreHeldOrders();
+        }
+
+        private void LogException(Exception ex, string message)
+        {
+            if (_logger != null)
+            {
+                _logger.LogError(ex, "{Message}", message);
+            }
+            else
+            {
+                Serilog.Log.Error(ex, "{Message}", message);
+            }
         }
 
         // ── Persistence helpers ──────────────────────────────────────────────
@@ -59,7 +74,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to save carts: {ex.Message}");
+                LogException(ex, "Failed to save carts");
             }
         }
 
@@ -84,7 +99,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to restore carts: {ex.Message}");
+                LogException(ex, "Failed to restore carts");
             }
         }
 
@@ -102,7 +117,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to save held order to DB: {ex.Message}");
+                LogException(ex, "Failed to save held order to DB");
             }
         }
 
@@ -120,7 +135,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to remove held order from DB: {ex.Message}");
+                LogException(ex, "Failed to remove held order from DB");
             }
         }
 
@@ -138,7 +153,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to clear held orders from DB: {ex.Message}");
+                LogException(ex, "Failed to clear held orders from DB");
             }
         }
 
@@ -165,7 +180,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to restore held orders from DB: {ex.Message}");
+                LogException(ex, "Failed to restore held orders from DB");
             }
         }
 

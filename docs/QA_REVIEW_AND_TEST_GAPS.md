@@ -6,8 +6,8 @@ Scope: Fast review of core POS risk areas: authentication, billing, orders, stoc
 
 ## Quick Verification
 
-- Command run: `dotnet test`
-- Result: 515 passed, 0 failed, 0 skipped, 515 total.
+- Command run: `dotnet test HotelPOS.sln --configuration Release`
+- Result (as of 2026-07-23): 1,196 passed, 0 failed, 0 skipped, 1,196 total (423 in `HotelPOS.Tests`, 773 in `HotelPOS.Api.Tests`). The suite has grown substantially since this document's original 2026-05-07 review (515 tests then), largely from the HR module and API test coverage — see [HUMAN_RESOURCES_DEEP_DIVE.md](HUMAN_RESOURCES_DEEP_DIVE.md) §8.
 - Concurrency & Thread-safety: Mitigated. Database concurrent operations are isolated using dynamic scoped service resolution.
 
 ## Highest Priority Loopholes (Mitigated & Checked)

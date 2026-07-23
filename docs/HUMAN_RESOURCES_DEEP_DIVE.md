@@ -15,7 +15,8 @@ Domain        -> Entities, enums/constants (no dependencies)
 Application   -> UseCases (services), Interfaces, DTOs, Validators, AutoMapper profiles
 Infrastructure-> EF Core repositories, DbContext configuration
 API           -> ASP.NET Core controllers (JWT-secured REST endpoints)
-HotelPOS      -> WPF desktop views/viewmodels (the only client that surfaces HR today)
+HotelPOS      -> WPF desktop views/viewmodels
+HotelPOS.Client -> Angular web views/components (added 2026-07-18)
 ```
 
 Four sub-areas exist, each with its own Service/Repository pair:
@@ -156,9 +157,11 @@ concerns out of the Application layer.
 - Views are lazily created and cached per dashboard session
   (`_cachedEmployees`, `_cachedAttendance`, etc.), consistent with how other modules
   (Billing, Inventory) are wired.
-- **The Angular web client (`HotelPOS.Client`) has no HR UI at all.** HR is currently a
-  WPF-desktop-only capability; the REST API exists and is fully authorized, so a web
-  front end could be added without touching the Application/Infrastructure layers.
+- **The Angular web client (`HotelPOS.Client`) now has HR UI**, added 2026-07-18 (after
+  this document's original writing): `EmployeesComponent`, `AttendanceComponent`,
+  `LeaveComponent`, and `PayrollComponent`, routed at `/admin/{employees,attendance,leave,payroll}`
+  in `app.routes.ts`. HR is no longer WPF-desktop-only; both clients consume the same
+  REST API.
 
 ## 6. Data Layer
 
@@ -199,10 +202,14 @@ Fixed since the original version of this document:
    through the Roles screen already pick up the four new modules automatically since
    role creation iterates `PermissionModules.All`.
 
+Also fixed since the original version of this document:
+
+4. ~~**No web UI for HR.**~~ **Fixed 2026-07-18.** `HotelPOS.Client` gained
+   `EmployeesComponent`, `AttendanceComponent`, `LeaveComponent`, and `PayrollComponent`,
+   routed under `/admin/*`, consuming the same REST API as the WPF app.
+
 Still open:
 
-4. **No web UI for HR.** Only the WPF desktop app exposes Employee/Attendance/Leave/
-   Payroll screens; the REST API is otherwise unused by `HotelPOS.Client`.
 5. **PII stored unencrypted.** PAN, Aadhaar, UAN, ESIC number, and bank account details
    are plain `nvarchar` columns with no column-level encryption or masking — worth a
    security review if this ever handles real employee data at scale.

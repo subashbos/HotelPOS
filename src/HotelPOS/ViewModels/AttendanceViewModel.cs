@@ -66,6 +66,7 @@ namespace HotelPOS.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    Serilog.Log.Error(ex, "Failed to load employees");
                     _notificationService.ShowError($"Failed to load employees: {ex.Message}");
                 }
             }
@@ -86,6 +87,7 @@ namespace HotelPOS.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    Serilog.Log.Error(ex, "Failed to load attendance");
                     _notificationService.ShowError($"Failed to load attendance: {ex.Message}");
                 }
             }
@@ -123,6 +125,7 @@ namespace HotelPOS.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    Serilog.Log.Error(ex, "Failed to mark attendance");
                     _notificationService.ShowError($"Failed to mark attendance: {ex.Message}");
                     return;
                 }
@@ -145,6 +148,7 @@ namespace HotelPOS.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    Serilog.Log.Error(ex, "Failed to delete attendance record");
                     _notificationService.ShowError($"Failed to delete attendance record: {ex.Message}");
                     return;
                 }
