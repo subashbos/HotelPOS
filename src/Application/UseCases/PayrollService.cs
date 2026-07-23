@@ -14,6 +14,9 @@ namespace HotelPOS.Application.UseCases
     /// </summary>
     public class PayrollService : IPayrollService
     {
+        private const string SalaryStructureEntityType = "SalaryStructure";
+        private const string PayrollRunEntityType = "PayrollRun";
+
         private readonly IPayrollRepository _payrollRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IAttendanceRepository _attendanceRepository;
@@ -51,7 +54,7 @@ namespace HotelPOS.Application.UseCases
             if (!result.IsValid)
                 throw new ArgumentException(result.Errors[0].ErrorMessage);
 
-            bool isNew = structure.Id == 0;
+            var isNew = structure.Id == 0;
             if (isNew)
                 await _payrollRepository.AddSalaryStructureAsync(structure);
             else
@@ -59,7 +62,8 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
-                await _mediator.Publish(new EntityActionEvent("SalaryStructure", structure.Id, isNew ? "Create" : "Update",
+                await _mediator.Publish(new EntityActionEvent(
+                    SalaryStructureEntityType, structure.Id, isNew ? "Create" : "Update",
                     $"Employee: {structure.EmployeeId}, Gross: {structure.GrossMonthly:N2}"));
             }
         }
@@ -115,8 +119,9 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
-                await _mediator.Publish(new EntityActionEvent("PayrollRun", run.Id, "Run",
-                    $"Month: {month:D2}/{year}, Payslips: {run.Payslips.Count}, ProcessedBy: {processedByUserId?.ToString() ?? "N/A"}"));
+                await _mediator.Publish(new EntityActionEvent(
+                    PayrollRunEntityType, run.Id, "Create",
+                    $"Month: {month:D2}/{year}, Payslips: {run.Payslips.Count}"));
             }
 
             return run;
@@ -143,8 +148,9 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
-                await _mediator.Publish(new EntityActionEvent("PayrollRun", run.Id, "MarkPaid",
-                    $"Month: {run.Month:D2}/{run.Year}, Payslips: {run.Payslips.Count}"));
+                await _mediator.Publish(new EntityActionEvent(
+                    PayrollRunEntityType, run.Id, "Update",
+                    $"Status: {PayrollRunStatuses.Paid}, Payslips: {run.Payslips.Count}"));
             }
         }
 

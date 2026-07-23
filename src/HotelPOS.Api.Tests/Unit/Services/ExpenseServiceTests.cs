@@ -1,15 +1,14 @@
+using AutoMapper;
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.UseCases.Expenses.Commands;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Domain.Events;
-using AutoMapper;
 using MediatR;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -139,41 +138,55 @@ namespace HotelPOS.Tests.Unit.Services
             _expenseRepoMock.Verify(r => r.DeleteAsync(7), Times.Once);
         }
 
-        // ── Audit trail: mediator path publishes EntityActionEvent ──────────
+        // ── Mediator (production/DI) path: audit event publishing ────────────
+        // The legacy repository constructor above is test-only (see ExpenseService's doc
+        // comment); production always resolves ExpenseService via the mediator constructor,
+        // so the audit hook is only reachable there.
 
         [Fact]
-        public async Task SaveExpenseAsync_MediatorPath_PublishesCreateEvent()
+        public async Task SaveExpenseAsync_ViaMediator_NewExpense_PublishesCreateAuditEvent()
         {
-            var mediatorMock = new Mock<IMediator>();
-            var mapperMock = new Mock<IMapper>();
-            mapperMock.Setup(m => m.Map<SaveExpenseDto>(It.IsAny<Expense>()))
-                .Returns(new SaveExpenseDto { Title = "Veg", Category = "Raw Material", Amount = 1500 });
-            mediatorMock.Setup(m => m.Send(It.IsAny<SaveExpenseCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(77);
+            var mediator = new Mock<IMediator>();
+            var mapper = new Mock<IMapper>();
+            var dto = new SaveExpenseDto { Id = 0, Title = "Vegetable Purchase", Amount = 1500 };
+            mapper.Setup(m => m.Map<SaveExpenseDto>(It.IsAny<Expense>())).Returns(dto);
+            mediator.Setup(m => m.Send(It.IsAny<SaveExpenseCommand>(), default)).ReturnsAsync(42);
 
-            var service = new ExpenseService(mediatorMock.Object, mapperMock.Object);
-            var expense = new Expense { Id = 0, Title = "Veg", Category = "Raw Material", Amount = 1500 };
+            var service = new ExpenseService(mediator.Object, mapper.Object);
+            await service.SaveExpenseAsync(new Expense { Id = 0, Title = "Vegetable Purchase", Amount = 1500 });
 
-            await service.SaveExpenseAsync(expense);
-
-            mediatorMock.Verify(
-                m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "Expense" && e.EntityId == 77 && e.Action == "Create"), default),
-                Times.Once);
+            mediator.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "Expense" && e.EntityId == 42 && e.Action == "Create"), default), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteExpenseAsync_MediatorPath_PublishesDeleteEvent()
+        public async Task SaveExpenseAsync_ViaMediator_ExistingExpense_PublishesUpdateAuditEvent()
         {
-            var mediatorMock = new Mock<IMediator>();
-            var mapperMock = new Mock<IMapper>();
+            var mediator = new Mock<IMediator>();
+            var mapper = new Mock<IMapper>();
+            var dto = new SaveExpenseDto { Id = 5, Title = "Electricity Bill", Amount = 3000 };
+            mapper.Setup(m => m.Map<SaveExpenseDto>(It.IsAny<Expense>())).Returns(dto);
+            mediator.Setup(m => m.Send(It.IsAny<SaveExpenseCommand>(), default)).ReturnsAsync(5);
 
-            var service = new ExpenseService(mediatorMock.Object, mapperMock.Object);
+            var service = new ExpenseService(mediator.Object, mapper.Object);
+            await service.SaveExpenseAsync(new Expense { Id = 5, Title = "Electricity Bill", Amount = 3000 });
 
-            await service.DeleteExpenseAsync(42);
+            mediator.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "Expense" && e.EntityId == 5 && e.Action == "Update"), default), Times.Once);
+        }
 
-            mediatorMock.Verify(
-                m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "Expense" && e.EntityId == 42 && e.Action == "Delete"), default),
-                Times.Once);
+        [Fact]
+        public async Task DeleteExpenseAsync_ViaMediator_PublishesDeleteAuditEvent()
+        {
+            var mediator = new Mock<IMediator>();
+            var mapper = new Mock<IMapper>();
+            mediator.Setup(m => m.Send(It.IsAny<DeleteExpenseCommand>(), default)).Returns(Task.CompletedTask);
+
+            var service = new ExpenseService(mediator.Object, mapper.Object);
+            await service.DeleteExpenseAsync(7);
+
+            mediator.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "Expense" && e.EntityId == 7 && e.Action == "Delete"), default), Times.Once);
         }
     }
 }

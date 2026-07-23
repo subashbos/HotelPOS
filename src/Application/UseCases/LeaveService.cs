@@ -10,6 +10,8 @@ namespace HotelPOS.Application.UseCases
 {
     public class LeaveService : ILeaveService
     {
+        private const string LeaveRequestEntityType = "LeaveRequest";
+
         private readonly ILeaveRepository _repository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IAuthorizationService _authorization;
@@ -88,6 +90,13 @@ namespace HotelPOS.Application.UseCases
             }
 
             await _repository.AddRequestAsync(request);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    LeaveRequestEntityType, request.Id, "Create",
+                    $"Employee: {request.EmployeeId}, Type: {leaveType.Name}, Days: {request.TotalDays}"));
+            }
         }
 
         public async Task ApproveLeaveAsync(int requestId, int approverEmployeeId)
@@ -119,8 +128,9 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
-                await _mediator.Publish(new EntityActionEvent("LeaveRequest", request.Id, "Approve",
-                    $"Employee: {request.EmployeeId}, Days: {request.TotalDays}, ApprovedBy: {approverEmployeeId}"));
+                await _mediator.Publish(new EntityActionEvent(
+                    LeaveRequestEntityType, request.Id, "Update",
+                    $"Status: {LeaveRequestStatuses.Approved}, Approver: {approverEmployeeId}"));
             }
         }
 
@@ -151,8 +161,9 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
-                await _mediator.Publish(new EntityActionEvent("LeaveRequest", request.Id, "Reject",
-                    $"Employee: {request.EmployeeId}, RejectedBy: {approverEmployeeId}, Reason: {request.RejectionReason}"));
+                await _mediator.Publish(new EntityActionEvent(
+                    LeaveRequestEntityType, request.Id, "Update",
+                    $"Status: {LeaveRequestStatuses.Rejected}, Approver: {approverEmployeeId}"));
             }
         }
 

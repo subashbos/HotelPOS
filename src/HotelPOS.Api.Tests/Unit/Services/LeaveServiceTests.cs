@@ -22,7 +22,9 @@ namespace HotelPOS.Tests.Unit.Services
             _employeeRepoMock = new Mock<IEmployeeRepository>();
             _employeeRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((int id) => new Employee { Id = id });
             _mediatorMock = new Mock<IMediator>();
-            _service = new LeaveService(_repoMock.Object, _employeeRepoMock.Object, TestAuthorization.AllowAll().Object, mediator: _mediatorMock.Object);
+            _service = new LeaveService(
+                _repoMock.Object, _employeeRepoMock.Object, TestAuthorization.AllowAll().Object,
+                mediator: _mediatorMock.Object);
         }
 
         private static LeaveType CasualLeaveType() => new()
@@ -61,6 +63,8 @@ namespace HotelPOS.Tests.Unit.Services
             // is actioned.
             Assert.Equal(2, balance.PendingDays);
             _repoMock.Verify(r => r.UpdateBalanceAsync(balance), Times.Once);
+            _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "LeaveRequest" && e.Action == "Create"), default), Times.Once);
         }
 
         [Fact]
@@ -164,9 +168,8 @@ namespace HotelPOS.Tests.Unit.Services
             Assert.Equal(0, balance.PendingDays);
             _repoMock.Verify(r => r.UpdateBalanceAsync(balance), Times.Once);
             _repoMock.Verify(r => r.UpdateRequestAsync(request), Times.Once);
-            _mediatorMock.Verify(
-                m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "LeaveRequest" && e.EntityId == 10 && e.Action == "Approve"), default),
-                Times.Once);
+            _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "LeaveRequest" && e.EntityId == 10 && e.Action == "Update"), default), Times.Once);
         }
 
         [Fact]
@@ -202,9 +205,8 @@ namespace HotelPOS.Tests.Unit.Services
             Assert.Equal(0, balance.PendingDays);
             _repoMock.Verify(r => r.UpdateBalanceAsync(balance), Times.Once);
             _repoMock.Verify(r => r.UpdateRequestAsync(request), Times.Once);
-            _mediatorMock.Verify(
-                m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "LeaveRequest" && e.EntityId == 10 && e.Action == "Reject"), default),
-                Times.Once);
+            _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "LeaveRequest" && e.EntityId == 10 && e.Action == "Update"), default), Times.Once);
         }
     }
 }

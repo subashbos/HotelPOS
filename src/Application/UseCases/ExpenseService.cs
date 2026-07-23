@@ -11,6 +11,8 @@ namespace HotelPOS.Application.UseCases
 {
     public class ExpenseService : IExpenseService
     {
+        private const string ExpenseEntityType = "Expense";
+
         private readonly IMediator? _mediator;
         private readonly IExpenseRepository? _expenseRepository;
         private readonly IMapper _mapper;
@@ -57,14 +59,14 @@ namespace HotelPOS.Application.UseCases
         {
             if (expense == null) throw new ArgumentNullException(nameof(expense));
 
-            bool isNew = expense.Id == 0;
-
             if (_mediator != null)
             {
+                var isNew = expense.Id == 0;
                 var dto = _mapper.Map<SaveExpenseDto>(expense);
-                var savedId = await _mediator.Send(new SaveExpenseCommand(dto));
-                await _mediator.Publish(new EntityActionEvent("Expense", savedId, isNew ? "Create" : "Update",
-                    $"Title: {expense.Title}, Amount: {expense.Amount:N2}, Category: {expense.Category}"));
+                var id = await _mediator.Send(new SaveExpenseCommand(dto));
+                await _mediator.Publish(new EntityActionEvent(
+                    ExpenseEntityType, id, isNew ? "Create" : "Update",
+                    $"Title: {dto.Title}, Amount: {dto.Amount:N2}"));
                 return;
             }
 
@@ -79,7 +81,7 @@ namespace HotelPOS.Application.UseCases
             expense.Title = expense.Title.Trim();
             expense.Category = expense.Category.Trim();
 
-            if (isNew)
+            if (expense.Id == 0)
                 await _expenseRepository!.AddAsync(expense);
             else
                 await _expenseRepository!.UpdateAsync(expense);
@@ -90,7 +92,7 @@ namespace HotelPOS.Application.UseCases
             if (_mediator != null)
             {
                 await _mediator.Send(new DeleteExpenseCommand(id));
-                await _mediator.Publish(new EntityActionEvent("Expense", id, "Delete"));
+                await _mediator.Publish(new EntityActionEvent(ExpenseEntityType, id, "Delete"));
                 return;
             }
 
