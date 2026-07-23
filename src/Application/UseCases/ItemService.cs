@@ -88,6 +88,12 @@ namespace HotelPOS.Application.UseCases
             return await _itemRepository!.GetAllAsync() ?? new List<Item>();
         }
 
+        public async Task<List<Item>> GetItemsByIdsAsync(List<int> ids)
+        {
+            if (ids == null || ids.Count == 0) return new List<Item>();
+            return await _itemRepository.GetByIdsAsync(ids) ?? new List<Item>();
+        }
+
         public async Task UpdateItemAsync(int id, CreateItemDto dto)
         {
             if (_mediator != null)
