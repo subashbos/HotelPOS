@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RawMaterial } from '../models/raw-material.model';
 
@@ -26,8 +26,7 @@ export class RawMaterialService {
 
   getRawMaterials(): Observable<RawMaterial[]> {
     return this.http.get<RawMaterial[]>(this.apiUrl).pipe(
-      // Return mock data if HTTP call fails in offline/dev mode
-      // RxJS catchError handle
+      catchError(() => of(this.mockMaterials))
     );
   }
 
