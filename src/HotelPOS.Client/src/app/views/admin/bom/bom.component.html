@@ -1,0 +1,184 @@
+<div class="flex flex-wrap px-4 md:px-6 w-full">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-lg text-blueGray-700">
+              <i class="fas fa-clipboard-list text-blueGray-400 mr-2"></i> Bill of Materials — Recipe Management
+            </h3>
+            <p class="text-xs text-blueGray-400 mt-1">Define ingredients and wastage % for each menu item to calculate food cost & gross margin</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout: Dual Panel -->
+      <div class="p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+
+        <!-- Left Panel: Menu Item Selector (4 cols) -->
+        <div class="md:col-span-4 bg-blueGray-50 border border-solid border-blueGray-200 rounded p-4 flex flex-col h-[600px]">
+          <h4 class="font-semibold text-sm text-blueGray-700 mb-3 uppercase">🍽 Menu Items</h4>
+
+          <div class="flex items-center bg-white rounded border border-solid border-blueGray-200 px-3 py-2 mb-3">
+            <i class="fas fa-search text-blueGray-400 mr-2 text-xs"></i>
+            <label for="bom-item-search" class="sr-only">Search menu items</label>
+            <input
+              id="bom-item-search"
+              type="text"
+              placeholder="Search menu item..."
+              class="bg-transparent border-0 outline-none text-xs text-blueGray-700 w-full font-normal focus:ring-0 focus:outline-none"
+              [(ngModel)]="itemSearchQuery"
+              (ngModelChange)="onItemSearchChanged()"
+            />
+          </div>
+
+          <div class="overflow-y-auto flex-1 border border-solid border-blueGray-200 bg-white rounded">
+            <div
+              *ngFor="let item of filteredMenuItems"
+              (click)="selectMenuItem(item)"
+              class="p-3 border-b border-solid border-blueGray-100 cursor-pointer hover:bg-blueGray-50 transition-colors flex items-center justify-between"
+              [ngClass]="selectedMenuItem?.id === item.id ? 'bg-red-50 border-l-4 border-l-red-600 font-bold' : ''"
+            >
+              <div>
+                <div class="text-xs font-semibold text-blueGray-700">{{ item.name }}</div>
+                <div class="text-[10px] text-blueGray-400">ID: #{{ item.id }}</div>
+              </div>
+              <div class="text-xs font-bold text-blueGray-600">₹{{ item.price | number:'1.2-2' }}</div>
+            </div>
+            <div *ngIf="filteredMenuItems.length === 0" class="p-4 text-center text-xs text-blueGray-400">
+              No menu items found.
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Recipe / Ingredient Editor (8 cols) -->
+        <div class="md:col-span-8 flex flex-col h-[600px] justify-between">
+          <div class="flex flex-col h-full">
+
+            <!-- Recipe Action Bar -->
+            <div class="flex flex-wrap items-center justify-between bg-blueGray-50 p-4 rounded border border-solid border-blueGray-200 mb-4">
+              <div>
+                <span class="text-xs uppercase font-bold text-blueGray-400">Active Recipe:</span>
+                <span class="ml-2 text-sm font-bold text-blueGray-700">{{ selectedMenuItem ? selectedMenuItem.name : 'Select a menu item' }}</span>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button
+                  (click)="addIngredient()"
+                  [disabled]="!selectedMenuItem"
+                  class="bg-blueGray-700 text-white active:bg-blueGray-800 text-xs font-bold uppercase px-3 py-2 rounded shadow hover:shadow-md disabled:opacity-50"
+                >
+                  <i class="fas fa-plus mr-1"></i> Add Ingredient
+                </button>
+                <button
+                  (click)="saveRecipe()"
+                  [disabled]="!selectedMenuItem || isSaving"
+                  class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md disabled:opacity-50"
+                >
+                  <i class="fas fa-save mr-1"></i> {{ isSaving ? 'Saving...' : 'Save Recipe' }}
+                </button>
+                <button
+                  (click)="clearRecipe()"
+                  [disabled]="!selectedMenuItem"
+                  class="bg-blueGray-200 text-blueGray-700 text-xs font-bold uppercase px-3 py-2 rounded shadow hover:shadow-md disabled:opacity-50"
+                >
+                  <i class="fas fa-trash mr-1"></i> Clear
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="statusMessage" class="mb-3 text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded border border-emerald-200">
+              {{ statusMessage }}
+            </div>
+
+            <!-- Ingredients Table -->
+            <div class="flex-1 overflow-x-auto overflow-y-auto border border-solid border-blueGray-200 rounded mb-4">
+              <table class="items-center w-full bg-transparent border-collapse">
+                <thead>
+                  <tr>
+                    <th class="px-3 py-2 text-[11px] uppercase font-semibold text-left bg-blueGray-50 text-blueGray-500">Ingredient</th>
+                    <th class="px-3 py-2 text-[11px] uppercase font-semibold text-center bg-blueGray-50 text-blueGray-500">Unit</th>
+                    <th class="px-3 py-2 text-[11px] uppercase font-semibold text-right bg-blueGray-50 text-blueGray-500">Qty Req</th>
+                    <th class="px-3 py-2 text-[11px] uppercase font-semibold text-right bg-blueGray-50 text-blueGray-500">Wastage %</th>
+                    <th class="px-3 py-2 text-[11px] uppercase font-semibold text-right bg-blueGray-50 text-blueGray-500">Eff Qty</th>
+                    <th class="px-3 py-2 text-[11px] uppercase font-semibold text-right bg-blueGray-50 text-blueGray-500">Cost/Unit</th>
+                    <th class="px-3 py-2 text-[11px] uppercase font-semibold text-right bg-blueGray-50 text-blueGray-500">Total Cost</th>
+                    <th class="px-3 py-2 text-[11px] uppercase font-semibold text-center bg-blueGray-50 text-blueGray-500"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of ingredients; let i = index">
+                    <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs">
+                      <select
+                        [ngModel]="row.rawMaterialId"
+                        (ngModelChange)="onMaterialChanged(row, $event)"
+                        class="border-0 px-2 py-1 text-xs text-blueGray-700 bg-blueGray-50 rounded shadow focus:outline-none w-full"
+                      >
+                        <option *ngFor="let m of rawMaterials" [value]="m.id">{{ m.name }}</option>
+                      </select>
+                    </td>
+                    <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-center font-semibold text-blueGray-500 uppercase">{{ row.unit }}</td>
+                    <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-right">
+                      <input
+                        type="number"
+                        [(ngModel)]="row.quantityRequired"
+                        (ngModelChange)="recalculateRow(row)"
+                        class="border-0 px-2 py-1 text-xs text-right text-blueGray-700 bg-blueGray-50 rounded shadow focus:outline-none w-20"
+                      />
+                    </td>
+                    <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-right">
+                      <input
+                        type="number"
+                        [(ngModel)]="row.wastagePercentage"
+                        (ngModelChange)="recalculateRow(row)"
+                        class="border-0 px-2 py-1 text-xs text-right text-blueGray-700 bg-blueGray-50 rounded shadow focus:outline-none w-16"
+                      />
+                    </td>
+                    <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-right text-blueGray-600">{{ row.effectiveQuantity | number:'1.3-3' }}</td>
+                    <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-right text-blueGray-600">₹{{ row.costPerUnit | number:'1.2-2' }}</td>
+                    <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-right font-bold text-blueGray-700">₹{{ row.ingredientCost | number:'1.2-2' }}</td>
+                    <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-center">
+                      <button (click)="removeIngredient(i)" class="text-red-500 hover:text-red-700 font-bold"><i class="fas fa-times"></i></button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="ingredients.length === 0">
+                    <td colspan="8" class="px-3 py-8 text-center text-xs text-blueGray-400">No ingredients added to this recipe yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Cost Summary Footer -->
+            <div class="bg-blueGray-800 text-white rounded p-4 grid grid-cols-5 gap-3 text-center">
+              <div>
+                <div class="text-[10px] uppercase text-blueGray-400">Net Ingredient Cost</div>
+                <div class="text-sm font-bold text-white">₹{{ totalNetCost | number:'1.2-2' }}</div>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase text-blueGray-400">Wastage Cost</div>
+                <div class="text-sm font-bold text-red-400">₹{{ totalWastageCost | number:'1.2-2' }}</div>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase text-blueGray-400">Total Food Cost</div>
+                <div class="text-sm font-bold text-amber-400">₹{{ totalFoodCost | number:'1.2-2' }}</div>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase text-blueGray-400">Menu Price</div>
+                <div class="text-sm font-bold text-white">₹{{ menuPrice | number:'1.2-2' }}</div>
+              </div>
+              <div>
+                <div class="text-[10px] uppercase text-blueGray-400">Gross Margin</div>
+                <div class="text-base font-extrabold text-emerald-400">{{ grossMarginPercentage | number:'1.1-1' }}%</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

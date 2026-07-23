@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
-  GstReportRow, ItemMarginRow, ItemReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
-  PagedPurchaseReport, ProfitMarginSummary, SalesReport, WastageSummary
+  ExpenseCategoryBreakdown, GstReportRow, ItemMarginRow, ItemReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
+  PagedPurchaseReport, ProfitAndLossReport, ProfitMarginSummary, SalesReport, ShiftClosureReport, StaffPerformanceReport, StockValuationSummary, VoidDiscountAuditRow, WastageSummary
 } from '../models/report.model';
 import { environment } from '../../environments/environment';
 
@@ -55,6 +55,29 @@ export class ReportService {
 
   getMonthlyTrend(): Observable<MonthlyTrend[]> {
     return this.http.get<MonthlyTrend[]>(`${this.apiUrl}/monthly-trend`);
+  }
+
+  getShiftClosureReport(sessionId?: number, date?: string): Observable<ShiftClosureReport> {
+    const params: Record<string, string> = {};
+    if (sessionId) params['sessionId'] = sessionId.toString();
+    if (date) params['date'] = date;
+    return this.http.get<ShiftClosureReport>(`${this.apiUrl}/shift-closure`, { params });
+  }
+
+  getVoidDiscountAudit(from?: string, to?: string): Observable<VoidDiscountAuditRow[]> {
+    return this.http.get<VoidDiscountAuditRow[]>(`${this.apiUrl}/void-audit`, { params: this.dateParams(from, to) });
+  }
+
+  getStaffPerformanceReport(from?: string, to?: string): Observable<StaffPerformanceReport[]> {
+    return this.http.get<StaffPerformanceReport[]>(`${this.apiUrl}/staff-performance`, { params: this.dateParams(from, to) });
+  }
+
+  getStockValuationReport(): Observable<StockValuationSummary> {
+    return this.http.get<StockValuationSummary>(`${this.apiUrl}/stock-valuation`);
+  }
+
+  getProfitAndLossReport(from?: string, to?: string): Observable<ProfitAndLossReport> {
+    return this.http.get<ProfitAndLossReport>(`${this.apiUrl}/pnl`, { params: this.dateParams(from, to) });
   }
 
   private dateParams(from?: string, to?: string): Record<string, string> {

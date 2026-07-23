@@ -1,7 +1,9 @@
+import { ElementRef } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { BillingComponent } from './billing.component';
 import { ItemService } from '../../../services/item.service';
 import { OrderService } from '../../../services/order.service';
+import { TableService } from '../../../services/table.service';
 import { Item } from '../../../models/item.model';
 import { ORDER_TYPE_LABELS, PAYMENT_MODES } from '../../../models/order.model';
 
@@ -9,6 +11,7 @@ describe('BillingComponent', () => {
   let component: BillingComponent;
   let itemServiceSpy: jasmine.SpyObj<ItemService>;
   let orderServiceSpy: jasmine.SpyObj<OrderService>;
+  let tableServiceSpy: jasmine.SpyObj<TableService>;
 
   const makeItem = (overrides: Partial<Item> = {}): Item => ({
     id: 1,
@@ -23,9 +26,11 @@ describe('BillingComponent', () => {
   beforeEach(() => {
     itemServiceSpy = jasmine.createSpyObj('ItemService', ['getItems']);
     orderServiceSpy = jasmine.createSpyObj('OrderService', ['createOrder']);
+    tableServiceSpy = jasmine.createSpyObj('TableService', ['getTables']);
     itemServiceSpy.getItems.and.returnValue(of([]));
+    tableServiceSpy.getTables.and.returnValue(of([]));
 
-    component = new BillingComponent(itemServiceSpy, orderServiceSpy);
+    component = new BillingComponent(itemServiceSpy, orderServiceSpy, tableServiceSpy);
   });
 
   describe('cart math', () => {
@@ -50,6 +55,25 @@ describe('BillingComponent', () => {
       expect(component.cart).toHaveSize(1);
       expect(component.cart[0].quantity).toBe(2);
       expect(component.cart[0].total).toBe(420); // 2 * 200 * 1.05
+    });
+
+    it('addToCart caps quantity to available stock when trackInventory is true', () => {
+      const item = makeItem({ id: 1, price: 200, trackInventory: true, stockQuantity: 2 });
+      component.addToCart(item);
+      component.addToCart(item);
+      component.addToCart(item); // 3rd attempt exceeds stock limit of 2
+
+      expect(component.cart[0].quantity).toBe(2);
+    });
+
+    it('increaseQty does not increment past available stock when trackInventory is true', () => {
+      const item = makeItem({ id: 1, price: 200, trackInventory: true, stockQuantity: 2 });
+      component.allItems = [item];
+      component.addToCart(item);
+      component.increaseQty(component.cart[0]); // qty 2
+      component.increaseQty(component.cart[0]); // 3rd attempt
+
+      expect(component.cart[0].quantity).toBe(2);
     });
 
     it('subtotal, gstAmount, and totalAmount reflect the cart contents', () => {
@@ -85,6 +109,29 @@ describe('BillingComponent', () => {
       expect(component.cart.map(r => r.itemId)).toEqual([2, 3]);
       expect(component.cart.map(r => r.sNo)).toEqual([1, 2]);
     });
+
+    it('decreaseQty decrements quantity without removing the row when above 1', () => {
+      component.addToCart(makeItem({ id: 1, price: 100, taxPercentage: 0 }));
+      component.increaseQty(component.cart[0]); // qty 2
+
+      component.decreaseQty(component.cart[0]);
+
+      expect(component.cart).toHaveSize(1);
+      expect(component.cart[0].quantity).toBe(1);
+      expect(component.cart[0].total).toBe(100);
+    });
+
+    it('removeRow only clears selectedCartRow when the removed row was the selected one', () => {
+      component.addToCart(makeItem({ id: 1 }));
+      component.addToCart(makeItem({ id: 2 }));
+      component.selectRow(component.cart[1]);
+
+      component.removeRow(component.cart[0]); // remove the row that is NOT selected
+      expect(component.selectedCartRow).not.toBeNull();
+
+      component.removeRow(component.selectedCartRow!);
+      expect(component.selectedCartRow).toBeNull();
+    });
   });
 
   describe('filteredMenuItems caching', () => {
@@ -112,11 +159,103 @@ describe('BillingComponent', () => {
       expect(component.selectedCategory).toBe('Mains');
       expect(component.filteredMenuItems.map(i => i.name)).toEqual(['Main']);
     });
+
+    it('updateFilteredMenuItems combines the category filter and the search query', () => {
+      component.allItems = [
+        makeItem({ id: 1, name: 'Chicken Curry', category: { id: 1, name: 'Mains', displayOrder: 1 } }),
+        makeItem({ id: 2, name: 'Chicken Wings', category: { id: 2, name: 'Starters', displayOrder: 2 } }),
+        makeItem({ id: 3, name: 'Veg Curry', category: { id: 1, name: 'Mains', displayOrder: 1 } })
+      ];
+      component.selectedCategory = 'Mains';
+      component.searchQuery = 'chicken';
+
+      component.updateFilteredMenuItems();
+
+      expect(component.filteredMenuItems.map(i => i.name)).toEqual(['Chicken Curry']);
+    });
+  });
+
+  describe('focusSearch', () => {
+    it('does nothing when the search element ref is not yet available', () => {
+      component.searchEl = undefined as unknown as ElementRef;
+      expect(() => component.focusSearch()).not.toThrow();
+    });
+
+    it('focuses and selects the search input when the ref is set', () => {
+      const focusSpy = jasmine.createSpy('focus');
+      const selectSpy = jasmine.createSpy('select');
+      component.searchEl = { nativeElement: { focus: focusSpy, select: selectSpy } } as unknown as ElementRef;
+
+      component.focusSearch();
+
+      expect(focusSpy).toHaveBeenCalled();
+      expect(selectSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('search & autocomplete', () => {
+    beforeEach(() => {
+      component.allItems = [
+        makeItem({ id: 1, name: 'Chicken Curry', trackInventory: true, stockQuantity: 5 }),
+        makeItem({ id: 2, name: 'Chicken Wings', trackInventory: true, stockQuantity: 0 }),
+        makeItem({ id: 3, name: 'Veg Curry', trackInventory: false, stockQuantity: 0 })
+      ];
+    });
+
+    it('onSearchQueryChanged clears the autocomplete list and refreshes the menu when the query is blank', () => {
+      component.searchQuery = '   ';
+      component.autoCompleteItems = [component.allItems[0]];
+      component.showAutoComplete = true;
+
+      component.onSearchQueryChanged();
+
+      expect(component.autoCompleteItems).toEqual([]);
+      expect(component.showAutoComplete).toBeFalse();
+    });
+
+    it('onSearchQueryChanged matches by name case-insensitively and excludes out-of-stock tracked items', () => {
+      component.searchQuery = 'CHICKEN';
+
+      component.onSearchQueryChanged();
+
+      expect(component.autoCompleteItems.map(i => i.name)).toEqual(['Chicken Curry']);
+      expect(component.showAutoComplete).toBeTrue();
+    });
+
+    it('onSearchQueryChanged hides the autocomplete panel when nothing matches', () => {
+      component.searchQuery = 'pizza';
+
+      component.onSearchQueryChanged();
+
+      expect(component.autoCompleteItems).toEqual([]);
+      expect(component.showAutoComplete).toBeFalse();
+    });
+
+    it('addFromAutoComplete adds the item, clears the search state, and refocuses search', () => {
+      spyOn(component, 'focusSearch');
+      component.searchQuery = 'chicken';
+      component.onSearchQueryChanged();
+
+      component.addFromAutoComplete(component.allItems[0]);
+
+      expect(component.cart).toHaveSize(1);
+      expect(component.cart[0].itemId).toBe(1);
+      expect(component.searchQuery).toBe('');
+      expect(component.autoCompleteItems).toEqual([]);
+      expect(component.showAutoComplete).toBeFalse();
+      expect(component.focusSearch).toHaveBeenCalled();
+    });
+
+    it('addFromAutoComplete does nothing when given a falsy item', () => {
+      component.addFromAutoComplete(null as unknown as Item);
+      expect(component.cart).toHaveSize(0);
+    });
   });
 
   describe('checkout', () => {
     beforeEach(() => {
       component.addToCart(makeItem({ id: 1, name: 'Chicken Curry', price: 200, taxPercentage: 5 }));
+      component.tableNumber = '5'; // Dine In (the default order type) requires a table
     });
 
     it('processCheckout does nothing when the cart is empty', () => {
@@ -193,6 +332,92 @@ describe('BillingComponent', () => {
       expect(component.cart).toHaveSize(1);
     });
 
+    it('confirmCheckout maps discount and defaults tableNumber to 0 when non-numeric', () => {
+      orderServiceSpy.createOrder.and.returnValue(of(1));
+      // Takeaway doesn't require a table, so a non-numeric value can still flow through to 0.
+      component.orderType = ORDER_TYPE_LABELS[1];
+      component.tableNumber = 'takeaway';
+      component.discountAmount = 20;
+      component.processCheckout();
+
+      component.confirmCheckout();
+
+      const request = orderServiceSpy.createOrder.calls.mostRecent().args[0];
+      expect(request.tableNumber).toBe(0);
+      expect(request.discount).toBe(20);
+    });
+
+    it('confirmCheckout blocks a Dine In order with no table number and shows an actionable message', () => {
+      component.tableNumber = '';
+      component.processCheckout();
+
+      component.confirmCheckout();
+
+      expect(component.checkoutError).toBe('Please enter a table number for Dine In orders.');
+      expect(orderServiceSpy.createOrder).not.toHaveBeenCalled();
+      expect(component.isCheckingOut).toBeFalse();
+    });
+
+    it('confirmCheckout does not block Takeaway orders with no table number', () => {
+      orderServiceSpy.createOrder.and.returnValue(of(1));
+      component.orderType = ORDER_TYPE_LABELS[1];
+      component.tableNumber = '';
+      component.processCheckout();
+
+      component.confirmCheckout();
+
+      expect(orderServiceSpy.createOrder).toHaveBeenCalledTimes(1);
+      expect(component.checkoutError).toBe('');
+    });
+
+    it('confirmCheckout omits blank customer fields from the request', () => {
+      orderServiceSpy.createOrder.and.returnValue(of(1));
+      component.customerName = '';
+      component.customerPhone = '';
+      component.customerGstin = '';
+      component.processCheckout();
+
+      component.confirmCheckout();
+
+      const request = orderServiceSpy.createOrder.calls.mostRecent().args[0];
+      expect(request.customerName).toBeUndefined();
+      expect(request.customerPhone).toBeUndefined();
+      expect(request.customerGstin).toBeUndefined();
+    });
+
+    it('confirmCheckout includes customer details when provided', () => {
+      orderServiceSpy.createOrder.and.returnValue(of(1));
+      component.customerName = 'Alice';
+      component.customerPhone = '9999999999';
+      component.customerGstin = 'GSTIN123';
+      component.processCheckout();
+
+      component.confirmCheckout();
+
+      const request = orderServiceSpy.createOrder.calls.mostRecent().args[0];
+      expect(request.customerName).toBe('Alice');
+      expect(request.customerPhone).toBe('9999999999');
+      expect(request.customerGstin).toBe('GSTIN123');
+    });
+
+    it('confirmCheckout falls back to err.error.Message (capital M) when message is absent', () => {
+      orderServiceSpy.createOrder.and.returnValue(throwError(() => ({ error: { Message: 'Capitalized message' } })));
+      component.processCheckout();
+
+      component.confirmCheckout();
+
+      expect(component.checkoutError).toBe('Capitalized message');
+    });
+
+    it('confirmCheckout falls back to a generic message when the server gives no message at all', () => {
+      orderServiceSpy.createOrder.and.returnValue(throwError(() => ({ error: null })));
+      component.processCheckout();
+
+      component.confirmCheckout();
+
+      expect(component.checkoutError).toBe('Failed to save the order. Please try again.');
+    });
+
     it('confirmCheckout ignores a second click while a request is already in flight', () => {
       orderServiceSpy.createOrder.and.returnValue(of(42));
       component.processCheckout();
@@ -211,6 +436,74 @@ describe('BillingComponent', () => {
       component.confirmCheckout(); // second call after success
 
       expect(orderServiceSpy.createOrder).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('table layout', () => {
+    it('openTableLayout(true) loads tables and opens the popup', () => {
+      tableServiceSpy.getTables.and.returnValue(of([
+        { id: 1, number: 3, name: 'T3', capacity: 4, isActive: true, isDeleted: false },
+        { id: 2, number: 1, name: 'T1', capacity: 2, isActive: false, isDeleted: false }
+      ]));
+
+      component.openTableLayout(true);
+
+      expect(component.isTableLayoutOpen).toBeTrue();
+      expect(component.tables.map(t => t.number)).toEqual([3]); // inactive table filtered out
+    });
+
+    it('openTableLayout falls back to a default 20-table layout when none are configured', () => {
+      tableServiceSpy.getTables.and.returnValue(of([]));
+
+      component.openTableLayout(true);
+
+      expect(component.tables).toHaveSize(20);
+    });
+
+    it('openTableLayout(false) closes the popup without reloading tables', () => {
+      component.isTableLayoutOpen = true;
+
+      component.openTableLayout(false);
+
+      expect(component.isTableLayoutOpen).toBeFalse();
+      expect(tableServiceSpy.getTables).not.toHaveBeenCalled();
+    });
+
+    it('selectTable sets the table number and closes the popup', () => {
+      component.isTableLayoutOpen = true;
+
+      component.selectTable(6);
+
+      expect(component.tableNumber).toBe('6');
+      expect(component.isTableLayoutOpen).toBeFalse();
+    });
+
+    it('isTableOccupied and isTableCurrent reflect held orders and the active selection', () => {
+      component.tableNumber = '5';
+      component.heldOrders = [
+        { holdName: 'H1', heldAt: new Date(), cart: [], discountAmount: 0, paymentMode: 'Cash', orderType: 'DineIn', tableNumber: '2', customerName: '', customerPhone: '', customerGstin: '' }
+      ];
+
+      expect(component.isTableOccupied(2)).toBeTrue();
+      expect(component.isTableOccupied(9)).toBeFalse();
+      expect(component.isTableCurrent(5)).toBeTrue();
+      expect(component.isTableCurrent(2)).toBeFalse();
+    });
+
+    it('activeTableNumbers combines held-order tables with the current table when the cart has items', () => {
+      component.tableNumber = '5';
+      component.heldOrders = [
+        { holdName: 'H1', heldAt: new Date(), cart: [], discountAmount: 0, paymentMode: 'Cash', orderType: 'DineIn', tableNumber: '2', customerName: '', customerPhone: '', customerGstin: '' }
+      ];
+
+      expect(component.activeTableNumbers).toEqual([2]); // empty cart — current table not yet "active"
+
+      component.addToCart(makeItem({ id: 1 }));
+      expect(component.activeTableNumbers).toEqual([2, 5]);
+    });
+
+    it('trackByTableNumber returns the table number', () => {
+      expect(component.trackByTableNumber(0, { id: 1, number: 8, name: 'T8', capacity: 4, isActive: true, isDeleted: false })).toBe(8);
     });
   });
 
@@ -270,6 +563,17 @@ describe('BillingComponent', () => {
       expect(component.tableNumber).toBe('');
     });
 
+    it('clearCart also resets orderType and paymentMode to their defaults', () => {
+      component.orderType = 'Delivery';
+      component.paymentMode = 'Card';
+      component.addToCart(makeItem({ id: 1 }));
+
+      component.clearCart();
+
+      expect(component.orderType).toBe(ORDER_TYPE_LABELS[0]);
+      expect(component.paymentMode).toBe(PAYMENT_MODES.Cash);
+    });
+
     it('holdOrder and resumeOrder manages held orders list', () => {
       component.addToCart(makeItem({ id: 1, price: 100, taxPercentage: 0 }));
       component.tableNumber = '4';
@@ -292,6 +596,18 @@ describe('BillingComponent', () => {
     it('holdOrder does nothing if cart is empty', () => {
       component.holdOrder();
       expect(component.heldOrders).toHaveSize(0);
+    });
+
+    it('resumeOrder hides the held-orders panel and refocuses the search input', () => {
+      spyOn(component, 'focusSearch');
+      component.addToCart(makeItem({ id: 1 }));
+      component.holdOrder();
+      component.showHeldOrders = true;
+
+      component.resumeOrder(component.heldOrders[0]);
+
+      expect(component.showHeldOrders).toBeFalse();
+      expect(component.focusSearch).toHaveBeenCalled();
     });
 
     it('totalItemsCount sums quantities in cart', () => {

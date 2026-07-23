@@ -30,8 +30,11 @@ jobs:
       - name: Build
         run: dotnet build HotelPOS.sln --no-restore --configuration Release -warnaserror
 
-      - name: Test
+      - name: Test (WPF)
         run: dotnet test src/HotelPOS.Tests/HotelPOS.Tests.csproj --configuration Release --logger trx --results-directory TestResults -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=../../TestResults/coverage/ -p:Threshold=80 -p:ThresholdType=line -p:ThresholdStat=total
+
+      - name: Test (API/backend)
+        run: dotnet test src/HotelPOS.Api.Tests/HotelPOS.Api.Tests.csproj --configuration Release --logger trx --results-directory TestResults -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=../../TestResults/coverage-api/
 
       - name: Publish test results
         uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc # v1
@@ -54,7 +57,9 @@ jobs:
         if: always()
         with:
           name: dotnet-coverage-report
-          path: TestResults/coverage/*.cobertura.xml
+          path: |
+            TestResults/coverage/*.cobertura.xml
+            TestResults/coverage-api/*.cobertura.xml
 
   angular:
     name: Angular Test

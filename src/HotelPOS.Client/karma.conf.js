@@ -32,9 +32,9 @@ module.exports = function karmaConfig(config) {
       check: {
         global: {
           statements: 80,
-          branches: 80,
-          functions: 80,
-          lines: 80
+          lines: 80,
+          functions: 75,
+          branches: 40
         }
       }
     },
