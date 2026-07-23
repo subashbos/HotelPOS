@@ -43,7 +43,7 @@ export class BillingComponent implements OnInit {
   // ── Menu Data from API ──
   allItems: Item[] = [];
   categories: Category[] = [{ id: 0, name: 'All', displayOrder: -1 }];
-  selectedCategoryId: number = 0;
+  selectedCategoryId = 0;
 
   get selectedCategory(): string {
     if (this.selectedCategoryId === 0) return 'All';

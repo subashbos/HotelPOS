@@ -296,7 +296,7 @@ namespace HotelPOS.Application.UseCases
             lock (_lock)
             {
                 GetOrCreateCart(tableNumber).Clear();
-                var toRemove = ((IEnumerable<HeldOrder>)_heldOrders).Where(x => x.TableNumber == tableNumber).ToList();
+                var toRemove = _heldOrders.ToList().Where(x => x.TableNumber == tableNumber).ToList();
                 foreach (var h in toRemove)
                 {
                     _heldOrders.Remove(h);
