@@ -15,10 +15,10 @@
           <!-- Date Filter -->
           <div class="flex items-center gap-3 mt-3 md:mt-0">
             <div class="flex items-center bg-blueGray-700 rounded border border-solid border-blueGray-600 px-3 py-1 text-xs">
-              <span class="text-blueGray-300 mr-2">Period:</span>
-              <input type="date" [(ngModel)]="fromDate" class="bg-transparent text-white border-0 text-xs focus:ring-0" />
-              <span class="text-blueGray-400 mx-1">to</span>
-              <input type="date" [(ngModel)]="toDate" class="bg-transparent text-white border-0 text-xs focus:ring-0" />
+              <label for="biFromDate" class="text-blueGray-300 mr-2">Period:</label>
+              <input id="biFromDate" type="date" [(ngModel)]="fromDate" aria-label="From Date" class="bg-transparent text-white border-0 text-xs focus:ring-0" />
+              <label for="biToDate" class="text-blueGray-400 mx-1">to</label>
+              <input id="biToDate" type="date" [(ngModel)]="toDate" aria-label="To Date" class="bg-transparent text-white border-0 text-xs focus:ring-0" />
             </div>
             <button
               (click)="refresh()"

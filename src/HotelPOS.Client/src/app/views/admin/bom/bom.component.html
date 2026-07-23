@@ -38,6 +38,9 @@
             <div
               *ngFor="let item of filteredMenuItems"
               (click)="selectMenuItem(item)"
+              (keyup.enter)="selectMenuItem(item)"
+              tabindex="0"
+              role="button"
               class="p-3 border-b border-solid border-blueGray-100 cursor-pointer hover:bg-blueGray-50 transition-colors flex items-center justify-between"
               [ngClass]="selectedMenuItem?.id === item.id ? 'bg-red-50 border-l-4 border-l-red-600 font-bold' : ''"
             >
@@ -112,6 +115,8 @@
                   <tr *ngFor="let row of ingredients; let i = index">
                     <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs">
                       <select
+                        [id]="'bom-material-' + i"
+                        aria-label="Raw Material"
                         [ngModel]="row.rawMaterialId"
                         (ngModelChange)="onMaterialChanged(row, $event)"
                         class="border-0 px-2 py-1 text-xs text-blueGray-700 bg-blueGray-50 rounded shadow focus:outline-none w-full"
@@ -122,6 +127,8 @@
                     <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-center font-semibold text-blueGray-500 uppercase">{{ row.unit }}</td>
                     <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-right">
                       <input
+                        [id]="'bom-qty-' + i"
+                        aria-label="Quantity Required"
                         type="number"
                         [(ngModel)]="row.quantityRequired"
                         (ngModelChange)="recalculateRow(row)"
@@ -130,6 +137,8 @@
                     </td>
                     <td class="px-3 py-2 border-t border-solid border-blueGray-100 text-xs text-right">
                       <input
+                        [id]="'bom-wastage-' + i"
+                        aria-label="Wastage Percentage"
                         type="number"
                         [(ngModel)]="row.wastagePercentage"
                         (ngModelChange)="recalculateRow(row)"

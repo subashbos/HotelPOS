@@ -475,46 +475,31 @@ namespace HotelPOS.Infrastructure.Persistence
 
             var orders = await ordersQuery.ToListAsync();
 
-            var staffList = new List<StaffPerformanceReportDto>();
-
-            if (employees.Any())
+            if (!employees.Any())
             {
-                int sno = 1;
-                foreach (var emp in employees)
-                {
-                    string fullName = $"{emp.FirstName} {emp.LastName}".Trim();
-                    var empOrders = orders.Where(o => o.CustomerName != null && o.CustomerName.Contains(fullName, StringComparison.OrdinalIgnoreCase)).ToList();
-
-                    if (!empOrders.Any() && orders.Any())
-                    {
-                        empOrders = orders.Where(o => o.Id % Math.Max(1, employees.Count) == (emp.Id % Math.Max(1, employees.Count))).ToList();
-                    }
-
-                    decimal totalRevenue = empOrders.Sum(o => o.TotalAmount);
-                    decimal totalDiscounts = empOrders.Sum(o => o.DiscountAmount);
-                    int count = empOrders.Count;
-                    decimal avgBill = count > 0 ? totalRevenue / count : 0;
-
-                    staffList.Add(new StaffPerformanceReportDto(
-                        sno++,
-                        emp.Id,
-                        fullName,
-                        emp.Designation?.Title ?? emp.EmploymentType ?? "Staff",
-                        count,
-                        totalRevenue,
-                        Math.Round(avgBill, MoneyPrecision.CurrencyDecimals),
-                        totalDiscounts
-                    ));
-                }
+                return GetDefaultCashierPerformance(orders);
             }
-            else
-            {
-                decimal totalRevenue = orders.Sum(o => o.TotalAmount);
-                decimal totalDiscounts = orders.Sum(o => o.DiscountAmount);
-                int count = orders.Count;
-                decimal avgBill = count > 0 ? totalRevenue / count : 0;
 
-                staffList.Add(new StaffPerformanceReportDto(
+            int sno = 1;
+            var staffList = new List<StaffPerformanceReportDto>();
+            foreach (var emp in employees)
+            {
+                staffList.Add(BuildStaffPerformanceDto(emp, orders, employees.Count, ref sno));
+            }
+
+            return staffList.OrderByDescending(s => s.TotalRevenueGenerated).ToList();
+        }
+
+        private static List<StaffPerformanceReportDto> GetDefaultCashierPerformance(List<Order> orders)
+        {
+            decimal totalRevenue = orders.Sum(o => o.TotalAmount);
+            decimal totalDiscounts = orders.Sum(o => o.DiscountAmount);
+            int count = orders.Count;
+            decimal avgBill = count > 0 ? totalRevenue / count : 0;
+
+            return new List<StaffPerformanceReportDto>
+            {
+                new StaffPerformanceReportDto(
                     1,
                     1,
                     "General Cashier",
@@ -523,10 +508,35 @@ namespace HotelPOS.Infrastructure.Persistence
                     totalRevenue,
                     Math.Round(avgBill, MoneyPrecision.CurrencyDecimals),
                     totalDiscounts
-                ));
+                )
+            };
+        }
+
+        private static StaffPerformanceReportDto BuildStaffPerformanceDto(Employee emp, List<Order> orders, int totalEmployeeCount, ref int sno)
+        {
+            string fullName = $"{emp.FirstName} {emp.LastName}".Trim();
+            var empOrders = orders.Where(o => o.CustomerName != null && o.CustomerName.Contains(fullName, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (!empOrders.Any() && orders.Any())
+            {
+                empOrders = orders.Where(o => o.Id % Math.Max(1, totalEmployeeCount) == (emp.Id % Math.Max(1, totalEmployeeCount))).ToList();
             }
 
-            return staffList.OrderByDescending(s => s.TotalRevenueGenerated).ToList();
+            decimal totalRevenue = empOrders.Sum(o => o.TotalAmount);
+            decimal totalDiscounts = empOrders.Sum(o => o.DiscountAmount);
+            int count = empOrders.Count;
+            decimal avgBill = count > 0 ? totalRevenue / count : 0;
+
+            return new StaffPerformanceReportDto(
+                sno++,
+                emp.Id,
+                fullName,
+                emp.Designation?.Title ?? emp.EmploymentType ?? "Staff",
+                count,
+                totalRevenue,
+                Math.Round(avgBill, MoneyPrecision.CurrencyDecimals),
+                totalDiscounts
+            );
         }
 
         public async Task<StockValuationSummaryDto> GetStockValuationReportAsync()
@@ -557,7 +567,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 accumRevenue += entry.Revenue;
                 double cumulativePct = totalSalesRevenue > 0 ? (double)(accumRevenue / totalSalesRevenue * 100) : 100;
 
-                string abcCategory = "C";
+                string abcCategory;
                 if (cumulativePct <= 70 || (totalSalesRevenue == 0 && idx <= Math.Max(1, sortedItems.Count * 0.2)))
                 {
                     abcCategory = "A";

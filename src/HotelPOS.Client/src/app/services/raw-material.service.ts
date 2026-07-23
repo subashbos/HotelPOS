@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RawMaterial } from '../models/raw-material.model';
 
@@ -11,7 +11,7 @@ export class RawMaterialService {
   private readonly apiUrl = `${environment.apiBaseUrl}/rawmaterials`;
 
   // Fallback initial data in case backend API endpoint is not yet connected
-  private mockMaterials: RawMaterial[] = [
+  private readonly mockMaterials: RawMaterial[] = [
     { id: 1, name: 'Basmati Rice', unit: 'kg', costPerUnit: 110, currentStock: 50.5, minStockThreshold: 10 },
     { id: 2, name: 'Refined Cooking Oil', unit: 'l', costPerUnit: 145, currentStock: 30, minStockThreshold: 5 },
     { id: 3, name: 'Chicken (Whole/Cut)', unit: 'kg', costPerUnit: 220, currentStock: 15.2, minStockThreshold: 5 },

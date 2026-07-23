@@ -71,7 +71,7 @@ export class BiAnalyticsComponent implements OnInit {
 
     this.biAnalyticsService.getBiAnalytics(this.fromDate, this.toDate).subscribe({
       next: (res) => {
-        if (res && res.kpis) {
+        if (res?.kpis) {
           this.kpis = res.kpis;
           this.monthlyTrends = res.monthlyTrends || this.monthlyTrends;
         }

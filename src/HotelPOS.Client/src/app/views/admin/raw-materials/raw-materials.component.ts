@@ -101,7 +101,7 @@ export class RawMaterialsComponent implements OnInit {
   }
 
   saveRawMaterial(): void {
-    if (!this.form.name || !this.form.name.trim()) {
+    if (!this.form.name?.trim()) {
       this.formError = 'Material name is required.';
       return;
     }
