@@ -1,7 +1,9 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
 using HotelPOS.Domain.Common.Constants;
+using MediatR;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -18,6 +20,7 @@ namespace HotelPOS.Tests.Unit.Services
         private readonly Mock<IEmployeeRepository> _employeeRepoMock = new();
         private readonly Mock<IAttendanceRepository> _attendanceRepoMock = new();
         private readonly Mock<IAuthorizationService> _authorizationMock = TestAuthorization.AllowAll();
+        private readonly Mock<IMediator> _mediatorMock = new();
         private readonly PayrollService _service;
 
         public PayrollServiceTests()
@@ -26,7 +29,8 @@ namespace HotelPOS.Tests.Unit.Services
                 _payrollRepoMock.Object,
                 _employeeRepoMock.Object,
                 _attendanceRepoMock.Object,
-                _authorizationMock.Object);
+                _authorizationMock.Object,
+                mediator: _mediatorMock.Object);
         }
 
         [Fact]
@@ -174,6 +178,8 @@ namespace HotelPOS.Tests.Unit.Services
             Assert.Equal(1, run.Payslips[0].EmployeeId);
             
             _payrollRepoMock.Verify(r => r.AddRunAsync(run), Times.Once);
+            _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "PayrollRun" && e.Action == "Create"), default), Times.Once);
         }
 
         [Fact]
@@ -205,6 +211,8 @@ namespace HotelPOS.Tests.Unit.Services
             Assert.NotNull(validRun.PaidOn);
             Assert.Equal(PayslipPaymentStatuses.Paid, validRun.Payslips.First().PaymentStatus);
             _payrollRepoMock.Verify(r => r.UpdateRunAsync(validRun), Times.Once);
+            _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "PayrollRun" && e.EntityId == 2 && e.Action == "Update"), default), Times.Once);
         }
 
         [Fact]
@@ -221,11 +229,15 @@ namespace HotelPOS.Tests.Unit.Services
             var newStructure = new SalaryStructure { Id = 0, EmployeeId = 1, Basic = 15000 };
             await _service.SaveSalaryStructureAsync(newStructure);
             _payrollRepoMock.Verify(r => r.AddSalaryStructureAsync(newStructure), Times.Once);
+            _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "SalaryStructure" && e.Action == "Create"), default), Times.Once);
 
             // Update existing structure
             var existingStructure = new SalaryStructure { Id = 5, EmployeeId = 1, Basic = 15000 };
             await _service.SaveSalaryStructureAsync(existingStructure);
             _payrollRepoMock.Verify(r => r.UpdateSalaryStructureAsync(existingStructure), Times.Once);
+            _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "SalaryStructure" && e.EntityId == 5 && e.Action == "Update"), default), Times.Once);
         }
 
         [Fact]

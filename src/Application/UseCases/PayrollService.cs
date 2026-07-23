@@ -3,6 +3,8 @@ using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
+using MediatR;
 
 namespace HotelPOS.Application.UseCases
 {
@@ -12,24 +14,30 @@ namespace HotelPOS.Application.UseCases
     /// </summary>
     public class PayrollService : IPayrollService
     {
+        private const string SalaryStructureEntityType = "SalaryStructure";
+        private const string PayrollRunEntityType = "PayrollRun";
+
         private readonly IPayrollRepository _payrollRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IAttendanceRepository _attendanceRepository;
         private readonly IAuthorizationService _authorization;
         private readonly IValidator<SalaryStructure> _validator;
+        private readonly IMediator? _mediator;
 
         public PayrollService(
             IPayrollRepository payrollRepository,
             IEmployeeRepository employeeRepository,
             IAttendanceRepository attendanceRepository,
             IAuthorizationService authorization,
-            IValidator<SalaryStructure>? validator = null)
+            IValidator<SalaryStructure>? validator = null,
+            IMediator? mediator = null)
         {
             _payrollRepository = payrollRepository;
             _employeeRepository = employeeRepository;
             _attendanceRepository = attendanceRepository;
             _authorization = authorization;
             _validator = validator ?? new SalaryStructureValidator();
+            _mediator = mediator;
         }
 
         public async Task<List<SalaryStructure>> GetSalaryStructuresAsync(int employeeId)
@@ -46,10 +54,18 @@ namespace HotelPOS.Application.UseCases
             if (!result.IsValid)
                 throw new ArgumentException(result.Errors[0].ErrorMessage);
 
-            if (structure.Id == 0)
+            var isNew = structure.Id == 0;
+            if (isNew)
                 await _payrollRepository.AddSalaryStructureAsync(structure);
             else
                 await _payrollRepository.UpdateSalaryStructureAsync(structure);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    SalaryStructureEntityType, structure.Id, isNew ? "Create" : "Update",
+                    $"Employee: {structure.EmployeeId}, Gross: {structure.GrossMonthly:N2}"));
+            }
         }
 
         public async Task<PayrollRun> RunPayrollAsync(int month, int year, int? processedByUserId)
@@ -100,6 +116,14 @@ namespace HotelPOS.Application.UseCases
             }
 
             await _payrollRepository.AddRunAsync(run);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    PayrollRunEntityType, run.Id, "Create",
+                    $"Month: {month:D2}/{year}, Payslips: {run.Payslips.Count}"));
+            }
+
             return run;
         }
 
@@ -121,6 +145,13 @@ namespace HotelPOS.Application.UseCases
             }
 
             await _payrollRepository.UpdateRunAsync(run);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    PayrollRunEntityType, run.Id, "Update",
+                    $"Status: {PayrollRunStatuses.Paid}, Payslips: {run.Payslips.Count}"));
+            }
         }
 
         public async Task<List<PayrollRun>> GetRunsAsync()
