@@ -78,9 +78,19 @@ namespace HotelPOS.Application.UseCases
                 return (false, "This code is invalid or has expired. Request a new one.");
             }
 
+            if (request.AttemptCount >= SecurityDefaults.MaxPasswordResetCodeAttempts)
+            {
+                // Burn the code so a lucky guess after the cap can't still succeed.
+                request.Used = true;
+                await _resetRepository.UpdateAsync(request);
+                return (false, "This code is invalid or has expired. Request a new one.");
+            }
+
             var providedHash = HashCode(code?.Trim() ?? string.Empty);
             if (!FixedTimeHashEquals(providedHash, request.CodeHash))
             {
+                request.AttemptCount += 1;
+                await _resetRepository.UpdateAsync(request);
                 return (false, "This code is invalid or has expired. Request a new one.");
             }
 

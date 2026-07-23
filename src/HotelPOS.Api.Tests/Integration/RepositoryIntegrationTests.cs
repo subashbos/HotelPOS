@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure.Persistence;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Application.UseCases;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Xunit;
@@ -129,6 +130,189 @@ namespace HotelPOS.Tests
             await repo.DeleteAsync(item2.Id);
             var remaining = await repo.GetAllAsync();
             Assert.Single(remaining);
+        }
+
+        // TryDeductStockAsync uses EF Core's ExecuteUpdateAsync, which the InMemory provider (used
+        // by every other test in this file) doesn't support at all. These tests run against real
+        // SQLite instead — a shared-cache in-memory database keyed by a unique name per test, kept
+        // alive by one open "anchor" connection, so multiple independent DbContext/connection pairs
+        // (simulating separate concurrent requests) can all see the same data.
+        private static DbContextOptions<HotelDbContext> SqliteOptions(string connectionString) =>
+            new DbContextOptionsBuilder<HotelDbContext>().UseSqlite(connectionString).Options;
+
+        [Fact]
+        public async Task ItemRepository_TryDeductStockAsync_SufficientStock_DecrementsAndReturnsTrue()
+        {
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var context = new HotelDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 10 });
+                await context.SaveChangesAsync();
+            }
+
+            using var repoContext = new HotelDbContext(options);
+            var repo = new ItemRepository(repoContext);
+            var result = await repo.TryDeductStockAsync(1, 4);
+
+            Assert.True(result);
+            var item = await repo.GetByIdAsync(1);
+            Assert.Equal(6, item!.StockQuantity);
+        }
+
+        [Fact]
+        public async Task ItemRepository_TryDeductStockAsync_InsufficientStock_LeavesStockUnchangedAndReturnsFalse()
+        {
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var context = new HotelDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 3 });
+                await context.SaveChangesAsync();
+            }
+
+            using var repoContext = new HotelDbContext(options);
+            var repo = new ItemRepository(repoContext);
+            var result = await repo.TryDeductStockAsync(1, 10);
+
+            Assert.False(result);
+            var item = await repo.GetByIdAsync(1);
+            Assert.Equal(3, item!.StockQuantity); // unchanged, not partially deducted
+        }
+
+        [Fact]
+        public async Task ItemRepository_TryDeductStockAsync_NegativeQuantity_AlwaysSucceeds()
+        {
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var context = new HotelDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 0 });
+                await context.SaveChangesAsync();
+            }
+
+            using var repoContext = new HotelDbContext(options);
+            var repo = new ItemRepository(repoContext);
+
+            // Returning stock (void/refund) must succeed even from zero.
+            var result = await repo.TryDeductStockAsync(1, -5);
+
+            Assert.True(result);
+            var item = await repo.GetByIdAsync(1);
+            Assert.Equal(5, item!.StockQuantity);
+        }
+
+        [Fact]
+        public async Task ItemRepository_TryDeductStockAsync_UnknownItem_ReturnsFalse()
+        {
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var context = new HotelDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+            }
+
+            using var repoContext = new HotelDbContext(options);
+            var repo = new ItemRepository(repoContext);
+            var result = await repo.TryDeductStockAsync(999, 1);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task ItemRepository_TryDeductStockAsync_ConcurrentDeductions_NeverOversells()
+        {
+            // Regression test for the check-then-act overselling race: 20 concurrent callers each
+            // try to take 1 unit from a stock of 10, each through its own connection/DbContext
+            // against the same shared-cache SQLite database, mirroring separate concurrent requests
+            // sharing one real database. Only exactly 10 should succeed, and stock must never go
+            // negative or be under/over-deducted.
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var seedContext = new HotelDbContext(options))
+            {
+                await seedContext.Database.EnsureCreatedAsync();
+                seedContext.Items.Add(new Item { Id = 1, Name = "LastUnit", StockQuantity = 10 });
+                await seedContext.SaveChangesAsync();
+            }
+
+            var tasks = Enumerable.Range(0, 20).Select(async _ =>
+            {
+                using var context = new HotelDbContext(options);
+                var repo = new ItemRepository(context);
+                return await repo.TryDeductStockAsync(1, 1);
+            });
+
+            var results = await Task.WhenAll(tasks);
+
+            Assert.Equal(10, results.Count(r => r));
+            Assert.Equal(10, results.Count(r => !r));
+
+            using var verifyContext = new HotelDbContext(options);
+            var finalItem = await verifyContext.Items.FindAsync(1);
+            Assert.Equal(0, finalItem!.StockQuantity);
+        }
+
+        [Fact]
+        public async Task OrderService_SaveOrder_InsufficientStockOnSecondItem_RollsBackFirstItemsAtomicDeduction()
+        {
+            // End-to-end proof that TryDeductStockAsync's ExecuteUpdateAsync (which bypasses EF's
+            // normal change tracking) still participates correctly in OrderService's ambient
+            // transaction: item A's stock must NOT stay decremented once item B fails and the
+            // whole order rolls back.
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var seedContext = new HotelDbContext(options))
+            {
+                await seedContext.Database.EnsureCreatedAsync();
+                seedContext.Items.Add(new Item { Id = 1, Name = "Coffee", Price = 50, StockQuantity = 10, TrackInventory = true });
+                seedContext.Items.Add(new Item { Id = 2, Name = "Cake", Price = 80, StockQuantity = 0, TrackInventory = true });
+                await seedContext.SaveChangesAsync();
+            }
+
+            using var context = new HotelDbContext(options);
+            var orderRepo = new OrderRepository(context);
+            var itemRepo = new ItemRepository(context);
+            var itemService = new ItemService(itemRepo);
+            var orderService = new OrderService(orderRepo, mediator: null, itemService);
+
+            var request = new SaveOrderRequest(
+                new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Coffee", Quantity = 2 },
+                    new OrderItem { ItemId = 2, ItemName = "Cake", Quantity = 5 } // exceeds available stock (0)
+                },
+                TableNumber: 1);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => orderService.SaveOrderAsync(request));
+
+            using var verifyContext = new HotelDbContext(options);
+            var coffee = await verifyContext.Items.FindAsync(1);
+            Assert.Equal(10, coffee!.StockQuantity); // must be rolled back, not left at 8
+
+            var orders = await verifyContext.Orders.ToListAsync();
+            Assert.Empty(orders); // the order itself must not have been persisted either
         }
 
         // 5. OrderRepository Tests

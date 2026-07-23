@@ -1,4 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { FooterSmallComponent } from './footer-small.component';
 
 describe('FooterSmallComponent', () => {
@@ -7,7 +8,8 @@ describe('FooterSmallComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [FooterSmallComponent]
+      declarations: [FooterSmallComponent],
+      imports: [RouterTestingModule]
     }).compileComponents();
   });
 

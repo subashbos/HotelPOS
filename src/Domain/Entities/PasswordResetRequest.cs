@@ -24,5 +24,7 @@ namespace HotelPOS.Domain.Entities
         public DateTime ExpiresUtc { get; set; }
 
         public bool Used { get; set; } = false;
+
+        public int AttemptCount { get; set; } = 0;
     }
 }

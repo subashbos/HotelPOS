@@ -24,6 +24,8 @@ namespace HotelPOS.Tests
 
         public OrderServiceLoopholeTests()
         {
+            _itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Tea", Price = 100m, TaxPercentage = 0m }).ToList());
             _service = new OrderService(_repo.Object, _mediator.Object, _itemService.Object);
         }
 
@@ -116,6 +118,8 @@ namespace HotelPOS.Tests
             {
                 new OrderItem { ItemId = 1, ItemName = "Pizza", Quantity = 1, Price = 200, TaxPercentage = 5, Total = 200 }
             };
+            _itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync(new List<Item> { new Item { Id = 1, Name = "Pizza", Price = 200m, TaxPercentage = 5m } });
 
             await _service.SaveOrderAsync(new SaveOrderRequest(items, 1, Discount: 0m));
 
@@ -236,6 +240,8 @@ namespace HotelPOS.Tests
             {
                 new OrderItem { ItemId = 1, ItemName = "Biryani", Quantity = 1, Price = 100, TaxPercentage = 18, Total = 100 }
             };
+            _itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync(new List<Item> { new Item { Id = 1, Name = "Biryani", Price = 100m, TaxPercentage = 18m } });
 
             await _service.SaveOrderAsync(new SaveOrderRequest(items, 1));
 

@@ -2,6 +2,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Settings.Commands;
 using HotelPOS.Application.UseCases.Settings.Queries;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
 using MediatR;
 
 namespace HotelPOS.Application.UseCases
@@ -47,6 +48,8 @@ namespace HotelPOS.Application.UseCases
             if (_mediator != null)
             {
                 await _mediator.Send(new SaveSettingsCommand(settings));
+                await _mediator.Publish(new EntityActionEvent("Setting", settings.Id == 0 ? 1 : settings.Id, "Update",
+                    $"Hotel profile/receipt/billing settings updated (Hotel: {settings.HotelName})"));
                 return;
             }
 

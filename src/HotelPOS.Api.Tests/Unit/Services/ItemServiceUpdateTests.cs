@@ -138,12 +138,13 @@ namespace HotelPOS.Tests
         {
             var item = new Item { Id = 10, Name = "Cola", StockQuantity = 5, TrackInventory = true };
             _repoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(item);
+            _repoMock.Setup(r => r.TryDeductStockAsync(10, -3)).ReturnsAsync(true);
 
             // Simulate returning 3 units (order edit/delete flow)
             await _service.DeductStockAsync(10, -3);
 
-            Assert.Equal(8, item.StockQuantity);
-            _repoMock.Verify(r => r.UpdateAsync(item), Times.Once);
+            _repoMock.Verify(r => r.TryDeductStockAsync(10, -3), Times.Once);
+            _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
         }
 
         [Fact]

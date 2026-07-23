@@ -1,4 +1,5 @@
 import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { FooterAdminComponent } from './footer-admin.component';
 
 describe('FooterAdminComponent', () => {
@@ -7,7 +8,8 @@ describe('FooterAdminComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [FooterAdminComponent]
+      declarations: [FooterAdminComponent],
+      imports: [RouterTestingModule]
     }).compileComponents();
   });
 

@@ -180,6 +180,50 @@ namespace HotelPOS.Tests.Unit.Services
         }
 
         [Fact]
+        public async Task ConfirmResetAsync_WrongCode_IncrementsAttemptCount()
+        {
+            var user = ActiveUser();
+            var request = new PasswordResetRequest
+            {
+                UserId = user.Id,
+                CodeHash = Sha256Base64("123456"),
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(10),
+                AttemptCount = 2
+            };
+            _userRepo.Setup(r => r.GetUserByUsernameAsync(user.Username)).ReturnsAsync(user);
+            _resetRepo.Setup(r => r.GetLatestActiveAsync(user.Id)).ReturnsAsync(request);
+
+            var (success, _) = await _service.ConfirmResetAsync(user.Username, "654321", "N3wPassword!x");
+
+            Assert.False(success);
+            Assert.Equal(3, request.AttemptCount);
+            _resetRepo.Verify(r => r.UpdateAsync(request), Times.Once);
+        }
+
+        [Fact]
+        public async Task ConfirmResetAsync_AttemptCountAtMax_FailsAndBurnsCodeEvenWithCorrectCode()
+        {
+            // Brute-forcing the 6-digit code must be capped: once the max wrong guesses is
+            // reached, the code is invalidated outright — even the *correct* code no longer works.
+            var user = ActiveUser();
+            var request = new PasswordResetRequest
+            {
+                UserId = user.Id,
+                CodeHash = Sha256Base64("123456"),
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(10),
+                AttemptCount = HotelPOS.Domain.Common.Constants.SecurityDefaults.MaxPasswordResetCodeAttempts
+            };
+            _userRepo.Setup(r => r.GetUserByUsernameAsync(user.Username)).ReturnsAsync(user);
+            _resetRepo.Setup(r => r.GetLatestActiveAsync(user.Id)).ReturnsAsync(request);
+
+            var (success, _) = await _service.ConfirmResetAsync(user.Username, "123456", "N3wPassword!x");
+
+            Assert.False(success);
+            Assert.True(request.Used);
+            _userRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
+        }
+
+        [Fact]
         public async Task ConfirmResetAsync_WeakNewPassword_FailsWithPolicyMessage()
         {
             var user = ActiveUser();

@@ -47,6 +47,14 @@ namespace HotelPOS.Infrastructure.Persistence
             await _context.SaveChangesAsync();
         }
 
+        public async Task<bool> TryDeductStockAsync(int itemId, int quantity)
+        {
+            var rows = await _context.Items
+                .Where(i => i.Id == itemId && (quantity <= 0 || i.StockQuantity >= quantity))
+                .ExecuteUpdateAsync(setters => setters.SetProperty(i => i.StockQuantity, i => i.StockQuantity - quantity));
+            return rows > 0;
+        }
+
         public async Task UpdateRangeAsync(List<Item> items)
         {
             _context.Items.UpdateRange(items);
