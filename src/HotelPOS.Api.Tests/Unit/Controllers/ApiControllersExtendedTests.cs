@@ -664,7 +664,7 @@ namespace HotelPOS.Tests.Unit.Controllers
             var svc = new Mock<ISettingService>();
             svc.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting { SmtpPassword = "secret" });
 
-            var controller = new SettingsController(svc.Object);
+            var controller = new SettingsController(svc.Object, TestAuthorization.AllowAll().Object);
             var result = await controller.GetSettings();
 
             var ok = Assert.IsType<OkObjectResult>(result.Result);
@@ -678,7 +678,7 @@ namespace HotelPOS.Tests.Unit.Controllers
             var svc = new Mock<ISettingService>();
             svc.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting { SmtpPassword = null });
 
-            var controller = new SettingsController(svc.Object);
+            var controller = new SettingsController(svc.Object, TestAuthorization.AllowAll().Object);
             var result = await controller.GetSettings();
 
             var ok = Assert.IsType<OkObjectResult>(result.Result);
@@ -687,9 +687,43 @@ namespace HotelPOS.Tests.Unit.Controllers
         }
 
         [Fact]
+        public async Task Settings_GetSettings_WithoutSettingsPermission_RedactsSmtpAndBackupFields()
+        {
+            var svc = new Mock<ISettingService>();
+            svc.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting
+            {
+                HotelName = "Hotel X",
+                SmtpHost = "smtp.example.com",
+                SmtpPort = 587,
+                SmtpUsername = "billing@example.com",
+                SmtpPassword = "secret",
+                SmtpUseSsl = true,
+                SmtpFromAddress = "billing@example.com",
+                OffsiteBackupPath = @"\\backup-server\hotelpos"
+            });
+
+            var controller = new SettingsController(svc.Object, TestAuthorization.DenyAll().Object);
+            var result = await controller.GetSettings();
+
+            var ok = Assert.IsType<OkObjectResult>(result.Result);
+            var dto = Assert.IsType<SettingsDto>(ok.Value);
+
+            // Operational fields any authenticated user needs for billing stay visible...
+            Assert.Equal("Hotel X", dto.HotelName);
+            // ...but SMTP credentials and the backup destination are redacted to their zero values.
+            Assert.Null(dto.SmtpHost);
+            Assert.Equal(0, dto.SmtpPort);
+            Assert.Null(dto.SmtpUsername);
+            Assert.False(dto.SmtpPasswordSet);
+            Assert.False(dto.SmtpUseSsl);
+            Assert.Null(dto.SmtpFromAddress);
+            Assert.Null(dto.OffsiteBackupPath);
+        }
+
+        [Fact]
         public async Task Settings_SaveSettings_InvalidModelState_ReturnsBadRequest()
         {
-            var controller = new SettingsController(Mock.Of<ISettingService>());
+            var controller = new SettingsController(Mock.Of<ISettingService>(), TestAuthorization.AllowAll().Object);
             controller.ModelState.AddModelError("HotelName", "Required");
 
             var result = await controller.SaveSettings(new SaveSettingsDto());
@@ -707,7 +741,7 @@ namespace HotelPOS.Tests.Unit.Controllers
                 .Callback<SystemSetting>(s => saved = s)
                 .Returns(Task.CompletedTask);
 
-            var controller = new SettingsController(svc.Object);
+            var controller = new SettingsController(svc.Object, TestAuthorization.AllowAll().Object);
             var result = await controller.SaveSettings(new SaveSettingsDto { HotelName = "Hotel X", SmtpPassword = null });
 
             Assert.IsType<NoContentResult>(result);
@@ -725,7 +759,7 @@ namespace HotelPOS.Tests.Unit.Controllers
                 .Callback<SystemSetting>(s => saved = s)
                 .Returns(Task.CompletedTask);
 
-            var controller = new SettingsController(svc.Object);
+            var controller = new SettingsController(svc.Object, TestAuthorization.AllowAll().Object);
             var result = await controller.SaveSettings(new SaveSettingsDto { HotelName = "Hotel X", SmtpPassword = "new-secret" });
 
             Assert.IsType<NoContentResult>(result);
