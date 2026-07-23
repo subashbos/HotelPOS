@@ -12,14 +12,18 @@ namespace HotelPOS.Infrastructure.Persistence
     public class BIReportService : IBIReportService
     {
         private readonly HotelDbContext _context;
+        private readonly IAuthorizationService _authorization;
 
-        public BIReportService(HotelDbContext context)
+        public BIReportService(HotelDbContext context, IAuthorizationService authorization)
         {
             _context = context;
+            _authorization = authorization;
         }
 
         public async Task<ProfitMarginSummaryDto> GetProfitMarginSummaryAsync(DateTime? from = null, DateTime? to = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var query = _context.Orders.AsQueryable();
             var expQuery = _context.Expenses.AsQueryable();
 
@@ -76,6 +80,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<ItemMarginRowDto>> GetItemMarginsAsync(DateTime? from = null, DateTime? to = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var query = _context.Orders.AsQueryable();
             if (from.HasValue)
             {
@@ -148,6 +154,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<WastageSummaryDto> GetWastageSummaryAsync(DateTime? from = null, DateTime? to = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var query = _context.WastageEntries.Include(w => w.Item).AsQueryable();
 
             if (from.HasValue)
@@ -203,6 +211,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task LogWastageAsync(int itemId, int quantity, string reason, string? notes)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var item = await _context.Items.FindAsync(itemId);
             if (item == null) throw new KeyNotFoundException("Item not found");
 
@@ -227,6 +237,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<LowStockAlertDto>> GetLowStockAlertsAsync()
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var items = await _context.Items.Where(i => i.TrackInventory).ToListAsync();
 
             // Load orders from last 30 days to calculate rate
@@ -300,6 +312,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<MonthlyTrendDto>> GetMonthlyTrendDataAsync()
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var now = DateTime.Now;
             var startDateLocal = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Local).AddMonths(-(ReportingLimits.TrailingHistoryMonths - 1));
             var startDateUtc = startDateLocal.ToUniversalTime();
@@ -353,6 +367,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<ShiftClosureReportDto> GetShiftClosureReportAsync(int? sessionId = null, DateTime? date = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             CashSession? session = null;
             if (sessionId.HasValue)
             {
@@ -423,6 +439,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<VoidDiscountAuditRowDto>> GetVoidDiscountAuditReportAsync(DateTime? from = null, DateTime? to = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var query = _context.Orders.AsQueryable();
 
             if (from.HasValue)
@@ -459,6 +477,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<StaffPerformanceReportDto>> GetStaffPerformanceReportAsync(DateTime? from = null, DateTime? to = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var employees = await _context.Employees.Include(e => e.Designation).ToListAsync();
             var ordersQuery = _context.Orders.Where(o => !o.IsDeleted && o.Status != OrderStatuses.Void).AsQueryable();
 
@@ -541,6 +561,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<StockValuationSummaryDto> GetStockValuationReportAsync()
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var items = await _context.Items.Include(i => i.Category).ToListAsync();
             var orders = await _context.Orders.Include(o => o.Items).Where(o => !o.IsDeleted && o.Status != OrderStatuses.Void).ToListAsync();
 
@@ -617,6 +639,8 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<ProfitAndLossReportDto> GetProfitAndLossReportAsync(DateTime? from = null, DateTime? to = null)
         {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
             var periodFrom = from ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1, 0, 0, 0, DateTimeKind.Local);
             var periodTo = to ?? periodFrom.AddMonths(1);
 

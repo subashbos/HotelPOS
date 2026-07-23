@@ -99,6 +99,20 @@ namespace HotelPOS.Tests.Integration
             Assert.True(doc.RootElement.TryGetProperty("errors", out _));
         }
 
+        [Fact]
+        public async Task GetSalesReport_CashierWithoutPermission_ReturnsForbiddenProblemDetails()
+        {
+            var client = CreateClient(RoleNames.Cashier);
+
+            var response = await client.GetAsync("/api/reports/sales");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Equal(403, doc.RootElement.GetProperty("status").GetInt32());
+            Assert.False(string.IsNullOrWhiteSpace(doc.RootElement.GetProperty("detail").GetString()));
+        }
+
         private async Task<int> SeedOrderAsync(string status)
         {
             using var scope = _factory.Services.CreateScope();

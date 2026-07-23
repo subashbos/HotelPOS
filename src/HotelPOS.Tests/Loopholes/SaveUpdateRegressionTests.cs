@@ -643,7 +643,7 @@ namespace HotelPOS.Tests
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
-            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object);
+            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object, TestAuthorization.AllowAll().Object);
             var report = await service.GetSalesReportAsync();
 
             Assert.Single(report.RecentOrders);
@@ -682,7 +682,7 @@ namespace HotelPOS.Tests
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
-            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object);
+            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object, TestAuthorization.AllowAll().Object);
             var report = await service.GetSalesReportAsync();
 
             // Null PaymentMode should default to PaymentModes.Cash
@@ -719,7 +719,7 @@ namespace HotelPOS.Tests
             itemRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
             catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
 
-            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object);
+            var service = new ReportService(repoMock.Object, itemRepoMock.Object, catRepoMock.Object, new Mock<IPurchaseRepository>().Object, TestAuthorization.AllowAll().Object);
             var report = await service.GetSalesReportAsync();
 
             var row = report.RecentOrders[0];
