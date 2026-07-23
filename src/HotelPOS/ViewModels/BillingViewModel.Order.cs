@@ -141,6 +141,8 @@ namespace HotelPOS.ViewModels
             _editingOrder = null;
             IsEditMode = false;
             OrderType = OrderTypes.DineIn;   // reset to default
+            TableNumber = 1;                 // reset to default table 1
+            _lastDineInTable = 1;
             UpdateCart();
             StatusMessage = "Ready";
             OrderEditCancelled?.Invoke();
@@ -362,18 +364,19 @@ namespace HotelPOS.ViewModels
         {
             _cartService.Clear(TableNumber);
             DiscountAmount = 0;
-            UpdateCart();
-            CartCleared?.Invoke();
-
             IsEditMode = false;
             _editingOrder = null;
             PaymentMode = PaymentModes.Cash;
             OrderType = OrderTypes.DineIn;
+            TableNumber = 1;
+            _lastDineInTable = 1;
             // CLEANUP: Reset customer details to null to align with property definitions and save memory
             CustomerName = null;
             CustomerPhone = null;
             CustomerGstin = null;
             CustomerId = null;
+            UpdateCart();
+            CartCleared?.Invoke();
         }
 
         // Any manual edit of the phone number invalidates a previously resolved customer link,
