@@ -45,7 +45,7 @@ describe('CustomersComponent', () => {
     fixture.detectChanges();
 
     expect(customerServiceSpy.getCustomers).toHaveBeenCalled();
-    expect().toHaveSize();
+    expect(component.allCustomers).toHaveSize(1);
     expect(component.isLoading).toBeFalse();
   });
 
@@ -127,7 +127,7 @@ describe('CustomersComponent', () => {
     // Empty search returns all
     component.searchQuery = '   ';
     component.applyFilter();
-    expect().toHaveSize();
+    expect(component.filteredCustomers).toHaveSize(2);
   });
 
   it('should validate customer name before saving', () => {

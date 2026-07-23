@@ -73,8 +73,8 @@ describe('LeaveComponent', () => {
     expect(component).toBeTruthy();
     expect(employeeServiceSpy.getEmployees).toHaveBeenCalled();
     expect(leaveServiceSpy.getBalances).toHaveBeenCalledWith(1);
-    expect().toHaveSize();
-    expect().toHaveSize();
+    expect(component.balances).toHaveSize(1);
+    expect(component.requests).toHaveSize(1);
   });
 
   it('should open apply form and close form', () => {

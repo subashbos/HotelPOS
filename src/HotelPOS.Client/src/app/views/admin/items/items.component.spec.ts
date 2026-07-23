@@ -54,8 +54,8 @@ describe('ItemsComponent', () => {
 
     expect(itemServiceSpy.getItems).toHaveBeenCalled();
     expect(categoryServiceSpy.getCategories).toHaveBeenCalled();
-    expect().toHaveSize();
-    expect().toHaveSize();
+    expect(component.items).toHaveSize(1);
+    expect(component.categories).toHaveSize(1);
     expect(component.isLoading).toBeFalse();
   });
 

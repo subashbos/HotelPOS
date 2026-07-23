@@ -37,7 +37,7 @@ describe('ExpenseService', () => {
 
       const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/expenses`);
       expect(req.request.method).toBe('GET');
-      expect().toHaveSize();
+      expect(req.request.params.keys()).toHaveSize(0);
       req.flush(dummyExpenses);
     });
 

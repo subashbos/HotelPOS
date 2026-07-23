@@ -39,7 +39,7 @@ describe('RolesComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(roleServiceSpy.getRoles).toHaveBeenCalled();
-    expect().toHaveSize();
+    expect(component.roles).toHaveSize(1);
   });
 
   it('should handle roles load error', () => {

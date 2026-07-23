@@ -45,7 +45,7 @@ describe('TablesComponent', () => {
     fixture.detectChanges();
 
     expect(tableServiceSpy.getTables).toHaveBeenCalled();
-    expect().toHaveSize();
+    expect(component.tables).toHaveSize(1);
     expect(component.isLoading).toBeFalse();
   });
 

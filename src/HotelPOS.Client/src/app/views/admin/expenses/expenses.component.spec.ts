@@ -42,7 +42,7 @@ describe('ExpensesComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(expenseServiceSpy.getExpenses).toHaveBeenCalled();
-    expect().toHaveSize();
+    expect(component.expenses).toHaveSize(1);
     expect(component.totalAmount).toBe(1500);
   });
 

@@ -73,8 +73,8 @@ describe('PayrollComponent', () => {
     expect(component).toBeTruthy();
     expect(employeeServiceSpy.getEmployees).toHaveBeenCalled();
     expect(payrollServiceSpy.getSalaryStructures).toHaveBeenCalledWith(1);
-    expect().toHaveSize();
-    expect().toHaveSize();
+    expect(component.runs).toHaveSize(1);
+    expect(component.salaryStructures).toHaveSize(1);
   });
 
   it('should open and close salary form', () => {

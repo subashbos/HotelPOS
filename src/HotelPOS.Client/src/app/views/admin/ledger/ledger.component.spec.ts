@@ -33,7 +33,7 @@ describe('LedgerComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(reportServiceSpy.getGstReport).toHaveBeenCalled();
-    expect().toHaveSize();
+    expect(component.rows).toHaveSize(1);
     expect(component.totals).toEqual({ gross: 10000, gst: 1800, net: 8200 });
   });
 

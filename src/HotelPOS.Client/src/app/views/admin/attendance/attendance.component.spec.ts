@@ -48,7 +48,7 @@ describe('AttendanceComponent', () => {
     expect(component).toBeTruthy();
     expect(employeeServiceSpy.getEmployees).toHaveBeenCalled();
     expect(attendanceServiceSpy.getAttendance).toHaveBeenCalledWith(1, component.fromDate, component.toDate);
-    expect().toHaveSize();
+    expect(component.records).toHaveSize(1);
   });
 
   it('should open mark form and close form', () => {
