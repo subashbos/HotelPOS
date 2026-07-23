@@ -201,6 +201,7 @@ namespace HotelPOS.Domain.Common.Constants
     {
         public const int MaxFailedLoginAttempts = 5;
         public const int LockoutWindowMinutes = 5;
+        public const int MaxPasswordResetCodeAttempts = 5;
     }
 
     public static class AuditActions
