@@ -10,12 +10,15 @@ namespace HotelPOS.Tests.Unit.Services
     public class LeaveServiceTests
     {
         private readonly Mock<ILeaveRepository> _repoMock;
+        private readonly Mock<IEmployeeRepository> _employeeRepoMock;
         private readonly LeaveService _service;
 
         public LeaveServiceTests()
         {
             _repoMock = new Mock<ILeaveRepository>();
-            _service = new LeaveService(_repoMock.Object, TestAuthorization.AllowAll().Object);
+            _employeeRepoMock = new Mock<IEmployeeRepository>();
+            _employeeRepoMock.Setup(r => r.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((int id) => new Employee { Id = id });
+            _service = new LeaveService(_repoMock.Object, _employeeRepoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         private static LeaveType CasualLeaveType() => new()
