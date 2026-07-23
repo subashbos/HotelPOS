@@ -582,8 +582,6 @@ input:where([type='text']):focus, input:where(:not([type])):focus, input:where([
   border-color: #2563eb;
 }
 
-
-
 ::-webkit-datetime-edit-fields-wrapper {
   padding: 0;
 }
@@ -858,8 +856,6 @@ input:where([type='file']):focus {
   border-color: transparent;
   background-color: currentColor;
 }
-
-
 
 @media (min-width: 768px) {
   .container {
@@ -2345,8 +2341,6 @@ input:where([type='file']):focus {
 .ease-linear {
   transition-timing-function: linear;
 }
-
-
 
 .last\:border-b-0:last-child {
   border-bottom-width: 0px;
