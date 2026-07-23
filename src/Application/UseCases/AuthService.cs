@@ -101,6 +101,22 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
+        public Task<bool> IsTwoFactorLockedOutAsync(string username) =>
+            IsLockedOutAsync(TwoFactorLockoutKey(username));
+
+        public Task RegisterFailedTwoFactorAttemptAsync(string username) =>
+            RegisterFailedAttemptAsync(TwoFactorLockoutKey(username));
+
+        public Task ClearTwoFactorLockoutAsync(string username) =>
+            _lockoutRepository.ClearAsync(TwoFactorLockoutKey(username));
+
+        // A distinct key namespace from the plain-password lockout: a successful password
+        // check clears the password key (AuthenticateInternalAsync above) but must not reset
+        // the TOTP attempt counter, otherwise an attacker who already knows the password could
+        // resubmit it before every guess to keep wiping out their 2FA lockout.
+        private static string TwoFactorLockoutKey(string username) =>
+            "2fa:" + (username?.Trim().ToLowerInvariant() ?? string.Empty);
+
         public (string Hash, string Salt) HashPassword(string password)
         {
             var saltBytes = new byte[SaltSize];

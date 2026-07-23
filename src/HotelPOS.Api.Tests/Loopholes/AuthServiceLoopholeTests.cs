@@ -184,6 +184,74 @@ namespace HotelPOS.Tests
             Assert.Null(result);
         }
 
+        // ── Two-factor attempt lockout ───────────────────────────────────────
+
+        [Fact]
+        public async Task IsTwoFactorLockedOutAsync_BeforeAnyFailures_ReturnsFalse()
+        {
+            var result = await _service.IsTwoFactorLockedOutAsync("someuser");
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task RegisterFailedTwoFactorAttemptAsync_FiveTimes_LocksOut()
+        {
+            var username = "totp_user_" + Guid.NewGuid();
+
+            for (int i = 0; i < 5; i++)
+                await _service.RegisterFailedTwoFactorAttemptAsync(username);
+
+            Assert.True(await _service.IsTwoFactorLockedOutAsync(username));
+        }
+
+        [Fact]
+        public async Task RegisterFailedTwoFactorAttemptAsync_FourTimes_DoesNotLockOut()
+        {
+            var username = "totp_user_" + Guid.NewGuid();
+
+            for (int i = 0; i < 4; i++)
+                await _service.RegisterFailedTwoFactorAttemptAsync(username);
+
+            Assert.False(await _service.IsTwoFactorLockedOutAsync(username));
+        }
+
+        [Fact]
+        public async Task ClearTwoFactorLockoutAsync_AfterLockout_UnlocksAccount()
+        {
+            var username = "totp_user_" + Guid.NewGuid();
+
+            for (int i = 0; i < 5; i++)
+                await _service.RegisterFailedTwoFactorAttemptAsync(username);
+            Assert.True(await _service.IsTwoFactorLockedOutAsync(username));
+
+            await _service.ClearTwoFactorLockoutAsync(username);
+
+            Assert.False(await _service.IsTwoFactorLockedOutAsync(username));
+        }
+
+        [Fact]
+        public async Task SuccessfulPasswordLogin_DoesNotClearTwoFactorLockout()
+        {
+            // Regression guard: the TOTP lockout counter must live in a separate key
+            // namespace from the plain-password lockout. If a successful password check
+            // ever cleared the same key the TOTP counter uses, an attacker who already
+            // knows the password could resubmit it before every code guess to keep
+            // wiping out their own 2FA lockout and brute-force the code without limit.
+            var username = "totp_regression_" + Guid.NewGuid();
+            var (hash, salt) = _service.HashPassword("correct-horse-battery-staple");
+            var user = new User { Username = username, PasswordHash = hash, Salt = salt, IsActive = true };
+            _repo.Setup(r => r.GetUserByUsernameAsync(username)).ReturnsAsync(user);
+
+            for (int i = 0; i < 5; i++)
+                await _service.RegisterFailedTwoFactorAttemptAsync(username);
+            Assert.True(await _service.IsTwoFactorLockedOutAsync(username));
+
+            var authResult = await _service.AuthenticateAsync(username, "correct-horse-battery-staple");
+
+            Assert.NotNull(authResult);
+            Assert.True(await _service.IsTwoFactorLockedOutAsync(username));
+        }
+
         // ── MustChangePassword flag is preserved ─────────────────────────────
 
         [Fact]

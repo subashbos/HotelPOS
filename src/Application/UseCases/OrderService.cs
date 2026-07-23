@@ -58,22 +58,36 @@ namespace HotelPOS.Application.UseCases
             // For Takeaway/Online, normalise to 0 regardless of what was passed
             int effectiveTableNumber = requiresTable ? tableNumber : 0;
 
-            var orderItems = items
-                .Select(x =>
-                {
-                    if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
+            // Price/tax are never trusted from the caller: every line is repriced from the
+            // authoritative item catalog so a tampered request can't under-pay for real items
+            // or inject a phantom item that doesn't exist in the catalog.
+            var itemIds = items.Select(x => x.ItemId).Distinct().ToList();
+            var catalogItems = (await _itemService.GetItemsByIdsAsync(itemIds))
+                .ToDictionary(i => i.Id);
 
-                    return new OrderItem
-                    {
-                        ItemId = x.ItemId,
-                        ItemName = x.ItemName,
-                        Quantity = x.Quantity,
-                        Price = x.Price,
-                        TaxPercentage = x.TaxPercentage,
-                        Total = x.Total
-                    };
-                })
-                .ToList();
+            var orderItems = new List<OrderItem>();
+            foreach (var x in items)
+            {
+                if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
+
+                if (!catalogItems.TryGetValue(x.ItemId, out var catalogItem))
+                    throw new ArgumentException($"Item '{x.ItemName}' (ID {x.ItemId}) does not exist.");
+
+                var price = catalogItem.Price;
+                orderItems.Add(new OrderItem
+                {
+                    ItemId = catalogItem.Id,
+                    ItemName = catalogItem.Name,
+                    Quantity = x.Quantity,
+                    Price = price,
+                    TaxPercentage = catalogItem.TaxPercentage,
+                    Total = Math.Round(price * x.Quantity, MoneyPrecision.CurrencyDecimals)
+                });
+            }
+
+            var realSubtotal = orderItems.Sum(x => x.Total);
+            if (discount > realSubtotal)
+                throw new ArgumentException("Discount cannot exceed order subtotal.");
 
             await _repo.BeginTransactionAsync();
             try

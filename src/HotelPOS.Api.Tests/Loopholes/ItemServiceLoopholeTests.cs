@@ -53,10 +53,27 @@ namespace HotelPOS.Tests
         {
             var item = new Item { Id = 5, Name = "Tea", StockQuantity = 5, TrackInventory = true };
             _repo.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(item);
+            _repo.Setup(r => r.TryDeductStockAsync(5, 5)).ReturnsAsync(true);
 
-            await _service.DeductStockAsync(5, 5);
+            var ex = await Record.ExceptionAsync(() => _service.DeductStockAsync(5, 5));
 
-            Assert.Equal(0, item.StockQuantity);
+            Assert.Null(ex);
+            _repo.Verify(r => r.TryDeductStockAsync(5, 5), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeductStockAsync_ConcurrentOversell_SecondCallerFails()
+        {
+            // Regression guard for the stock-deduction race: even though the initial GetByIdAsync
+            // read here sees sufficient stock, the atomic TryDeductStockAsync is the sole source of
+            // truth for whether the deduction actually succeeded — simulating a concurrent caller
+            // having already taken the last unit between the read and the guarded UPDATE.
+            var item = new Item { Id = 6, Name = "LastUnit", StockQuantity = 1, TrackInventory = true };
+            _repo.Setup(r => r.GetByIdAsync(6)).ReturnsAsync(item);
+            _repo.Setup(r => r.TryDeductStockAsync(6, 1)).ReturnsAsync(false);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.DeductStockAsync(6, 1));
         }
 
         // ── DeleteItemAsync — invalid id ─────────────────────────────────────

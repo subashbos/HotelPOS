@@ -88,6 +88,31 @@ namespace HotelPOS.Tests.Unit.Controllers
             var result = await controller.Login(new LoginDto { Username = "admin", Password = "password", TotpCode = "000000" });
 
             Assert.IsType<UnauthorizedObjectResult>(result);
+            authSvc.Verify(a => a.RegisterFailedTwoFactorAttemptAsync("admin"), Times.Once);
+        }
+
+        [Fact]
+        public async Task Login_TwoFactorEnabled_TooManyFailedAttempts_ReturnsUnauthorizedWithoutCheckingCode()
+        {
+            var authSvc = new Mock<IAuthService>();
+            authSvc.Setup(a => a.AuthenticateAsync("admin", "password")).ReturnsAsync(new User
+            {
+                Id = 1,
+                Username = "admin",
+                Role = RoleNames.Admin,
+                TwoFactorEnabled = true,
+                TwoFactorSecret = TotpGenerator.GenerateSecret()
+            });
+            authSvc.Setup(a => a.IsTwoFactorLockedOutAsync("admin")).ReturnsAsync(true);
+
+            var controller = CreateAuthController(authSvc);
+            var result = await controller.Login(new LoginDto { Username = "admin", Password = "password", TotpCode = "000000" });
+
+            Assert.IsType<UnauthorizedObjectResult>(result);
+            // Even a code that would otherwise be valid must not be checked once locked out,
+            // and a lockout check must never itself count as (or reset) an attempt.
+            authSvc.Verify(a => a.RegisterFailedTwoFactorAttemptAsync(It.IsAny<string>()), Times.Never);
+            authSvc.Verify(a => a.ClearTwoFactorLockoutAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -110,6 +135,7 @@ namespace HotelPOS.Tests.Unit.Controllers
             var result = await controller.Login(new LoginDto { Username = "admin", Password = "password", TotpCode = validCode });
 
             Assert.IsType<OkObjectResult>(result);
+            authSvc.Verify(a => a.ClearTwoFactorLockoutAsync("admin"), Times.Once);
         }
 
         private static string GetCurrentTotpCode(string secret)

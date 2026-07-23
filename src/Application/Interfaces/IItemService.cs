@@ -7,6 +7,7 @@ namespace HotelPOS.Application.Interfaces
     {
         Task<int> AddItemAsync(CreateItemDto dto);
         Task<List<Item>> GetItemsAsync();
+        Task<List<Item>> GetItemsByIdsAsync(List<int> ids);
         Task UpdateItemAsync(int id, CreateItemDto dto);
         Task DeleteItemAsync(int id);
         Task DeductStockAsync(int itemId, int quantity);

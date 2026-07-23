@@ -51,6 +51,11 @@ namespace HotelPOS.Api.Controllers
 
             if (user.TwoFactorEnabled)
             {
+                if (await _authService.IsTwoFactorLockedOutAsync(user.Username))
+                {
+                    return Unauthorized(new { Message = "Too many failed authentication code attempts. Try again later." });
+                }
+
                 if (string.IsNullOrWhiteSpace(dto.TotpCode))
                 {
                     return Unauthorized(new
@@ -62,8 +67,11 @@ namespace HotelPOS.Api.Controllers
 
                 if (!TotpGenerator.ValidateCode(user.TwoFactorSecret, dto.TotpCode))
                 {
+                    await _authService.RegisterFailedTwoFactorAttemptAsync(user.Username);
                     return Unauthorized(new { Message = "Invalid authentication code." });
                 }
+
+                await _authService.ClearTwoFactorLockoutAsync(user.Username);
             }
 
             if (user.MustChangePassword)

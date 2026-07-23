@@ -15,6 +15,12 @@ namespace HotelPOS.Tests
         private readonly Mock<IItemService> _itemServiceMock = new();
         private readonly Mock<IBomService> _bomServiceMock = new();
 
+        public OrderServiceBomWiringTests()
+        {
+            _itemServiceMock.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Chicken Curry", Price = 100m }).ToList());
+        }
+
         private OrderService BuildService(IBomService? bomService)
             => new(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, bomService: bomService);
 
