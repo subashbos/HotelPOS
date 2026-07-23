@@ -3,6 +3,7 @@ using HotelPOS.Application.UseCases.Purchases.Commands;
 using HotelPOS.Application.UseCases.Purchases.Queries;
 using HotelPOS.Application.UseCases.Suppliers.Queries;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
 using MediatR;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,8 @@ namespace HotelPOS.Application.UseCases
 {
     public class PurchaseService : IPurchaseService
     {
+        private const string PurchaseEntityType = "Purchase";
+
         private readonly IMediator? _mediator;
         private readonly IPurchaseRepository? _purchaseRepository;
         private readonly IItemRepository? _itemRepository;
@@ -51,6 +54,9 @@ namespace HotelPOS.Application.UseCases
             if (_mediator != null)
             {
                 await _mediator.Send(new SavePurchaseCommand(purchase));
+                await _mediator.Publish(new EntityActionEvent(
+                    PurchaseEntityType, purchase.Id, "Create",
+                    $"Supplier: {purchase.SupplierId}, Invoice: {purchase.InvoiceNumber}, Total: {purchase.GrandTotal:N2}"));
                 return;
             }
 
