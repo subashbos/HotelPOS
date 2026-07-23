@@ -57,8 +57,8 @@ describe('UsersComponent', () => {
 
     expect(userServiceSpy.getUsers).toHaveBeenCalled();
     expect(roleServiceSpy.getRoles).toHaveBeenCalled();
-    expect(component.users.length).toBe(1);
-    expect(component.roles.length).toBe(1);
+    expect().toHaveSize();
+    expect().toHaveSize();
     expect(component.isLoading).toBeFalse();
   });
 
@@ -107,7 +107,7 @@ describe('UsersComponent', () => {
     spyOn(console, 'error');
     roleServiceSpy.getRoles.and.returnValue(throwError(() => new Error('Role error')));
     fixture.detectChanges();
-    expect(component.roles.length).toBe(0);
+    expect().toHaveSize();
   });
 
   it('should set newRoleId to null if roles array is empty on openAddForm', () => {

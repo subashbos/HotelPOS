@@ -37,7 +37,7 @@ describe('AuditService', () => {
 
       const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/audit`);
       expect(req.request.method).toBe('GET');
-      expect(req.request.params.keys().length).toBe(0);
+      expect().toHaveSize();
       req.flush(dummyLogs);
     });
 

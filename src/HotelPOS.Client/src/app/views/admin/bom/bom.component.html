@@ -35,13 +35,11 @@
           </div>
 
           <div class="overflow-y-auto flex-1 border border-solid border-blueGray-200 bg-white rounded">
-            <div
+            <button
+              type="button"
               *ngFor="let item of filteredMenuItems"
               (click)="selectMenuItem(item)"
-              (keyup.enter)="selectMenuItem(item)"
-              tabindex="0"
-              role="button"
-              class="p-3 border-b border-solid border-blueGray-100 cursor-pointer hover:bg-blueGray-50 transition-colors flex items-center justify-between"
+              class="w-full text-left p-3 border-b border-solid border-blueGray-100 cursor-pointer hover:bg-blueGray-50 transition-colors flex items-center justify-between"
               [ngClass]="selectedMenuItem?.id === item.id ? 'bg-red-50 border-l-4 border-l-red-600 font-bold' : ''"
             >
               <div>
@@ -49,7 +47,7 @@
                 <div class="text-[10px] text-blueGray-400">ID: #{{ item.id }}</div>
               </div>
               <div class="text-xs font-bold text-blueGray-600">₹{{ item.price | number:'1.2-2' }}</div>
-            </div>
+            </button>
             <div *ngIf="filteredMenuItems.length === 0" class="p-4 text-center text-xs text-blueGray-400">
               No menu items found.
             </div>

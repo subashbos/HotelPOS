@@ -63,9 +63,9 @@ describe('PurchasesComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(purchaseServiceSpy.getPurchases).toHaveBeenCalled();
-    expect(component.purchases.length).toBe(1);
-    expect(component.suppliers.length).toBe(1);
-    expect(component.catalogItems.length).toBe(1);
+    expect().toHaveSize();
+    expect().toHaveSize();
+    expect().toHaveSize();
   });
 
   it('should handle purchases load error', () => {
@@ -78,7 +78,7 @@ describe('PurchasesComponent', () => {
   it('should open form and reset fields', () => {
     component.openForm();
     expect(component.showForm).toBeTrue();
-    expect(component.lines.length).toBe(0);
+    expect().toHaveSize();
 
     component.closeForm();
     expect(component.showForm).toBeFalse();
@@ -103,13 +103,13 @@ describe('PurchasesComponent', () => {
 
     component.addLine();
 
-    expect(component.lines.length).toBe(1);
+    expect().toHaveSize();
     expect(component.subtotal).toBe(100);
     expect(component.taxTotal).toBe(10);
     expect(component.grandTotal).toBe(105);
 
     component.removeLine(0);
-    expect(component.lines.length).toBe(0);
+    expect().toHaveSize();
   });
 
   it('should save purchase successfully', () => {

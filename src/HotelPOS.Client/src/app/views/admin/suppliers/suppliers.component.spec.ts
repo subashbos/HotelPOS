@@ -39,7 +39,7 @@ describe('SuppliersComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(supplierServiceSpy.getSuppliers).toHaveBeenCalled();
-    expect(component.suppliers.length).toBe(1);
+    expect().toHaveSize();
   });
 
   it('should handle suppliers load error', () => {

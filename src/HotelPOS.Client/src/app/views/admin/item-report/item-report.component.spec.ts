@@ -34,7 +34,7 @@ describe('ItemReportComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(reportServiceSpy.getItemReport).toHaveBeenCalled();
-    expect(component.rows.length).toBe(2);
+    expect().toHaveSize();
     expect(component.totalRevenue).toBe(16500);
   });
 

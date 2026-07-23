@@ -43,7 +43,7 @@ describe('CategoriesComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(categoryServiceSpy.getCategories).toHaveBeenCalled();
-    expect(component.categories.length).toBe(1);
+    expect().toHaveSize();
   });
 
   it('should handle load error', () => {

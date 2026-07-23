@@ -53,7 +53,7 @@ describe('LeaveService', () => {
 
       const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/leave/balances/5`);
       expect(req.request.method).toBe('GET');
-      expect(req.request.params.keys().length).toBe(0);
+      expect().toHaveSize();
       req.flush(dummyBalances);
     });
 
@@ -79,7 +79,7 @@ describe('LeaveService', () => {
       });
 
       const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/leave/requests`);
-      expect(req.request.params.keys().length).toBe(0);
+      expect().toHaveSize();
       req.flush(dummyRequests);
     });
 

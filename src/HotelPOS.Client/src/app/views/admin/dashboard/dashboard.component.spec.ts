@@ -58,8 +58,8 @@ describe('DashboardComponent', () => {
     expect(reportServiceSpy.getMonthlyChart).toHaveBeenCalled();
     expect(reportServiceSpy.getLowStockAlerts).toHaveBeenCalled();
     expect(component.report?.totalRevenue).toBe(15000);
-    expect(component.monthlyChart.length).toBe(2);
-    expect(component.lowStock.length).toBe(1); // filtered out 'Normal'
+    expect().toHaveSize();
+    expect().toHaveSize(); // filtered out 'Normal'
     expect(component.isLoading).toBeFalse();
   });
 

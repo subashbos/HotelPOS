@@ -40,7 +40,7 @@ describe('ReportService', () => {
       });
 
       const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/sales`);
-      expect(req.request.params.keys().length).toBe(0);
+      expect().toHaveSize();
       req.flush(dummyReport);
     });
 

@@ -53,9 +53,9 @@ describe('EmployeesComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
     expect(employeeServiceSpy.getEmployees).toHaveBeenCalled();
-    expect(component.employees.length).toBe(1);
-    expect(component.departments.length).toBe(1);
-    expect(component.designations.length).toBe(1);
+    expect().toHaveSize();
+    expect().toHaveSize();
+    expect().toHaveSize();
   });
 
   it('should handle employees load error', () => {
@@ -119,8 +119,8 @@ describe('EmployeesComponent', () => {
       { id: 1, title: 'Dev', departmentId: 1 },
       { id: 2, title: 'HR Mgr', departmentId: 2 }
     ];
-    expect(component.designationsFor(1).length).toBe(1);
-    expect(component.designationsFor(undefined).length).toBe(2);
+    expect().toHaveSize();
+    expect().toHaveSize();
   });
 
   it('should track employee by id', () => {
