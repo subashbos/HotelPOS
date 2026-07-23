@@ -1,7 +1,9 @@
 import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { ItemService } from '../../../services/item.service';
 import { OrderService } from '../../../services/order.service';
+import { TableService } from '../../../services/table.service';
 import { Item } from '../../../models/item.model';
+import { DiningTable } from '../../../models/table.model';
 import { CreateOrderRequest, ORDER_TYPE_LABELS, PAYMENT_MODES } from '../../../models/order.model';
 
 interface CartRow {
@@ -70,6 +72,10 @@ export class BillingComponent implements OnInit {
   customerGstin = '';
   tableNumber = '';
 
+  // ── Table Layout (WPF "Select Table" popup parity) ──
+  tables: DiningTable[] = [];
+  isTableLayoutOpen = false;
+
   // ── Discount ──
   discountAmount = 0;
 
@@ -84,7 +90,11 @@ export class BillingComponent implements OnInit {
   heldOrders: HeldOrder[] = [];
   showHeldOrders = false;
 
-  constructor(private readonly itemService: ItemService, private readonly orderService: OrderService) {}
+  constructor(
+    private readonly itemService: ItemService,
+    private readonly orderService: OrderService,
+    private readonly tableService: TableService
+  ) {}
 
   ngOnInit(): void {
     this.loadItems();
@@ -202,9 +212,15 @@ export class BillingComponent implements OnInit {
   addToCart(item: Item): void {
     const existing = this.cart.find(c => c.itemId === item.id);
     if (existing) {
+      if (item.trackInventory && existing.quantity >= item.stockQuantity) {
+        return;
+      }
       existing.quantity += 1;
       existing.total = this.computeTotal(existing.quantity, existing.price, existing.taxPercentage);
     } else {
+      if (item.trackInventory && item.stockQuantity <= 0) {
+        return;
+      }
       this.cart.push({
         sNo: this.cart.length + 1,
         itemId: item.id,
@@ -223,6 +239,10 @@ export class BillingComponent implements OnInit {
   }
 
   increaseQty(row: CartRow): void {
+    const item = this.allItems.find(i => i.id === row.itemId);
+    if (item && item.trackInventory && row.quantity >= item.stockQuantity) {
+      return;
+    }
     row.quantity += 1;
     this.updateRowTotal(row);
   }
@@ -260,6 +280,53 @@ export class BillingComponent implements OnInit {
     this.tableNumber = '';
     this.orderType = ORDER_TYPE_LABELS[0];
     this.paymentMode = PAYMENT_MODES.Cash;
+  }
+
+  // ── Table Layout (WPF "Select Table" popup parity) ──
+  openTableLayout(open: boolean): void {
+    if (open) this.loadTables();
+    this.isTableLayoutOpen = open;
+  }
+
+  loadTables(): void {
+    this.tableService.getTables().subscribe({
+      next: (tables) => {
+        this.tables = tables.filter(t => t.isActive).sort((a, b) => a.number - b.number);
+        if (this.tables.length === 0) {
+          // Fallback to a default 20-table layout if none are configured yet (WPF parity)
+          this.tables = Array.from({ length: 20 }, (_, i) => ({
+            id: 0, number: i + 1, name: String(i + 1), capacity: 0, isActive: true, isDeleted: false
+          }));
+        }
+      },
+      error: (err) => console.error('Tables load error:', err)
+    });
+  }
+
+  selectTable(tableNumber: number): void {
+    this.tableNumber = String(tableNumber);
+    this.isTableLayoutOpen = false;
+  }
+
+  isTableOccupied(tableNumber: number): boolean {
+    return this.heldOrders.some(h => Number(h.tableNumber) === tableNumber);
+  }
+
+  isTableCurrent(tableNumber: number): boolean {
+    return Number(this.tableNumber) === tableNumber;
+  }
+
+  get activeTableNumbers(): number[] {
+    const nums = new Set(
+      this.heldOrders.map(h => Number(h.tableNumber)).filter(n => n > 0)
+    );
+    const current = Number(this.tableNumber);
+    if (this.cart.length > 0 && current > 0) nums.add(current);
+    return [...nums].sort((a, b) => a - b);
+  }
+
+  trackByTableNumber(_index: number, t: DiningTable): number {
+    return t.number;
   }
 
   // ── Hold Orders ──
@@ -325,6 +392,13 @@ export class BillingComponent implements OnInit {
 
   confirmCheckout(): void {
     if (this.isCheckingOut || this.checkoutConfirmed || this.cart.length === 0) return;
+
+    // Dine In orders must be tied to a table (backend rejects TableNumber <= 0 for DineIn);
+    // catch it here with an actionable message instead of round-tripping to the API.
+    if (this.orderType === ORDER_TYPE_LABELS[0] && (Number(this.tableNumber) || 0) <= 0) {
+      this.checkoutError = 'Please enter a table number for Dine In orders.';
+      return;
+    }
 
     this.isCheckingOut = true;
     this.checkoutError = '';

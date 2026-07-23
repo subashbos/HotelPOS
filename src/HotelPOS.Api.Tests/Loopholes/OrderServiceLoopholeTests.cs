@@ -36,7 +36,19 @@ namespace HotelPOS.Tests
         public async Task SaveOrderAsync_TableNumberZero_ThrowsArgumentException()
         {
             await Assert.ThrowsAsync<ArgumentException>(
-                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0)));
+                () => _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: OrderTypes.DineIn)));
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_Takeaway_TableNumberZero_Succeeds()
+        {
+            _repo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV/2526/0001");
+            _repo.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(42);
+
+            var orderId = await _service.SaveOrderAsync(new SaveOrderRequest(OneItem(), 0, OrderType: OrderTypes.Takeaway));
+
+            Assert.Equal(42, orderId);
+            _repo.Verify(r => r.AddAsync(It.Is<Order>(o => o.TableNumber == 0 && o.OrderType == OrderTypes.Takeaway)), Times.Once);
         }
 
         [Fact]

@@ -72,6 +72,94 @@ namespace HotelPOS.Application.Interfaces
         decimal NetProfit
     );
 
+    public record ShiftClosureReportDto(
+        int SessionId,
+        DateTime OpenedAt,
+        DateTime? ClosedAt,
+        string OpenedBy,
+        string? ClosedBy,
+        string Status,
+        decimal OpeningBalance,
+        decimal TheoreticalClosingBalance,
+        decimal ActualCashCounted,
+        decimal CashVariance,
+        decimal TotalSales,
+        decimal CashSales,
+        decimal CardSales,
+        decimal UpiSales,
+        decimal CreditSales,
+        int TotalOrdersCount
+    );
+
+    public record VoidDiscountAuditRowDto(
+        int SNo,
+        int OrderId,
+        string InvoiceNumber,
+        DateTime Timestamp,
+        string OrderType,
+        decimal Subtotal,
+        decimal DiscountAmount,
+        decimal TotalAmount,
+        string Status,
+        string? RefundReason,
+        string? VoidReason,
+        string CustomerOrCashierInfo
+    );
+
+    public record StaffPerformanceReportDto(
+        int SNo,
+        int StaffId,
+        string StaffName,
+        string Role,
+        int OrdersProcessedCount,
+        decimal TotalRevenueGenerated,
+        decimal AverageBillAmount,
+        decimal TotalDiscountsGiven
+    );
+
+    public record StockValuationRowDto(
+        int SNo,
+        int ItemId,
+        string ItemName,
+        string CategoryName,
+        int StockQuantity,
+        decimal CostPrice,
+        decimal RetailPrice,
+        decimal TotalCostValue,
+        decimal TotalRetailValue,
+        string AbcCategory
+    );
+
+    public record StockValuationSummaryDto(
+        decimal TotalInventoryCostValue,
+        decimal TotalInventoryRetailValue,
+        int TotalTrackedItemsCount,
+        int HighValueCategoryACount,
+        int MediumValueCategoryBCount,
+        int LowValueCategoryCCount,
+        List<StockValuationRowDto> Items
+    );
+
+    public record ExpenseCategoryBreakdownDto(
+        int SNo,
+        string Category,
+        decimal Amount,
+        double PercentageOfTotalExpenses
+    );
+
+    public record ProfitAndLossReportDto(
+        DateTime PeriodFrom,
+        DateTime PeriodTo,
+        decimal TotalSalesRevenue,
+        decimal TotalCostOfGoodsSold,
+        decimal GrossProfit,
+        double GrossProfitMarginPercentage,
+        decimal TotalExpenses,
+        List<ExpenseCategoryBreakdownDto> ExpensesByCategory,
+        decimal NetOperatingProfit,
+        double NetProfitMarginPercentage
+    );
+
     public interface IBIReportService
     {
         Task<ProfitMarginSummaryDto> GetProfitMarginSummaryAsync(DateTime? from = null, DateTime? to = null);
@@ -80,5 +168,11 @@ namespace HotelPOS.Application.Interfaces
         Task LogWastageAsync(int itemId, int quantity, string reason, string? notes);
         Task<List<LowStockAlertDto>> GetLowStockAlertsAsync();
         Task<List<MonthlyTrendDto>> GetMonthlyTrendDataAsync();
+
+        Task<ShiftClosureReportDto> GetShiftClosureReportAsync(int? sessionId = null, DateTime? date = null);
+        Task<List<VoidDiscountAuditRowDto>> GetVoidDiscountAuditReportAsync(DateTime? from = null, DateTime? to = null);
+        Task<List<StaffPerformanceReportDto>> GetStaffPerformanceReportAsync(DateTime? from = null, DateTime? to = null);
+        Task<StockValuationSummaryDto> GetStockValuationReportAsync();
+        Task<ProfitAndLossReportDto> GetProfitAndLossReportAsync(DateTime? from = null, DateTime? to = null);
     }
 }

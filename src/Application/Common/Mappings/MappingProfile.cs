@@ -41,6 +41,7 @@ namespace HotelPOS.Application.Common.Mappings
             // ── Table ─────────────────────────────────────────────────────────
             CreateMap<CreateTableDto, Table>();
             CreateMap<Table, TableDto>().ReverseMap();
+            CreateMap<CreateTableDto, TableDto>();
 
             // ── Category ─────────────────────────────────────────────────────
             CreateMap<SaveCategoryDto, Category>()

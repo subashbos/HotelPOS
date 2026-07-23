@@ -149,6 +149,37 @@ namespace HotelPOS.Views
                     ToolTipRevenue = $"Revenue: Rs. {t.Revenue:N2}",
                     ToolTipProfit = $"Gross Profit: Rs. {t.GrossProfit:N2}"
                 }).ToList();
+
+                // 6. Load Shift Closure
+                var shiftReport = await _biService.GetShiftClosureReportAsync(null, from);
+                TxtShiftOpening.Text = $"Rs. {shiftReport.OpeningBalance:N2}";
+                TxtShiftCashSales.Text = $"Rs. {shiftReport.CashSales:N2}";
+                TxtShiftActualCash.Text = $"Rs. {shiftReport.ActualCashCounted:N2}";
+                TxtShiftVariance.Text = $"Rs. {shiftReport.CashVariance:N2}";
+
+                // 7. Load Void & Discount Audit
+                var voidAudits = await _biService.GetVoidDiscountAuditReportAsync(from, to);
+                VoidAuditGrid.ItemsSource = voidAudits;
+
+                // 8. Load Staff Performance
+                var staffReports = await _biService.GetStaffPerformanceReportAsync(from, to);
+                StaffPerformanceGrid.ItemsSource = staffReports;
+
+                // 9. Load Stock Valuation & ABC
+                var stockValuation = await _biService.GetStockValuationReportAsync();
+                TxtTotalStockCost.Text = $"Rs. {stockValuation.TotalInventoryCostValue:N2}";
+                TxtAbcCategoryA.Text = $"{stockValuation.HighValueCategoryACount} Items";
+                TxtAbcCategoryB.Text = $"{stockValuation.MediumValueCategoryBCount} Items";
+                TxtAbcCategoryC.Text = $"{stockValuation.LowValueCategoryCCount} Items";
+                StockValuationGrid.ItemsSource = stockValuation.Items;
+
+                // 10. Load P&L
+                var pnlReport = await _biService.GetProfitAndLossReportAsync(from, to);
+                TxtPnlRevenue.Text = $"Rs. {pnlReport.TotalSalesRevenue:N2}";
+                TxtPnlCogs.Text = $"Rs. {pnlReport.TotalCostOfGoodsSold:N2}";
+                TxtPnlExpenses.Text = $"Rs. {pnlReport.TotalExpenses:N2}";
+                TxtPnlNetProfit.Text = $"Rs. {pnlReport.NetOperatingProfit:N2}";
+                PnlExpenseGrid.ItemsSource = pnlReport.ExpensesByCategory;
             }
             catch (Exception ex)
             {

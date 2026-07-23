@@ -108,6 +108,36 @@ namespace HotelPOS.Api.Controllers
         {
             return Ok(await _biReportService.GetMonthlyTrendDataAsync());
         }
+
+        [HttpGet("shift-closure")]
+        public async Task<ActionResult<ShiftClosureReportDto>> GetShiftClosureReport([FromQuery] int? sessionId, [FromQuery] DateTime? date)
+        {
+            return Ok(await _biReportService.GetShiftClosureReportAsync(sessionId, date));
+        }
+
+        [HttpGet("void-audit")]
+        public async Task<ActionResult<List<VoidDiscountAuditRowDto>>> GetVoidDiscountAuditReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+        {
+            return Ok(await _biReportService.GetVoidDiscountAuditReportAsync(from, to));
+        }
+
+        [HttpGet("staff-performance")]
+        public async Task<ActionResult<List<StaffPerformanceReportDto>>> GetStaffPerformanceReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+        {
+            return Ok(await _biReportService.GetStaffPerformanceReportAsync(from, to));
+        }
+
+        [HttpGet("stock-valuation")]
+        public async Task<ActionResult<StockValuationSummaryDto>> GetStockValuationReport()
+        {
+            return Ok(await _biReportService.GetStockValuationReportAsync());
+        }
+
+        [HttpGet("pnl")]
+        public async Task<ActionResult<ProfitAndLossReportDto>> GetProfitAndLossReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+        {
+            return Ok(await _biReportService.GetProfitAndLossReportAsync(from, to));
+        }
     }
 
     public sealed class PurchaseReportQueryRequest
