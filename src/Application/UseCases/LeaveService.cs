@@ -9,12 +9,18 @@ namespace HotelPOS.Application.UseCases
     public class LeaveService : ILeaveService
     {
         private readonly ILeaveRepository _repository;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly IAuthorizationService _authorization;
         private readonly IValidator<LeaveRequest> _validator;
 
-        public LeaveService(ILeaveRepository repository, IAuthorizationService authorization, IValidator<LeaveRequest>? validator = null)
+        public LeaveService(
+            ILeaveRepository repository,
+            IEmployeeRepository employeeRepository,
+            IAuthorizationService authorization,
+            IValidator<LeaveRequest>? validator = null)
         {
             _repository = repository;
+            _employeeRepository = employeeRepository;
             _authorization = authorization;
             _validator = validator ?? new LeaveRequestValidator();
         }
@@ -40,6 +46,13 @@ namespace HotelPOS.Application.UseCases
         public async Task ApplyLeaveAsync(LeaveRequest request)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
+
+            var employee = await _employeeRepository.GetByIdAsync(request.EmployeeId)
+                ?? throw new ArgumentException("The specified employee does not exist.");
+
+            // A missing linked login account (UserId null) can never match a real CurrentUserId,
+            // so this correctly falls through to the HrLeave permission check for such employees.
+            _authorization.EnsureSelfOrPermission(employee.UserId ?? -1, PermissionModules.HrLeave);
 
             request.FromDate = request.FromDate.Date;
             request.ToDate = request.ToDate.Date;

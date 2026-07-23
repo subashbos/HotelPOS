@@ -10,9 +10,10 @@ namespace HotelPOS.Tests
     public class LeaveServiceAuthorizationTests
     {
         private readonly Mock<ILeaveRepository> _repo = new();
+        private readonly Mock<IEmployeeRepository> _employeeRepo = new();
 
         private LeaveService BuildService(Mock<IAuthorizationService> auth) =>
-            new(_repo.Object, auth.Object);
+            new(_repo.Object, _employeeRepo.Object, auth.Object);
 
         [Fact]
         public async Task GetBalancesAsync_WhenUnauthorized_Throws()
@@ -91,6 +92,71 @@ namespace HotelPOS.Tests
 
             Assert.Single(result);
             auth.Verify(a => a.EnsurePermission(PermissionModules.HrLeave), Times.Once);
+        }
+
+        private static LeaveRequest ValidRequest(int employeeId) => new()
+        {
+            EmployeeId = employeeId,
+            LeaveTypeId = 2,
+            FromDate = new DateTime(2026, 1, 5),
+            ToDate = new DateTime(2026, 1, 6)
+        };
+
+        [Fact]
+        public async Task ApplyLeaveAsync_WhenEmployeeNotFound_ThrowsArgumentException()
+        {
+            var auth = TestAuthorization.AllowAll();
+            _employeeRepo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Employee?)null);
+
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => service.ApplyLeaveAsync(ValidRequest(99)));
+        }
+
+        [Fact]
+        public async Task ApplyLeaveAsync_ResolvesTargetEmployeesLinkedUserId_ForSelfOrPermissionCheck()
+        {
+            // The caller applies for employeeId 42, which is linked to User account 7 — LeaveService
+            // must resolve that linkage and defer the self-vs-permission decision to
+            // IAuthorizationService rather than trusting the raw employeeId from the request.
+            var auth = new Mock<IAuthorizationService>();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = 7 });
+            _repo.Setup(r => r.GetLeaveTypeByIdAsync(2)).ReturnsAsync(
+                new LeaveType { Id = 2, Code = LeaveTypeCodes.LeaveWithoutPay, Name = "LWP" });
+
+            var service = BuildService(auth);
+            await service.ApplyLeaveAsync(ValidRequest(42));
+
+            auth.Verify(a => a.EnsureSelfOrPermission(7, PermissionModules.HrLeave), Times.Once);
+        }
+
+        [Fact]
+        public async Task ApplyLeaveAsync_EmployeeWithNoLinkedUserAccount_FallsBackToPermissionCheckOnly()
+        {
+            // An employee with no login account (UserId null) can never be "self" for any caller,
+            // so this must resolve to a sentinel that can't match a real CurrentUserId.
+            var auth = new Mock<IAuthorizationService>();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = null });
+            _repo.Setup(r => r.GetLeaveTypeByIdAsync(2)).ReturnsAsync(
+                new LeaveType { Id = 2, Code = LeaveTypeCodes.LeaveWithoutPay, Name = "LWP" });
+
+            var service = BuildService(auth);
+            await service.ApplyLeaveAsync(ValidRequest(42));
+
+            auth.Verify(a => a.EnsureSelfOrPermission(-1, PermissionModules.HrLeave), Times.Once);
+        }
+
+        [Fact]
+        public async Task ApplyLeaveAsync_WhenNeitherSelfNorPermitted_Throws()
+        {
+            var auth = new Mock<IAuthorizationService>();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = 7 });
+            auth.Setup(a => a.EnsureSelfOrPermission(7, PermissionModules.HrLeave))
+                .Throws(new UnauthorizedAccessException("Access denied."));
+
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.ApplyLeaveAsync(ValidRequest(42)));
         }
     }
 }
