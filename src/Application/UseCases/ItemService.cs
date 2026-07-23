@@ -126,15 +126,15 @@ namespace HotelPOS.Application.UseCases
         public async Task DeductStockAsync(int itemId, int quantity)
         {
             var item = await _itemRepository.GetByIdAsync(itemId);
-            if (item != null && item.TrackInventory)
-            {
-                if (quantity > 0 && item.StockQuantity < quantity)
-                {
-                    throw new InvalidOperationException($"Insufficient stock for item: {item.Name}. Required: {quantity}, Available: {item.StockQuantity}");
-                }
+            if (item == null || !item.TrackInventory) return;
 
-                item.StockQuantity -= quantity;
-                await _itemRepository.UpdateAsync(item);
+            // Deduction itself is a single atomic guarded UPDATE (see TryDeductStockAsync) so two
+            // concurrent orders for the last unit can't both pass a stale in-memory stock check.
+            var deducted = await _itemRepository.TryDeductStockAsync(itemId, quantity);
+            if (!deducted && quantity > 0)
+            {
+                var current = await _itemRepository.GetByIdAsync(itemId);
+                throw new InvalidOperationException($"Insufficient stock for item: {item.Name}. Required: {quantity}, Available: {current?.StockQuantity ?? 0}");
             }
         }
 
