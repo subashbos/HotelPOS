@@ -496,6 +496,221 @@
                     </Grid>
                 </Border>
             </TabItem>
+
+            <!-- 5. SHIFT CLOSURE (X/Z REPORT) TAB -->
+            <TabItem Header="Shift Closure (X/Z)">
+                <Border Padding="24" Background="{DynamicResource SurfaceBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="Shift &amp; Day-End Cash Drawer Closure (X/Z Report)" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Opening float, counted actuals, cash variances, and tender breakdown" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                        </StackPanel>
+
+                        <UniformGrid Grid.Row="1" Columns="4">
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="OPENING FLOAT" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtShiftOpening" Text="Rs. 0.00" Style="{StaticResource MetricValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
+                                <StackPanel>
+                                    <TextBlock Text="CASH SALES" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtShiftCashSales" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#2ecc71"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
+                                <StackPanel>
+                                    <TextBlock Text="ACTUAL CASH COUNTED" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtShiftActualCash" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#3498db"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="8,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="CASH VARIANCE" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtShiftVariance" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#e74c3c"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- 6. VOID & DISCOUNT AUDIT TAB -->
+            <TabItem Header="Void &amp; Discount Audit">
+                <Border Padding="24" Background="{DynamicResource SurfaceBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="Voided Orders &amp; Staff Discounts Log" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Detailed loss prevention audit trail of cancelled orders, refunds, and discounts" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                        </StackPanel>
+
+                        <DataGrid x:Name="VoidAuditGrid" Grid.Row="1" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="INVOICE #" Binding="{Binding InvoiceNumber}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TIMESTAMP" Binding="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="SUBTOTAL" Binding="{Binding Subtotal, StringFormat='{}Rs. {0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="DISCOUNT" Binding="{Binding DiscountAmount, StringFormat='{}Rs. {0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TOTAL" Binding="{Binding TotalAmount, StringFormat='{}Rs. {0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="100" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="REASON / INFO" Binding="{Binding VoidReason}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- 7. STAFF PERFORMANCE TAB -->
+            <TabItem Header="Staff Performance">
+                <Border Padding="24" Background="{DynamicResource SurfaceBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="Server &amp; Cashier Sales Performance" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Total revenue generated, order count, and check average per staff member" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                        </StackPanel>
+
+                        <DataGrid x:Name="StaffPerformanceGrid" Grid.Row="1" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="RANK" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="STAFF NAME" Binding="{Binding StaffName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
+                                <DataGridTextColumn Header="ROLE" Binding="{Binding Role}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="ORDERS PROCESSED" Binding="{Binding OrdersProcessedCount}" Width="150" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TOTAL REVENUE" Binding="{Binding TotalRevenueGenerated, StringFormat='{}Rs. {0:N2}'}" Width="150" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="AVERAGE CHECK" Binding="{Binding AverageBillAmount, StringFormat='{}Rs. {0:N2}'}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="DISCOUNTS GIVEN" Binding="{Binding TotalDiscountsGiven, StringFormat='{}Rs. {0:N2}'}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- 8. STOCK VALUATION & ABC TAB -->
+            <TabItem Header="Stock Valuation &amp; ABC">
+                <Border Padding="24" Background="{DynamicResource SurfaceBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="Stock Valuation &amp; ABC Inventory Analysis" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Monetary stock value and revenue contribution grade (A: Top 70%, B: Next 20%, C: Dead stock)" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                        </StackPanel>
+
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="TOTAL STOCK VALUE" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtTotalStockCost" Text="Rs. 0.00" Style="{StaticResource MetricValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
+                                <StackPanel>
+                                    <TextBlock Text="GRADE A (HIGH REVENUE)" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtAbcCategoryA" Text="0 Items" Style="{StaticResource MetricValue}" Foreground="#2ecc71"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
+                                <StackPanel>
+                                    <TextBlock Text="GRADE B (MEDIUM)" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtAbcCategoryB" Text="0 Items" Style="{StaticResource MetricValue}" Foreground="#f39c12"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="8,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="GRADE C (LOW / DEAD)" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtAbcCategoryC" Text="0 Items" Style="{StaticResource MetricValue}" Foreground="#e74c3c"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <DataGrid x:Name="StockValuationGrid" Grid.Row="2" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
+                                <DataGridTextColumn Header="CATEGORY" Binding="{Binding CategoryName}" Width="140" ElementStyle="{StaticResource LeftCell}"/>
+                                <DataGridTextColumn Header="STOCK QTY" Binding="{Binding StockQuantity}" Width="100" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="COST PRICE" Binding="{Binding CostPrice, StringFormat='{}Rs. {0:N2}'}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="RETAIL PRICE" Binding="{Binding RetailPrice, StringFormat='{}Rs. {0:N2}'}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TOTAL STOCK VALUE" Binding="{Binding TotalCostValue, StringFormat='{}Rs. {0:N2}'}" Width="160" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="ABC GRADE" Binding="{Binding AbcCategory}" Width="100" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- 9. PROFIT & LOSS (P&L) TAB -->
+            <TabItem Header="Profit &amp; Loss (P&amp;L)">
+                <Border Padding="24" Background="{DynamicResource SurfaceBrush}" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                            <TextBlock Text="Profit &amp; Loss (P&amp;L) Financial Statement" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text="Sales revenue vs COGS vs Operating expense breakdown" FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                        </StackPanel>
+
+                        <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="GROSS REVENUE" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtPnlRevenue" Text="Rs. 0.00" Style="{StaticResource MetricValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
+                                <StackPanel>
+                                    <TextBlock Text="COST OF GOODS SOLD" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtPnlCogs" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#f39c12"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
+                                <StackPanel>
+                                    <TextBlock Text="OPERATING EXPENSES" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtPnlExpenses" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#e74c3c"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCardBorder}" Margin="8,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="NET OPERATING PROFIT" Style="{StaticResource MetricTitle}"/>
+                                    <TextBlock x:Name="TxtPnlNetProfit" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#2ecc71"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <DataGrid x:Name="PnlExpenseGrid" Grid.Row="2" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="EXPENSE CATEGORY" Binding="{Binding Category}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
+                                <DataGridTextColumn Header="TOTAL AMOUNT" Binding="{Binding Amount, StringFormat='{}Rs. {0:N2}'}" Width="180" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="% OF TOTAL EXPENSES" Binding="{Binding PercentageOfTotalExpenses, StringFormat='{}{0:N2}%'}" Width="200" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

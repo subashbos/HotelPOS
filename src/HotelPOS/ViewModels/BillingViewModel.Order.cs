@@ -211,6 +211,15 @@ namespace HotelPOS.ViewModels
                 return false;
             }
 
+            // Dine In orders must be tied to a real table (server rejects TableNumber <= 0 for
+            // DineIn); catch it here with an actionable message instead of surfacing the backend
+            // validator's raw "Invalid table number." exception.
+            if (!IsTableless && TableNumber <= 0)
+            {
+                _notificationService.ShowError("Please select a table before checkout.");
+                return false;
+            }
+
             using (var scope = App.CreateDbScope())
             {
                 var cashService = scope.ServiceProvider.GetRequiredService<ICashService>();

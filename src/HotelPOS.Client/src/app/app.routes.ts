@@ -30,6 +30,9 @@ import { UsersComponent } from "./views/admin/users/users.component";
 import { AuditComponent } from "./views/admin/audit/audit.component";
 import { AccountComponent } from "./views/admin/account/account.component";
 import { CustomersComponent } from "./views/admin/customers/customers.component";
+import { RawMaterialsComponent } from "./views/admin/raw-materials/raw-materials.component";
+import { BomComponent } from "./views/admin/bom/bom.component";
+import { BiAnalyticsComponent } from "./views/admin/bi-analytics/bi-analytics.component";
 
 // auth views
 import { LoginComponent } from "./views/auth/login/login.component";
@@ -68,6 +71,9 @@ export const routes: Routes = [
       { path: "audit", component: AuditComponent },
       { path: "account", component: AccountComponent },
       { path: "customers", component: CustomersComponent },
+      { path: "raw-materials", component: RawMaterialsComponent },
+      { path: "bom", component: BomComponent },
+      { path: "bi-analytics", component: BiAnalyticsComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ],
   },

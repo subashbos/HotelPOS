@@ -50,6 +50,9 @@ import { AuditComponent } from './views/admin/audit/audit.component';
 import { ForgotPasswordComponent } from './views/auth/forgot-password/forgot-password.component';
 import { AccountComponent } from './views/admin/account/account.component';
 import { CustomersComponent } from './views/admin/customers/customers.component';
+import { RawMaterialsComponent } from './views/admin/raw-materials/raw-materials.component';
+import { BomComponent } from './views/admin/bom/bom.component';
+import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.component';
 
 @NgModule({
   declarations: [
@@ -94,7 +97,10 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
     AuditComponent,
     ForgotPasswordComponent,
     AccountComponent,
-    CustomersComponent
+    CustomersComponent,
+    RawMaterialsComponent,
+    BomComponent,
+    BiAnalyticsComponent
   ],
   imports: [
     CommonModule,
@@ -144,7 +150,10 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
     AuditComponent,
     ForgotPasswordComponent,
     AccountComponent,
-    CustomersComponent
+    CustomersComponent,
+    RawMaterialsComponent,
+    BomComponent,
+    BiAnalyticsComponent
   ]
 })
 export class TemplateModule { }

@@ -59,6 +59,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "src/proxy.conf.json"
+          },
           "configurations": {
             "production": { "buildTarget": "hotel-pos-client:build:production" },
             "development": { "buildTarget": "hotel-pos-client:build:development" }
@@ -77,12 +80,6 @@
             "scripts": [],
             "karmaConfig": "karma.conf.js",
             "codeCoverageExclude": [
-              "**/src/app/components/**",
-              "**/src/app/layouts/**",
-              "**/src/app/views/admin/dashboard/**",
-              "**/src/app/views/admin/settings/**",
-              "**/src/app/views/admin/tables/**",
-              "**/src/app/views/auth/register/**",
               "**/src/app/template.module.ts",
               "**/src/app/app.config.ts",
               "**/src/app/app.routes.ts",

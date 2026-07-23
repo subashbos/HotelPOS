@@ -282,6 +282,48 @@
             Expenses
           </a>
         </li>
+        <li class="items-center">
+          <a
+            [routerLink]="['/admin/raw-materials']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminRawMaterials="routerLinkActive"
+            [ngClass]="
+              adminRawMaterials.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <i
+              class="fas fa-cubes mr-2 text-sm"
+              [ngClass]="
+                adminRawMaterials.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
+            Raw Materials
+          </a>
+        </li>
+        <li class="items-center">
+          <a
+            [routerLink]="['/admin/bom']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminBom="routerLinkActive"
+            [ngClass]="
+              adminBom.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <i
+              class="fas fa-clipboard-list mr-2 text-sm"
+              [ngClass]="
+                adminBom.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
+            Bill of Materials
+          </a>
+        </li>
       </ul>
 
       <!-- Divider -->
@@ -313,6 +355,27 @@
               "
             ></i>
             Dashboard
+          </a>
+        </li>
+        <li class="items-center">
+          <a
+            [routerLink]="['/admin/bi-analytics']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminBiAnalytics="routerLinkActive"
+            [ngClass]="
+              adminBiAnalytics.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <i
+              class="fas fa-chart-pie mr-2 text-sm"
+              [ngClass]="
+                adminBiAnalytics.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+            ></i>
+            BI Analytics
           </a>
         </li>
         <li class="items-center">
