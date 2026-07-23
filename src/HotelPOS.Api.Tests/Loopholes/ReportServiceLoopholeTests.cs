@@ -24,7 +24,7 @@ namespace HotelPOS.Tests
 
         public ReportServiceLoopholeTests()
         {
-            _service = new ReportService(_orderRepo.Object, _itemRepo.Object, _catRepo.Object, _purchaseRepo.Object);
+            _service = new ReportService(_orderRepo.Object, _itemRepo.Object, _catRepo.Object, _purchaseRepo.Object, TestAuthorization.AllowAll().Object);
         }
 
         private void SetupEmptyOrders() =>
@@ -360,6 +360,16 @@ namespace HotelPOS.Tests
             Assert.Equal(300m, table1.TotalRevenue);
             Assert.Equal(1, table2.OrderCount);
             Assert.Equal(150m, table2.TotalRevenue);
+        }
+
+        // ── Authorization ────────────────────────────────────────────────────
+
+        [Fact]
+        public async Task GetSalesReportAsync_WhenUnauthorized_Throws()
+        {
+            var service = new ReportService(_orderRepo.Object, _itemRepo.Object, _catRepo.Object, _purchaseRepo.Object, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetSalesReportAsync());
         }
 
         [Fact]

@@ -61,6 +61,12 @@ namespace HotelPOS.Api.Middleware
                 var response = new ProblemDetails { Status = 400, Title = "The request could not be processed.", Detail = ex.Message }; // NOSONAR
                 await WriteResponseAsync(context, HttpStatusCode.BadRequest, response);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Authorization error occurred: {Message}", ex.Message);
+                var response = new ProblemDetails { Status = 403, Title = "Forbidden.", Detail = "You do not have permission to perform this action." };
+                await WriteResponseAsync(context, HttpStatusCode.Forbidden, response);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
