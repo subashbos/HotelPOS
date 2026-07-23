@@ -59,6 +59,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "src/proxy.conf.json"
+          },
           "configurations": {
             "production": { "buildTarget": "hotel-pos-client:build:production" },
             "development": { "buildTarget": "hotel-pos-client:build:development" }
