@@ -658,6 +658,24 @@ namespace HotelPOS.Tests
             Assert.Equal(1, vm.TableNumber);
         }
 
+        [Fact]
+        public async Task AfterSave_DineIn_TableNumberResetsTo1()
+        {
+            var (vm, _, cartSvc) = BuildVm(OrderTypes.DineIn);
+            vm.TableNumber = 5;
+
+            cartSvc.Setup(s => s.GetItems(5)).Returns(new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Fried Rice", Quantity = 1, Price = 200, Total = 200 }
+            });
+            cartSvc.Setup(s => s.GetSubtotal(5)).Returns(200m);
+
+            await vm.SaveOrderCommand.ExecuteAsync(null);
+
+            // After reset, TableNumber should default back to 1
+            Assert.Equal(1, vm.TableNumber);
+        }
+
         // ── Empty cart still blocked for tableless orders ─────────────────────
 
         [Fact]

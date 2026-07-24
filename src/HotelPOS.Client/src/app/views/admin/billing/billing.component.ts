@@ -1,8 +1,10 @@
 import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
 import { ItemService } from '../../../services/item.service';
 import { OrderService } from '../../../services/order.service';
 import { TableService } from '../../../services/table.service';
-import { Item } from '../../../models/item.model';
+import { CategoryService } from '../../../services/category.service';
+import { Item, Category } from '../../../models/item.model';
 import { DiningTable } from '../../../models/table.model';
 import { CreateOrderRequest, ORDER_TYPE_LABELS, PAYMENT_MODES } from '../../../models/order.model';
 
@@ -40,8 +42,23 @@ export class BillingComponent implements OnInit {
 
   // ── Menu Data from API ──
   allItems: Item[] = [];
-  categories: string[] = ['All'];
-  selectedCategory = 'All';
+  categories: Category[] = [{ id: 0, name: 'All', displayOrder: -1 }];
+  selectedCategoryId = 0;
+
+  get selectedCategory(): string {
+    if (this.selectedCategoryId === 0) return 'All';
+    const found = this.categories.find(c => c.id === this.selectedCategoryId);
+    return found ? found.name : 'All';
+  }
+
+  set selectedCategory(val: string) {
+    if (val === 'All' || val === '0') {
+      this.selectedCategoryId = 0;
+    } else {
+      const found = this.categories.find(c => c.name === val);
+      this.selectedCategoryId = found ? found.id : 0;
+    }
+  }
 
   // Cached rather than recomputed via a getter, since filtering the whole
   // catalog on every change-detection cycle gets expensive as the menu grows.
@@ -70,7 +87,7 @@ export class BillingComponent implements OnInit {
   customerName = '';
   customerPhone = '';
   customerGstin = '';
-  tableNumber = '';
+  tableNumber = '1';
 
   // ── Table Layout (WPF "Select Table" popup parity) ──
   tables: DiningTable[] = [];
@@ -93,7 +110,8 @@ export class BillingComponent implements OnInit {
   constructor(
     private readonly itemService: ItemService,
     private readonly orderService: OrderService,
-    private readonly tableService: TableService
+    private readonly tableService: TableService,
+    private readonly categoryService?: CategoryService
   ) {}
 
   ngOnInit(): void {
@@ -104,16 +122,42 @@ export class BillingComponent implements OnInit {
   loadItems(): void {
     this.isLoading = true;
     this.loadError = '';
-    this.itemService.getItems().subscribe({
-      next: (items) => {
+
+    const categories$ = this.categoryService
+      ? this.categoryService.getCategories()
+      : of([]);
+
+    forkJoin({
+      items: this.itemService.getItems(),
+      cats: categories$
+    }).subscribe({
+      next: ({ items, cats }) => {
         this.allItems = items;
-        // Build category list dynamically from API data
-        const cats = [...new Set(
-          items
-            .filter(i => i.category?.name)
-            .map(i => i.category!.name)
-        )];
-        this.categories = ['All', ...cats];
+
+        const orderedCats = [...(cats || [])].sort((a, b) => {
+          const orderA = a.displayOrder ?? 0;
+          const orderB = b.displayOrder ?? 0;
+          if (orderA !== orderB) {
+            return orderA - orderB;
+          }
+          return (a.name || '').localeCompare(b.name || '');
+        });
+
+        // Also add any categories present in items if not in fetched categories (fallback)
+        const catMap = new Map<number, Category>();
+        orderedCats.forEach(c => catMap.set(c.id, c));
+
+        items.forEach(i => {
+          if (i.category && !catMap.has(i.category.id)) {
+            catMap.set(i.category.id, i.category);
+            orderedCats.push(i.category);
+          }
+        });
+
+        this.categories = [
+          { id: 0, name: 'All', displayOrder: -1 },
+          ...orderedCats
+        ];
         this.isLoading = false;
         this.updateFilteredMenuItems();
       },
@@ -151,6 +195,10 @@ export class BillingComponent implements OnInit {
     return item.id;
   }
 
+  trackByCategoryId(_index: number, category: Category): number {
+    return category.id;
+  }
+
   trackByCartItemId(_index: number, row: CartRow): number {
     return row.itemId;
   }
@@ -160,15 +208,25 @@ export class BillingComponent implements OnInit {
   }
 
   // ── Filtered Items (Category + Search) ──
-  selectCategory(cat: string): void {
-    this.selectedCategory = cat;
+  selectCategory(cat: Category | string | number): void {
+    if (typeof cat === 'number') {
+      this.selectedCategoryId = cat;
+    } else if (typeof cat === 'string') {
+      this.selectedCategory = cat;
+    } else if (cat && typeof cat.id === 'number') {
+      this.selectedCategoryId = cat.id;
+    }
     this.updateFilteredMenuItems();
   }
 
   updateFilteredMenuItems(): void {
     this.filteredMenuItems = this.allItems.filter(item => {
-      const matchCat = this.selectedCategory === 'All' ||
-        item.category?.name === this.selectedCategory;
+      let matchCat = true;
+      if (this.selectedCategoryId > 0) {
+        matchCat = item.categoryId === this.selectedCategoryId ||
+                   item.category?.id === this.selectedCategoryId ||
+                   (item.category?.name === this.selectedCategory);
+      }
       const q = this.searchQuery.toLowerCase();
       const matchSearch = !q || item.name.toLowerCase().includes(q);
       // Skip out-of-stock if trackInventory is on
@@ -270,6 +328,17 @@ export class BillingComponent implements OnInit {
     this.selectedCartRow = row;
   }
 
+  selectOrderType(type: string): void {
+    this.orderType = type;
+    if (type === ORDER_TYPE_LABELS[0]) {
+      if (!this.tableNumber || this.tableNumber === '0') {
+        this.tableNumber = '1';
+      }
+    } else {
+      this.tableNumber = '';
+    }
+  }
+
   clearCart(): void {
     this.cart = [];
     this.selectedCartRow = null;
@@ -277,7 +346,7 @@ export class BillingComponent implements OnInit {
     this.customerName = '';
     this.customerPhone = '';
     this.customerGstin = '';
-    this.tableNumber = '';
+    this.tableNumber = '1';
     this.orderType = ORDER_TYPE_LABELS[0];
     this.paymentMode = PAYMENT_MODES.Cash;
   }
@@ -403,6 +472,8 @@ export class BillingComponent implements OnInit {
     this.isCheckingOut = true;
     this.checkoutError = '';
 
+    const currentTableNum = Number(this.tableNumber) || 0;
+
     const request: CreateOrderRequest = {
       items: this.cart.map(r => ({
         itemId: r.itemId,
@@ -412,7 +483,7 @@ export class BillingComponent implements OnInit {
         taxPercentage: r.taxPercentage,
         total: r.total
       })),
-      tableNumber: Number(this.tableNumber) || 0,
+      tableNumber: currentTableNum,
       discount: this.discountAmount,
       paymentMode: this.paymentMode,
       customerName: this.customerName || undefined,
@@ -427,6 +498,9 @@ export class BillingComponent implements OnInit {
         this.isCheckingOut = false;
         this.checkoutConfirmed = true;
         this.lastInvoiceNumber = `Order #${orderId}`;
+        if (currentTableNum > 0) {
+          this.heldOrders = this.heldOrders.filter(h => Number(h.tableNumber) !== currentTableNum);
+        }
       },
       error: (err) => {
         this.isCheckingOut = false;

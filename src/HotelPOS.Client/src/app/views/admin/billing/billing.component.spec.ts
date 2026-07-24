@@ -4,6 +4,7 @@ import { BillingComponent } from './billing.component';
 import { ItemService } from '../../../services/item.service';
 import { OrderService } from '../../../services/order.service';
 import { TableService } from '../../../services/table.service';
+import { CategoryService } from '../../../services/category.service';
 import { Item } from '../../../models/item.model';
 import { ORDER_TYPE_LABELS, PAYMENT_MODES } from '../../../models/order.model';
 
@@ -12,6 +13,7 @@ describe('BillingComponent', () => {
   let itemServiceSpy: jasmine.SpyObj<ItemService>;
   let orderServiceSpy: jasmine.SpyObj<OrderService>;
   let tableServiceSpy: jasmine.SpyObj<TableService>;
+  let categoryServiceSpy: jasmine.SpyObj<CategoryService>;
 
   const makeItem = (overrides: Partial<Item> = {}): Item => ({
     id: 1,
@@ -27,10 +29,12 @@ describe('BillingComponent', () => {
     itemServiceSpy = jasmine.createSpyObj('ItemService', ['getItems']);
     orderServiceSpy = jasmine.createSpyObj('OrderService', ['createOrder']);
     tableServiceSpy = jasmine.createSpyObj('TableService', ['getTables']);
+    categoryServiceSpy = jasmine.createSpyObj('CategoryService', ['getCategories']);
     itemServiceSpy.getItems.and.returnValue(of([]));
     tableServiceSpy.getTables.and.returnValue(of([]));
+    categoryServiceSpy.getCategories.and.returnValue(of([]));
 
-    component = new BillingComponent(itemServiceSpy, orderServiceSpy, tableServiceSpy);
+    component = new BillingComponent(itemServiceSpy, orderServiceSpy, tableServiceSpy, categoryServiceSpy);
   });
 
   describe('cart math', () => {
@@ -148,9 +152,14 @@ describe('BillingComponent', () => {
     });
 
     it('selectCategory filters by category and refreshes the cached list', () => {
+      component.categories = [
+        { id: 0, name: 'All', displayOrder: -1 },
+        { id: 1, name: 'Starters', displayOrder: 1 },
+        { id: 2, name: 'Mains', displayOrder: 2 }
+      ];
       component.allItems = [
-        makeItem({ id: 1, name: 'Starter', category: { id: 1, name: 'Starters', displayOrder: 1 } }),
-        makeItem({ id: 2, name: 'Main', category: { id: 2, name: 'Mains', displayOrder: 2 } })
+        makeItem({ id: 1, name: 'Starter', categoryId: 1, category: { id: 1, name: 'Starters', displayOrder: 1 } }),
+        makeItem({ id: 2, name: 'Main', categoryId: 2, category: { id: 2, name: 'Mains', displayOrder: 2 } })
       ];
       component.updateFilteredMenuItems();
 
@@ -161,12 +170,17 @@ describe('BillingComponent', () => {
     });
 
     it('updateFilteredMenuItems combines the category filter and the search query', () => {
-      component.allItems = [
-        makeItem({ id: 1, name: 'Chicken Curry', category: { id: 1, name: 'Mains', displayOrder: 1 } }),
-        makeItem({ id: 2, name: 'Chicken Wings', category: { id: 2, name: 'Starters', displayOrder: 2 } }),
-        makeItem({ id: 3, name: 'Veg Curry', category: { id: 1, name: 'Mains', displayOrder: 1 } })
+      component.categories = [
+        { id: 0, name: 'All', displayOrder: -1 },
+        { id: 1, name: 'Mains', displayOrder: 1 },
+        { id: 2, name: 'Starters', displayOrder: 2 }
       ];
-      component.selectedCategory = 'Mains';
+      component.allItems = [
+        makeItem({ id: 1, name: 'Chicken Curry', categoryId: 1, category: { id: 1, name: 'Mains', displayOrder: 1 } }),
+        makeItem({ id: 2, name: 'Chicken Wings', categoryId: 2, category: { id: 2, name: 'Starters', displayOrder: 2 } }),
+        makeItem({ id: 3, name: 'Veg Curry', categoryId: 1, category: { id: 1, name: 'Mains', displayOrder: 1 } })
+      ];
+      component.selectCategory('Mains');
       component.searchQuery = 'chicken';
 
       component.updateFilteredMenuItems();
@@ -510,16 +524,25 @@ describe('BillingComponent', () => {
   describe('additional methods', () => {
     it('loadItems successfully sets categories and items', () => {
       const items = [
-        makeItem({ id: 1, name: 'Burger', category: { id: 1, name: 'Food', displayOrder: 1 } }),
-        makeItem({ id: 2, name: 'Coke', category: { id: 2, name: 'Drinks', displayOrder: 2 } }),
-        makeItem({ id: 3, name: 'Untracked', category: undefined })
+        makeItem({ id: 1, name: 'Burger', categoryId: 1 }),
+        makeItem({ id: 2, name: 'Coke', categoryId: 2 }),
+        makeItem({ id: 3, name: 'Untracked', categoryId: undefined })
+      ];
+      const categories = [
+        { id: 1, name: 'Food', displayOrder: 1 },
+        { id: 2, name: 'Drinks', displayOrder: 2 }
       ];
       itemServiceSpy.getItems.and.returnValue(of(items));
+      categoryServiceSpy.getCategories.and.returnValue(of(categories));
 
       component.ngOnInit(); // calls loadItems
 
       expect(component.allItems).toEqual(items);
-      expect(component.categories).toEqual(['All', 'Food', 'Drinks']);
+      expect(component.categories).toEqual([
+        { id: 0, name: 'All', displayOrder: -1 },
+        { id: 1, name: 'Food', displayOrder: 1 },
+        { id: 2, name: 'Drinks', displayOrder: 2 }
+      ]);
       expect(component.isLoading).toBeFalse();
     });
 
@@ -560,7 +583,7 @@ describe('BillingComponent', () => {
       expect(component.cart).toHaveSize(0);
       expect(component.discountAmount).toBe(0);
       expect(component.customerName).toBe('');
-      expect(component.tableNumber).toBe('');
+      expect(component.tableNumber).toBe('1');
     });
 
     it('clearCart also resets orderType and paymentMode to their defaults', () => {

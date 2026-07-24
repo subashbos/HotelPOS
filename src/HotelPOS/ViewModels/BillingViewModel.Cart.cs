@@ -202,7 +202,7 @@ namespace HotelPOS.ViewModels
             var toRemoveTabs = ActiveTabs.Where(t => !currentActive.Contains(t) && t != TableNumber).ToList();
             foreach (var t in toRemoveTabs) ActiveTabs.Remove(t);
 
-            if (Cart.Count > 0 && TableNumber > 0 && !ActiveTabs.Contains(TableNumber))
+            if (TableNumber > 0 && !ActiveTabs.Contains(TableNumber))
                 ActiveTabs.Add(TableNumber);
 
             var sorted = ActiveTabs.OrderBy(t => t).ToList();

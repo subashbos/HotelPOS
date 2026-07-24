@@ -42,6 +42,11 @@ namespace HotelPOS.ViewModels
                     IsCompositionScheme = settings.IsCompositionScheme;
 
                     ApplyFilter();
+                    if (!IsTableless)
+                    {
+                        TableNumber = 1;
+                        _lastDineInTable = 1;
+                    }
                     UpdateCart();
 
                     var currentSession = await cashService.GetCurrentSessionAsync();

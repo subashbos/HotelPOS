@@ -61,7 +61,7 @@
         <div class="flex gap-0 mt-4 border border-solid border-blueGray-200 rounded overflow-hidden w-fit">
           <button
             *ngFor="let t of orderTypeLabels; let last = last"
-            (click)="orderType = t"
+            (click)="selectOrderType(t)"
             [ngClass]="orderType === t ? 'bg-red-600 text-white' : 'bg-white text-blueGray-600 hover:bg-blueGray-50'"
             [class.border-r]="!last"
             class="text-xs font-bold uppercase px-4 py-2 border-solid border-blueGray-200 transition-all duration-150"
@@ -124,12 +124,13 @@
         <!-- Category Filter Pills — built from API data -->
         <div class="flex flex-wrap mt-3 gap-2">
           <button
-            *ngFor="let cat of categories"
+            type="button"
+            *ngFor="let cat of categories; trackBy: trackByCategoryId"
             (click)="selectCategory(cat)"
-            [ngClass]="selectedCategory === cat ? 'bg-red-600 text-white' : 'bg-blueGray-100 text-blueGray-600 hover:bg-blueGray-200'"
+            [ngClass]="selectedCategoryId === cat.id ? 'bg-red-600 text-white' : 'bg-blueGray-100 text-blueGray-600 hover:bg-blueGray-200'"
             class="text-xs font-bold uppercase px-3 py-1.5 rounded-full shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-red-500 ease-linear transition-all duration-150"
           >
-            {{ cat }}
+            {{ cat.name }}
           </button>
         </div>
       </div>
