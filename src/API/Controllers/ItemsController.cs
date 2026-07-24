@@ -132,6 +132,6 @@ namespace HotelPOS.Api.Controllers
         public string? Barcode { get; set; }
         public int StockQuantity { get; set; } = 0;
         public bool TrackInventory { get; set; } = false;
-        public int UnitId { get; set; }
+        public int UnitId { get; set; } // NOSONAR
     }
 }

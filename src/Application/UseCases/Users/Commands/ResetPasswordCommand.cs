@@ -31,13 +31,11 @@ namespace HotelPOS.Application.UseCases.Users.Commands
             // password (that's the whole point of an admin-assisted reset), so this only applies
             // when the caller is the account being changed; EnsureSelfOrPermission upstream already
             // gated who is allowed to call this at all.
-            if (_userContext.CurrentUserId == request.UserId)
+            if (_userContext.CurrentUserId == request.UserId &&
+                (string.IsNullOrEmpty(request.CurrentPassword) ||
+                 !VerifyPassword(request.CurrentPassword, user.PasswordHash, user.Salt)))
             {
-                if (string.IsNullOrEmpty(request.CurrentPassword) ||
-                    !VerifyPassword(request.CurrentPassword, user.PasswordHash, user.Salt))
-                {
-                    return (false, "Current password is incorrect.");
-                }
+                return (false, "Current password is incorrect.");
             }
 
             var (hash, salt) = HashPassword(request.NewPassword);

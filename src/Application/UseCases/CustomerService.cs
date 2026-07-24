@@ -64,10 +64,14 @@ namespace HotelPOS.Application.UseCases
             {
                 var existing = await _repository.GetByIdAsync(customer.Id)
                     ?? throw new KeyNotFoundException($"Customer #{customer.Id} not found.");
-                customer.CreatedAt = existing.CreatedAt;
-                customer.IsActive = existing.IsActive;
-                customer.UpdatedAt = DateTime.UtcNow;
-                await _repository.UpdateAsync(customer);
+                existing.Name = customer.Name;
+                existing.Phone = customer.Phone;
+                existing.Email = customer.Email;
+                existing.Gstin = customer.Gstin;
+                existing.Address = customer.Address;
+                existing.Notes = customer.Notes;
+                existing.UpdatedAt = DateTime.UtcNow;
+                await _repository.UpdateAsync(existing);
             }
         }
 

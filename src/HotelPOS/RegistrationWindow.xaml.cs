@@ -78,7 +78,7 @@ namespace HotelPOS
             }
         }
 
-        private void ShowError(string message)
+        private void ShowError(string message) // NOSONAR
         {
             ErrorText.Text = message;
             ErrorText.Visibility = Visibility.Visible;

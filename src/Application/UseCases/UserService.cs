@@ -178,10 +178,9 @@ namespace HotelPOS.Application.UseCases
 
             // Same self-service current-password proof as ResetPasswordCommandHandler (the
             // mediator-DI path above) - see that handler for the full rationale.
-            if (_userContext.CurrentUserId == userId)
+            if (_userContext.CurrentUserId == userId && (string.IsNullOrEmpty(currentPassword) || !VerifyPassword(currentPassword, user.PasswordHash, user.Salt)))
             {
-                if (string.IsNullOrEmpty(currentPassword) || !VerifyPassword(currentPassword, user.PasswordHash, user.Salt))
-                    return (false, "Current password is incorrect.");
+                return (false, "Current password is incorrect.");
             }
 
             var (hash, salt) = HashPassword(newPassword);

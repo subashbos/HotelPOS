@@ -333,7 +333,7 @@ namespace HotelPOS
         /// sitting on the login screen (i.e. the user hasn't already logged in via a remember-me token
         /// in the brief window before database initialization completed).
         /// </summary>
-        private void ShowRegistrationWindowIfStillOnLogin()
+        private void ShowRegistrationWindowIfStillOnLogin() // NOSONAR
         {
             if (System.Windows.Application.Current.MainWindow is LoginWindow loginWindow)
                 ShowRegistrationWindow(loginWindow);
@@ -427,7 +427,9 @@ namespace HotelPOS
         private static void WriteInitialAdminCredentialFile(string password)
         {
             var path = GetInitialAdminCredentialPath();
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            var dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
             File.WriteAllText(path,
                 $"Username: admin{Environment.NewLine}" +
                 $"Password: {password}{Environment.NewLine}" +

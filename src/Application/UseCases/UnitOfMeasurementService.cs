@@ -37,7 +37,7 @@ namespace HotelPOS.Application.UseCases
             if (_mediator != null)
                 return await _mediator.Send(new GetUnitOfMeasurementsQuery());
 
-            return await _repo!.GetAllAsync() ?? new List<UnitOfMeasurement>();
+            return await _repo.GetAllAsync() ?? new List<UnitOfMeasurement>();
         }
 
         public async Task<int> AddUnitAsync(string name, int displayOrder = 0)
@@ -51,7 +51,7 @@ namespace HotelPOS.Application.UseCases
             if (!result.IsValid)
                 throw new ArgumentException(result.Errors[0].ErrorMessage);
 
-            var existing = await _repo!.GetAllAsync() ?? new List<UnitOfMeasurement>();
+            var existing = await _repo.GetAllAsync() ?? new List<UnitOfMeasurement>();
             if (existing.Any(u => u.Name.Trim().Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"Unit '{name}' already exists.");
 
@@ -75,7 +75,7 @@ namespace HotelPOS.Application.UseCases
             if (!result.IsValid)
                 throw new ArgumentException(result.Errors[0].ErrorMessage);
 
-            var all = await _repo!.GetAllAsync() ?? new List<UnitOfMeasurement>();
+            var all = await _repo.GetAllAsync() ?? new List<UnitOfMeasurement>();
             if (all.Any(u => u.Id != id && u.Name.Trim().Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"Unit '{name}' already exists.");
 
@@ -95,11 +95,11 @@ namespace HotelPOS.Application.UseCases
                 return;
             }
 
-            var items = await _itemRepo!.GetAllAsync() ?? new List<Item>();
+            var items = await _itemRepo.GetAllAsync() ?? new List<Item>();
             if (items.Any(i => i.UnitId == id))
                 throw new InvalidOperationException("Cannot delete unit because it is used by existing menu items. Please reassign the items first.");
 
-            await _repo!.DeleteAsync(id);
+            await _repo.DeleteAsync(id);
         }
     }
 }
