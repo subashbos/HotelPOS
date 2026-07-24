@@ -74,9 +74,14 @@ namespace HotelPOS.Tests.Unit.Services
             var updated = new Customer { Id = 8, Name = "New Name" };
             await _service.SaveCustomerAsync(updated);
 
-            _repoMock.Verify(r => r.UpdateAsync(updated), Times.Once);
-            Assert.Equal(new DateTime(2025, 1, 1), updated.CreatedAt);
-            Assert.NotNull(updated.UpdatedAt);
+            // The service must update the tracked "existing" instance in place, not attach the
+            // incoming "updated" object, otherwise EF Core throws a duplicate-tracking error
+            // when a second instance with the same key is attached to the same DbContext.
+            _repoMock.Verify(r => r.UpdateAsync(existing), Times.Once);
+            _repoMock.Verify(r => r.UpdateAsync(updated), Times.Never);
+            Assert.Equal("New Name", existing.Name);
+            Assert.Equal(new DateTime(2025, 1, 1), existing.CreatedAt);
+            Assert.NotNull(existing.UpdatedAt);
         }
 
         [Fact]

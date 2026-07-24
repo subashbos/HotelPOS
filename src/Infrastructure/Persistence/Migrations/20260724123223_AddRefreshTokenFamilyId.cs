@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -16,7 +16,7 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                 table: "RefreshTokens",
                 type: "uniqueidentifier",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                defaultValue: Guid.Empty);
 
             // Give every pre-existing row its own family instead of leaving them all sharing the
             // column default above - otherwise a reuse-detected revocation on any one legacy token

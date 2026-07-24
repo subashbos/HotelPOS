@@ -223,19 +223,7 @@ namespace HotelPOS.Application.UseCases
                 var oldMap = oldOrder.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
                 var newMap = order.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
 
-                // Return all old stock first (using negative to indicate return)
-                foreach (var kvp in oldMap)
-                {
-                    await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
-                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, -kvp.Value);
-                }
-
-                // Deduct all new stock
-                foreach (var kvp in newMap)
-                {
-                    await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
-                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, kvp.Value);
-                }
+                await ReconcileOrderStockAsync(oldMap, newMap);
 
                 var oldTotal = oldOrder.TotalAmount;
 
@@ -256,7 +244,7 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
                 Serilog.Log.Error(ex, "Transaction failed while updating order");
                 try
@@ -269,6 +257,23 @@ namespace HotelPOS.Application.UseCases
                     throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
                 }
                 throw;
+            }
+        }
+
+        private async Task ReconcileOrderStockAsync(Dictionary<int, int> oldMap, Dictionary<int, int> newMap)
+        {
+            // Return all old stock first (using negative to indicate return)
+            foreach (var kvp in oldMap)
+            {
+                await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
+                if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, -kvp.Value);
+            }
+
+            // Deduct all new stock
+            foreach (var kvp in newMap)
+            {
+                await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
+                if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, kvp.Value);
             }
         }
 
