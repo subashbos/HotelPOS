@@ -21,6 +21,9 @@ namespace HotelPOS.Domain.Entities
 
         public DateTime? PaidOn { get; set; }
 
+        [MaxLength(500)]
+        public string? VoidReason { get; set; }
+
         public List<Payslip> Payslips { get; set; } = new();
     }
 }

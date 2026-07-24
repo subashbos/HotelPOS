@@ -47,6 +47,14 @@ namespace HotelPOS.Application.UseCases
             return await _purchaseRepository!.GetPurchasesAsync();
         }
 
+        public async Task<Purchase?> GetPurchaseByIdAsync(int id)
+        {
+            if (_mediator != null)
+                return await _mediator.Send(new GetPurchaseByIdQuery(id));
+
+            return await _purchaseRepository!.GetByIdAsync(id);
+        }
+
         public async Task SavePurchaseAsync(Purchase purchase)
         {
             if (purchase == null) throw new ArgumentNullException(nameof(purchase));
@@ -85,6 +93,83 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
+        public async Task UpdatePurchaseAsync(Purchase purchase)
+        {
+            if (purchase == null) throw new ArgumentNullException(nameof(purchase));
+
+            if (_mediator != null)
+            {
+                await _mediator.Send(new UpdatePurchaseCommand(purchase));
+                await _mediator.Publish(new EntityActionEvent("Purchase", purchase.Id, "Update",
+                    $"Supplier: {purchase.SupplierId}, Invoice: {purchase.InvoiceNumber}, Items: {purchase.PurchaseItems.Count}"));
+                return;
+            }
+
+            // Legacy path
+            ValidatePurchase(purchase);
+
+            var oldPurchase = await _purchaseRepository!.GetByIdAsync(purchase.Id)
+                ?? throw new KeyNotFoundException($"Purchase #{purchase.Id} not found.");
+
+            await _purchaseRepository.BeginTransactionAsync();
+            try
+            {
+                await ReconcilePurchaseStockAsync(oldPurchase.PurchaseItems, purchase.PurchaseItems);
+                await _purchaseRepository.UpdateAsync(purchase);
+                await _purchaseRepository.CommitTransactionAsync();
+            }
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
+            {
+                Serilog.Log.Error(ex, "Transaction failed while updating purchase");
+                try
+                {
+                    await _purchaseRepository.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while updating purchase");
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
+                throw;
+            }
+        }
+
+        public async Task DeletePurchaseAsync(int id)
+        {
+            if (_mediator != null)
+            {
+                await _mediator.Send(new DeletePurchaseCommand(id));
+                await _mediator.Publish(new EntityActionEvent("Purchase", id, "Delete", "Deleted"));
+                return;
+            }
+
+            // Legacy path
+            var purchase = await _purchaseRepository!.GetByIdAsync(id);
+            if (purchase == null) return; // idempotent delete
+
+            await _purchaseRepository.BeginTransactionAsync();
+            try
+            {
+                await ReconcilePurchaseStockAsync(purchase.PurchaseItems, new List<PurchaseItem>());
+                await _purchaseRepository.DeleteAsync(id);
+                await _purchaseRepository.CommitTransactionAsync();
+            }
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
+            {
+                Serilog.Log.Error(ex, "Transaction failed while deleting purchase");
+                try
+                {
+                    await _purchaseRepository.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while deleting purchase");
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
+                throw;
+            }
+        }
+
         private static void ValidatePurchase(Purchase purchase)
         {
             if (purchase.SupplierId <= 0)
@@ -114,6 +199,36 @@ namespace HotelPOS.Application.UseCases
                 {
                     catalogItem.StockQuantity += item.Quantity;
                 }
+            }
+
+            var toUpdate = catalogItems.Where(i => i.TrackInventory).ToList();
+            if (toUpdate.Count > 0)
+            {
+                await _itemRepository.UpdateRangeAsync(toUpdate);
+            }
+        }
+
+        /// <summary>
+        /// Applies only the net per-item stock delta between the old and new item lists (an empty
+        /// new list reverses the old purchase entirely - used by DeletePurchaseAsync). Clamped
+        /// rather than thrown on shrink: some of the originally purchased stock may already have
+        /// been sold, so a shrinking edit or a delete can't be allowed to push stock negative.
+        /// </summary>
+        private async Task ReconcilePurchaseStockAsync(List<PurchaseItem> oldItems, List<PurchaseItem> newItems)
+        {
+            var oldMap = oldItems.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
+            var newMap = newItems.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
+            var itemIds = oldMap.Keys.Union(newMap.Keys).ToList();
+
+            var catalogItems = await _itemRepository!.GetByIdsAsync(itemIds);
+            var itemsById = catalogItems.ToDictionary(i => i.Id);
+
+            foreach (var itemId in itemIds)
+            {
+                if (!itemsById.TryGetValue(itemId, out var catalogItem) || !catalogItem.TrackInventory) continue;
+
+                var delta = newMap.GetValueOrDefault(itemId) - oldMap.GetValueOrDefault(itemId);
+                catalogItem.StockQuantity = Math.Max(0, catalogItem.StockQuantity + delta);
             }
 
             var toUpdate = catalogItems.Where(i => i.TrackInventory).ToList();

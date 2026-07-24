@@ -84,7 +84,7 @@ namespace HotelPOS.Api.Controllers
             }
 
             var accessToken = GenerateJwtToken(user);
-            var refreshToken = await IssueRefreshTokenAsync(user.Id);
+            var refreshToken = await IssueRefreshTokenAsync(user.Id, Guid.NewGuid());
 
             return Ok(new
             {
@@ -102,7 +102,23 @@ namespace HotelPOS.Api.Controllers
             var providedHash = HashToken(dto?.RefreshToken ?? string.Empty);
             var existing = await _refreshTokenRepository.GetByHashAsync(providedHash);
 
-            if (existing == null || existing.RevokedUtc != null || existing.ExpiresUtc <= DateTime.UtcNow)
+            if (existing == null)
+            {
+                return Unauthorized(new { Message = "Invalid or expired refresh token." });
+            }
+
+            if (existing.RevokedUtc != null)
+            {
+                // Rotation always issues the replacement before revoking the token just used, so a
+                // legitimate client never has reason to present an already-revoked token again.
+                // Seeing one here means it was copied/stolen and is being replayed after the real
+                // rotation already happened - revoke the whole family so the thief's copy (and any
+                // further descendants of it) stop working too, forcing a fresh login.
+                await _refreshTokenRepository.RevokeFamilyAsync(existing.FamilyId, DateTime.UtcNow);
+                return Unauthorized(new { Message = "Invalid or expired refresh token." });
+            }
+
+            if (existing.ExpiresUtc <= DateTime.UtcNow)
             {
                 return Unauthorized(new { Message = "Invalid or expired refresh token." });
             }
@@ -114,7 +130,7 @@ namespace HotelPOS.Api.Controllers
             }
 
             // Rotate: issue a new refresh token and revoke the one just used.
-            var newRefreshToken = await IssueRefreshTokenAsync(user.Id);
+            var newRefreshToken = await IssueRefreshTokenAsync(user.Id, existing.FamilyId);
             existing.RevokedUtc = DateTime.UtcNow;
             existing.ReplacedByTokenHash = HashToken(newRefreshToken);
             await _refreshTokenRepository.UpdateAsync(existing);
@@ -187,7 +203,7 @@ namespace HotelPOS.Api.Controllers
             return Ok(new { Valid = isValid });
         }
 
-        private async Task<string> IssueRefreshTokenAsync(int userId)
+        private async Task<string> IssueRefreshTokenAsync(int userId, Guid familyId)
         {
             var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
@@ -195,6 +211,7 @@ namespace HotelPOS.Api.Controllers
             {
                 UserId = userId,
                 TokenHash = HashToken(rawToken),
+                FamilyId = familyId,
                 CreatedUtc = DateTime.UtcNow,
                 ExpiresUtc = DateTime.UtcNow.AddDays(RefreshTokenDays)
             };

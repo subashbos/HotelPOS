@@ -203,13 +203,15 @@ namespace HotelPOS.Tests.Unit.Controllers
         }
 
         [Fact]
-        public async Task Refresh_RevokedToken_ReturnsUnauthorized()
+        public async Task Refresh_RevokedToken_ReturnsUnauthorizedAndRevokesWholeFamily()
         {
+            var familyId = Guid.NewGuid();
             var refreshRepo = new Mock<IRefreshTokenRepository>();
             refreshRepo.Setup(r => r.GetByHashAsync(It.IsAny<string>())).ReturnsAsync(new RefreshToken
             {
                 Id = 1,
                 UserId = 1,
+                FamilyId = familyId,
                 ExpiresUtc = DateTime.UtcNow.AddDays(1),
                 RevokedUtc = DateTime.UtcNow.AddMinutes(-1)
             });
@@ -218,6 +220,29 @@ namespace HotelPOS.Tests.Unit.Controllers
             var result = await controller.Refresh(new RefreshRequestDto { RefreshToken = "used-token" });
 
             Assert.IsType<UnauthorizedObjectResult>(result);
+            // Replaying an already-rotated token is treated as evidence of theft: the entire
+            // family must be revoked, not just this one token, so a stolen copy can't keep working.
+            refreshRepo.Verify(r => r.RevokeFamilyAsync(familyId, It.IsAny<DateTime>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Refresh_ExpiredButNotRevokedToken_ReturnsUnauthorizedWithoutRevokingFamily()
+        {
+            var refreshRepo = new Mock<IRefreshTokenRepository>();
+            refreshRepo.Setup(r => r.GetByHashAsync(It.IsAny<string>())).ReturnsAsync(new RefreshToken
+            {
+                Id = 1,
+                UserId = 1,
+                FamilyId = Guid.NewGuid(),
+                ExpiresUtc = DateTime.UtcNow.AddDays(-1)
+            });
+
+            var controller = CreateAuthController(refreshRepo: refreshRepo);
+            var result = await controller.Refresh(new RefreshRequestDto { RefreshToken = "expired-not-revoked" });
+
+            // A naturally expired (never-revoked) token is not suspicious - just a stale session.
+            Assert.IsType<UnauthorizedObjectResult>(result);
+            refreshRepo.Verify(r => r.RevokeFamilyAsync(It.IsAny<Guid>(), It.IsAny<DateTime>()), Times.Never);
         }
 
         [Fact]
@@ -259,15 +284,20 @@ namespace HotelPOS.Tests.Unit.Controllers
         [Fact]
         public async Task Refresh_Valid_RotatesTokenAndReturnsNewToken()
         {
+            var familyId = Guid.NewGuid();
             var existing = new RefreshToken
             {
                 Id = 1,
                 UserId = 5,
+                FamilyId = familyId,
                 ExpiresUtc = DateTime.UtcNow.AddDays(1)
             };
+            RefreshToken? addedToken = null;
             var refreshRepo = new Mock<IRefreshTokenRepository>();
             refreshRepo.Setup(r => r.GetByHashAsync(It.IsAny<string>())).ReturnsAsync(existing);
-            refreshRepo.Setup(r => r.AddAsync(It.IsAny<RefreshToken>())).Returns(Task.CompletedTask);
+            refreshRepo.Setup(r => r.AddAsync(It.IsAny<RefreshToken>()))
+                .Callback<RefreshToken>(t => addedToken = t)
+                .Returns(Task.CompletedTask);
             refreshRepo.Setup(r => r.UpdateAsync(It.IsAny<RefreshToken>())).Returns(Task.CompletedTask);
 
             var userRepo = new Mock<IUserRepository>();
@@ -281,6 +311,11 @@ namespace HotelPOS.Tests.Unit.Controllers
             Assert.NotNull(existing.ReplacedByTokenHash);
             refreshRepo.Verify(r => r.AddAsync(It.IsAny<RefreshToken>()), Times.Once);
             refreshRepo.Verify(r => r.UpdateAsync(existing), Times.Once);
+            refreshRepo.Verify(r => r.RevokeFamilyAsync(It.IsAny<Guid>(), It.IsAny<DateTime>()), Times.Never);
+            // The rotated token must stay in the same family as the one it replaced - that's what
+            // lets a later reuse of this (now-revoked) token still map back to the right family.
+            Assert.NotNull(addedToken);
+            Assert.Equal(familyId, addedToken!.FamilyId);
         }
 
         // ================= AuthController.Logout =================

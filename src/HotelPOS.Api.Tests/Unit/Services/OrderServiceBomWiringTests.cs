@@ -14,6 +14,7 @@ namespace HotelPOS.Tests
         private readonly Mock<IMediator> _mediatorMock = new();
         private readonly Mock<IItemService> _itemServiceMock = new();
         private readonly Mock<IBomService> _bomServiceMock = new();
+        private readonly Mock<ICashService> _cashServiceMock = TestCashService.WithOpenSession();
 
         public OrderServiceBomWiringTests()
         {
@@ -22,7 +23,7 @@ namespace HotelPOS.Tests
         }
 
         private OrderService BuildService(IBomService? bomService)
-            => new(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, bomService: bomService);
+            => new(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, _cashServiceMock.Object, bomService: bomService);
 
         [Fact]
         public async Task SaveOrderAsync_WithBomService_DeductsIngredientStockPerItem()

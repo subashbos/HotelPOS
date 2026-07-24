@@ -22,7 +22,16 @@ namespace HotelPOS.Tests
 
         public OrderServiceUpdateTests()
         {
-            _service = new OrderService(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object);
+            _service = new OrderService(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithOpenSession().Object);
+        }
+
+        // UpdateOrderInternalAsync now reprices every line from the catalog (same as Create),
+        // so tests must stub the catalog to echo back the price/tax the test itself intends -
+        // otherwise the price the test set directly on the OrderItem is silently ignored.
+        private void MockCatalogFor(Order order)
+        {
+            _itemServiceMock.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync(order.Items.Select(i => new Item { Id = i.ItemId, Name = i.ItemName ?? "Item", Price = i.Price, TaxPercentage = i.TaxPercentage }).ToList());
         }
 
         // ========== Guard clauses ===========
@@ -64,6 +73,58 @@ namespace HotelPOS.Tests
             _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Order>()), Times.Never);
         }
 
+        [Theory]
+        [InlineData(HotelPOS.Domain.Common.Constants.OrderStatuses.Void)]
+        [InlineData(HotelPOS.Domain.Common.Constants.OrderStatuses.Refunded)]
+        [InlineData(HotelPOS.Domain.Common.Constants.OrderStatuses.PartiallyRefunded)]
+        public async Task UpdateOrderAsync_OrderIsVoidOrRefunded_ThrowsInvalidOperationException(string status)
+        {
+            var oldOrder = new Order
+            {
+                Id = 1,
+                Status = status,
+                Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1, Price = 100, Total = 100 } }
+            };
+            _repoMock.Setup(r => r.GetByIdWithItemsAsync(1)).ReturnsAsync(oldOrder);
+
+            var newOrder = new Order
+            {
+                Id = 1,
+                Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1, Price = 1, Total = 1 } }
+            };
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.UpdateOrderAsync(newOrder));
+
+            _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Order>()), Times.Never);
+            _repoMock.Verify(r => r.BeginTransactionAsync(), Times.Never);
+        }
+
+        [Theory]
+        [InlineData(HotelPOS.Domain.Common.Constants.OrderStatuses.Paid)]
+        [InlineData(HotelPOS.Domain.Common.Constants.OrderStatuses.Partial)]
+        public async Task UpdateOrderAsync_OrderIsPaidOrPartial_StillEditable(string status)
+        {
+            var oldOrder = new Order
+            {
+                Id = 1,
+                Status = status,
+                Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1, Price = 100, Total = 100 } }
+            };
+            _repoMock.Setup(r => r.GetByIdWithItemsAsync(1)).ReturnsAsync(oldOrder);
+
+            var newOrder = new Order
+            {
+                Id = 1,
+                Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 2, Price = 100, Total = 200 } }
+            };
+            MockCatalogFor(newOrder);
+
+            await _service.UpdateOrderAsync(newOrder);
+
+            _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Order>()), Times.Once);
+        }
+
         // ========== Totals recalculation ===========
 
         [Fact]
@@ -84,6 +145,7 @@ namespace HotelPOS.Tests
                 DiscountAmount = 0
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(1)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 
@@ -110,6 +172,7 @@ namespace HotelPOS.Tests
                 DiscountAmount = 15m
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(2)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 
@@ -137,6 +200,7 @@ namespace HotelPOS.Tests
                 DiscountAmount = 9999m
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(3)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 
@@ -160,6 +224,7 @@ namespace HotelPOS.Tests
                 }
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(4)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 
@@ -187,6 +252,7 @@ namespace HotelPOS.Tests
                 }
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(5)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 
@@ -216,6 +282,7 @@ namespace HotelPOS.Tests
                 }
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(6)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 
@@ -243,6 +310,7 @@ namespace HotelPOS.Tests
                 }
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(7)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 
@@ -271,6 +339,7 @@ namespace HotelPOS.Tests
                 }
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(8)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 
@@ -307,6 +376,7 @@ namespace HotelPOS.Tests
                 }
             };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(9)).ReturnsAsync(oldOrder);
+            MockCatalogFor(newOrder);
 
             await _service.UpdateOrderAsync(newOrder);
 

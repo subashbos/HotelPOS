@@ -20,7 +20,7 @@ namespace HotelPOS.Tests
 
         public UserServiceLoopholeTests()
         {
-            _service = new UserService(_repo.Object, TestAuthorization.AllowAll().Object, isTest: true);
+            _service = new UserService(_repo.Object, TestAuthorization.AllowAll().Object, Mock.Of<IUserContext>(), isTest: true);
         }
 
         // ── ResetPasswordAsync null/empty guard ──────────────────────────────

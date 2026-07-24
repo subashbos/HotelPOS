@@ -39,6 +39,7 @@ describe('AccountComponent', () => {
   });
 
   it('should validate password mismatch', () => {
+    component.currentPassword = 'OldPassword1!';
     component.newPassword = 'Password123!';
     component.confirmPassword = 'Password456!';
 
@@ -50,23 +51,31 @@ describe('AccountComponent', () => {
 
   it('should change password successfully', () => {
     userServiceSpy.resetPassword.and.returnValue(of(void 0));
+    component.currentPassword = 'OldPassword1!';
     component.newPassword = 'Password123!';
     component.confirmPassword = 'Password123!';
 
     component.changePassword();
 
-    expect(userServiceSpy.resetPassword).toHaveBeenCalledWith(1, 'Password123!');
+    expect(userServiceSpy.resetPassword).toHaveBeenCalledWith(1, 'Password123!', 'OldPassword1!');
     expect(component.passwordSaved).toBe('Password changed.');
+    expect(component.currentPassword).toBe('');
   });
 
-  it('should not change password if userId is null, password empty, or already saving', () => {
+  it('should not change password if userId is null, current/new password empty, or already saving', () => {
     authServiceSpy.getUserId.and.returnValue(null);
+    component.currentPassword = 'OldPassword1!';
     component.newPassword = 'Password123!';
     component.confirmPassword = 'Password123!';
     component.changePassword();
     expect(userServiceSpy.resetPassword).not.toHaveBeenCalled();
 
     authServiceSpy.getUserId.and.returnValue(1);
+    component.currentPassword = '';
+    component.changePassword();
+    expect(userServiceSpy.resetPassword).not.toHaveBeenCalled();
+
+    component.currentPassword = 'OldPassword1!';
     component.newPassword = '';
     component.changePassword();
     expect(userServiceSpy.resetPassword).not.toHaveBeenCalled();
@@ -79,6 +88,7 @@ describe('AccountComponent', () => {
 
   it('should handle change password error variations', () => {
     userServiceSpy.resetPassword.and.returnValue(throwError(() => ({ error: { message: 'Weak password' } })));
+    component.currentPassword = 'OldPassword1!';
     component.newPassword = 'Password123!';
     component.confirmPassword = 'Password123!';
     component.changePassword();

@@ -16,14 +16,16 @@ namespace HotelPOS.Application.UseCases
         private readonly IOrderRepository _repo;
         private readonly IMediator? _mediator;
         private readonly IItemService _itemService;
+        private readonly ICashService _cashService;
         private readonly IValidator<CreateOrderCommand> _validator;
         private readonly IBomService? _bomService;
 
-        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null)
+        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, ICashService cashService, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null)
         {
             _repo = repo;
             _mediator = mediator;
             _itemService = itemService;
+            _cashService = cashService;
             _validator = validator ?? new CreateOrderCommandValidator();
             _bomService = bomService;
         }
@@ -52,6 +54,13 @@ namespace HotelPOS.Application.UseCases
                 var error = valResult.Errors[0];
                 throw new ArgumentException(error.ErrorMessage);
             }
+
+            // The WPF client already blocks checkout with no open shift, but that's a UI-layer
+            // convenience, not a security boundary - enforce it here too so the API can't be used
+            // to create untracked orders while the till is closed.
+            var currentSession = await _cashService.GetCurrentSessionAsync();
+            if (currentSession == null)
+                throw new InvalidOperationException("No cash session is open. Please open a shift before creating an order.");
 
             // DineIn requires a real table; Takeaway/Online use virtual table 0
             bool requiresTable = orderType == OrderTypes.DineIn;
@@ -197,6 +206,12 @@ namespace HotelPOS.Application.UseCases
             var oldOrder = await _repo.GetByIdWithItemsAsync(order.Id);
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
 
+            // Void/refunded orders are terminal: re-saving one would let a tampered request
+            // resurrect it with new items/prices instead of going through Void/Refund's own
+            // audited flow.
+            if (oldOrder.Status == OrderStatuses.Void || oldOrder.Status == OrderStatuses.Refunded || oldOrder.Status == OrderStatuses.PartiallyRefunded)
+                throw new InvalidOperationException($"Cannot edit an order with status '{oldOrder.Status}'.");
+
             // Normalise table number: Takeaway/Online always store 0
             if (order.OrderType == OrderTypes.Takeaway || order.OrderType == OrderTypes.Online)
                 order.TableNumber = 0;
@@ -223,6 +238,13 @@ namespace HotelPOS.Application.UseCases
                 }
 
                 var oldTotal = oldOrder.TotalAmount;
+
+                // Price/tax are never trusted from the caller here either: reprice every line from
+                // the authoritative item catalog, same as SaveOrderInternalAsync, so a tampered
+                // update request can't under-pay for real items or inject a phantom item. This only
+                // matters now that Update is reachable via the API (OrdersController) — the WPF
+                // caller's items already come from the same catalog, so behavior is unchanged there.
+                order.Items = await BuildPricedOrderItemsAsync(order.Items);
 
                 CalculateTotals(order, order.Items);
                 order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);

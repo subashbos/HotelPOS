@@ -14,19 +14,22 @@ namespace HotelPOS.Application.UseCases
         private readonly IMediator? _mediator;
         private readonly IUserRepository? _userRepository;
         private readonly IAuthorizationService _authorization;
+        private readonly IUserContext _userContext;
 
         /// <summary>DI constructor — uses MediatR pipeline (validators + handlers).</summary>
-        public UserService(IMediator mediator, IAuthorizationService authorization)
+        public UserService(IMediator mediator, IAuthorizationService authorization, IUserContext userContext)
         {
             _mediator = mediator;
             _authorization = authorization;
+            _userContext = userContext;
         }
 
         /// <summary>Legacy constructor for unit tests that inject a repository directly.</summary>
-        public UserService(IUserRepository userRepository, IAuthorizationService authorization, bool isTest)
+        public UserService(IUserRepository userRepository, IAuthorizationService authorization, IUserContext userContext, bool isTest)
         {
             _userRepository = userRepository;
             _authorization = authorization;
+            _userContext = userContext;
         }
 
         public Task<List<User>> GetAllUsersAsync()
@@ -81,6 +84,14 @@ namespace HotelPOS.Application.UseCases
             rng.GetBytes(saltBytes);
             var hashBytes = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, ValidationLimits.Pbkdf2Iterations, System.Security.Cryptography.HashAlgorithmName.SHA256, ValidationLimits.HashByteSize);
             return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
+        }
+
+        private static bool VerifyPassword(string password, string hash, string salt)
+        {
+            var saltBytes = Convert.FromBase64String(salt);
+            var expectedHash = Convert.FromBase64String(hash);
+            var actualHash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, ValidationLimits.Pbkdf2Iterations, System.Security.Cryptography.HashAlgorithmName.SHA256, ValidationLimits.HashByteSize);
+            return actualHash.Length == expectedHash.Length && System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
         }
 
         public async Task ToggleActiveAsync(int userId, bool isActive)
@@ -150,12 +161,12 @@ namespace HotelPOS.Application.UseCases
             await _userRepository.DeleteAsync(userId);
         }
 
-        public async Task<(bool Success, string Error)> ResetPasswordAsync(int userId, string newPassword)
+        public async Task<(bool Success, string Error)> ResetPasswordAsync(int userId, string newPassword, string? currentPassword = null)
         {
             _authorization.EnsureSelfOrPermission(userId, PermissionModules.Settings);
 
             if (_mediator != null)
-                return await _mediator.Send(new ResetPasswordCommand(userId, newPassword));
+                return await _mediator.Send(new ResetPasswordCommand(userId, newPassword, currentPassword));
 
             if (string.IsNullOrEmpty(newPassword))
                 return (false, $"New password cannot be empty. Password must be at least {ValidationLimits.MinPasswordLength} characters.");
@@ -164,6 +175,14 @@ namespace HotelPOS.Application.UseCases
 
             var user = await _userRepository!.GetByIdAsync(userId);
             if (user == null) return (false, "User not found.");
+
+            // Same self-service current-password proof as ResetPasswordCommandHandler (the
+            // mediator-DI path above) - see that handler for the full rationale.
+            if (_userContext.CurrentUserId == userId)
+            {
+                if (string.IsNullOrEmpty(currentPassword) || !VerifyPassword(currentPassword, user.PasswordHash, user.Salt))
+                    return (false, "Current password is incorrect.");
+            }
 
             var (hash, salt) = HashPassword(newPassword);
             user.PasswordHash = hash;

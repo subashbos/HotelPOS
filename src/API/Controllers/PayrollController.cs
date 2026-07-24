@@ -87,6 +87,29 @@ namespace HotelPOS.Api.Controllers
             return NoContent();
         }
 
+        [HttpPost("runs/{id:int}/void")]
+        [Authorize(Roles = RoleNames.Admin)]
+        public async Task<IActionResult> VoidRun(int id, [FromBody] VoidPayrollRunDto request)
+        {
+            if (id <= 0) return BadRequest("Invalid payroll run ID.");
+            if (string.IsNullOrWhiteSpace(request?.Reason)) return BadRequest("Reason for voiding the payroll run is required.");
+
+            try
+            {
+                await _payrollService.VoidRunAsync(id, request.Reason);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+            return NoContent();
+        }
+
         [HttpGet("runs")]
         public async Task<ActionResult<IEnumerable<PayrollRunDto>>> GetRuns()
         {

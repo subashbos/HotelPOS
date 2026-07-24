@@ -132,6 +132,12 @@ namespace HotelPOS.Infrastructure.Persistence
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
 
+            // ── Cash session uniqueness (DB-level backstop closing the open/open TOCTOU race) ──
+            modelBuilder.Entity<CashSession>()
+                .HasIndex(s => s.Status)
+                .IsUnique()
+                .HasFilter("[Status] = 'Open'");
+
             // ── Human Resources Relationships ─────────────────────────────────
             modelBuilder.Entity<Designation>()
                 .HasOne(d => d.Department)

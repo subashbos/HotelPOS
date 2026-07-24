@@ -13,6 +13,11 @@
         <h4 class="text-xs uppercase font-bold text-blueGray-500 mb-3">Change Password</h4>
         <form (ngSubmit)="changePassword()" class="space-y-4">
           <div>
+            <label for="acc-currentpass" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Current Password</label>
+            <input id="acc-currentpass" type="password" [(ngModel)]="currentPassword" name="currentPassword" required
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+          </div>
+          <div>
             <label for="acc-newpass" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">New Password</label>
             <input id="acc-newpass" type="password" [(ngModel)]="newPassword" name="newPassword" required
               class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
@@ -24,7 +29,7 @@
           </div>
           <p *ngIf="passwordError" class="text-red-600 text-sm">{{ passwordError }}</p>
           <p *ngIf="passwordSaved" class="text-emerald-600 text-sm">{{ passwordSaved }}</p>
-          <button type="submit" [disabled]="isSavingPassword || !newPassword"
+          <button type="submit" [disabled]="isSavingPassword || !currentPassword || !newPassword"
             class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
             {{ isSavingPassword ? 'Saving...' : 'Change Password' }}
           </button>

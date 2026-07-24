@@ -127,6 +127,119 @@ namespace HotelPOS.Tests
             await Assert.ThrowsAsync<ArgumentException>(() => _purchaseService.SavePurchaseAsync(purchase));
         }
 
+        [Fact]
+        public async Task GetPurchaseByIdAsync_LegacyPath_DelegatesToRepository()
+        {
+            var purchase = new Purchase { Id = 5 };
+            _purchaseRepoMock.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(purchase);
+
+            var result = await _purchaseService.GetPurchaseByIdAsync(5);
+
+            Assert.Same(purchase, result);
+        }
+
+        [Fact]
+        public async Task UpdatePurchaseAsync_LegacyPath_ReconcilesStockDeltaAndUpdatesRepo()
+        {
+            var item1 = new Item { Id = 10, Name = "Milk Packet", StockQuantity = 30, TrackInventory = true };
+            var item2 = new Item { Id = 11, Name = "Cheese Slices", StockQuantity = 10, TrackInventory = true };
+
+            var oldPurchase = new Purchase
+            {
+                Id = 1,
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    new PurchaseItem { ItemId = 10, ItemName = "Milk Packet", Quantity = 10, UnitPrice = 40 },
+                    new PurchaseItem { ItemId = 11, ItemName = "Cheese Slices", Quantity = 5, UnitPrice = 120 }
+                }
+            };
+            _purchaseRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(oldPurchase);
+            _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync(new List<Item> { item1, item2 });
+
+            var updatedPurchase = new Purchase
+            {
+                Id = 1,
+                SupplierId = 1,
+                InvoiceNumber = "INV-1001",
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    // Milk quantity increased 10 -> 15 (delta +5); Cheese removed entirely (delta -5)
+                    new PurchaseItem { ItemId = 10, ItemName = "Milk Packet", Quantity = 15, UnitPrice = 40 }
+                }
+            };
+
+            await _purchaseService.UpdatePurchaseAsync(updatedPurchase);
+
+            Assert.Equal(35, item1.StockQuantity); // 30 + 5
+            Assert.Equal(5, item2.StockQuantity);  // 10 - 5
+            _purchaseRepoMock.Verify(r => r.UpdateAsync(updatedPurchase), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePurchaseAsync_LegacyPath_ShrinkingBelowZero_ClampsToZero()
+        {
+            var item = new Item { Id = 10, Name = "Milk Packet", StockQuantity = 2, TrackInventory = true };
+            var oldPurchase = new Purchase
+            {
+                Id = 1,
+                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { ItemId = 10, ItemName = "Milk Packet", Quantity = 10, UnitPrice = 40 } }
+            };
+            _purchaseRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(oldPurchase);
+            _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item> { item });
+
+            var updatedPurchase = new Purchase
+            {
+                Id = 1,
+                SupplierId = 1,
+                InvoiceNumber = "INV-1001",
+                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { ItemId = 10, ItemName = "Milk Packet", Quantity = 1, UnitPrice = 40 } }
+            };
+
+            await _purchaseService.UpdatePurchaseAsync(updatedPurchase);
+
+            Assert.Equal(0, item.StockQuantity); // 2 + (1 - 10) = -7, clamped to 0
+        }
+
+        [Fact]
+        public async Task UpdatePurchaseAsync_LegacyPath_PurchaseNotFound_ThrowsKeyNotFoundException()
+        {
+            _purchaseRepoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Purchase?)null);
+
+            var updated = new Purchase { Id = 99, SupplierId = 1, InvoiceNumber = "INV-1", PurchaseItems = new List<PurchaseItem> { new PurchaseItem { ItemId = 1, ItemName = "X", Quantity = 1, UnitPrice = 1 } } };
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => _purchaseService.UpdatePurchaseAsync(updated));
+        }
+
+        [Fact]
+        public async Task DeletePurchaseAsync_LegacyPath_ReversesStockAndDeletes()
+        {
+            var item = new Item { Id = 10, Name = "Milk Packet", StockQuantity = 30, TrackInventory = true };
+            var purchase = new Purchase
+            {
+                Id = 1,
+                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { ItemId = 10, ItemName = "Milk Packet", Quantity = 10, UnitPrice = 40 } }
+            };
+            _purchaseRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(purchase);
+            _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item> { item });
+
+            await _purchaseService.DeletePurchaseAsync(1);
+
+            Assert.Equal(20, item.StockQuantity); // 30 - 10
+            _purchaseRepoMock.Verify(r => r.DeleteAsync(1), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeletePurchaseAsync_LegacyPath_NotFound_IsNoOp()
+        {
+            _purchaseRepoMock.Setup(r => r.GetByIdAsync(404)).ReturnsAsync((Purchase?)null);
+
+            var exception = await Record.ExceptionAsync(() => _purchaseService.DeletePurchaseAsync(404));
+
+            Assert.Null(exception);
+            _purchaseRepoMock.Verify(r => r.DeleteAsync(It.IsAny<int>()), Times.Never);
+        }
+
         #endregion
 
         #region ViewModel Layer Tests (PurchaseEntryViewModel / PurchaseRow)

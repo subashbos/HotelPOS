@@ -24,8 +24,8 @@ export class UserService {
     return this.http.post<void>(`${this.apiUrl}/${id}/toggle-active`, { isActive });
   }
 
-  resetPassword(id: number, newPassword: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/${id}/reset-password`, { newPassword });
+  resetPassword(id: number, newPassword: string, currentPassword?: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${id}/reset-password`, { newPassword, currentPassword });
   }
 
   setTwoFactor(id: number, enabled: boolean, secret: string | null): Observable<void> {

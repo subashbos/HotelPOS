@@ -9,6 +9,7 @@ namespace HotelPOS.Application.Interfaces
 
         Task<PayrollRun> RunPayrollAsync(int month, int year, int? processedByUserId);
         Task MarkRunAsPaidAsync(int runId);
+        Task VoidRunAsync(int runId, string reason);
         Task<List<PayrollRun>> GetRunsAsync();
         Task<PayrollRun?> GetRunByIdAsync(int id);
         Task<List<Payslip>> GetPayslipsByEmployeeAsync(int employeeId);

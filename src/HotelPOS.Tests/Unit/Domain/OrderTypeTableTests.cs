@@ -29,7 +29,7 @@ namespace HotelPOS.Tests
         {
             _itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
                 .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Tea", Price = 50m, TaxPercentage = 0m }).ToList());
-            _service = new OrderService(_repo.Object, _mediator.Object, _itemService.Object);
+            _service = new OrderService(_repo.Object, _mediator.Object, _itemService.Object, TestCashService.WithOpenSession().Object);
         }
 
         private static List<OrderItem> OneItem() =>
