@@ -298,13 +298,15 @@ namespace HotelPOS
             return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
         }
 
-        private static string GetInitialAdminCredentialPath() => Path.Combine(
+        internal static string GetInitialAdminCredentialPath() => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "HotelPOS", "initial-admin-password.txt");
 
         // Written once per remediation so whoever runs first-run setup can retrieve the
         // one-time password; MustChangePassword forces it to be replaced before the account
-        // can be used for anything else.
+        // can be used for anything else. Removed automatically by LoginWindow once that
+        // forced change succeeds (see HandleMustChangePasswordAsync), so it doesn't rely on
+        // the user remembering to delete it themselves.
         private static void WriteInitialAdminCredentialFile(string password)
         {
             var path = GetInitialAdminCredentialPath();
@@ -312,7 +314,15 @@ namespace HotelPOS
             File.WriteAllText(path,
                 $"Username: admin{Environment.NewLine}" +
                 $"Password: {password}{Environment.NewLine}" +
-                $"This is a one-time password — you will be required to change it on first login. Delete this file once you've logged in.{Environment.NewLine}");
+                $"This is a one-time password for first login only.{Environment.NewLine}");
+        }
+
+        /// <summary>Deletes the one-time admin credential file, if present. Safe to call unconditionally.</summary>
+        internal static void DeleteInitialAdminCredentialFileIfExists()
+        {
+            var path = GetInitialAdminCredentialPath();
+            if (File.Exists(path))
+                File.Delete(path);
         }
     }
 }

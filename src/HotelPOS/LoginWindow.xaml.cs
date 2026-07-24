@@ -189,6 +189,10 @@ namespace HotelPOS
                 _notificationService.ShowError($"Failed to update password: {err}");
                 return;
             }
+
+            if (user.Username == "admin")
+                App.DeleteInitialAdminCredentialFileIfExists();
+
             _notificationService.ShowSuccess("Password updated successfully. You can now log in with your new password.");
             PasswordBox.Clear();
         }
