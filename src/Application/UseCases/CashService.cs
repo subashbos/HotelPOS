@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.CashSessions.Commands;

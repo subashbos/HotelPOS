@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Roles.Commands;
 using HotelPOS.Application.UseCases.Roles.Queries;

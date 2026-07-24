@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
