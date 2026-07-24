@@ -33,7 +33,8 @@ describe('PurchasesComponent', () => {
     price: 40,
     taxPercentage: 5,
     stockQuantity: 100,
-    trackInventory: true
+    trackInventory: true,
+    unitId: 2
   };
 
   beforeEach(async () => {

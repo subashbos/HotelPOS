@@ -4,19 +4,24 @@ import { of, throwError } from 'rxjs';
 import { ItemsComponent } from './items.component';
 import { ItemService } from '../../../services/item.service';
 import { CategoryService } from '../../../services/category.service';
-import { Item, Category } from '../../../models/item.model';
+import { UnitOfMeasurementService } from '../../../services/unit-of-measurement.service';
+import { Item, Category, UnitOfMeasurement } from '../../../models/item.model';
 
 describe('ItemsComponent', () => {
   let component: ItemsComponent;
   let fixture: ComponentFixture<ItemsComponent>;
   let itemServiceSpy: jasmine.SpyObj<ItemService>;
   let categoryServiceSpy: jasmine.SpyObj<CategoryService>;
+  let unitServiceSpy: jasmine.SpyObj<UnitOfMeasurementService>;
 
   const mockItems: Item[] = [
-    { id: 1, name: 'Burger', price: 150, taxPercentage: 5, categoryId: 1, stockQuantity: 10, trackInventory: false }
+    { id: 1, name: 'Burger', price: 150, taxPercentage: 5, categoryId: 1, stockQuantity: 10, trackInventory: false, unitId: 1 }
   ];
   const mockCategories: Category[] = [
     { id: 1, name: 'Main Course', displayOrder: 1 }
+  ];
+  const mockUnits: UnitOfMeasurement[] = [
+    { id: 1, name: 'Pcs', displayOrder: 0 }
   ];
 
   beforeEach(async () => {
@@ -27,13 +32,15 @@ describe('ItemsComponent', () => {
       'deleteItem'
     ]);
     categoryServiceSpy = jasmine.createSpyObj('CategoryService', ['getCategories']);
+    unitServiceSpy = jasmine.createSpyObj('UnitOfMeasurementService', ['getUnits']);
 
     await TestBed.configureTestingModule({
       declarations: [ItemsComponent],
       imports: [FormsModule],
       providers: [
         { provide: ItemService, useValue: itemServiceSpy },
-        { provide: CategoryService, useValue: categoryServiceSpy }
+        { provide: CategoryService, useValue: categoryServiceSpy },
+        { provide: UnitOfMeasurementService, useValue: unitServiceSpy }
       ]
     }).compileComponents();
   });
@@ -41,6 +48,7 @@ describe('ItemsComponent', () => {
   beforeEach(() => {
     itemServiceSpy.getItems.and.returnValue(of(mockItems));
     categoryServiceSpy.getCategories.and.returnValue(of(mockCategories));
+    unitServiceSpy.getUnits.and.returnValue(of(mockUnits));
     fixture = TestBed.createComponent(ItemsComponent);
     component = fixture.componentInstance;
   });
@@ -90,6 +98,7 @@ describe('ItemsComponent', () => {
     component.openAddForm();
     component.form.name = 'New Burger';
     component.form.price = 200;
+    component.form.unitId = 1;
 
     component.save();
 

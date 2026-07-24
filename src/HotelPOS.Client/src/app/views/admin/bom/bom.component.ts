@@ -47,10 +47,10 @@ export class BomComponent implements OnInit {
       },
       error: () => {
         this.menuItems = [
-          { id: 101, name: 'Butter Chicken', price: 340, taxPercentage: 5, stockQuantity: 100, trackInventory: true },
-          { id: 102, name: 'Paneer Butter Masala', price: 280, taxPercentage: 5, stockQuantity: 100, trackInventory: true },
-          { id: 103, name: 'Chicken Biryani', price: 290, taxPercentage: 5, stockQuantity: 100, trackInventory: true },
-          { id: 104, name: 'Veg Fried Rice', price: 180, taxPercentage: 5, stockQuantity: 100, trackInventory: true }
+          { id: 101, name: 'Butter Chicken', price: 340, taxPercentage: 5, stockQuantity: 100, trackInventory: true, unitId: 1 },
+          { id: 102, name: 'Paneer Butter Masala', price: 280, taxPercentage: 5, stockQuantity: 100, trackInventory: true, unitId: 1 },
+          { id: 103, name: 'Chicken Biryani', price: 290, taxPercentage: 5, stockQuantity: 100, trackInventory: true, unitId: 1 },
+          { id: 104, name: 'Veg Fried Rice', price: 180, taxPercentage: 5, stockQuantity: 100, trackInventory: true, unitId: 1 }
         ];
         this.applyItemFilter();
         if (this.filteredMenuItems.length > 0) {

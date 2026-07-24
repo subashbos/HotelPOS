@@ -14,6 +14,9 @@ namespace HotelPOS.ViewModels
         private string _itemName = string.Empty;
 
         [ObservableProperty]
+        private string _unit = "Pcs";
+
+        [ObservableProperty]
         private int _quantity = 1;
 
         [ObservableProperty]

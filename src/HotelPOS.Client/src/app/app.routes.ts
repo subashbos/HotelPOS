@@ -11,6 +11,7 @@ import { SettingsComponent } from "./views/admin/settings/settings.component";
 import { TablesComponent } from "./views/admin/tables/tables.component";
 import { BillingComponent } from "./views/admin/billing/billing.component";
 import { CategoriesComponent } from "./views/admin/categories/categories.component";
+import { UnitsComponent } from "./views/admin/units/units.component";
 import { ItemsComponent } from "./views/admin/items/items.component";
 import { SuppliersComponent } from "./views/admin/suppliers/suppliers.component";
 import { PurchasesComponent } from "./views/admin/purchases/purchases.component";
@@ -52,6 +53,7 @@ export const routes: Routes = [
       { path: "tables", component: TablesComponent },
       { path: "billing", component: BillingComponent },
       { path: "categories", component: CategoriesComponent },
+      { path: "units", component: UnitsComponent },
       { path: "items", component: ItemsComponent },
       { path: "suppliers", component: SuppliersComponent },
       { path: "purchases", component: PurchasesComponent },

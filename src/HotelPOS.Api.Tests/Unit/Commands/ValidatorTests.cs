@@ -231,7 +231,7 @@ namespace HotelPOS.Tests.Unit.Commands
             var validator = new UpdateItemCommandValidator();
 
             // Invalid fields
-            var badCmd = new UpdateItemCommand(0, "", 0, -5, null, null, null, 0, false);
+            var badCmd = new UpdateItemCommand(0, "", 0, -5, null, null, null, 0, false, 0);
             var resBad = validator.TestValidate(badCmd);
             resBad.ShouldHaveValidationErrorFor(x => x.Id);
             resBad.ShouldHaveValidationErrorFor(x => x.Name);
@@ -239,7 +239,7 @@ namespace HotelPOS.Tests.Unit.Commands
             resBad.ShouldHaveValidationErrorFor(x => x.TaxPercentage);
 
             // Valid
-            var goodCmd = new UpdateItemCommand(1, "Pizza", 250, 5, null, null, null, 10, true);
+            var goodCmd = new UpdateItemCommand(1, "Pizza", 250, 5, null, null, null, 10, true, 1);
             var resGood = validator.TestValidate(goodCmd);
             resGood.ShouldNotHaveAnyValidationErrors();
         }

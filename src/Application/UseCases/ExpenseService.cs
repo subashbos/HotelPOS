@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Expenses.Commands;

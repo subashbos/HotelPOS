@@ -83,7 +83,8 @@ namespace HotelPOS.Tests
                 HsnCode: "HSN123",
                 Barcode: "BAR123",
                 StockQuantity: 100,
-                TrackInventory: true
+                TrackInventory: true,
+                UnitId: 1
             );
             var handler = new CreateItemCommandHandler(_repoMock.Object);
 
@@ -111,7 +112,8 @@ namespace HotelPOS.Tests
                 HsnCode: "HSN123",
                 Barcode: "BAR123",
                 StockQuantity: 100,
-                TrackInventory: true
+                TrackInventory: true,
+                UnitId: 1
             );
             var handler = new CreateItemCommandHandler(_repoMock.Object);
 
@@ -148,7 +150,8 @@ namespace HotelPOS.Tests
                 "H1",
                 "B1",
                 15,
-                true
+                true,
+                1
             );
             var handler = new UpdateItemCommandHandler(_repoMock.Object);
 
@@ -181,7 +184,8 @@ namespace HotelPOS.Tests
                 "HSN123",
                 "BAR123",
                 100,
-                true
+                true,
+                1
             );
             var handler = new UpdateItemCommandHandler(_repoMock.Object);
 
@@ -205,7 +209,8 @@ namespace HotelPOS.Tests
                 "HSN123",
                 "BAR123",
                 100,
-                true
+                true,
+                1
             );
             var handler = new UpdateItemCommandHandler(_repoMock.Object);
 
@@ -226,7 +231,8 @@ namespace HotelPOS.Tests
                 "HSN123",
                 "BAR123",
                 100,
-                true
+                true,
+                1
             );
             var handler = new UpdateItemCommandHandler(_repoMock.Object);
 

@@ -22,6 +22,7 @@ describe('BillingComponent', () => {
     taxPercentage: 5,
     stockQuantity: 10,
     trackInventory: true,
+    unitId: 1,
     ...overrides
   });
 

@@ -84,7 +84,7 @@ namespace HotelPOS.Api.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
             // Serialize via the runtime type so derived types like ValidationProblemDetails keep their extra properties (e.g. Errors).
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response, response.GetType(), SerializerOptions));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, response.GetType(), SerializerOptions), context.RequestAborted);
         }
     }
 }

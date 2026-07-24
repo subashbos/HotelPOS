@@ -49,7 +49,7 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                 nullable: false,
                 defaultValue: 0m);
 
-            migrationBuilder.AlterColumn<string>(
+            migrationBuilder.AlterColumn<string>( // NOSONAR: historical migration, already applied - narrowing is safe (no data exceeds new length)
                 name: "Name",
                 table: "Items",
                 type: "nvarchar(200)",
@@ -58,7 +58,7 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
-            migrationBuilder.AlterColumn<int>(
+            migrationBuilder.AlterColumn<int>( // NOSONAR: historical migration, already applied - narrowing is safe (int to int, only nullable->non-nullable with default)
                 name: "OrderId",
                 table: "OrderItems",
                 type: "int",

@@ -1,5 +1,5 @@
 export const PERMISSION_MODULES = [
-  'Dashboard', 'Billing', 'Items', 'Categories', 'Tables', 'Ledger', 'Journal', 'Settings',
+  'Dashboard', 'Billing', 'Items', 'Categories', 'Units', 'Tables', 'Ledger', 'Journal', 'Settings',
   'Audit', 'Shift', 'Roles', 'SalesReport', 'HrEmployees', 'HrAttendance', 'HrLeave', 'HrPayroll', 'Expenses'
 ] as const;
 

@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
@@ -43,7 +45,7 @@ namespace HotelPOS.Application.UseCases
             {
                 var command = new CreateItemCommand(
                     dto.Name, dto.Price, dto.TaxPercentage, dto.CategoryId,
-                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory
+                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory, dto.UnitId
                 );
                 var item = await _mediator.Send(command);
                 return item.Id;
@@ -100,7 +102,7 @@ namespace HotelPOS.Application.UseCases
             {
                 var command = new UpdateItemCommand(
                     id, dto.Name, dto.Price, dto.TaxPercentage, dto.CategoryId,
-                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory
+                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory, dto.UnitId
                 );
                 await _mediator.Send(command);
                 return;
@@ -181,7 +183,8 @@ namespace HotelPOS.Application.UseCases
                     Price = dto.Price,
                     TaxPercentage = dto.TaxPercentage,
                     CategoryId = dto.CategoryId,
-                    Barcode = dto.Barcode
+                    Barcode = dto.Barcode,
+                    UnitId = dto.UnitId
                 });
                 existingNames.Add(dto.Name.Trim().ToLowerInvariant());
                 if (!string.IsNullOrWhiteSpace(dto.Barcode))

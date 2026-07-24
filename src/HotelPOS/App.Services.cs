@@ -108,6 +108,7 @@ namespace HotelPOS
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<ICashService, CashService>();
             services.AddScoped<ICategoryService>(provider => new CategoryService(provider.GetRequiredService<IMediator>()));
+            services.AddScoped<IUnitOfMeasurementService>(provider => new UnitOfMeasurementService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
@@ -151,6 +152,7 @@ namespace HotelPOS
             services.AddTransient<DashboardView>();
             services.AddTransient<ItemView>();
             services.AddTransient<CategoryView>();
+            services.AddTransient<UnitOfMeasurementView>();
             services.AddTransient<LedgerView>();
             services.AddTransient<JournalView>();
             services.AddTransient<SettingsView>();

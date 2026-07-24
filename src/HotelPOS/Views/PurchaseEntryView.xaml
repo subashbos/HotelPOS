@@ -215,6 +215,9 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
+                                <!-- Unit of Measurement -->
+                                <DataGridTextColumn Header="UOM" Binding="{Binding Unit}" IsReadOnly="True" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+
                                 <!-- Unit Price -->
                                 <DataGridTemplateColumn Header="UNIT PRICE" Width="110" HeaderStyle="{StaticResource RightHeader}">
                                     <DataGridTemplateColumn.CellTemplate>

@@ -24,7 +24,7 @@ namespace HotelPOS.Tests
         {
             // Arrange
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Item>());
-            var dto = new CreateItemDto { Name = "Burger", Price = 100, TaxPercentage = 5 };
+            var dto = new CreateItemDto { Name = "Burger", Price = 100, TaxPercentage = 5, UnitId = 1 };
 
             // Act
             await _service.AddItemAsync(dto);
@@ -39,7 +39,7 @@ namespace HotelPOS.Tests
             // Arrange
             var existing = new List<Item> { new Item { Name = "Burger" } };
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(existing);
-            var dto = new CreateItemDto { Name = "Burger ", Price = 150 };
+            var dto = new CreateItemDto { Name = "Burger ", Price = 150, UnitId = 1 };
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AddItemAsync(dto));
@@ -51,7 +51,7 @@ namespace HotelPOS.Tests
             // Arrange
             var existing = new List<Item> { new Item { Name = "Item1", Barcode = "12345" } };
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(existing);
-            var dto = new CreateItemDto { Name = "Item2", Barcode = "12345", Price = 100 };
+            var dto = new CreateItemDto { Name = "Item2", Barcode = "12345", Price = 100, UnitId = 1 };
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => _service.AddItemAsync(dto));
@@ -77,7 +77,7 @@ namespace HotelPOS.Tests
                 new Item { Id = 2, Name = "Pasta" } 
             };
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(items);
-            var dto = new CreateItemDto { Name = "Pasta", Price = 200 };
+            var dto = new CreateItemDto { Name = "Pasta", Price = 200, UnitId = 1 };
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => _service.UpdateItemAsync(1, dto));

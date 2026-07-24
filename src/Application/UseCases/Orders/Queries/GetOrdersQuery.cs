@@ -41,7 +41,7 @@ namespace HotelPOS.Application.UseCases.Orders.Queries
                 request.PaymentMode,
                 request.OrderType,
                 request.CategoryId
-            ));
+            ), cancellationToken);
         }
     }
 }

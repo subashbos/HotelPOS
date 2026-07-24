@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.ViewModels;
 using System.Windows;
 using System.Windows.Controls;

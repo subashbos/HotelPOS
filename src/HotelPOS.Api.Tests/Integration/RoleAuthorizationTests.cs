@@ -60,7 +60,7 @@ namespace HotelPOS.Tests.Integration
         {
             var client = CreateClient(RoleNames.Admin);
 
-            var response = await client.PostAsJsonAsync("/api/items", new { Name = "Admin Item", Price = 10m, TaxPercentage = 5m });
+            var response = await client.PostAsJsonAsync("/api/items", new { Name = "Admin Item", Price = 10m, TaxPercentage = 5m, UnitId = 1 });
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }
@@ -70,7 +70,7 @@ namespace HotelPOS.Tests.Integration
         {
             var client = CreateClient(RoleNames.Manager);
 
-            var response = await client.PostAsJsonAsync("/api/items", new { Name = "Manager Item", Price = 10m, TaxPercentage = 5m });
+            var response = await client.PostAsJsonAsync("/api/items", new { Name = "Manager Item", Price = 10m, TaxPercentage = 5m, UnitId = 1 });
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }

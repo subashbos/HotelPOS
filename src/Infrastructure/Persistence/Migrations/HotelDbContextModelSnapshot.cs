@@ -569,9 +569,14 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Property<bool>("TrackInventory")
                         .HasColumnType("bit");
 
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("UnitId");
 
                     b.ToTable("Items");
                 });
@@ -1547,6 +1552,15 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
+                            Id = 41,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Units",
+                            RoleId = 1
+                        },
+                        new
+                        {
                             Id = 11,
                             CanAccess = false,
                             CanDelete = true,
@@ -1714,6 +1728,15 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             CanDelete = true,
                             CanEdit = true,
                             ModuleName = "Customers",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 42,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Units",
                             RoleId = 2
                         });
                 });
@@ -2039,6 +2062,88 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.ToTable("Tables");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.UnitOfMeasurement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UnitOfMeasurements");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DisplayOrder = 0,
+                            Name = "Pcs"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DisplayOrder = 1,
+                            Name = "Kg"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DisplayOrder = 2,
+                            Name = "Gram"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DisplayOrder = 3,
+                            Name = "Litre"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DisplayOrder = 4,
+                            Name = "Ml"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DisplayOrder = 5,
+                            Name = "Plate"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DisplayOrder = 6,
+                            Name = "Box"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            DisplayOrder = 7,
+                            Name = "Packet"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            DisplayOrder = 8,
+                            Name = "Bottle"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            DisplayOrder = 9,
+                            Name = "Dozen"
+                        });
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -2223,7 +2328,15 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId");
 
+                    b.HasOne("HotelPOS.Domain.Entities.UnitOfMeasurement", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.LeaveBalance", b =>

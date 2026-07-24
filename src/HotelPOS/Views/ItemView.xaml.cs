@@ -1,3 +1,5 @@
+#nullable enable
+
 using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.Interfaces;
@@ -17,6 +19,7 @@ namespace HotelPOS.Views
     {
         private readonly IItemService _itemService;
         private readonly ICategoryService _categoryService;
+        private readonly IUnitOfMeasurementService _unitService;
         private readonly INotificationService _notificationService;
         private List<Item> _allItems = new();
         private List<Item> _filtered = new();
@@ -30,11 +33,12 @@ namespace HotelPOS.Views
         private static readonly SolidColorBrush ErrorBg = new(Color.FromRgb(0xF8, 0xD7, 0xDA));
         private static readonly SolidColorBrush ErrorFg = new(Color.FromRgb(0x72, 0x1C, 0x24));
 
-        public ItemView(IItemService itemService, ICategoryService categoryService, INotificationService notificationService)
+        public ItemView(IItemService itemService, ICategoryService categoryService, IUnitOfMeasurementService unitService, INotificationService notificationService)
         {
             InitializeComponent();
             _itemService = itemService;
             _categoryService = categoryService;
+            _unitService = unitService;
             _notificationService = notificationService;
             ItemGrid.ItemsSource = _items;
             Loaded += async (s, e) => await LoadDataAsync();
@@ -205,6 +209,7 @@ namespace HotelPOS.Views
                 ws.Cell(1, 2).Value = "Price";
                 ws.Cell(1, 3).Value = "Tax";
                 ws.Cell(1, 4).Value = "Category";
+                ws.Cell(1, 5).Value = "Unit";
 
                 var header = ws.Row(1);
                 header.Style.Font.Bold = true;
@@ -218,6 +223,7 @@ namespace HotelPOS.Views
                     ws.Cell(i + 2, 2).Value = item.Price;
                     ws.Cell(i + 2, 3).Value = item.TaxPercentage;
                     ws.Cell(i + 2, 4).Value = item.Category?.Name ?? "";
+                    ws.Cell(i + 2, 5).Value = item.Unit?.Name ?? "";
                 }
 
                 ws.Columns().AdjustToContents();
@@ -241,8 +247,11 @@ namespace HotelPOS.Views
 
             headers.TryGetValue("tax", out int taxCol);
             headers.TryGetValue("category", out int catCol);
+            headers.TryGetValue("unit", out int unitCol);
 
             var categories = await _categoryService.GetCategoriesAsync();
+            var units = await _unitService.GetUnitsAsync();
+            var defaultUnitId = units.OrderBy(u => u.DisplayOrder).ThenBy(u => u.Name).FirstOrDefault()?.Id ?? 0;
 
             foreach (var row in ws.RowsUsed().Skip(1))
             {
@@ -268,7 +277,18 @@ namespace HotelPOS.Views
                     }
                 }
 
-                result.Add(new CreateItemDto { Name = name, Price = price, TaxPercentage = tax, CategoryId = catId });
+                var unitId = defaultUnitId;
+                if (unitCol > 0)
+                {
+                    var unitRaw = row.Cell(unitCol).GetString().Trim();
+                    if (!string.IsNullOrEmpty(unitRaw))
+                    {
+                        var matched = units.FirstOrDefault(u => string.Equals(u.Name, unitRaw, StringComparison.OrdinalIgnoreCase));
+                        if (matched != null) unitId = matched.Id;
+                    }
+                }
+
+                result.Add(new CreateItemDto { Name = name, Price = price, TaxPercentage = tax, CategoryId = catId, UnitId = unitId });
             }
             return result;
         }

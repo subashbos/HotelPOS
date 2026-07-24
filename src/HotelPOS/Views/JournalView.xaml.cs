@@ -1,3 +1,5 @@
+#nullable enable
+
 using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;

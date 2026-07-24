@@ -37,11 +37,16 @@ namespace HotelPOS
             using (var scope = App.CreateDbScope())
             {
                 var categoryService = scope.ServiceProvider.GetRequiredService<ICategoryService>();
+                var unitService = scope.ServiceProvider.GetRequiredService<IUnitOfMeasurementService>();
                 try
                 {
                     var cats = await categoryService.GetCategoriesAsync();
                     var orderedCats = cats.OrderBy(c => c.DisplayOrder).ThenBy(c => c.Name).ToList();
                     ItemCategoryCombo.ItemsSource = orderedCats;
+
+                    var units = await unitService.GetUnitsAsync();
+                    var orderedUnits = units.OrderBy(u => u.DisplayOrder).ThenBy(u => u.Name).ToList();
+                    UnitCombo.ItemsSource = orderedUnits;
 
                     if (_editingItem != null)
                     {
@@ -52,8 +57,13 @@ namespace HotelPOS
                         BarcodeBox.Text = _editingItem.Barcode;
                         TrackStockCheck.IsChecked = _editingItem.TrackInventory;
                         StockQuantityBox.Text = _editingItem.StockQuantity.ToString();
+                        UnitCombo.SelectedValue = _editingItem.UnitId;
                         FormTitle.Text = "Edit Menu Item";
                         SubmitBtn.Content = "💾  Save Changes";
+                    }
+                    else if (orderedUnits.Count > 0)
+                    {
+                        UnitCombo.SelectedIndex = 0;
                     }
                 }
                 catch (Exception ex) { ShowStatus(ex.Message, true); }
@@ -131,6 +141,7 @@ namespace HotelPOS
                     tax = t;
 
                 var catId = (int?)ItemCategoryCombo.SelectedValue;
+                var unitId = (int?)UnitCombo.SelectedValue ?? 0;
 
                 var command = new CreateItemCommand(
                     name,
@@ -140,7 +151,8 @@ namespace HotelPOS
                     _editingItem?.HsnCode,
                     BarcodeBox.Text?.Trim(),
                     stock,
-                    TrackStockCheck.IsChecked ?? false
+                    TrackStockCheck.IsChecked ?? false,
+                    unitId
                 );
 
                 using (var scope = App.CreateDbScope())
@@ -170,7 +182,8 @@ namespace HotelPOS
                         CategoryId = catId,
                         StockQuantity = stock,
                         TrackInventory = TrackStockCheck.IsChecked ?? false,
-                        Barcode = BarcodeBox.Text?.Trim()
+                        Barcode = BarcodeBox.Text?.Trim(),
+                        UnitId = unitId
                     };
 
                     var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
@@ -188,6 +201,7 @@ namespace HotelPOS
                         StockQuantityBox.Clear();
                         ItemCategoryCombo.SelectedIndex = -1;
                         TaxCombo.SelectedIndex = 0;
+                        if (UnitCombo.Items.Count > 0) UnitCombo.SelectedIndex = 0;
                         ItemNameBox.Focus();
                         StatusBorder.Visibility = Visibility.Collapsed;
                     }

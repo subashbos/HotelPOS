@@ -21,7 +21,8 @@ namespace HotelPOS.Tests
                 Name = "Test Item",
                 Price = 100,
                 CategoryId = 5,
-                TaxPercentage = 5
+                TaxPercentage = 5,
+                UnitId = 1
             };
 
             // Act

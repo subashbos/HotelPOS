@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Purchases.Commands;
 using HotelPOS.Application.UseCases.Purchases.Queries;
@@ -67,7 +69,7 @@ namespace HotelPOS.Application.UseCases
                 await ApplyPurchaseToStockAsync(purchase);
                 await _purchaseRepository.CommitTransactionAsync();
             }
-            catch (Exception ex)
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
                 Serilog.Log.Error(ex, "Transaction failed while creating purchase");
                 try

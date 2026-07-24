@@ -1,3 +1,5 @@
+#nullable enable
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
@@ -103,6 +105,21 @@ namespace HotelPOS.ViewModels
         private void ResumeOrder(HeldOrder held)
         {
             if (held == null) return;
+
+            // Held orders only record the table they were held on, not the order type.
+            // A table number > 0 always means DineIn (Takeaway/Online are held under table 0),
+            // so restore both together instead of dumping the held items onto whatever table
+            // happens to be on screen right now.
+            if (held.TableNumber > 0)
+            {
+                OrderType = OrderTypes.DineIn;
+                TableNumber = held.TableNumber;
+            }
+            else
+            {
+                OrderType = OrderTypes.Takeaway;
+            }
+
             _cartService.ResumeHeldOrder(held.Id, TableNumber);
             IsHeldOrdersPopupOpen = false;
             LoadHeldOrders();

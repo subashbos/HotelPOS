@@ -27,8 +27,8 @@ describe('ItemService', () => {
 
   it('should retrieve items from the API via GET', () => {
     const dummyItems: Item[] = [
-      { id: 1, name: 'Item 1', price: 100, taxPercentage: 5, stockQuantity: 10, trackInventory: true },
-      { id: 2, name: 'Item 2', price: 200, taxPercentage: 12, stockQuantity: 5, trackInventory: false }
+      { id: 1, name: 'Item 1', price: 100, taxPercentage: 5, stockQuantity: 10, trackInventory: true, unitId: 1 },
+      { id: 2, name: 'Item 2', price: 200, taxPercentage: 12, stockQuantity: 5, trackInventory: false, unitId: 1 }
     ];
 
     service.getItems().subscribe(items => {
@@ -42,7 +42,7 @@ describe('ItemService', () => {
   });
 
   it('should retrieve a single item from the API via GET', () => {
-    const dummyItem: Item = { id: 1, name: 'Item 1', price: 100, taxPercentage: 5, stockQuantity: 10, trackInventory: true };
+    const dummyItem: Item = { id: 1, name: 'Item 1', price: 100, taxPercentage: 5, stockQuantity: 10, trackInventory: true, unitId: 1 };
 
     service.getItem(1).subscribe(item => {
       expect(item).toEqual(dummyItem);
@@ -55,7 +55,7 @@ describe('ItemService', () => {
 
   it('should create an item via POST', () => {
     const itemToCreate: Partial<Item> = { name: 'New Item', price: 150 };
-    const createdItem: Item = { id: 3, name: 'New Item', price: 150, taxPercentage: 5, stockQuantity: 0, trackInventory: false };
+    const createdItem: Item = { id: 3, name: 'New Item', price: 150, taxPercentage: 5, stockQuantity: 0, trackInventory: false, unitId: 1 };
 
     service.createItem(itemToCreate).subscribe(item => {
       expect(item).toEqual(createdItem);

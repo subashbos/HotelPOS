@@ -39,6 +39,7 @@ builder.Services.AddScoped<ISettingService, SettingService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICashService, CashService>();
 builder.Services.AddScoped<ICategoryService>(provider => new CategoryService(provider.GetRequiredService<IMediator>()));
+builder.Services.AddScoped<IUnitOfMeasurementService>(provider => new UnitOfMeasurementService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
@@ -75,24 +76,21 @@ builder.Services.AddSingleton(mapper);
 
 // ── CORS Configuration ────────────────────────────────────────────────────
 var corsAllowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+bool isCorsOriginAllowed(string? origin)
+{
+    if (string.IsNullOrWhiteSpace(origin)) return false;
+    if (corsAllowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase)) return true;
+
+    return builder.Environment.IsDevelopment()
+        && Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+        && uri.Host is "localhost" or "127.0.0.1";
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.SetIsOriginAllowed(origin =>
-        {
-            if (string.IsNullOrWhiteSpace(origin)) return false;
-            if (corsAllowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase)) return true;
-
-            if (builder.Environment.IsDevelopment())
-            {
-                if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
-                {
-                    return uri.Host is "localhost" or "127.0.0.1";
-                }
-            }
-            return false;
-        })
+        policy.SetIsOriginAllowed(isCorsOriginAllowed)
         .AllowAnyMethod()
         .AllowAnyHeader()
         .AllowCredentials();
