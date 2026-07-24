@@ -39,6 +39,7 @@ builder.Services.AddScoped<ISettingService, SettingService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICashService, CashService>();
 builder.Services.AddScoped<ICategoryService>(provider => new CategoryService(provider.GetRequiredService<IMediator>()));
+builder.Services.AddScoped<IUnitOfMeasurementService>(provider => new UnitOfMeasurementService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));

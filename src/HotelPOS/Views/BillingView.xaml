@@ -349,6 +349,7 @@
                                 <DataTemplate><TextBox Text="{Binding Quantity, UpdateSourceTrigger=LostFocus}" LostFocus="GridTextBox_LostFocus" PreviewKeyDown="QtyTextBox_PreviewKeyDown" PreviewTextInput="NumberOnly_PreviewTextInput" DataObject.Pasting="DataObject_OnPasting" GotFocus="GridTextBox_GotFocus" HorizontalContentAlignment="Center" BorderThickness="1" Padding="2"/></DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+                        <DataGridTextColumn Header="UNIT" Binding="{Binding Unit}" Width="50" IsReadOnly="True" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                         <DataGridTextColumn Header="TAX %" Binding="{Binding TaxPercentage, StringFormat={}{0:0.#}%}" Width="65" IsReadOnly="True" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                         <DataGridTemplateColumn Header="PRICE" Width="95" HeaderStyle="{StaticResource RightHeader}">
                             <DataGridTemplateColumn.CellTemplate>

@@ -12,6 +12,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public DbSet<Order> Orders { get; set; }
         public DbSet<Item> Items { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<UnitOfMeasurement> UnitOfMeasurements { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<LoginLockout> LoginLockouts { get; set; }
@@ -63,6 +64,14 @@ namespace HotelPOS.Infrastructure.Persistence
 
             modelBuilder.Entity<AuditLog>()
                 .HasIndex(a => a.Timestamp);
+
+            // Prevent deleting a unit of measurement that's still referenced by menu items
+            // (the application layer also blocks this, but this is a DB-level backstop).
+            modelBuilder.Entity<Item>()
+                .HasOne(i => i.Unit)
+                .WithMany()
+                .HasForeignKey(i => i.UnitId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // ── Security indexes for auth-critical lookups ───────────────────────
             modelBuilder.Entity<User>()
@@ -264,6 +273,20 @@ namespace HotelPOS.Infrastructure.Persistence
                 new LeaveType { Id = 5, Code = LeaveTypeCodes.LeaveWithoutPay, Name = "Leave Without Pay", AnnualQuota = 0, IsPaid = false, CarryForwardAllowed = false }
             );
 
+            // ── Catalog: Unit of Measurement Seed ────────────────────────────
+            modelBuilder.Entity<UnitOfMeasurement>().HasData(
+                new UnitOfMeasurement { Id = 1, Name = "Pcs", DisplayOrder = 0 },
+                new UnitOfMeasurement { Id = 2, Name = "Kg", DisplayOrder = 1 },
+                new UnitOfMeasurement { Id = 3, Name = "Gram", DisplayOrder = 2 },
+                new UnitOfMeasurement { Id = 4, Name = "Litre", DisplayOrder = 3 },
+                new UnitOfMeasurement { Id = 5, Name = "Ml", DisplayOrder = 4 },
+                new UnitOfMeasurement { Id = 6, Name = "Plate", DisplayOrder = 5 },
+                new UnitOfMeasurement { Id = 7, Name = "Box", DisplayOrder = 6 },
+                new UnitOfMeasurement { Id = 8, Name = "Packet", DisplayOrder = 7 },
+                new UnitOfMeasurement { Id = 9, Name = "Bottle", DisplayOrder = 8 },
+                new UnitOfMeasurement { Id = 10, Name = "Dozen", DisplayOrder = 9 }
+            );
+
             // ── Role & Permission Seed ──────────────────────────────────────
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = RoleNames.Admin, Description = "Full system access" },
@@ -291,6 +314,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 33, RoleId = 1, ModuleName = PermissionModules.HrLeave, CanAccess = true },
                 new RolePermission { Id = 34, RoleId = 1, ModuleName = PermissionModules.HrPayroll, CanAccess = true },
                 new RolePermission { Id = 39, RoleId = 1, ModuleName = PermissionModules.Customers, CanAccess = true },
+                new RolePermission { Id = 41, RoleId = 1, ModuleName = PermissionModules.Units, CanAccess = true },
 
                 // Cashier: Restricted access
                 new RolePermission { Id = 11, RoleId = 2, ModuleName = PermissionModules.Dashboard, CanAccess = false },
@@ -311,7 +335,8 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 36, RoleId = 2, ModuleName = PermissionModules.HrAttendance, CanAccess = false },
                 new RolePermission { Id = 37, RoleId = 2, ModuleName = PermissionModules.HrLeave, CanAccess = false },
                 new RolePermission { Id = 38, RoleId = 2, ModuleName = PermissionModules.HrPayroll, CanAccess = false },
-                new RolePermission { Id = 40, RoleId = 2, ModuleName = PermissionModules.Customers, CanAccess = true }
+                new RolePermission { Id = 40, RoleId = 2, ModuleName = PermissionModules.Customers, CanAccess = true },
+                new RolePermission { Id = 42, RoleId = 2, ModuleName = PermissionModules.Units, CanAccess = false }
             );
 
 

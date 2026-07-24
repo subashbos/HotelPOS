@@ -182,6 +182,30 @@
         </li>
         <li class="items-center">
           <a
+            [routerLink]="['/admin/units']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminUnits="routerLinkActive"
+            [ngClass]="
+              adminUnits.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <svg
+              class="w-4 h-4 mr-2 inline-block fill-current align-middle"
+              [ngClass]="
+                adminUnits.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+              viewBox="0 0 24 24"
+            >
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 20H4V4h4v16zm6 0h-4V4h4v16zm6 0h-4V4h4v16z"/>
+            </svg>
+            Units
+          </a>
+        </li>
+        <li class="items-center">
+          <a
             [routerLink]="['/admin/tables']"
             class="text-xs uppercase py-3 font-bold block"
             routerLinkActive

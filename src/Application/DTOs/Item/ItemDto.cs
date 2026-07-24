@@ -14,5 +14,6 @@ namespace HotelPOS.Application.DTOs.Item
         public decimal CostPrice { get; set; }
         public int MinStockThreshold { get; set; } = 10;
         public string? Barcode { get; set; }
+        public int UnitId { get; set; }
     }
 }

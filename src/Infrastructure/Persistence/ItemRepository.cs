@@ -28,12 +28,12 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Item>> GetAllAsync()
         {
-            return await _context.Items.AsNoTracking().Include(i => i.Category).ToListAsync();
+            return await _context.Items.AsNoTracking().Include(i => i.Category).Include(i => i.Unit).ToListAsync();
         }
 
         public async Task<Item?> GetByIdAsync(int id)
         {
-            return await _context.Items.Include(i => i.Category).FirstOrDefaultAsync(i => i.Id == id);
+            return await _context.Items.Include(i => i.Category).Include(i => i.Unit).FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<List<Item>> GetByIdsAsync(List<int> ids)

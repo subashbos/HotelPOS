@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ItemService } from '../../../services/item.service';
 import { CategoryService } from '../../../services/category.service';
-import { Item, Category } from '../../../models/item.model';
+import { UnitOfMeasurementService } from '../../../services/unit-of-measurement.service';
+import { Item, Category, UnitOfMeasurement } from '../../../models/item.model';
 
 interface ItemFormModel {
   name: string;
@@ -12,6 +13,7 @@ interface ItemFormModel {
   barcode: string;
   stockQuantity: number;
   trackInventory: boolean;
+  unitId: number | null;
 }
 
 function emptyForm(): ItemFormModel {
@@ -23,7 +25,8 @@ function emptyForm(): ItemFormModel {
     hsnCode: '',
     barcode: '',
     stockQuantity: 0,
-    trackInventory: false
+    trackInventory: false,
+    unitId: null
   };
 }
 
@@ -35,6 +38,7 @@ function emptyForm(): ItemFormModel {
 export class ItemsComponent implements OnInit {
   items: Item[] = [];
   categories: Category[] = [];
+  units: UnitOfMeasurement[] = [];
   isLoading = false;
   loadError = '';
   actionError = '';
@@ -46,7 +50,8 @@ export class ItemsComponent implements OnInit {
 
   constructor(
     private readonly itemService: ItemService,
-    private readonly categoryService: CategoryService
+    private readonly categoryService: CategoryService,
+    private readonly unitService: UnitOfMeasurementService
   ) {}
 
   ngOnInit(): void {
@@ -54,6 +59,15 @@ export class ItemsComponent implements OnInit {
     this.categoryService.getCategories().subscribe({
       next: (categories) => (this.categories = categories),
       error: (err) => console.error('Categories load error:', err)
+    });
+    this.unitService.getUnits().subscribe({
+      next: (units) => {
+        this.units = units;
+        if (this.form.unitId == null && units.length > 0) {
+          this.form.unitId = units[0].id;
+        }
+      },
+      error: (err) => console.error('Units load error:', err)
     });
   }
 
@@ -78,9 +92,16 @@ export class ItemsComponent implements OnInit {
     return this.categories.find((c) => c.id === categoryId)?.name ?? '—';
   }
 
+  unitName(unitId: number): string {
+    return this.units.find((u) => u.id === unitId)?.name ?? '—';
+  }
+
   openAddForm(): void {
     this.editingId = null;
     this.form = emptyForm();
+    if (this.units.length > 0) {
+      this.form.unitId = this.units[0].id;
+    }
     this.actionError = '';
     this.showForm = true;
   }
@@ -95,7 +116,8 @@ export class ItemsComponent implements OnInit {
       hsnCode: item.hsnCode ?? '',
       barcode: item.barcode ?? '',
       stockQuantity: item.stockQuantity,
-      trackInventory: item.trackInventory
+      trackInventory: item.trackInventory,
+      unitId: item.unitId
     };
     this.actionError = '';
     this.showForm = true;
@@ -107,7 +129,7 @@ export class ItemsComponent implements OnInit {
   }
 
   save(): void {
-    if (!this.form.name.trim() || this.form.price <= 0 || this.isSaving) return;
+    if (!this.form.name.trim() || this.form.price <= 0 || !this.form.unitId || this.isSaving) return;
     this.isSaving = true;
     this.actionError = '';
 
@@ -119,7 +141,8 @@ export class ItemsComponent implements OnInit {
       hsnCode: this.form.hsnCode || undefined,
       barcode: this.form.barcode || undefined,
       stockQuantity: this.form.stockQuantity,
-      trackInventory: this.form.trackInventory
+      trackInventory: this.form.trackInventory,
+      unitId: this.form.unitId
     };
 
     const request$ = this.editingId

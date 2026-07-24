@@ -69,7 +69,8 @@ namespace HotelPOS.Api.Controllers
                 request.HsnCode,
                 request.Barcode,
                 request.StockQuantity,
-                request.TrackInventory);
+                request.TrackInventory,
+                request.UnitId);
 
             try
             {
@@ -131,5 +132,6 @@ namespace HotelPOS.Api.Controllers
         public string? Barcode { get; set; }
         public int StockQuantity { get; set; } = 0;
         public bool TrackInventory { get; set; } = false;
+        public int UnitId { get; set; }
     }
 }

@@ -30,6 +30,7 @@ import { LoginComponent } from './views/auth/login/login.component';
 import { RegisterComponent } from './views/auth/register/register.component';
 import { BillingComponent } from './views/admin/billing/billing.component';
 import { CategoriesComponent } from './views/admin/categories/categories.component';
+import { UnitsComponent } from './views/admin/units/units.component';
 import { ItemsComponent } from './views/admin/items/items.component';
 import { SuppliersComponent } from './views/admin/suppliers/suppliers.component';
 import { PurchasesComponent } from './views/admin/purchases/purchases.component';
@@ -78,6 +79,7 @@ import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.co
     RegisterComponent,
     BillingComponent,
     CategoriesComponent,
+    UnitsComponent,
     ItemsComponent,
     SuppliersComponent,
     PurchasesComponent,
@@ -131,6 +133,7 @@ import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.co
     RegisterComponent,
     BillingComponent,
     CategoriesComponent,
+    UnitsComponent,
     ItemsComponent,
     SuppliersComponent,
     PurchasesComponent,

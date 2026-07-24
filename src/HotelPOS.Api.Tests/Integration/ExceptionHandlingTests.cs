@@ -66,7 +66,7 @@ namespace HotelPOS.Tests.Integration
         public async Task CreateItem_DuplicateName_ReturnsBadRequestProblemDetails()
         {
             var client = CreateClient(RoleNames.Admin);
-            var itemPayload = new { Name = "Duplicate Item", Price = 10m, TaxPercentage = 5m };
+            var itemPayload = new { Name = "Duplicate Item", Price = 10m, TaxPercentage = 5m, UnitId = 1 };
 
             var first = await client.PostAsJsonAsync("/api/items", itemPayload);
             Assert.Equal(HttpStatusCode.Created, first.StatusCode);

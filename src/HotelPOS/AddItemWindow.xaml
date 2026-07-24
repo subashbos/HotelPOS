@@ -78,7 +78,13 @@
                                     <TextBox x:Name="ItemNameBox" Tag="e.g., Spicy Grilled Chicken" Margin="0,0,0,16"/>
 
                                     <TextBlock Text="CATEGORY" Style="{StaticResource FieldLabel}"/>
-                                    <ComboBox x:Name="ItemCategoryCombo" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,0,24"/>
+                                    <ComboBox x:Name="ItemCategoryCombo" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,0,16"/>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                        <TextBlock Text="UNIT OF MEASUREMENT" Style="{StaticResource FieldLabel}" Margin="0"/>
+                                        <TextBlock Text=" *" Foreground="{DynamicResource DangerBrush}" FontWeight="Bold" FontSize="12"/>
+                                    </StackPanel>
+                                    <ComboBox x:Name="UnitCombo" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,0,24"/>
 
                                     <TextBlock Text="Pricing" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
 

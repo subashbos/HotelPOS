@@ -165,10 +165,12 @@ namespace HotelPOS.ViewModels
                 }
                 else
                 {
+                    var catalogItem = _allItems.FirstOrDefault(i => i.Id == item.ItemId);
                     Cart.Add(new CartRow
                     {
                         ItemId = item.ItemId,
                         ItemName = item.ItemName,
+                        Unit = catalogItem?.Unit?.Name ?? "Pcs",
                         Quantity = item.Quantity,
                         Price = item.Price,
                         TaxPercentage = item.TaxPercentage,

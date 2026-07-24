@@ -39,7 +39,8 @@ namespace HotelPOS.Tests
                 CategoryId = 3,
                 StockQuantity = 20,
                 TrackInventory = true,
-                Barcode = "BAR123"
+                Barcode = "BAR123",
+                UnitId = 1
             };
 
             // Act
@@ -63,7 +64,7 @@ namespace HotelPOS.Tests
             var existing = new Item { Id = 2, Name = "Old", Price = 10 };
             _repoMock.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(existing);
 
-            await _service.UpdateItemAsync(2, new CreateItemDto { Name = "  Trimmed  ", Price = 10 });
+            await _service.UpdateItemAsync(2, new CreateItemDto { Name = "  Trimmed  ", Price = 10, UnitId = 1 });
 
             Assert.Equal("Trimmed", existing.Name);
             _repoMock.Verify(r => r.UpdateAsync(existing), Times.Once);
@@ -75,7 +76,7 @@ namespace HotelPOS.Tests
             var existing = new Item { Id = 3, Name = "Item", Price = 100, TaxPercentage = 18 };
             _repoMock.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(existing);
 
-            await _service.UpdateItemAsync(3, new CreateItemDto { Name = "Item", Price = 100, TaxPercentage = 0 });
+            await _service.UpdateItemAsync(3, new CreateItemDto { Name = "Item", Price = 100, TaxPercentage = 0, UnitId = 1 });
 
             Assert.Equal(0, existing.TaxPercentage);
             _repoMock.Verify(r => r.UpdateAsync(existing), Times.Once);
@@ -89,7 +90,7 @@ namespace HotelPOS.Tests
             _repoMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Item?)null);
 
             await Assert.ThrowsAsync<KeyNotFoundException>(
-                () => _service.UpdateItemAsync(999, new CreateItemDto { Name = "X", Price = 10 }));
+                () => _service.UpdateItemAsync(999, new CreateItemDto { Name = "X", Price = 10, UnitId = 1 }));
 
             _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
         }
@@ -107,7 +108,8 @@ namespace HotelPOS.Tests
                 Name = "Juice",
                 Price = 30,
                 TrackInventory = true,
-                StockQuantity = 50
+                StockQuantity = 50,
+                UnitId = 1
             });
 
             Assert.True(existing.TrackInventory);
@@ -125,7 +127,8 @@ namespace HotelPOS.Tests
                 Name = "Snack",
                 Price = 20,
                 TrackInventory = false,
-                StockQuantity = 0
+                StockQuantity = 0,
+                UnitId = 1
             });
 
             Assert.False(existing.TrackInventory);

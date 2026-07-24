@@ -111,8 +111,11 @@ namespace HotelPOS.Tests
             using var context = GetContext("ItemRepoDb");
             var repo = new ItemRepository(context);
 
-            var item1 = new Item { Id = 1, Name = "Burger", Price = 150, TaxPercentage = 5 };
-            var item2 = new Item { Id = 2, Name = "Fries", Price = 80, TaxPercentage = 5 };
+            context.UnitOfMeasurements.Add(new UnitOfMeasurement { Id = 1, Name = "Pcs" });
+            await context.SaveChangesAsync();
+
+            var item1 = new Item { Id = 1, Name = "Burger", Price = 150, TaxPercentage = 5, UnitId = 1 };
+            var item2 = new Item { Id = 2, Name = "Fries", Price = 80, TaxPercentage = 5, UnitId = 1 };
 
             await repo.AddAsync(item1);
             await repo.AddAsync(item2);
@@ -151,7 +154,7 @@ namespace HotelPOS.Tests
             using (var context = new HotelDbContext(options))
             {
                 await context.Database.EnsureCreatedAsync();
-                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 10 });
+                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 10, UnitId = 1 });
                 await context.SaveChangesAsync();
             }
 
@@ -175,7 +178,7 @@ namespace HotelPOS.Tests
             using (var context = new HotelDbContext(options))
             {
                 await context.Database.EnsureCreatedAsync();
-                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 3 });
+                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 3, UnitId = 1 });
                 await context.SaveChangesAsync();
             }
 
@@ -199,7 +202,7 @@ namespace HotelPOS.Tests
             using (var context = new HotelDbContext(options))
             {
                 await context.Database.EnsureCreatedAsync();
-                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 0 });
+                context.Items.Add(new Item { Id = 1, Name = "Burger", StockQuantity = 0, UnitId = 1 });
                 await context.SaveChangesAsync();
             }
 
@@ -250,7 +253,7 @@ namespace HotelPOS.Tests
             using (var seedContext = new HotelDbContext(options))
             {
                 await seedContext.Database.EnsureCreatedAsync();
-                seedContext.Items.Add(new Item { Id = 1, Name = "LastUnit", StockQuantity = 10 });
+                seedContext.Items.Add(new Item { Id = 1, Name = "LastUnit", StockQuantity = 10, UnitId = 1 });
                 await seedContext.SaveChangesAsync();
             }
 
@@ -286,8 +289,8 @@ namespace HotelPOS.Tests
             using (var seedContext = new HotelDbContext(options))
             {
                 await seedContext.Database.EnsureCreatedAsync();
-                seedContext.Items.Add(new Item { Id = 1, Name = "Coffee", Price = 50, StockQuantity = 10, TrackInventory = true });
-                seedContext.Items.Add(new Item { Id = 2, Name = "Cake", Price = 80, StockQuantity = 0, TrackInventory = true });
+                seedContext.Items.Add(new Item { Id = 1, Name = "Coffee", Price = 50, StockQuantity = 10, TrackInventory = true, UnitId = 1 });
+                seedContext.Items.Add(new Item { Id = 2, Name = "Cake", Price = 80, StockQuantity = 0, TrackInventory = true, UnitId = 1 });
                 await seedContext.SaveChangesAsync();
             }
 

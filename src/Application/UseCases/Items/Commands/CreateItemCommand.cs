@@ -17,7 +17,8 @@ namespace HotelPOS.Application.UseCases.Items.Commands
         string? HsnCode,
         string? Barcode,
         int StockQuantity,
-        bool TrackInventory
+        bool TrackInventory,
+        int UnitId
     ) : IRequest<Item>;
 
     public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Item>
@@ -59,7 +60,8 @@ namespace HotelPOS.Application.UseCases.Items.Commands
                 HsnCode = request.HsnCode,
                 Barcode = request.Barcode,
                 StockQuantity = request.StockQuantity,
-                TrackInventory = request.TrackInventory
+                TrackInventory = request.TrackInventory,
+                UnitId = request.UnitId
             };
 
             await _itemRepository.AddAsync(item);

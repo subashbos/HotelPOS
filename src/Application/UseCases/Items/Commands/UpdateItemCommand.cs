@@ -18,7 +18,8 @@ namespace HotelPOS.Application.UseCases.Items.Commands
         string? HsnCode,
         string? Barcode,
         int StockQuantity,
-        bool TrackInventory
+        bool TrackInventory,
+        int UnitId
     ) : IRequest<Item>;
 
     public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, Item>
@@ -66,6 +67,7 @@ namespace HotelPOS.Application.UseCases.Items.Commands
             item.Barcode = request.Barcode;
             item.StockQuantity = request.StockQuantity;
             item.TrackInventory = request.TrackInventory;
+            item.UnitId = request.UnitId;
 
             await _itemRepository.UpdateAsync(item);
             return item;

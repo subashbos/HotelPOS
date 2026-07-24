@@ -11,6 +11,7 @@ using HotelPOS.Application.DTOs.Payroll;
 using HotelPOS.Application.DTOs.Purchase;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.DTOs.Table;
+using HotelPOS.Application.DTOs.UnitOfMeasurement;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Users.Commands;
 using HotelPOS.Domain.Entities;
@@ -47,6 +48,11 @@ namespace HotelPOS.Application.Common.Mappings
             CreateMap<SaveCategoryDto, Category>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()));
             CreateMap<Category, CategoryDto>().ReverseMap();
+
+            // ── Unit of Measurement ─────────────────────────────────────────────
+            CreateMap<SaveUnitOfMeasurementDto, HotelPOS.Domain.Entities.UnitOfMeasurement>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()));
+            CreateMap<HotelPOS.Domain.Entities.UnitOfMeasurement, UnitOfMeasurementDto>().ReverseMap();
 
             // ── Supplier ──────────────────────────────────────────────────────
             CreateMap<SaveSupplierDto, Supplier>()
