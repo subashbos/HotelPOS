@@ -22,6 +22,7 @@ namespace HotelPOS.Tests
             services.AddDbContext<HotelDbContext>(options => options.UseInMemoryDatabase(dbName));
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IItemService>(_ => new Mock<IItemService>().Object);
+            services.AddScoped<ICashService>(_ => TestCashService.WithOpenSession().Object);
             services.AddScoped<IOrderService, OrderService>();
 
             services.AddMediatR(cfg =>

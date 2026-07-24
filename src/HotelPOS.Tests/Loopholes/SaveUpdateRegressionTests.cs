@@ -304,7 +304,7 @@ namespace HotelPOS.Tests
 
         public UserServiceSaveTests()
         {
-            _service = new UserService(_repoMock.Object, TestAuthorization.AllowAll().Object, isTest: true);
+            _service = new UserService(_repoMock.Object, TestAuthorization.AllowAll().Object, Mock.Of<IUserContext>(), isTest: true);
         }
 
         [Fact]
@@ -464,7 +464,7 @@ namespace HotelPOS.Tests
                 .Options;
             _ctx = new HotelDbContext(opts);
             _orderRepo = new OrderRepository(_ctx);
-            _orderService = new OrderService(_orderRepo, _mediatorMock.Object, _itemSvcMock.Object);
+            _orderService = new OrderService(_orderRepo, _mediatorMock.Object, _itemSvcMock.Object, TestCashService.WithOpenSession().Object);
         }
 
         public void Dispose() => _ctx.Dispose();
@@ -506,6 +506,8 @@ namespace HotelPOS.Tests
                     new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 2, Price = 100, TaxPercentage = 5, Total = 200 }
                 }
             };
+            _itemSvcMock.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Burger", Price = 100m, TaxPercentage = 5m }).ToList());
 
             await _orderService.UpdateOrderAsync(updated);
 
@@ -549,6 +551,8 @@ namespace HotelPOS.Tests
                     new OrderItem { ItemId = 1, ItemName = "Tea", Quantity = 3, Price = 100, TaxPercentage = 12, Total = 300 }
                 }
             };
+            _itemSvcMock.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Tea", Price = 100m, TaxPercentage = 12m }).ToList());
 
             await _orderService.UpdateOrderAsync(updated);
 

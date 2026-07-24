@@ -298,7 +298,7 @@ namespace HotelPOS.Tests
             var orderRepo = new OrderRepository(context);
             var itemRepo = new ItemRepository(context);
             var itemService = new ItemService(itemRepo);
-            var orderService = new OrderService(orderRepo, mediator: null, itemService);
+            var orderService = new OrderService(orderRepo, mediator: null, itemService, TestCashService.WithOpenSession().Object);
 
             var request = new SaveOrderRequest(
                 new List<OrderItem>
@@ -316,6 +316,80 @@ namespace HotelPOS.Tests
 
             var orders = await verifyContext.Orders.ToListAsync();
             Assert.Empty(orders); // the order itself must not have been persisted either
+        }
+
+        // Regression tests for the cash-session open/open TOCTOU race: the DB-level unique
+        // filtered index (HasFilter("[Status] = 'Open'") in HotelDbContext) is the actual
+        // correctness guarantee, since two concurrent callers can both pass the handler's
+        // in-memory GetCurrentSessionAsync() pre-check before either has committed. The
+        // InMemory provider doesn't support filtered/relational indexes, so these run against
+        // real SQLite like the ItemRepository concurrency tests above.
+        [Fact]
+        public async Task CashRepository_AddAsync_SecondOpenSession_ThrowsInvalidOperationException()
+        {
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var context = new HotelDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+            }
+
+            using var context1 = new HotelDbContext(options);
+            var repo1 = new CashRepository(context1);
+            await repo1.AddAsync(new CashSession { OpenedBy = "admin", OpenedAt = DateTime.UtcNow, Status = CashSessionStatuses.Open, OpeningBalance = 1000 });
+
+            using var context2 = new HotelDbContext(options);
+            var repo2 = new CashRepository(context2);
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                repo2.AddAsync(new CashSession { OpenedBy = "cashier", OpenedAt = DateTime.UtcNow, Status = CashSessionStatuses.Open, OpeningBalance = 500 }));
+
+            using var verifyContext = new HotelDbContext(options);
+            var openSessions = await verifyContext.CashSessions.Where(s => s.Status == CashSessionStatuses.Open).ToListAsync();
+            Assert.Single(openSessions);
+            Assert.Equal("admin", openSessions[0].OpenedBy);
+        }
+
+        [Fact]
+        public async Task CashRepository_AddAsync_ConcurrentOpenSessions_OnlyOneSucceeds()
+        {
+            // 10 concurrent callers each try to open a session, each through its own
+            // connection/DbContext against the same shared-cache SQLite database, mirroring
+            // separate concurrent requests racing to open the till. Only exactly 1 must succeed.
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var context = new HotelDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+            }
+
+            var tasks = Enumerable.Range(0, 10).Select(async i =>
+            {
+                using var context = new HotelDbContext(options);
+                var repo = new CashRepository(context);
+                try
+                {
+                    await repo.AddAsync(new CashSession { OpenedBy = $"user{i}", OpenedAt = DateTime.UtcNow, Status = CashSessionStatuses.Open, OpeningBalance = 100 });
+                    return true;
+                }
+                catch (InvalidOperationException)
+                {
+                    return false;
+                }
+            });
+
+            var results = await Task.WhenAll(tasks);
+
+            Assert.Equal(1, results.Count(r => r));
+
+            using var verifyContext = new HotelDbContext(options);
+            var openSessions = await verifyContext.CashSessions.Where(s => s.Status == CashSessionStatuses.Open).ToListAsync();
+            Assert.Single(openSessions);
         }
 
         // 5. OrderRepository Tests
@@ -395,6 +469,68 @@ namespace HotelPOS.Tests
             var paged = await repo.GetPagedPurchasesAsync(1, 10);
             Assert.Equal(1, paged.totalCount);
             Assert.Single(paged.purchases);
+
+            var found = await repo.GetByIdAsync(1);
+            Assert.NotNull(found);
+            Assert.Single(found.PurchaseItems);
+
+            // A fresh, untracked instance - matching how the real caller (a controller mapping
+            // a request DTO) builds the "new desired state" object, rather than mutating the
+            // already-tracked entity returned by GetByIdAsync above.
+            var updatePayload = new Purchase
+            {
+                Id = 1,
+                SupplierId = 1,
+                InvoiceNumber = "PUR123",
+                PurchaseDate = purchase.PurchaseDate,
+                GrandTotal = 9000,
+                PaymentType = PaymentModes.Cash,
+                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { ItemName = "Onions", Quantity = 200, UnitPrice = 45 } }
+            };
+            await repo.UpdateAsync(updatePayload);
+
+            var updated = await repo.GetByIdAsync(1);
+            Assert.NotNull(updated);
+            Assert.Equal(9000, updated.GrandTotal);
+            Assert.Single(updated.PurchaseItems);
+            Assert.Equal(200, updated.PurchaseItems[0].Quantity);
+
+            await repo.DeleteAsync(1);
+            var deleted = await repo.GetByIdAsync(1);
+            Assert.Null(deleted);
+        }
+
+        [Fact]
+        public async Task PurchaseRepository_GetByIdAsync_UnknownId_ReturnsNull()
+        {
+            using var context = GetContext("PurchaseRepoUnknownDb");
+            var repo = new PurchaseRepository(context);
+
+            var result = await repo.GetByIdAsync(999);
+
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task PurchaseRepository_UpdateAsync_UnknownId_ThrowsKeyNotFoundException()
+        {
+            using var context = GetContext("PurchaseRepoUpdateUnknownDb");
+            var repo = new PurchaseRepository(context);
+
+            var purchase = new Purchase { Id = 999, InvoiceNumber = "X", PurchaseItems = new List<PurchaseItem>() };
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => repo.UpdateAsync(purchase));
+        }
+
+        [Fact]
+        public async Task PurchaseRepository_DeleteAsync_UnknownId_IsNoOp()
+        {
+            using var context = GetContext("PurchaseRepoDeleteUnknownDb");
+            var repo = new PurchaseRepository(context);
+
+            var exception = await Record.ExceptionAsync(() => repo.DeleteAsync(999));
+
+            Assert.Null(exception);
         }
 
         // 7. RoleRepository Tests
@@ -531,6 +667,30 @@ namespace HotelPOS.Tests
             var softDeleted = await repo.GetByIdAsync(1);
             Assert.NotNull(softDeleted);
             Assert.False(softDeleted.IsActive);
+        }
+
+        [Fact]
+        public async Task RefreshTokenRepository_RevokeFamilyAsync_RevokesOnlyMatchingUnrevokedTokens()
+        {
+            using var context = GetContext("RefreshTokenRepoDb");
+            var repo = new RefreshTokenRepository(context);
+
+            var familyId = Guid.NewGuid();
+            var otherFamilyId = Guid.NewGuid();
+            var activeInFamily = new RefreshToken { Id = 1, UserId = 1, FamilyId = familyId, TokenHash = "a", ExpiresUtc = DateTime.UtcNow.AddDays(1) };
+            var alreadyRevokedInFamily = new RefreshToken { Id = 2, UserId = 1, FamilyId = familyId, TokenHash = "b", ExpiresUtc = DateTime.UtcNow.AddDays(1), RevokedUtc = DateTime.UtcNow.AddDays(-1) };
+            var differentFamily = new RefreshToken { Id = 3, UserId = 2, FamilyId = otherFamilyId, TokenHash = "c", ExpiresUtc = DateTime.UtcNow.AddDays(1) };
+
+            await repo.AddAsync(activeInFamily);
+            await repo.AddAsync(alreadyRevokedInFamily);
+            await repo.AddAsync(differentFamily);
+
+            var previousRevokedUtc = alreadyRevokedInFamily.RevokedUtc;
+            await repo.RevokeFamilyAsync(familyId, DateTime.UtcNow);
+
+            Assert.NotNull(activeInFamily.RevokedUtc);
+            Assert.Equal(previousRevokedUtc, alreadyRevokedInFamily.RevokedUtc); // untouched, was already revoked
+            Assert.Null(differentFamily.RevokedUtc); // different family, must be unaffected
         }
 
         [Fact]

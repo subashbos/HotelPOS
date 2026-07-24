@@ -114,7 +114,7 @@ namespace HotelPOS
 
                 if (user.MustChangePassword)
                 {
-                    await HandleMustChangePasswordAsync(user);
+                    await HandleMustChangePasswordAsync(user, password);
                     return;
                 }
 
@@ -159,9 +159,11 @@ namespace HotelPOS
         /// ResetPasswordAsync authorizes "resetting your own account" via AppSession — but AppSession isn't set
         /// until after this flow. Establish it temporarily (the primary credentials were already verified by the
         /// caller) so the self-service check passes, then clear it again on every exit path since the user hasn't
-        /// actually completed login yet.
+        /// actually completed login yet. ResetPasswordAsync also now requires proof of the current password for
+        /// self-service changes; the password the user just typed to log in (already verified by AuthenticateAsync
+        /// above) is passed through so this flow doesn't have to ask for it a second time.
         /// </remarks>
-        private async Task HandleMustChangePasswordAsync(User user)
+        private async Task HandleMustChangePasswordAsync(User user, string currentPassword)
         {
             AppSession.CurrentUser = user;
 
@@ -177,7 +179,7 @@ namespace HotelPOS
             using (var pwScope = App.CreateDbScope())
             {
                 var userService = pwScope.ServiceProvider.GetRequiredService<IUserService>();
-                var res = await userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
+                var res = await userService.ResetPasswordAsync(user.Id, dialog.NewPassword, currentPassword);
                 ok = res.Success;
                 err = res.Error;
             }

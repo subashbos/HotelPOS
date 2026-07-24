@@ -8,6 +8,9 @@ namespace HotelPOS.Application.Interfaces
     {
         Task<List<Supplier>> GetSuppliersAsync();
         Task<List<Purchase>> GetPurchasesAsync();
+        Task<Purchase?> GetPurchaseByIdAsync(int id);
         Task SavePurchaseAsync(Purchase purchase);
+        Task UpdatePurchaseAsync(Purchase purchase);
+        Task DeletePurchaseAsync(int id);
     }
 }

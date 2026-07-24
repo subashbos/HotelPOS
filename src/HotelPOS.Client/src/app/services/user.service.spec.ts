@@ -93,6 +93,15 @@ describe('UserService', () => {
       expect(req.request.body).toEqual({ newPassword: 'newPassword123' });
       req.flush(null);
     });
+
+    it('should include currentPassword in POST body when provided', () => {
+      service.resetPassword(1, 'newPassword123', 'oldPassword123').subscribe();
+
+      const req = httpMock.expectOne(`${environment.apiBaseUrl}/users/1/reset-password`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ newPassword: 'newPassword123', currentPassword: 'oldPassword123' });
+      req.flush(null);
+    });
   });
 
   describe('setTwoFactor', () => {

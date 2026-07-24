@@ -17,7 +17,9 @@ namespace HotelPOS.Tests
             var mockRepo = new Mock<IOrderRepository>();
             var mockMediator = new Mock<IMediator>();
             var mockItemService = new Mock<IItemService>();
-            var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object);
+            mockItemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Test", Price = 100m, TaxPercentage = 5m }).ToList());
+            var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object, TestCashService.WithOpenSession().Object);
 
             var order = new Order
             {

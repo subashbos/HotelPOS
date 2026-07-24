@@ -155,8 +155,9 @@ namespace HotelPOS.Domain.Common.Constants
         public const string Draft = "Draft";
         public const string Processed = "Processed";
         public const string Paid = "Paid";
+        public const string Voided = "Voided";
 
-        public static readonly string[] All = { Draft, Processed, Paid };
+        public static readonly string[] All = { Draft, Processed, Paid, Voided };
     }
 
     public static class PayslipPaymentStatuses

@@ -11,6 +11,7 @@ export class AccountComponent {
   readonly username: string | null;
 
   // ── Change password ──
+  currentPassword = '';
   newPassword = '';
   confirmPassword = '';
   isSavingPassword = false;
@@ -35,7 +36,7 @@ export class AccountComponent {
 
   changePassword(): void {
     const userId = this.authService.getUserId();
-    if (!userId || !this.newPassword || this.isSavingPassword) return;
+    if (!userId || !this.currentPassword || !this.newPassword || this.isSavingPassword) return;
     if (this.newPassword !== this.confirmPassword) {
       this.passwordError = 'Passwords do not match.';
       return;
@@ -44,9 +45,10 @@ export class AccountComponent {
     this.isSavingPassword = true;
     this.passwordError = '';
     this.passwordSaved = '';
-    this.userService.resetPassword(userId, this.newPassword).subscribe({
+    this.userService.resetPassword(userId, this.newPassword, this.currentPassword).subscribe({
       next: () => {
         this.isSavingPassword = false;
+        this.currentPassword = '';
         this.newPassword = '';
         this.confirmPassword = '';
         this.passwordSaved = 'Password changed.';

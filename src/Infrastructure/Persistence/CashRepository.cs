@@ -25,7 +25,14 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task AddAsync(CashSession session)
         {
             _context.CashSessions.Add(session);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException("A session is already open.");
+            }
         }
 
         public async Task UpdateAsync(CashSession session)

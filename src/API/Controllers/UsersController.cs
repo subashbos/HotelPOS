@@ -70,7 +70,7 @@ namespace HotelPOS.Api.Controllers
             if (id <= 0) return BadRequest(InvalidUserId);
             if (string.IsNullOrWhiteSpace(request.NewPassword)) return BadRequest("A new password is required.");
 
-            var (success, error) = await _userService.ResetPasswordAsync(id, request.NewPassword);
+            var (success, error) = await _userService.ResetPasswordAsync(id, request.NewPassword, request.CurrentPassword);
             if (!success) return BadRequest(error);
 
             return NoContent();
@@ -126,6 +126,9 @@ namespace HotelPOS.Api.Controllers
     public sealed class ResetPasswordRequest
     {
         public string NewPassword { get; set; } = string.Empty;
+
+        /// <summary>Required only for self-service changes (see ResetPassword's note above); an admin resetting someone else's password can't supply it and doesn't need to.</summary>
+        public string? CurrentPassword { get; set; }
     }
 
     public sealed class SetTwoFactorRequest

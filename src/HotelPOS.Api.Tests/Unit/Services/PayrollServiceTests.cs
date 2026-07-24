@@ -216,6 +216,61 @@ namespace HotelPOS.Tests.Unit.Services
         }
 
         [Fact]
+        public async Task RunPayrollAsync_ExistingRunIsVoided_AllowsRerun()
+        {
+            _payrollRepoMock.Setup(r => r.GetRunAsync(7, 2026))
+                .ReturnsAsync(new PayrollRun { Id = 1, Month = 7, Year = 2026, Status = PayrollRunStatuses.Voided });
+            _employeeRepoMock.Setup(e => e.GetAllAsync()).ReturnsAsync(new List<Employee>());
+
+            var run = await _service.RunPayrollAsync(7, 2026, 1);
+
+            Assert.NotNull(run);
+            Assert.Equal(7, run.Month);
+            _payrollRepoMock.Verify(r => r.AddRunAsync(run), Times.Once);
+        }
+
+        [Fact]
+        public async Task VoidRunAsync_RunNotFound_ThrowsKeyNotFoundException()
+        {
+            _payrollRepoMock.Setup(r => r.GetRunByIdAsync(99)).ReturnsAsync((PayrollRun?)null);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.VoidRunAsync(99, "Wrong month"));
+        }
+
+        [Fact]
+        public async Task VoidRunAsync_AlreadyVoided_ThrowsInvalidOperationException()
+        {
+            var run = new PayrollRun { Id = 1, Status = PayrollRunStatuses.Voided };
+            _payrollRepoMock.Setup(r => r.GetRunByIdAsync(1)).ReturnsAsync(run);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.VoidRunAsync(1, "Duplicate"));
+        }
+
+        [Fact]
+        public async Task VoidRunAsync_AlreadyPaid_ThrowsInvalidOperationException()
+        {
+            var run = new PayrollRun { Id = 1, Status = PayrollRunStatuses.Paid };
+            _payrollRepoMock.Setup(r => r.GetRunByIdAsync(1)).ReturnsAsync(run);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.VoidRunAsync(1, "Too late"));
+        }
+
+        [Fact]
+        public async Task VoidRunAsync_Processed_SetsVoidedStatusAndReasonAndPublishesEvent()
+        {
+            var run = new PayrollRun { Id = 3, Month = 6, Year = 2026, Status = PayrollRunStatuses.Processed };
+            _payrollRepoMock.Setup(r => r.GetRunByIdAsync(3)).ReturnsAsync(run);
+
+            await _service.VoidRunAsync(3, "Attendance data was wrong");
+
+            Assert.Equal(PayrollRunStatuses.Voided, run.Status);
+            Assert.Equal("Attendance data was wrong", run.VoidReason);
+            _payrollRepoMock.Verify(r => r.UpdateRunAsync(run), Times.Once);
+            _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
+                e.EntityName == "PayrollRun" && e.EntityId == 3 && e.Action == "Void"), default), Times.Once);
+        }
+
+        [Fact]
         public async Task SaveSalaryStructureAsync_ValidatesAndSaves()
         {
             // Null check

@@ -47,6 +47,14 @@ namespace HotelPOS.Application.UseCases
             return await _purchaseRepository!.GetPurchasesAsync();
         }
 
+        public async Task<Purchase?> GetPurchaseByIdAsync(int id)
+        {
+            if (_mediator != null)
+                return await _mediator.Send(new GetPurchaseByIdQuery(id));
+
+            return await _purchaseRepository!.GetByIdAsync(id);
+        }
+
         public async Task SavePurchaseAsync(Purchase purchase)
         {
             if (purchase == null) throw new ArgumentNullException(nameof(purchase));
@@ -59,30 +67,42 @@ namespace HotelPOS.Application.UseCases
                 return;
             }
 
-            // Legacy path
+            // Legacy path: validate and delegate to command handler
             ValidatePurchase(purchase);
+            var handler = new SavePurchaseCommandHandler(_purchaseRepository!, _itemRepository!);
+            await handler.Handle(new SavePurchaseCommand(purchase), CancellationToken.None);
+        }
 
-            await _purchaseRepository!.BeginTransactionAsync();
-            try
+        public async Task UpdatePurchaseAsync(Purchase purchase)
+        {
+            if (purchase == null) throw new ArgumentNullException(nameof(purchase));
+
+            if (_mediator != null)
             {
-                await _purchaseRepository.AddAsync(purchase);
-                await ApplyPurchaseToStockAsync(purchase);
-                await _purchaseRepository.CommitTransactionAsync();
+                await _mediator.Send(new UpdatePurchaseCommand(purchase));
+                await _mediator.Publish(new EntityActionEvent("Purchase", purchase.Id, "Update",
+                    $"Supplier: {purchase.SupplierId}, Invoice: {purchase.InvoiceNumber}, Items: {purchase.PurchaseItems.Count}"));
+                return;
             }
-            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
+
+            // Legacy path: validate and delegate to command handler
+            ValidatePurchase(purchase);
+            var handler = new UpdatePurchaseCommandHandler(_purchaseRepository!, _itemRepository!);
+            await handler.Handle(new UpdatePurchaseCommand(purchase), CancellationToken.None);
+        }
+
+        public async Task DeletePurchaseAsync(int id)
+        {
+            if (_mediator != null)
             {
-                Serilog.Log.Error(ex, "Transaction failed while creating purchase");
-                try
-                {
-                    await _purchaseRepository.RollbackTransactionAsync();
-                }
-                catch (Exception rollbackEx)
-                {
-                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while creating purchase");
-                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
-                }
-                throw;
+                await _mediator.Send(new DeletePurchaseCommand(id));
+                await _mediator.Publish(new EntityActionEvent("Purchase", id, "Delete", "Deleted"));
+                return;
             }
+
+            // Legacy path: delegate to command handler
+            var handler = new DeletePurchaseCommandHandler(_purchaseRepository!, _itemRepository!);
+            await handler.Handle(new DeletePurchaseCommand(id), CancellationToken.None);
         }
 
         private static void ValidatePurchase(Purchase purchase)
@@ -99,27 +119,6 @@ namespace HotelPOS.Application.UseCases
                     throw new ArgumentException("Each item quantity must be greater than zero.");
                 if (item.UnitPrice < 0)
                     throw new ArgumentException("Each item unit price cannot be negative.");
-            }
-        }
-
-        private async Task ApplyPurchaseToStockAsync(Purchase purchase)
-        {
-            var itemIds = purchase.PurchaseItems.Select(i => i.ItemId).Distinct().ToList();
-            var catalogItems = await _itemRepository!.GetByIdsAsync(itemIds);
-            var itemsById = catalogItems.ToDictionary(i => i.Id);
-
-            foreach (var item in purchase.PurchaseItems)
-            {
-                if (itemsById.TryGetValue(item.ItemId, out var catalogItem) && catalogItem.TrackInventory)
-                {
-                    catalogItem.StockQuantity += item.Quantity;
-                }
-            }
-
-            var toUpdate = catalogItems.Where(i => i.TrackInventory).ToList();
-            if (toUpdate.Count > 0)
-            {
-                await _itemRepository.UpdateRangeAsync(toUpdate);
             }
         }
     }

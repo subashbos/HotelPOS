@@ -73,7 +73,9 @@ namespace HotelPOS.Application.UseCases
             if (month < 1 || month > 12) throw new ArgumentException("Month must be between 1 and 12.");
 
             var existingRun = await _payrollRepository.GetRunAsync(month, year);
-            if (existingRun != null)
+            // A voided run doesn't block a re-run - voiding an erroneous run and running again
+            // is how a correction happens, rather than editing computed payslips in place.
+            if (existingRun != null && existingRun.Status != PayrollRunStatuses.Voided)
                 throw new InvalidOperationException($"Payroll for {month:D2}/{year} has already been run.");
 
             var monthStart = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -151,6 +153,28 @@ namespace HotelPOS.Application.UseCases
                 await _mediator.Publish(new EntityActionEvent(
                     PayrollRunEntityType, run.Id, "Update",
                     $"Status: {PayrollRunStatuses.Paid}, Payslips: {run.Payslips.Count}"));
+            }
+        }
+
+        public async Task VoidRunAsync(int runId, string reason)
+        {
+            var run = await _payrollRepository.GetRunByIdAsync(runId)
+                ?? throw new KeyNotFoundException($"Payroll run #{runId} not found.");
+
+            if (run.Status == PayrollRunStatuses.Voided)
+                throw new InvalidOperationException("Payroll run is already voided.");
+            if (run.Status == PayrollRunStatuses.Paid)
+                throw new InvalidOperationException("Cannot void a payroll run that has already been paid.");
+
+            run.Status = PayrollRunStatuses.Voided;
+            run.VoidReason = reason;
+
+            await _payrollRepository.UpdateRunAsync(run);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    PayrollRunEntityType, run.Id, "Void", $"Month: {run.Month:D2}/{run.Year}. Reason: {reason}"));
             }
         }
 

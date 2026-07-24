@@ -17,7 +17,11 @@ public class StockReconciliationTests
 
     public StockReconciliationTests()
     {
-        _service = new OrderService(_mockOrderRepo.Object, _mockMediator.Object, _mockItemService.Object);
+        // UpdateOrderInternalAsync reprices from the catalog now; these tests only assert
+        // stock-reconciliation/repo calls, not totals, so any consistent catalog entry works.
+        _mockItemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+            .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Item", Price = 100m }).ToList());
+        _service = new OrderService(_mockOrderRepo.Object, _mockMediator.Object, _mockItemService.Object, TestCashService.WithOpenSession().Object);
     }
 
     [Fact]

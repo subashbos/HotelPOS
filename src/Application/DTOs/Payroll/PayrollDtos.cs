@@ -70,6 +70,12 @@ namespace HotelPOS.Application.DTOs.Payroll
         public int Year { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime? ProcessedOn { get; set; }
+        public string? VoidReason { get; set; }
         public List<PayslipDto> Payslips { get; set; } = new();
+    }
+
+    public class VoidPayrollRunDto
+    {
+        public string Reason { get; set; } = string.Empty;
     }
 }

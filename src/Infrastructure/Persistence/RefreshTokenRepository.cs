@@ -29,5 +29,21 @@ namespace HotelPOS.Infrastructure.Persistence
             _context.RefreshTokens.Update(token);
             await _context.SaveChangesAsync();
         }
+
+        public async Task RevokeFamilyAsync(Guid familyId, DateTime revokedUtc)
+        {
+            var tokens = await _context.RefreshTokens
+                .Where(t => t.FamilyId == familyId && t.RevokedUtc == null)
+                .ToListAsync();
+
+            if (tokens.Count == 0) return;
+
+            foreach (var token in tokens)
+            {
+                token.RevokedUtc = revokedUtc;
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }
