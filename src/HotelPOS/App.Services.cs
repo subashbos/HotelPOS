@@ -182,6 +182,7 @@ namespace HotelPOS
             // CLEANUP: Redundant individual view registrations were removed here as they are 
             // already registered in the "ViewModels & Views" section above.
             services.AddScoped<LoginWindow>();
+            services.AddScoped<RegistrationWindow>();
             services.AddScoped<DashboardWindow>();
             services.AddTransient<AddItemWindow>();
         }

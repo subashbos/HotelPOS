@@ -100,7 +100,7 @@ On the very first launch, the system automatically bootstraps the database schem
 ### 1. Launching & Logging In
 1. Set the **HotelPOS** project as the startup project.
 2. Press `F5` to start debugging or `Ctrl+F5` to run.
-3. Log in with the configured cashier or administrator credentials (standard credentials are provided upon setup).
+3. On first launch against a fresh database (no `admin` user yet), you'll be prompted with a **"Create Administrator Account"** screen — choose the initial admin username and password there, then log in normally.
 
 ### 2. Standard Billing Workflow (Keyboard Optimized)
 - **Search Item**: Press `F1` or `F3` to focus the search box. Type the item name or scan a barcode.

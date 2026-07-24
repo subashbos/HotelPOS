@@ -249,5 +249,14 @@ namespace HotelPOS
             var codeDialog = new Views.ResetWithCodeDialog(forgotDialog.Username) { Owner = this };
             codeDialog.ShowDialog();
         }
+
+        /// <summary>Manual escape hatch to registration, in case the automatic first-run prompt
+        /// (App.ShowRegistrationWindowIfStillOnLogin) didn't fire or was dismissed.</summary>
+        private void RegisterAdmin_Click(object sender, RoutedEventArgs e)
+        {
+            // ShowRegistrationWindow closes this window once the new one is up, which runs the
+            // Closed handler from App.ShowLoginWindow() and disposes this window's login scope normally.
+            ((App)System.Windows.Application.Current).ShowRegistrationWindow(this);
+        }
     }
 }
