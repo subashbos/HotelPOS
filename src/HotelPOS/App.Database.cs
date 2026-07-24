@@ -2,6 +2,7 @@ using HotelPOS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using System.IO;
 using System.Windows;
 
 namespace HotelPOS
@@ -197,18 +198,27 @@ namespace HotelPOS
                 // 3. Now run Migrate() normally. It will only apply NEW migrations.
                 context.Database.Migrate();
 
-                // Ensure 'admin' user exists in the database with password 'admin'
+                // Ensure 'admin' user exists in the database. Known historical seed hashes
+                // (from earlier migrations that shipped a fixed password: "admin" for every
+                // install) are treated the same as "missing" so already-deployed databases
+                // get remediated on next startup, not just fresh installs.
+                var knownDefaultHashes = new[]
+                {
+                    "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=",
+                    "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc="
+                };
+
                 var adminUser = context.Users.FirstOrDefault(u => u.Username == "admin");
                 if (adminUser == null)
                 {
-                    var hVal = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc="; // default admin hash (password: admin)
-                    var sVal = "cUDnxEUZDYmisbvUU2zu1Q==";
+                    var generatedPassword = GenerateRandomPassword();
+                    var (hash, salt) = HashPassword(generatedPassword);
 
                     adminUser = new HotelPOS.Domain.Entities.User
                     {
                         Username = "admin",
-                        PasswordHash = hVal,
-                        Salt = sVal,
+                        PasswordHash = hash,
+                        Salt = salt,
                         Role = HotelPOS.Domain.Common.Constants.RoleNames.Admin,
                         RoleId = 1,
                         IsActive = true,
@@ -216,16 +226,20 @@ namespace HotelPOS
                     };
                     context.Users.Add(adminUser);
                     context.SaveChanges();
-                    Log.Information("Default Admin user was missing; seeded 'admin' with password 'admin'.");
+                    WriteInitialAdminCredentialFile(generatedPassword);
+                    Log.Information("Default Admin user was missing; seeded 'admin' with a randomly generated one-time password. See {Path} to retrieve it.", GetInitialAdminCredentialPath());
                 }
-                else if (adminUser.PasswordHash == "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=")
+                else if (knownDefaultHashes.Contains(adminUser.PasswordHash))
                 {
-                    adminUser.PasswordHash = "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc=";
-                    adminUser.Salt = "cUDnxEUZDYmisbvUU2zu1Q==";
+                    var generatedPassword = GenerateRandomPassword();
+                    var (hash, salt) = HashPassword(generatedPassword);
+                    adminUser.PasswordHash = hash;
+                    adminUser.Salt = salt;
                     adminUser.MustChangePassword = true;
                     adminUser.IsActive = true;
                     context.SaveChanges();
-                    Log.Information("Detected unknown default admin password; reset to 'admin'.");
+                    WriteInitialAdminCredentialFile(generatedPassword);
+                    Log.Information("Detected known default admin password hash; reset to a randomly generated one-time password. See {Path} to retrieve it.", GetInitialAdminCredentialPath());
                 }
 
                 // Ensure HeldOrders table exists (database-agnostic approach)
@@ -255,6 +269,60 @@ namespace HotelPOS
 
                 Log.Information("Database synchronization complete.");
             }
+        }
+
+        private static string GenerateRandomPassword()
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*";
+            var bytes = new byte[20];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+
+            var sb = new System.Text.StringBuilder(bytes.Length);
+            foreach (var b in bytes)
+                sb.Append(chars[b % chars.Length]);
+            return sb.ToString();
+        }
+
+        private static (string Hash, string Salt) HashPassword(string password)
+        {
+            var saltBytes = new byte[HotelPOS.Domain.Common.Constants.ValidationLimits.SaltByteSize];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(saltBytes);
+            var hashBytes = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(
+                password,
+                saltBytes,
+                HotelPOS.Domain.Common.Constants.ValidationLimits.Pbkdf2Iterations,
+                System.Security.Cryptography.HashAlgorithmName.SHA256,
+                HotelPOS.Domain.Common.Constants.ValidationLimits.HashByteSize);
+            return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
+        }
+
+        internal static string GetInitialAdminCredentialPath() => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "HotelPOS", "initial-admin-password.txt");
+
+        // Written once per remediation so whoever runs first-run setup can retrieve the
+        // one-time password; MustChangePassword forces it to be replaced before the account
+        // can be used for anything else. Removed automatically by LoginWindow once that
+        // forced change succeeds (see HandleMustChangePasswordAsync), so it doesn't rely on
+        // the user remembering to delete it themselves.
+        private static void WriteInitialAdminCredentialFile(string password)
+        {
+            var path = GetInitialAdminCredentialPath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path,
+                $"Username: admin{Environment.NewLine}" +
+                $"Password: {password}{Environment.NewLine}" +
+                $"This is a one-time password for first login only.{Environment.NewLine}");
+        }
+
+        /// <summary>Deletes the one-time admin credential file, if present. Safe to call unconditionally.</summary>
+        internal static void DeleteInitialAdminCredentialFileIfExists()
+        {
+            var path = GetInitialAdminCredentialPath();
+            if (File.Exists(path))
+                File.Delete(path);
         }
     }
 }
