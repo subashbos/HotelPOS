@@ -14,6 +14,7 @@ namespace HotelPOS.Application.UseCases
     {
         private const int CodeLength = 6;
         private const int CodeValidityMinutes = 15;
+        private const string InvalidOrExpiredCodeMessage = "This code is invalid or has expired. Request a new one.";
 
         private readonly IUserRepository _userRepository;
         private readonly IPasswordResetRepository _resetRepository;
@@ -71,13 +72,13 @@ namespace HotelPOS.Application.UseCases
             var user = await _userRepository.GetUserByUsernameAsync(normalized);
             if (user == null)
             {
-                return (false, "This code is invalid or has expired. Request a new one.");
+                return (false, InvalidOrExpiredCodeMessage);
             }
 
             var request = await _resetRepository.GetLatestActiveAsync(user.Id);
             if (request == null || request.ExpiresUtc <= DateTime.UtcNow)
             {
-                return (false, "This code is invalid or has expired. Request a new one.");
+                return (false, InvalidOrExpiredCodeMessage);
             }
 
             if (request.AttemptCount >= SecurityDefaults.MaxPasswordResetCodeAttempts)
@@ -85,7 +86,7 @@ namespace HotelPOS.Application.UseCases
                 // Burn the code so a lucky guess after the cap can't still succeed.
                 request.Used = true;
                 await _resetRepository.UpdateAsync(request);
-                return (false, "This code is invalid or has expired. Request a new one.");
+                return (false, InvalidOrExpiredCodeMessage);
             }
 
             var providedHash = HashCode(code?.Trim() ?? string.Empty);
@@ -93,7 +94,7 @@ namespace HotelPOS.Application.UseCases
             {
                 request.AttemptCount += 1;
                 await _resetRepository.UpdateAsync(request);
-                return (false, "This code is invalid or has expired. Request a new one.");
+                return (false, InvalidOrExpiredCodeMessage);
             }
 
             if (string.IsNullOrEmpty(newPassword) ||

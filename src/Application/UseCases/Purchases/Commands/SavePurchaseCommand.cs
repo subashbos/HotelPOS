@@ -46,7 +46,7 @@ namespace HotelPOS.Application.UseCases.Purchases.Commands
 
                 await _purchaseRepository.CommitTransactionAsync();
             }
-            catch (Exception ex)
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
                 Serilog.Log.Error(ex, "Transaction failed while saving purchase");
                 try

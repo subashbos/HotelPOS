@@ -11,6 +11,7 @@ namespace HotelPOS.Application.UseCases
     public class OrderService : IOrderService
     {
         private const string OrderEntityType = "Order";
+        private const string RollbackAlsoFailedMessage = "Transaction failed and rollback also failed.";
 
         private readonly IOrderRepository _repo;
         private readonly IMediator? _mediator;
@@ -61,29 +62,7 @@ namespace HotelPOS.Application.UseCases
             // Price/tax are never trusted from the caller: every line is repriced from the
             // authoritative item catalog so a tampered request can't under-pay for real items
             // or inject a phantom item that doesn't exist in the catalog.
-            var itemIds = items.Select(x => x.ItemId).Distinct().ToList();
-            var catalogItems = (await _itemService.GetItemsByIdsAsync(itemIds))
-                .ToDictionary(i => i.Id);
-
-            var orderItems = new List<OrderItem>();
-            foreach (var x in items)
-            {
-                if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
-
-                if (!catalogItems.TryGetValue(x.ItemId, out var catalogItem))
-                    throw new ArgumentException($"Item '{x.ItemName}' (ID {x.ItemId}) does not exist.");
-
-                var price = catalogItem.Price;
-                orderItems.Add(new OrderItem
-                {
-                    ItemId = catalogItem.Id,
-                    ItemName = catalogItem.Name,
-                    Quantity = x.Quantity,
-                    Price = price,
-                    TaxPercentage = catalogItem.TaxPercentage,
-                    Total = Math.Round(price * x.Quantity, MoneyPrecision.CurrencyDecimals)
-                });
-            }
+            var orderItems = await BuildPricedOrderItemsAsync(items);
 
             var realSubtotal = orderItems.Sum(x => x.Total);
             if (discount > realSubtotal)
@@ -136,7 +115,7 @@ namespace HotelPOS.Application.UseCases
                 }
                 return orderId;
             }
-            catch (Exception ex)
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
                 Serilog.Log.Error(ex, "Transaction failed in OrderService");
                 try
@@ -146,10 +125,38 @@ namespace HotelPOS.Application.UseCases
                 catch (Exception rollbackEx)
                 {
                     Serilog.Log.Error(rollbackEx, "Transaction rollback failed in OrderService");
-                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
                 }
                 throw;
             }
+        }
+
+        private async Task<List<OrderItem>> BuildPricedOrderItemsAsync(List<OrderItem> items)
+        {
+            var itemIds = items.Select(x => x.ItemId).Distinct().ToList();
+            var catalogItems = (await _itemService.GetItemsByIdsAsync(itemIds))
+                .ToDictionary(i => i.Id);
+
+            var orderItems = new List<OrderItem>();
+            foreach (var x in items)
+            {
+                if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
+
+                if (!catalogItems.TryGetValue(x.ItemId, out var catalogItem))
+                    throw new ArgumentException($"Item '{x.ItemName}' (ID {x.ItemId}) does not exist.");
+
+                var price = catalogItem.Price;
+                orderItems.Add(new OrderItem
+                {
+                    ItemId = catalogItem.Id,
+                    ItemName = catalogItem.Name,
+                    Quantity = x.Quantity,
+                    Price = price,
+                    TaxPercentage = catalogItem.TaxPercentage,
+                    Total = Math.Round(price * x.Quantity, MoneyPrecision.CurrencyDecimals)
+                });
+            }
+            return orderItems;
         }
 
         private static void CalculateTotals(Order order, List<OrderItem> items)
@@ -237,7 +244,7 @@ namespace HotelPOS.Application.UseCases
                 catch (Exception rollbackEx)
                 {
                     Serilog.Log.Error(rollbackEx, "Transaction rollback failed while updating order");
-                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
                 }
                 throw;
             }
@@ -302,7 +309,7 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
                 Serilog.Log.Error(ex, "Transaction failed while voiding order");
                 try
@@ -312,7 +319,7 @@ namespace HotelPOS.Application.UseCases
                 catch (Exception rollbackEx)
                 {
                     Serilog.Log.Error(rollbackEx, "Transaction rollback failed while voiding order");
-                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
                 }
                 throw;
             }
@@ -356,7 +363,7 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
                 Serilog.Log.Error(ex, "Transaction failed while refunding order");
                 try
@@ -366,7 +373,7 @@ namespace HotelPOS.Application.UseCases
                 catch (Exception rollbackEx)
                 {
                     Serilog.Log.Error(rollbackEx, "Transaction rollback failed while refunding order");
-                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
                 }
                 throw;
             }
@@ -452,7 +459,7 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
                 Serilog.Log.Error(ex, "Transaction failed while processing partial payment");
                 try
@@ -462,7 +469,7 @@ namespace HotelPOS.Application.UseCases
                 catch (Exception rollbackEx)
                 {
                     Serilog.Log.Error(rollbackEx, "Transaction rollback failed while processing partial payment");
-                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
                 }
                 throw;
             }
