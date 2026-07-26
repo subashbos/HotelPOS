@@ -2776,3 +2776,127 @@ input:where([type='file']):focus {
     width: 66.666667%;
   }
 }
+
+/* ── Receipt / KOT printing (thermal + A4 layouts) ── */
+
+.print-section {
+  display: none;
+}
+
+.receipt, .kot {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #000;
+  background: #fff;
+}
+
+.receipt-thermal {
+  width: 80mm;
+  font-size: 11px;
+}
+
+.receipt-a4 {
+  width: 190mm;
+  font-size: 14px;
+}
+
+.receipt-header {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.receipt-title {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.kot-title {
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+.kot-table {
+  font-size: 1.15em;
+}
+
+.receipt-head {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 2px 0;
+}
+
+.receipt-small {
+  font-size: 0.82em;
+}
+
+.receipt-bold {
+  font-weight: bold;
+}
+
+.receipt-italic {
+  font-style: italic;
+}
+
+.receipt-sep {
+  text-align: center;
+  white-space: pre;
+  margin: 4px 0;
+  overflow: hidden;
+}
+
+.receipt-table, .receipt-totals {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0;
+}
+
+.receipt-table th, .receipt-table td {
+  padding: 2px 4px;
+}
+
+.receipt-table thead tr {
+  font-weight: bold;
+  background: #e6e6e6;
+}
+
+.receipt-totals td {
+  padding: 2px 5px;
+}
+
+.receipt-grand td {
+  font-size: 1.15em;
+}
+
+.receipt-footer {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.al {
+  text-align: left;
+}
+
+.ar {
+  text-align: right;
+}
+
+.ac {
+  text-align: center;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-section, .print-section * {
+    visibility: visible;
+  }
+
+  .print-section {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}

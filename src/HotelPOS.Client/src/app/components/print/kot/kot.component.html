@@ -1,0 +1,27 @@
+<div class="kot" [class.receipt-thermal]="isThermal" [class.receipt-a4]="!isThermal">
+  <div class="receipt-header">
+    <div class="kot-title">K.O.T</div>
+    <div class="receipt-small">(Kitchen Order Ticket)</div>
+    <div class="receipt-sep">{{ separator }}</div>
+    <div class="kot-table receipt-bold">Table : {{ tableDisplay }}</div>
+    <div class="receipt-small">Time  : {{ now | date:'dd-MMM-yyyy hh:mm a' }}</div>
+    <div class="receipt-sep">{{ separator }}</div>
+  </div>
+
+  <table class="receipt-table">
+    <thead>
+      <tr>
+        <th class="al">ITEM</th>
+        <th class="ac">QTY</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of data.items" class="receipt-bold">
+        <td class="al">{{ item.itemName }}</td>
+        <td class="ac">{{ item.quantity }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="receipt-sep">{{ separator }}</div>
+</div>
