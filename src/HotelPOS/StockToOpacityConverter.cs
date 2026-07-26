@@ -16,7 +16,7 @@ namespace HotelPOS
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) // NOSONAR
         {
-            throw new NotImplementedException();
+            return Binding.DoNothing;
         }
     }
 }
