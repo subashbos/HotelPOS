@@ -7,6 +7,7 @@ namespace HotelPOS.Application.Interfaces
         Task<List<Employee>> GetAllAsync();
         Task<Employee?> GetByIdAsync(int id);
         Task<Employee?> GetByCodeAsync(string code);
+        Task<Employee?> GetByUserIdAsync(int userId);
         Task AddAsync(Employee employee);
         Task UpdateAsync(Employee employee);
         Task DeleteAsync(int id);

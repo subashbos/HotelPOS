@@ -1,3 +1,9 @@
+<!-- Printable receipt / KOT (hidden on screen, shown only via @media print) -->
+<div class="print-section">
+  <app-receipt *ngIf="printMode === 'receipt' && receiptData && settings" [data]="receiptData" [settings]="settings"></app-receipt>
+  <app-kot *ngIf="printMode === 'kot' && kotData" [data]="kotData" [isThermal]="settings?.receiptFormat === 'Thermal'"></app-kot>
+</div>
+
 <!-- Main Split POS Grid -->
 <div class="flex flex-wrap px-4 md:px-6 w-full">
 
@@ -505,6 +511,10 @@
       <button (click)="closeCheckoutModal()"
         class="bg-blueGray-400 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md transition-all duration-150">
         {{ checkoutConfirmed ? 'Close' : 'Cancel' }}
+      </button>
+      <button *ngIf="checkoutConfirmed" (click)="printReceipt()"
+        class="bg-blueGray-700 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md transition-all duration-150">
+        🖨 Reprint Receipt
       </button>
       <button *ngIf="!checkoutConfirmed" (click)="confirmCheckout()" [disabled]="isCheckingOut"
         class="bg-emerald-500 text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed">

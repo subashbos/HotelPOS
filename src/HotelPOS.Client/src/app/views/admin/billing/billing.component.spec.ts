@@ -5,7 +5,9 @@ import { ItemService } from '../../../services/item.service';
 import { OrderService } from '../../../services/order.service';
 import { TableService } from '../../../services/table.service';
 import { CategoryService } from '../../../services/category.service';
+import { SettingsService } from '../../../services/settings.service';
 import { Item } from '../../../models/item.model';
+import { SystemSettings } from '../../../models/settings.model';
 import { ORDER_TYPE_LABELS, PAYMENT_MODES } from '../../../models/order.model';
 
 describe('BillingComponent', () => {
@@ -14,6 +16,7 @@ describe('BillingComponent', () => {
   let orderServiceSpy: jasmine.SpyObj<OrderService>;
   let tableServiceSpy: jasmine.SpyObj<TableService>;
   let categoryServiceSpy: jasmine.SpyObj<CategoryService>;
+  let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
 
   const makeItem = (overrides: Partial<Item> = {}): Item => ({
     id: 1,
@@ -31,11 +34,13 @@ describe('BillingComponent', () => {
     orderServiceSpy = jasmine.createSpyObj('OrderService', ['createOrder']);
     tableServiceSpy = jasmine.createSpyObj('TableService', ['getTables']);
     categoryServiceSpy = jasmine.createSpyObj('CategoryService', ['getCategories']);
+    settingsServiceSpy = jasmine.createSpyObj('SettingsService', ['getSettings', 'saveSettings']);
     itemServiceSpy.getItems.and.returnValue(of([]));
     tableServiceSpy.getTables.and.returnValue(of([]));
     categoryServiceSpy.getCategories.and.returnValue(of([]));
+    settingsServiceSpy.getSettings.and.returnValue(of({} as SystemSettings));
 
-    component = new BillingComponent(itemServiceSpy, orderServiceSpy, tableServiceSpy, categoryServiceSpy);
+    component = new BillingComponent(itemServiceSpy, orderServiceSpy, tableServiceSpy, settingsServiceSpy, categoryServiceSpy);
   });
 
   describe('cart math', () => {

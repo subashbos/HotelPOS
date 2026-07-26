@@ -57,6 +57,24 @@ namespace HotelPOS.Tests
             Assert.Equal("Closed", session.Status);
             _repoMock.Verify(r => r.UpdateAsync(session), Times.Once);
         }
+
+        [Fact]
+        public async Task CashService_OpenSessionAsync_NegativeOpeningBalance_ThrowsAtServiceLayer()
+        {
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _service.OpenSessionAsync(-100m, "admin"));
+            Assert.Contains("Opening balance cannot be negative", ex.Message);
+            _repoMock.Verify(r => r.AddAsync(It.IsAny<CashSession>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CashService_CloseSessionAsync_NegativeActualCash_Throws()
+        {
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _service.CloseSessionAsync(-50m, "Notes", "admin"));
+            Assert.Contains("Actual cash amount cannot be negative", ex.Message);
+            _repoMock.Verify(r => r.UpdateAsync(It.IsAny<CashSession>()), Times.Never);
+        }
     }
 }
 

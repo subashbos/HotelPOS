@@ -2073,6 +2073,144 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.ToTable("Tables");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.TdsConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CessRatePercent")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("FinancialYearStart")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("RebateIncomeLimit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("StandardDeduction")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialYearStart")
+                        .IsUnique();
+
+                    b.ToTable("TdsConfigs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CessRatePercent = 4m,
+                            FinancialYearStart = 2025,
+                            RebateIncomeLimit = 1200000m,
+                            StandardDeduction = 75000m
+                        });
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.TdsSlab", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FinancialYearStart")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("IncomeFrom")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("IncomeTo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("RatePercent")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialYearStart", "DisplayOrder")
+                        .IsUnique();
+
+                    b.ToTable("TdsSlabs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DisplayOrder = 1,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 0m,
+                            IncomeTo = 400000m,
+                            RatePercent = 0m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DisplayOrder = 2,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 400000m,
+                            IncomeTo = 800000m,
+                            RatePercent = 5m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DisplayOrder = 3,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 800000m,
+                            IncomeTo = 1200000m,
+                            RatePercent = 10m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DisplayOrder = 4,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 1200000m,
+                            IncomeTo = 1600000m,
+                            RatePercent = 15m
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DisplayOrder = 5,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 1600000m,
+                            IncomeTo = 2000000m,
+                            RatePercent = 20m
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DisplayOrder = 6,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 2000000m,
+                            IncomeTo = 2400000m,
+                            RatePercent = 25m
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DisplayOrder = 7,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 2400000m,
+                            RatePercent = 30m
+                        });
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.UnitOfMeasurement", b =>
                 {
                     b.Property<int>("Id")

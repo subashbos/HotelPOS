@@ -1,4 +1,5 @@
 using FluentValidation;
+using HotelPOS.Application.Common.Models;
 using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
@@ -10,7 +11,9 @@ namespace HotelPOS.Application.UseCases
 {
     /// <summary>
     /// Computes monthly payroll using Indian statutory parameters (EPF, ESI) with Professional
-    /// Tax and TDS handled as documented approximations — see <see cref="IndianStatutoryDefaults"/>.
+    /// Tax handled as a documented approximation — see <see cref="IndianStatutoryDefaults"/>.
+    /// Income-tax TDS is computed via <see cref="TdsCalculator"/> against the admin-configured
+    /// slab structure for the run's financial year.
     /// </summary>
     public class PayrollService : IPayrollService
     {
@@ -92,6 +95,11 @@ namespace HotelPOS.Application.UseCases
                 ProcessedByUserId = processedByUserId
             };
 
+            // Indian financial year runs April-March, so a January payslip falls in the FY that
+            // started the previous April.
+            var financialYearStart = month >= 4 ? year : year - 1;
+            var tdsRuleSet = await _payrollRepository.GetTdsRuleSetAsync(financialYearStart);
+
             foreach (var employee in employees.Where(e => e.Status == EmployeeStatuses.Active))
             {
                 var structure = await _payrollRepository.GetCurrentSalaryStructureAsync(employee.Id, monthEnd);
@@ -110,7 +118,7 @@ namespace HotelPOS.Application.UseCases
                 var lopDays = absentDays + (halfDays * 0.5m);
                 var paidDays = Math.Max(0, workingDays - lopDays);
 
-                var payslip = CalculatePayslip(structure, workingDays, paidDays);
+                var payslip = CalculatePayslip(structure, workingDays, paidDays, tdsRuleSet);
                 payslip.PayrollRunId = run.Id;
                 payslip.EmployeeId = employee.Id;
                 payslip.Employee = employee;
@@ -190,11 +198,15 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<Payslip>> GetPayslipsByEmployeeAsync(int employeeId)
         {
-            _authorization.EnsurePermission(PermissionModules.HrPayroll);
+            // A missing linked login account (UserId null) can never match a real CurrentUserId,
+            // so this correctly falls through to the HrPayroll permission check for such employees.
+            var targetUserId = (await _employeeRepository.GetByIdAsync(employeeId))?.UserId ?? -1;
+            _authorization.EnsureSelfOrPermission(targetUserId, PermissionModules.HrPayroll);
+
             return await _payrollRepository.GetPayslipsByEmployeeAsync(employeeId);
         }
 
-        public Payslip CalculatePayslip(SalaryStructure structure, decimal workingDays, decimal paidDays)
+        public Payslip CalculatePayslip(SalaryStructure structure, decimal workingDays, decimal paidDays, TdsRuleSet? tdsRuleSet = null)
         {
             if (structure == null) throw new ArgumentNullException(nameof(structure));
             if (workingDays <= 0) throw new ArgumentException("Working days must be greater than zero.");
@@ -227,7 +239,7 @@ namespace HotelPOS.Application.UseCases
                 professionalTax = IndianStatutoryDefaults.ProfessionalTaxAmount;
             }
 
-            const decimal tds = 0; // manual/statutory override — not auto-computed
+            var tds = TdsCalculator.CalculateMonthlyTds(grossMonthly, tdsRuleSet);
 
             var netPay = Math.Round(grossEarnings - pfEmployee - esiEmployee - professionalTax - tds, 2);
 

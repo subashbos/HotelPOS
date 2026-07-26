@@ -159,6 +159,32 @@ namespace HotelPOS.Tests
             _repoMock.Verify(r => r.CommitTransactionAsync(), Times.Never);
             _repoMock.Verify(r => r.RollbackTransactionAsync(), Times.Once);
         }
+
+        [Fact]
+        public async Task OrderService_SaveOrderAsync_WhenStockDeductionFails_DoesNotPersistPartialOrder()
+        {
+            // Arrange
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Test Item", Quantity = 5, Price = 100, TaxPercentage = 5, Total = 500 }
+            };
+            _repoMock.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-2026-27/0001");
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(42);
+
+            // Simulate stock deduction failure (e.g. stock insufficient)
+            _itemServiceMock.Setup(s => s.DeductStockAsync(1, 5))
+                             .ThrowsAsync(new InvalidOperationException("Insufficient stock for item 'Test Item'. Requested: 5, Available: 2."));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _service.SaveOrderAsync(new SaveOrderRequest(items, 1)));
+
+            Assert.Contains("Insufficient stock", ex.Message);
+            _repoMock.Verify(r => r.BeginTransactionAsync(), Times.Once);
+            _repoMock.Verify(r => r.RollbackTransactionAsync(), Times.Once);
+            _repoMock.Verify(r => r.CommitTransactionAsync(), Times.Never);
+            _mediatorMock.Verify(m => m.Publish(It.IsAny<EntityActionEvent>(), default), Times.Never);
+        }
     }
 }
 

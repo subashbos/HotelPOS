@@ -47,6 +47,21 @@ namespace HotelPOS
             DocViewer.Document = document;
         }
 
+        public static bool TryGetPrintQueue(string? printerName, out System.Printing.PrintQueue? queue)
+        {
+            queue = null;
+            if (string.IsNullOrWhiteSpace(printerName)) return false;
+            try
+            {
+                queue = new System.Printing.LocalPrintServer().GetPrintQueue(printerName);
+                return queue != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void Print_Click(object sender, RoutedEventArgs e)
         {
             if (DocViewer.Document is not FlowDocument document) return;
@@ -55,22 +70,14 @@ namespace HotelPOS
             bool shouldPrint = false;
 
             // If a default printer is set in settings, try to use it directly
-            if (!string.IsNullOrEmpty(_settings.DefaultPrinter))
+            if (!string.IsNullOrEmpty(_settings.DefaultPrinter) && TryGetPrintQueue(_settings.DefaultPrinter, out var queue))
             {
-                try
-                {
-                    printDialog.PrintQueue = new System.Printing.LocalPrintServer().GetPrintQueue(_settings.DefaultPrinter);
-                    shouldPrint = true;
-                }
-                catch
-                {
-                    // Fallback to dialog if printer not found
-                    shouldPrint = printDialog.ShowDialog().GetValueOrDefault();
-                }
+                printDialog.PrintQueue = queue;
+                shouldPrint = true;
             }
             else
             {
-                // No default printer, show dialog
+                // Fallback to dialog if default printer missing or unspecified
                 shouldPrint = printDialog.ShowDialog().GetValueOrDefault();
             }
 

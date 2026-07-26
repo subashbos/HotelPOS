@@ -153,6 +153,14 @@ namespace HotelPOS.Tests.Unit.Services
             }
         }
 
+        [Fact]
+        public void PrintPreview_DefaultPrinterMissing_FallsBackToDialogOrReportsCleanly()
+        {
+            var result = PrintPreviewWindow.TryGetPrintQueue("NonExistent_Missing_Printer_Device_9999", out var queue);
+            Assert.False(result);
+            Assert.Null(queue);
+        }
+
         private static bool IsApplicationCreated()
         {
             if (System.Windows.Application.Current != null)

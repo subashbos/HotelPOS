@@ -13,8 +13,9 @@ describe('LoginComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['isLoggedIn', 'login']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['isLoggedIn', 'login', 'getRole']);
     authServiceSpy.isLoggedIn.and.returnValue(false);
+    authServiceSpy.getRole.and.returnValue('Admin');
 
     await TestBed.configureTestingModule({
       declarations: [LoginComponent],
@@ -50,6 +51,16 @@ describe('LoginComponent', () => {
 
     expect(authServiceSpy.login).toHaveBeenCalledWith({ username: 'admin', password: 'password123' });
     expect(router.navigate).toHaveBeenCalledWith(['/admin/dashboard']);
+  });
+
+  it('should navigate a non-admin-console role to the ESS portal', () => {
+    authServiceSpy.getRole.and.returnValue('Employee');
+    authServiceSpy.login.and.returnValue(of({ token: 'jwt-token', refreshToken: 'refresh-token', username: 'jdoe', role: 'Employee' }));
+    component.credentials = { username: 'jdoe', password: 'password123' };
+
+    component.onSubmit();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/ess/leave']);
   });
 
   it('should handle 401 two-factor requirement', () => {

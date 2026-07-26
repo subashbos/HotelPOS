@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using System.Windows.Data;
 
 namespace HotelPOS
@@ -23,7 +24,7 @@ namespace HotelPOS
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) // NOSONAR
         {
-            throw new NotImplementedException();
+            return targetTypes.Select(_ => Binding.DoNothing).ToArray();
         }
     }
 }

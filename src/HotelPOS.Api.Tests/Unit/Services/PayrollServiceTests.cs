@@ -1,3 +1,4 @@
+using HotelPOS.Application.Common.Models;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Domain.Entities;
@@ -110,13 +111,39 @@ namespace HotelPOS.Tests.Unit.Services
         }
 
         [Fact]
-        public void CalculatePayslip_TdsIsNeverAutoComputed()
+        public void CalculatePayslip_NoTdsRuleSetProvided_TdsIsZero()
         {
             var structure = new SalaryStructure { Basic = 100000, Hra = 40000 };
 
             var payslip = _service.CalculatePayslip(structure, 30, 30);
 
             Assert.Equal(0, payslip.Tds);
+        }
+
+        [Fact]
+        public void CalculatePayslip_WithTdsRuleSet_ComputesNonZeroTds()
+        {
+            var structure = new SalaryStructure { Basic = 150000, Hra = 60000 };
+            var ruleSet = new TdsRuleSet
+            {
+                Config = new TdsConfig { FinancialYearStart = 2025, StandardDeduction = 75000m, RebateIncomeLimit = 1200000m, CessRatePercent = 4m },
+                Slabs = new List<TdsSlab>
+                {
+                    new TdsSlab { IncomeFrom = 0m, IncomeTo = 400000m, RatePercent = 0m, DisplayOrder = 1 },
+                    new TdsSlab { IncomeFrom = 400000m, IncomeTo = 800000m, RatePercent = 5m, DisplayOrder = 2 },
+                    new TdsSlab { IncomeFrom = 800000m, IncomeTo = 1200000m, RatePercent = 10m, DisplayOrder = 3 },
+                    new TdsSlab { IncomeFrom = 1200000m, IncomeTo = 1600000m, RatePercent = 15m, DisplayOrder = 4 },
+                    new TdsSlab { IncomeFrom = 1600000m, IncomeTo = 2000000m, RatePercent = 20m, DisplayOrder = 5 },
+                    new TdsSlab { IncomeFrom = 2000000m, IncomeTo = 2400000m, RatePercent = 25m, DisplayOrder = 6 },
+                    new TdsSlab { IncomeFrom = 2400000m, IncomeTo = null, RatePercent = 30m, DisplayOrder = 7 }
+                }
+            };
+
+            var payslip = _service.CalculatePayslip(structure, 30, 30, ruleSet);
+
+            // Annual gross 2,520,000 - 75,000 standard deduction = 2,445,000 taxable, above the
+            // 1,200,000 rebate limit, so this must be taxed via the slabs (non-zero, non-trivial).
+            Assert.True(payslip.Tds > 0);
         }
 
         [Fact]

@@ -4,6 +4,7 @@ import { authGuard } from './guards/auth.guard';
 // layouts
 import { AdminComponent } from "./layouts/admin/admin.component";
 import { AuthComponent } from "./layouts/auth/auth.component";
+import { EssComponent } from "./layouts/ess/ess.component";
 
 // admin views
 import { DashboardComponent } from "./views/admin/dashboard/dashboard.component";
@@ -21,6 +22,7 @@ import { EmployeesComponent } from "./views/admin/employees/employees.component"
 import { AttendanceComponent } from "./views/admin/attendance/attendance.component";
 import { LeaveComponent } from "./views/admin/leave/leave.component";
 import { PayrollComponent } from "./views/admin/payroll/payroll.component";
+import { TdsComponent } from "./views/admin/tds/tds.component";
 import { SalesReportComponent } from "./views/admin/sales-report/sales-report.component";
 import { ItemReportComponent } from "./views/admin/item-report/item-report.component";
 import { PurchaseReportComponent } from "./views/admin/purchase-report/purchase-report.component";
@@ -39,6 +41,11 @@ import { BiAnalyticsComponent } from "./views/admin/bi-analytics/bi-analytics.co
 import { LoginComponent } from "./views/auth/login/login.component";
 import { RegisterComponent } from "./views/auth/register/register.component";
 import { ForgotPasswordComponent } from "./views/auth/forgot-password/forgot-password.component";
+
+// ess views
+import { EssLeaveComponent } from "./views/ess/leave/ess-leave.component";
+import { EssPayslipsComponent } from "./views/ess/payslips/ess-payslips.component";
+import { EssProfileComponent } from "./views/ess/profile/ess-profile.component";
 
 export const routes: Routes = [
   // admin views
@@ -63,6 +70,7 @@ export const routes: Routes = [
       { path: "attendance", component: AttendanceComponent },
       { path: "leave", component: LeaveComponent },
       { path: "payroll", component: PayrollComponent },
+      { path: "tds", component: TdsComponent },
       { path: "sales-report", component: SalesReportComponent },
       { path: "item-report", component: ItemReportComponent },
       { path: "purchase-report", component: PurchaseReportComponent },
@@ -77,6 +85,19 @@ export const routes: Routes = [
       { path: "bom", component: BomComponent },
       { path: "bi-analytics", component: BiAnalyticsComponent },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
+    ],
+  },
+  // employee self-service views
+  {
+    path: "ess",
+    component: EssComponent,
+    canActivate: [authGuard],
+    canActivateChild: [authGuard],
+    children: [
+      { path: "leave", component: EssLeaveComponent },
+      { path: "payslips", component: EssPayslipsComponent },
+      { path: "profile", component: EssProfileComponent },
+      { path: "", redirectTo: "leave", pathMatch: "full" },
     ],
   },
   // auth views at root

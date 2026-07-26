@@ -61,6 +61,15 @@ namespace HotelPOS.Application.DTOs.Employee
         public int? ReportingManagerId { get; set; }
     }
 
+    /// <summary>Self-service profile edit — deliberately excludes salary/status/bank/PAN/department/etc., which stay Admin/Manager-only via SaveEmployeeDto.</summary>
+    public class EssProfileUpdateDto
+    {
+        public string? Phone { get; set; }
+        public string? Address { get; set; }
+        public string? EmergencyContactName { get; set; }
+        public string? EmergencyContactPhone { get; set; }
+    }
+
     public class DepartmentDto
     {
         public int Id { get; set; }

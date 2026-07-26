@@ -4,9 +4,12 @@ import { ItemService } from '../../../services/item.service';
 import { OrderService } from '../../../services/order.service';
 import { TableService } from '../../../services/table.service';
 import { CategoryService } from '../../../services/category.service';
+import { SettingsService } from '../../../services/settings.service';
 import { Item, Category } from '../../../models/item.model';
 import { DiningTable } from '../../../models/table.model';
 import { CreateOrderRequest, ORDER_TYPE_LABELS, PAYMENT_MODES } from '../../../models/order.model';
+import { SystemSettings } from '../../../models/settings.model';
+import { ReceiptData, KotData } from '../../../models/print.model';
 
 interface CartRow {
   sNo: number;
@@ -107,15 +110,26 @@ export class BillingComponent implements OnInit {
   heldOrders: HeldOrder[] = [];
   showHeldOrders = false;
 
+  // ── Printing (receipt / KOT) ──
+  settings: SystemSettings | null = null;
+  printMode: 'receipt' | 'kot' | null = null;
+  receiptData: ReceiptData | null = null;
+  kotData: KotData | null = null;
+
   constructor(
     private readonly itemService: ItemService,
     private readonly orderService: OrderService,
     private readonly tableService: TableService,
+    private readonly settingsService: SettingsService,
     private readonly categoryService?: CategoryService
   ) {}
 
   ngOnInit(): void {
     this.loadItems();
+    this.settingsService.getSettings().subscribe({
+      next: (settings) => this.settings = settings,
+      error: (err) => console.error('Settings load error:', err)
+    });
   }
 
   // ── Load Items from API ──
@@ -414,7 +428,31 @@ export class BillingComponent implements OnInit {
       paymentMode: this.paymentMode,
       discountAmount: this.discountAmount
     });
+    const kotTableNumber = Number(this.tableNumber) || 0;
+    const kotItems = this.cart.map(r => ({ itemName: r.itemName, quantity: r.quantity }));
     this.clearCart();
+    this.printKot(kotTableNumber, kotItems);
+  }
+
+  // ── Printing (receipt / KOT) ──
+  // Browsers can't target a specific printer from JS, so window.print() always opens
+  // the OS print dialog — the closest web equivalent of the WPF spooler fallback.
+  printKot(tableNumber: number, items: { itemName: string; quantity: number }[]): void {
+    this.kotData = { tableNumber, items };
+    this.printMode = 'kot';
+    setTimeout(() => {
+      window.print();
+      this.printMode = null;
+    });
+  }
+
+  printReceipt(): void {
+    if (!this.receiptData) return;
+    this.printMode = 'receipt';
+    setTimeout(() => {
+      window.print();
+      this.printMode = null;
+    });
   }
 
   resumeOrder(held: HeldOrder): void {
@@ -501,6 +539,26 @@ export class BillingComponent implements OnInit {
         if (currentTableNum > 0) {
           this.heldOrders = this.heldOrders.filter(h => Number(h.tableNumber) !== currentTableNum);
         }
+
+        this.receiptData = {
+          orderId,
+          createdAt: new Date(),
+          items: this.cart.map(r => ({
+            itemName: r.itemName,
+            price: r.price,
+            quantity: r.quantity,
+            total: r.total,
+            taxPercentage: r.taxPercentage
+          })),
+          subtotal: this.subtotal,
+          discountAmount: this.discountAmount,
+          totalAmount: this.totalAmount,
+          paymentMode: this.paymentMode,
+          customerName: this.customerName || undefined,
+          customerPhone: this.customerPhone || undefined,
+          customerGstin: this.customerGstin || undefined
+        };
+        this.printReceipt();
       },
       error: (err) => {
         this.isCheckingOut = false;

@@ -1,0 +1,30 @@
+<div class="min-h-screen bg-blueGray-100">
+  <nav class="bg-blueGray-800 shadow">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-8">
+          <span class="text-white font-bold uppercase text-sm">My Workspace</span>
+          <a [routerLink]="['/ess/leave']" routerLinkActive="text-white" class="text-blueGray-300 hover:text-white text-xs font-bold uppercase">
+            <i class="fas fa-calendar-alt mr-1"></i> Leave
+          </a>
+          <a [routerLink]="['/ess/payslips']" routerLinkActive="text-white" class="text-blueGray-300 hover:text-white text-xs font-bold uppercase">
+            <i class="fas fa-file-invoice-dollar mr-1"></i> Payslips
+          </a>
+          <a [routerLink]="['/ess/profile']" routerLinkActive="text-white" class="text-blueGray-300 hover:text-white text-xs font-bold uppercase">
+            <i class="fas fa-user mr-1"></i> Profile
+          </a>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-blueGray-300 text-xs">{{ username }}</span>
+          <button (click)="logout()" class="text-blueGray-300 hover:text-white text-xs font-bold uppercase">
+            <i class="fas fa-sign-out-alt mr-1"></i> Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-5xl mx-auto px-4 py-6">
+    <router-outlet></router-outlet>
+  </div>
+</div>

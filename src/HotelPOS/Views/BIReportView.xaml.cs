@@ -24,7 +24,7 @@ namespace HotelPOS.Views
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) // NOSONAR
         {
-            throw new NotImplementedException();
+            return Binding.DoNothing;
         }
     }
 

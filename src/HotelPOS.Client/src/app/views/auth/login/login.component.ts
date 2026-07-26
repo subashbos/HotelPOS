@@ -2,6 +2,10 @@ import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { AuthService } from "../../../services/auth.service";
 
+// Roles that use the full admin console; every other role (e.g. a lower-trust "Employee" role
+// with no HR/admin permissions) lands in the Employee Self-Service portal instead.
+const ADMIN_CONSOLE_ROLES = ["Admin", "Manager", "Cashier"];
+
 @Component({
   standalone: false,
   
@@ -21,9 +25,9 @@ export class LoginComponent implements OnInit {
   constructor(private readonly authService: AuthService, private readonly router: Router) {}
 
   ngOnInit(): void {
-    // If already logged in, redirect to admin dashboard
+    // If already logged in, redirect to the appropriate area for the current role
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(["/admin/dashboard"]);
+      this.router.navigate([this.landingRouteForRole()]);
     }
   }
 
@@ -48,8 +52,7 @@ export class LoginComponent implements OnInit {
     this.authService.login(payload).subscribe({
       next: () => {
         this.isLoading = false;
-        // Redirect to admin dashboard
-        this.router.navigate(["/admin/dashboard"]);
+        this.router.navigate([this.landingRouteForRole()]);
       },
       error: (err) => {
         this.isLoading = false;
@@ -66,6 +69,11 @@ export class LoginComponent implements OnInit {
         }
       }
     });
+  }
+
+  private landingRouteForRole(): string {
+    const role = this.authService.getRole();
+    return role && ADMIN_CONSOLE_ROLES.includes(role) ? "/admin/dashboard" : "/ess/leave";
   }
 
   useDifferentAccount(): void {

@@ -1,6 +1,7 @@
 using FluentValidation;
 using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.UseCases
@@ -8,21 +9,28 @@ namespace HotelPOS.Application.UseCases
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _repository;
+        private readonly IAuthorizationService _authorization;
         private readonly IValidator<Employee> _validator;
 
-        public EmployeeService(IEmployeeRepository repository, IValidator<Employee>? validator = null)
+        public EmployeeService(IEmployeeRepository repository, IAuthorizationService authorization, IValidator<Employee>? validator = null)
         {
             _repository = repository;
+            _authorization = authorization;
             _validator = validator ?? new EmployeeValidator();
         }
 
         public async Task<List<Employee>> GetEmployeesAsync()
         {
+            // Full employee records (PAN, Aadhaar, bank details) — gated behind HrEmployees so a
+            // lower-trust Employee Self-Service login can't list every coworker's PII. Viewing
+            // one's own profile goes through EssController instead, which never calls this.
+            _authorization.EnsurePermission(PermissionModules.HrEmployees);
             return await _repository.GetAllAsync() ?? new List<Employee>();
         }
 
         public async Task<Employee?> GetEmployeeByIdAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.HrEmployees);
             return await _repository.GetByIdAsync(id);
         }
 

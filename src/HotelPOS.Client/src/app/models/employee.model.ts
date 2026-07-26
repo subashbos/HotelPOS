@@ -47,3 +47,11 @@ export interface Employee {
 export type SaveEmployeeRequest = Omit<Employee, 'departmentName' | 'designationTitle' | 'employeeCode'> & {
   employeeCode?: string;
 };
+
+/// Self-service profile edit — deliberately excludes salary/status/bank/PAN/department/etc.
+export interface EssProfileUpdateRequest {
+  phone?: string;
+  address?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+}
