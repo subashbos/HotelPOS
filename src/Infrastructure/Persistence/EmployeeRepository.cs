@@ -37,6 +37,14 @@ namespace HotelPOS.Infrastructure.Persistence
             return await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeCode.ToLower() == code.ToLower());
         }
 
+        public async Task<Employee?> GetByUserIdAsync(int userId)
+        {
+            return await _context.Employees
+                .Include(e => e.Department)
+                .Include(e => e.Designation)
+                .FirstOrDefaultAsync(e => e.UserId == userId);
+        }
+
         public async Task AddAsync(Employee employee)
         {
             _context.Employees.Add(employee);

@@ -182,6 +182,58 @@ namespace HotelPOS.Tests.Unit.Services
         }
 
         [Fact]
+        public async Task CancelLeaveAsync_OwnPendingRequest_ReleasesHoldAndCancels()
+        {
+            var request = new LeaveRequest
+            {
+                Id = 10,
+                EmployeeId = 5,
+                LeaveTypeId = 1,
+                TotalDays = 2,
+                FromDate = new DateTime(2026, 1, 5),
+                Status = LeaveRequestStatuses.Pending,
+                LeaveType = CasualLeaveType()
+            };
+            var balance = new LeaveBalance { EmployeeId = 5, LeaveTypeId = 1, EntitledDays = 12, UsedDays = 0, PendingDays = 2 };
+            _repoMock.Setup(r => r.GetRequestByIdAsync(10)).ReturnsAsync(request);
+            _repoMock.Setup(r => r.GetBalanceAsync(5, 1, It.IsAny<int>())).ReturnsAsync(balance);
+
+            await _service.CancelLeaveAsync(10, employeeId: 5);
+
+            Assert.Equal(LeaveRequestStatuses.Cancelled, request.Status);
+            Assert.Equal(0, balance.PendingDays);
+            _repoMock.Verify(r => r.UpdateBalanceAsync(balance), Times.Once);
+            _repoMock.Verify(r => r.UpdateRequestAsync(request), Times.Once);
+        }
+
+        [Fact]
+        public async Task CancelLeaveAsync_NotOwnRequest_ThrowsUnauthorizedAccessException()
+        {
+            var request = new LeaveRequest { Id = 10, EmployeeId = 5, Status = LeaveRequestStatuses.Pending };
+            _repoMock.Setup(r => r.GetRequestByIdAsync(10)).ReturnsAsync(request);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _service.CancelLeaveAsync(10, employeeId: 999));
+            _repoMock.Verify(r => r.UpdateRequestAsync(It.IsAny<LeaveRequest>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task CancelLeaveAsync_NotPending_ThrowsInvalidOperationException()
+        {
+            var request = new LeaveRequest { Id = 10, EmployeeId = 5, Status = LeaveRequestStatuses.Approved };
+            _repoMock.Setup(r => r.GetRequestByIdAsync(10)).ReturnsAsync(request);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CancelLeaveAsync(10, employeeId: 5));
+        }
+
+        [Fact]
+        public async Task CancelLeaveAsync_RequestNotFound_ThrowsKeyNotFoundException()
+        {
+            _repoMock.Setup(r => r.GetRequestByIdAsync(99)).ReturnsAsync((LeaveRequest?)null);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => _service.CancelLeaveAsync(99, employeeId: 5));
+        }
+
+        [Fact]
         public async Task RejectLeaveAsync_Pending_SetsRejectedWithReason()
         {
             var request = new LeaveRequest

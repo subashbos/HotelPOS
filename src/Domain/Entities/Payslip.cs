@@ -39,7 +39,7 @@ namespace HotelPOS.Domain.Entities
 
         public decimal ProfessionalTax { get; set; }
 
-        /// <summary>Manual/statutory override — income-tax TDS is not auto-computed. Defaults to 0.</summary>
+        /// <summary>Income-tax TDS computed against the financial year's TDS slab structure (0 if none is configured).</summary>
         public decimal Tds { get; set; }
 
         public decimal NetPay { get; set; }

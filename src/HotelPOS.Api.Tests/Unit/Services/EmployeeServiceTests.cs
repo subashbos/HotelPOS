@@ -17,7 +17,7 @@ namespace HotelPOS.Tests.Unit.Services
         public EmployeeServiceTests()
         {
             _repoMock = new Mock<IEmployeeRepository>();
-            _service = new EmployeeService(_repoMock.Object);
+            _service = new EmployeeService(_repoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

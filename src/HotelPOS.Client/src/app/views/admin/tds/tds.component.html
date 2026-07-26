@@ -1,0 +1,132 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-file-invoice-dollar text-blueGray-400 mr-2"></i> TDS Slabs
+          </h3>
+          <button (click)="openNewYearForm()"
+            class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow">
+            <i class="fas fa-plus mr-1"></i> New Financial Year
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-4">
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading...</p>
+
+        <div *ngIf="!isLoading" class="mb-4">
+          <label for="fy-select" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Financial Year</label>
+          <select id="fy-select" class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring"
+            [ngModel]="selectedYear" (ngModelChange)="onYearChange($event)" [disabled]="financialYears.length === 0">
+            <option *ngFor="let year of financialYears" [ngValue]="year">FY{{ year }}-{{ (year + 1) % 100 }}</option>
+          </select>
+          <span *ngIf="financialYears.length === 0" class="text-blueGray-400 text-sm ml-2">No financial years configured yet.</span>
+        </div>
+
+        <ng-container *ngIf="selectedYear && !isLoading">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label for="std-deduction" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Standard Deduction (₹)</label>
+              <input id="std-deduction" type="number" [(ngModel)]="standardDeduction" name="standardDeduction"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+            </div>
+            <div>
+              <label for="rebate-limit" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">87A Rebate Income Limit (₹)</label>
+              <input id="rebate-limit" type="number" [(ngModel)]="rebateIncomeLimit" name="rebateIncomeLimit"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+            </div>
+            <div>
+              <label for="cess-rate" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Cess Rate (%)</label>
+              <input id="cess-rate" type="number" [(ngModel)]="cessRatePercent" name="cessRatePercent"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-semibold text-sm text-blueGray-700">Slab Bands</h4>
+            <button (click)="addSlabRow()" class="text-blueGray-500 hover:text-blueGray-700 text-xs font-bold uppercase">
+              <i class="fas fa-plus mr-1"></i> Add Band
+            </button>
+          </div>
+
+          <div class="block w-full overflow-x-auto mb-4">
+            <table class="items-center w-full bg-transparent border-collapse">
+              <thead>
+                <tr>
+                  <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Income From (₹)</th>
+                  <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Income To (₹, blank = no limit)</th>
+                  <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Rate (%)</th>
+                  <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let slab of slabs; let i = index; trackBy: trackBySlabIndex">
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-2">
+                    <input type="number" [(ngModel)]="slab.incomeFrom" [name]="'incomeFrom-' + i"
+                      class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+                  </td>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-2">
+                    <input type="number" [(ngModel)]="slab.incomeTo" [name]="'incomeTo-' + i"
+                      class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+                  </td>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-2">
+                    <input type="number" [(ngModel)]="slab.ratePercent" [name]="'ratePercent-' + i"
+                      class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+                  </td>
+                  <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-2 text-right">
+                    <button (click)="removeSlabRow(i)" class="text-red-500 hover:text-red-700 font-bold"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr *ngIf="slabs.length === 0">
+                  <td colspan="4" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">No slab bands yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p *ngIf="actionError" class="text-red-600 text-sm mb-4">{{ actionError }}</p>
+
+          <div class="flex justify-between items-center">
+            <button (click)="deleteYear()" class="text-red-500 hover:text-red-700 text-xs font-bold uppercase">
+              <i class="fas fa-trash mr-1"></i> Delete This Year
+            </button>
+            <button (click)="save()" [disabled]="isSaving"
+              class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+              {{ isSaving ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New financial year modal -->
+<div *ngIf="showNewYearForm" class="fixed z-50 inset-0 overflow-y-auto flex items-center justify-center p-4">
+  <button type="button" class="fixed inset-0 bg-black opacity-50 border-0 cursor-default focus-visible:ring-2 focus-visible:ring-red-500" (click)="closeNewYearForm()" aria-label="Close form"></button>
+  <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm mx-auto z-10 overflow-hidden">
+    <div class="bg-red-600 px-6 py-4 text-white flex justify-between items-center">
+      <h3 class="font-bold text-base uppercase">New Financial Year</h3>
+      <button (click)="closeNewYearForm()" class="text-white hover:text-blueGray-200"><i class="fas fa-times"></i></button>
+    </div>
+    <form (ngSubmit)="createNewYear()" class="p-6 space-y-4">
+      <div>
+        <label for="new-fy" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Financial Year Start (e.g. 2026 = FY2026-27)</label>
+        <input id="new-fy" type="number" [(ngModel)]="newYearValue" name="newYearValue" required
+          class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
+      </div>
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" (click)="closeNewYearForm()" class="text-blueGray-500 text-xs font-bold uppercase px-4 py-2">Cancel</button>
+        <button type="submit" [disabled]="!newYearValue"
+          class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
+          Create
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

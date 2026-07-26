@@ -21,6 +21,7 @@ import { UserDropdownComponent } from './components/dropdowns/user-dropdown/user
 // Layouts
 import { AdminComponent } from './layouts/admin/admin.component';
 import { AuthComponent } from './layouts/auth/auth.component';
+import { EssComponent } from './layouts/ess/ess.component';
 
 // Views
 import { DashboardComponent } from './views/admin/dashboard/dashboard.component';
@@ -40,6 +41,7 @@ import { EmployeesComponent } from './views/admin/employees/employees.component'
 import { AttendanceComponent } from './views/admin/attendance/attendance.component';
 import { LeaveComponent } from './views/admin/leave/leave.component';
 import { PayrollComponent } from './views/admin/payroll/payroll.component';
+import { TdsComponent } from './views/admin/tds/tds.component';
 import { SalesReportComponent } from './views/admin/sales-report/sales-report.component';
 import { ItemReportComponent } from './views/admin/item-report/item-report.component';
 import { PurchaseReportComponent } from './views/admin/purchase-report/purchase-report.component';
@@ -54,6 +56,11 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
 import { RawMaterialsComponent } from './views/admin/raw-materials/raw-materials.component';
 import { BomComponent } from './views/admin/bom/bom.component';
 import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.component';
+import { ReceiptComponent } from './components/print/receipt/receipt.component';
+import { KotComponent } from './components/print/kot/kot.component';
+import { EssLeaveComponent } from './views/ess/leave/ess-leave.component';
+import { EssPayslipsComponent } from './views/ess/payslips/ess-payslips.component';
+import { EssProfileComponent } from './views/ess/profile/ess-profile.component';
 
 @NgModule({
   declarations: [
@@ -89,6 +96,7 @@ import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.co
     AttendanceComponent,
     LeaveComponent,
     PayrollComponent,
+    TdsComponent,
     SalesReportComponent,
     ItemReportComponent,
     PurchaseReportComponent,
@@ -102,7 +110,13 @@ import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.co
     CustomersComponent,
     RawMaterialsComponent,
     BomComponent,
-    BiAnalyticsComponent
+    BiAnalyticsComponent,
+    ReceiptComponent,
+    KotComponent,
+    EssComponent,
+    EssLeaveComponent,
+    EssPayslipsComponent,
+    EssProfileComponent
   ],
   imports: [
     CommonModule,
@@ -143,6 +157,7 @@ import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.co
     AttendanceComponent,
     LeaveComponent,
     PayrollComponent,
+    TdsComponent,
     SalesReportComponent,
     ItemReportComponent,
     PurchaseReportComponent,
@@ -156,7 +171,11 @@ import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.co
     CustomersComponent,
     RawMaterialsComponent,
     BomComponent,
-    BiAnalyticsComponent
+    BiAnalyticsComponent,
+    EssComponent,
+    EssLeaveComponent,
+    EssPayslipsComponent,
+    EssProfileComponent
   ]
 })
 export class TemplateModule { }

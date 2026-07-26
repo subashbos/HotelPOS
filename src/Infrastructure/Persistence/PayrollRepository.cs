@@ -1,5 +1,6 @@
 #nullable enable
 
+using HotelPOS.Application.Common.Models;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -86,6 +87,22 @@ namespace HotelPOS.Infrastructure.Persistence
                 .Where(p => p.EmployeeId == employeeId)
                 .OrderByDescending(p => p.PayrollRun!.Year).ThenByDescending(p => p.PayrollRun!.Month)
                 .ToListAsync();
+        }
+
+        public async Task<TdsRuleSet?> GetTdsRuleSetAsync(int financialYearStart)
+        {
+            var config = await _context.TdsConfigs
+                .Where(c => c.FinancialYearStart <= financialYearStart)
+                .OrderByDescending(c => c.FinancialYearStart)
+                .FirstOrDefaultAsync();
+            if (config == null) return null;
+
+            var slabs = await _context.TdsSlabs
+                .Where(s => s.FinancialYearStart == config.FinancialYearStart)
+                .OrderBy(s => s.DisplayOrder)
+                .ToListAsync();
+
+            return new TdsRuleSet { Config = config, Slabs = slabs };
         }
     }
 }

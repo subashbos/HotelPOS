@@ -39,14 +39,29 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<LeaveBalance>> GetBalancesAsync(int employeeId, int year)
         {
-            _authorization.EnsurePermission(PermissionModules.HrLeave);
+            // A missing linked login account (UserId null) can never match a real CurrentUserId,
+            // so this correctly falls through to the HrLeave permission check for such employees.
+            var targetUserId = (await _employeeRepository.GetByIdAsync(employeeId))?.UserId ?? -1;
+            _authorization.EnsureSelfOrPermission(targetUserId, PermissionModules.HrLeave);
+
             await EnsureBalancesInitializedAsync(employeeId, year);
             return await _repository.GetBalancesAsync(employeeId, year);
         }
 
         public async Task<List<LeaveRequest>> GetRequestsAsync(int? employeeId = null, string? status = null)
         {
-            _authorization.EnsurePermission(PermissionModules.HrLeave);
+            if (employeeId.HasValue)
+            {
+                var targetUserId = (await _employeeRepository.GetByIdAsync(employeeId.Value))?.UserId ?? -1;
+                _authorization.EnsureSelfOrPermission(targetUserId, PermissionModules.HrLeave);
+            }
+            else
+            {
+                // No employeeId filter means "everyone's requests" — that view requires the
+                // blanket HR permission regardless of who's asking; there's no "self" to compare.
+                _authorization.EnsurePermission(PermissionModules.HrLeave);
+            }
+
             return await _repository.GetRequestsAsync(employeeId, status);
         }
 
@@ -164,6 +179,40 @@ namespace HotelPOS.Application.UseCases
                 await _mediator.Publish(new EntityActionEvent(
                     LeaveRequestEntityType, request.Id, "Update",
                     $"Status: {LeaveRequestStatuses.Rejected}, Approver: {approverEmployeeId}"));
+            }
+        }
+
+        public async Task CancelLeaveAsync(int requestId, int employeeId)
+        {
+            var request = await _repository.GetRequestByIdAsync(requestId)
+                ?? throw new KeyNotFoundException($"Leave request #{requestId} not found.");
+
+            if (request.EmployeeId != employeeId)
+                throw new UnauthorizedAccessException("You can only cancel your own leave requests.");
+
+            if (request.Status != LeaveRequestStatuses.Pending)
+                throw new InvalidOperationException("Only pending leave requests can be cancelled.");
+
+            var leaveType = request.LeaveType ?? await _repository.GetLeaveTypeByIdAsync(request.LeaveTypeId)
+                ?? throw new ArgumentException("The selected leave type does not exist.");
+
+            if (leaveType.Code != LeaveTypeCodes.LeaveWithoutPay)
+            {
+                // Release the hold placed on the balance when the request was applied for.
+                var balance = await EnsureBalanceInitializedAsync(request.EmployeeId, leaveType, request.FromDate.Year);
+                balance.PendingDays = Math.Max(0, balance.PendingDays - request.TotalDays);
+                await _repository.UpdateBalanceAsync(balance);
+            }
+
+            request.Status = LeaveRequestStatuses.Cancelled;
+            request.ActionedOn = DateTime.UtcNow;
+            await _repository.UpdateRequestAsync(request);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    LeaveRequestEntityType, request.Id, "Update",
+                    $"Status: {LeaveRequestStatuses.Cancelled}, Employee: {employeeId}"));
             }
         }
 

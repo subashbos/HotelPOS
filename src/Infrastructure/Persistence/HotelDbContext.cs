@@ -43,6 +43,8 @@ namespace HotelPOS.Infrastructure.Persistence
         public DbSet<PayrollRun> PayrollRuns { get; set; }
         public DbSet<Payslip> Payslips { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<TdsSlab> TdsSlabs { get; set; }
+        public DbSet<TdsConfig> TdsConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -252,6 +254,14 @@ namespace HotelPOS.Infrastructure.Persistence
                 .HasIndex(p => new { p.PayrollRunId, p.EmployeeId })
                 .IsUnique();
 
+            modelBuilder.Entity<TdsConfig>()
+                .HasIndex(c => c.FinancialYearStart)
+                .IsUnique();
+
+            modelBuilder.Entity<TdsSlab>()
+                .HasIndex(s => new { s.FinancialYearStart, s.DisplayOrder })
+                .IsUnique();
+
             // ── Human Resources Seed ──────────────────────────────────────────
             modelBuilder.Entity<Department>().HasData(
                 new Department { Id = 1, Name = "Front Office", Description = "Reception, reservations and guest services" },
@@ -277,6 +287,21 @@ namespace HotelPOS.Infrastructure.Persistence
                 new LeaveType { Id = 3, Code = LeaveTypeCodes.EarnedLeave, Name = "Earned / Privilege Leave", AnnualQuota = 15, IsPaid = true, CarryForwardAllowed = true },
                 new LeaveType { Id = 4, Code = LeaveTypeCodes.MaternityLeave, Name = "Maternity Leave", AnnualQuota = 182, IsPaid = true, CarryForwardAllowed = false },
                 new LeaveType { Id = 5, Code = LeaveTypeCodes.LeaveWithoutPay, Name = "Leave Without Pay", AnnualQuota = 0, IsPaid = false, CarryForwardAllowed = false }
+            );
+
+            // ── TDS (new regime) seed for FY2025-26 — Union Budget 2025 slabs, admin-editable thereafter ──
+            modelBuilder.Entity<TdsConfig>().HasData(
+                new TdsConfig { Id = 1, FinancialYearStart = 2025, StandardDeduction = 75000m, RebateIncomeLimit = 1200000m, CessRatePercent = 4m }
+            );
+
+            modelBuilder.Entity<TdsSlab>().HasData(
+                new TdsSlab { Id = 1, FinancialYearStart = 2025, IncomeFrom = 0m, IncomeTo = 400000m, RatePercent = 0m, DisplayOrder = 1 },
+                new TdsSlab { Id = 2, FinancialYearStart = 2025, IncomeFrom = 400000m, IncomeTo = 800000m, RatePercent = 5m, DisplayOrder = 2 },
+                new TdsSlab { Id = 3, FinancialYearStart = 2025, IncomeFrom = 800000m, IncomeTo = 1200000m, RatePercent = 10m, DisplayOrder = 3 },
+                new TdsSlab { Id = 4, FinancialYearStart = 2025, IncomeFrom = 1200000m, IncomeTo = 1600000m, RatePercent = 15m, DisplayOrder = 4 },
+                new TdsSlab { Id = 5, FinancialYearStart = 2025, IncomeFrom = 1600000m, IncomeTo = 2000000m, RatePercent = 20m, DisplayOrder = 5 },
+                new TdsSlab { Id = 6, FinancialYearStart = 2025, IncomeFrom = 2000000m, IncomeTo = 2400000m, RatePercent = 25m, DisplayOrder = 6 },
+                new TdsSlab { Id = 7, FinancialYearStart = 2025, IncomeFrom = 2400000m, IncomeTo = null, RatePercent = 30m, DisplayOrder = 7 }
             );
 
             // ── Catalog: Unit of Measurement Seed ────────────────────────────

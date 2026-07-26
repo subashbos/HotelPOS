@@ -171,9 +171,9 @@ namespace HotelPOS.Domain.Common.Constants
     /// (EPF Act 1952, ESI Act 1948) and apply nationwide. Professional Tax is a STATE subject
     /// (Constitution, Article 276) — several states (UP, Haryana, Delhi, Punjab, Rajasthan, ...)
     /// levy none at all. The slab below mirrors a common state (Karnataka) as a configurable
-    /// default; it is not a substitute for state-specific PT compliance. Income-tax TDS is NOT
-    /// computed automatically (slabs, regime choice, and exemptions change every budget) —
-    /// it is captured on the payslip as a manual/override entry.
+    /// default; it is not a substitute for state-specific PT compliance. Income-tax TDS is
+    /// computed separately against the admin-editable TdsSlab/TdsConfig tables (new regime only;
+    /// see TdsCalculator), since slabs change every budget.
     /// </summary>
     public static class IndianStatutoryDefaults
     {

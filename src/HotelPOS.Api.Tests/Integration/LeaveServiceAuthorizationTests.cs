@@ -25,20 +25,6 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
-        public async Task GetBalancesAsync_DoesNotAllowViewingAnotherEmployeesRecordWithoutPermission()
-        {
-            // Bare authentication with no HrLeave grant must not be enough to view ANY employee's
-            // leave balances, including one's own — this module has no self-service path.
-            var auth = new Mock<IAuthorizationService>();
-            auth.Setup(a => a.EnsurePermission(PermissionModules.HrLeave))
-                .Throws(new UnauthorizedAccessException("Access denied."));
-
-            var service = BuildService(auth);
-
-            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetBalancesAsync(42, 2026));
-        }
-
-        [Fact]
         public async Task GetBalancesAsync_WhenGrantedHrLeave_ReturnsAnyEmployeesBalances()
         {
             var auth = TestAuthorization.AllowAll();
@@ -52,7 +38,51 @@ namespace HotelPOS.Tests
             var result = await service.GetBalancesAsync(42, 2026);
 
             Assert.Single(result);
-            auth.Verify(a => a.EnsurePermission(PermissionModules.HrLeave), Times.Once);
+            auth.Verify(a => a.EnsureSelfOrPermission(It.IsAny<int>(), PermissionModules.HrLeave), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetBalancesAsync_ResolvesTargetEmployeesLinkedUserId_ForSelfOrPermissionCheck()
+        {
+            // The Employee Self-Service leave view calls this with the caller's own employeeId,
+            // so it must resolve that employee's linked UserId and defer the self-vs-permission
+            // decision to IAuthorizationService rather than trusting the raw employeeId.
+            var auth = new Mock<IAuthorizationService>();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = 7 });
+            _repo.Setup(r => r.GetLeaveTypesAsync()).ReturnsAsync(new List<LeaveType>());
+            _repo.Setup(r => r.GetBalancesAsync(42, 2026)).ReturnsAsync(new List<LeaveBalance>());
+
+            var service = BuildService(auth);
+            await service.GetBalancesAsync(42, 2026);
+
+            auth.Verify(a => a.EnsureSelfOrPermission(7, PermissionModules.HrLeave), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetBalancesAsync_EmployeeWithNoLinkedUserAccount_FallsBackToPermissionCheckOnly()
+        {
+            var auth = new Mock<IAuthorizationService>();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = null });
+            _repo.Setup(r => r.GetLeaveTypesAsync()).ReturnsAsync(new List<LeaveType>());
+            _repo.Setup(r => r.GetBalancesAsync(42, 2026)).ReturnsAsync(new List<LeaveBalance>());
+
+            var service = BuildService(auth);
+            await service.GetBalancesAsync(42, 2026);
+
+            auth.Verify(a => a.EnsureSelfOrPermission(-1, PermissionModules.HrLeave), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetBalancesAsync_WhenNeitherSelfNorPermitted_Throws()
+        {
+            var auth = new Mock<IAuthorizationService>();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = 7 });
+            auth.Setup(a => a.EnsureSelfOrPermission(7, PermissionModules.HrLeave))
+                .Throws(new UnauthorizedAccessException("Access denied."));
+
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetBalancesAsync(42, 2026));
         }
 
         [Fact]
@@ -82,6 +112,7 @@ namespace HotelPOS.Tests
         public async Task GetRequestsAsync_WhenGrantedHrLeave_ReturnsAnyEmployeesRequests()
         {
             var auth = TestAuthorization.AllowAll();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = 7 });
             _repo.Setup(r => r.GetRequestsAsync(42, null)).ReturnsAsync(new List<LeaveRequest>
             {
                 new LeaveRequest { Id = 1, EmployeeId = 42 }
@@ -91,7 +122,33 @@ namespace HotelPOS.Tests
             var result = await service.GetRequestsAsync(42);
 
             Assert.Single(result);
-            auth.Verify(a => a.EnsurePermission(PermissionModules.HrLeave), Times.Once);
+            auth.Verify(a => a.EnsureSelfOrPermission(7, PermissionModules.HrLeave), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetRequestsAsync_WithEmployeeIdFilter_ResolvesLinkedUserIdForSelfOrPermissionCheck()
+        {
+            var auth = new Mock<IAuthorizationService>();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = 7 });
+            _repo.Setup(r => r.GetRequestsAsync(42, null)).ReturnsAsync(new List<LeaveRequest>());
+
+            var service = BuildService(auth);
+            await service.GetRequestsAsync(42);
+
+            auth.Verify(a => a.EnsureSelfOrPermission(7, PermissionModules.HrLeave), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetRequestsAsync_WithEmployeeIdFilter_WhenNeitherSelfNorPermitted_Throws()
+        {
+            var auth = new Mock<IAuthorizationService>();
+            _employeeRepo.Setup(r => r.GetByIdAsync(42)).ReturnsAsync(new Employee { Id = 42, UserId = 7 });
+            auth.Setup(a => a.EnsureSelfOrPermission(7, PermissionModules.HrLeave))
+                .Throws(new UnauthorizedAccessException("Access denied."));
+
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetRequestsAsync(42));
         }
 
         private static LeaveRequest ValidRequest(int employeeId) => new()
