@@ -126,5 +126,43 @@ namespace HotelPOS.Tests
             Assert.Contains("Chicken", ex.Message);
             Assert.Contains("modified by another user", ex.Message);
         }
+
+        [Fact]
+        public async Task OrderRepository_GetNextInvoiceNumberAsync_ConcurrentOrders_DoNotDuplicateInvoiceNumber()
+        {
+            using var context = CreateSqliteContext();
+            var fiscalYear = "2026-27";
+            var invoiceNumbers = new System.Collections.Concurrent.ConcurrentBag<string>();
+            var connection = context.Database.GetDbConnection();
+
+            var tasks = Enumerable.Range(1, 10).Select(i => Task.Run(async () =>
+            {
+                var options = new DbContextOptionsBuilder<HotelDbContext>()
+                    .UseSqlite(connection)
+                    .Options;
+
+                using var scopedContext = new HotelDbContext(options);
+                var repo = new OrderRepository(scopedContext);
+
+                lock (connection)
+                {
+                    var inv = repo.GetNextInvoiceNumberAsync(fiscalYear).GetAwaiter().GetResult();
+                    scopedContext.Orders.Add(new Order
+                    {
+                        InvoiceNumber = inv,
+                        FiscalYear = fiscalYear,
+                        TotalAmount = 100 * i,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                    scopedContext.SaveChanges();
+                    invoiceNumbers.Add(inv);
+                }
+            })).ToArray();
+
+            await Task.WhenAll(tasks);
+
+            Assert.Equal(10, invoiceNumbers.Count);
+            Assert.Equal(10, invoiceNumbers.Distinct().Count());
+        }
     }
 }
