@@ -67,15 +67,18 @@
               <tbody>
                 <tr *ngFor="let slab of slabs; let i = index; trackBy: trackBySlabIndex">
                   <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-2">
-                    <input type="number" [(ngModel)]="slab.incomeFrom" [name]="'incomeFrom-' + i"
+                    <label [attr.for]="'incomeFrom-' + i" class="sr-only">Income from for slab {{ i + 1 }}</label>
+                    <input type="number" [id]="'incomeFrom-' + i" [(ngModel)]="slab.incomeFrom" [name]="'incomeFrom-' + i"
                       class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
                   </td>
                   <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-2">
-                    <input type="number" [(ngModel)]="slab.incomeTo" [name]="'incomeTo-' + i"
+                    <label [attr.for]="'incomeTo-' + i" class="sr-only">Income to for slab {{ i + 1 }}</label>
+                    <input type="number" [id]="'incomeTo-' + i" [(ngModel)]="slab.incomeTo" [name]="'incomeTo-' + i"
                       class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
                   </td>
                   <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-2">
-                    <input type="number" [(ngModel)]="slab.ratePercent" [name]="'ratePercent-' + i"
+                    <label [attr.for]="'ratePercent-' + i" class="sr-only">Rate percent for slab {{ i + 1 }}</label>
+                    <input type="number" [id]="'ratePercent-' + i" [(ngModel)]="slab.ratePercent" [name]="'ratePercent-' + i"
                       class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring" />
                   </td>
                   <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-2 text-right">

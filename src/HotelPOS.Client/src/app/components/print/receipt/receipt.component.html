@@ -47,33 +47,33 @@
   <table class="receipt-totals">
     <tbody>
       <tr *ngIf="showGstBreakdown">
-        <td class="ar">Subtotal:</td>
+        <th class="ar" scope="row">Subtotal:</th>
         <td class="ar">{{ data.subtotal | number:'1.2-2' }}</td>
       </tr>
       <ng-container *ngIf="showGstBreakdown">
         <tr *ngFor="let g of taxGroups">
-          <td class="ar">CGST ({{ g.halfRate }}%):</td>
+          <th class="ar" scope="row">CGST ({{ g.halfRate }}%):</th>
           <td class="ar">{{ g.halfTax | number:'1.2-2' }}</td>
         </tr>
         <tr *ngFor="let g of taxGroups">
-          <td class="ar">SGST ({{ g.halfRate }}%):</td>
+          <th class="ar" scope="row">SGST ({{ g.halfRate }}%):</th>
           <td class="ar">{{ g.halfTax | number:'1.2-2' }}</td>
         </tr>
       </ng-container>
       <tr *ngIf="data.discountAmount > 0">
-        <td class="ar">Discount:</td>
+        <th class="ar" scope="row">Discount:</th>
         <td class="ar">-{{ data.discountAmount | number:'1.2-2' }}</td>
       </tr>
       <tr *ngIf="settings.enableRoundOff && roundOffDiff !== 0">
-        <td class="ar">Round Off:</td>
+        <th class="ar" scope="row">Round Off:</th>
         <td class="ar">{{ roundOffDiff >= 0 ? '+' : '' }}{{ roundOffDiff | number:'1.2-2' }}</td>
       </tr>
       <tr class="receipt-bold receipt-grand">
-        <td class="ar">Grand Total:</td>
+        <th class="ar" scope="row">Grand Total:</th>
         <td class="ar">{{ grandTotal | number:'1.2-2' }}</td>
       </tr>
       <tr>
-        <td class="ar receipt-small">Payment Mode:</td>
+        <th class="ar receipt-small" scope="row">Payment Mode:</th>
         <td class="ar receipt-small">{{ data.paymentMode }}</td>
       </tr>
     </tbody>

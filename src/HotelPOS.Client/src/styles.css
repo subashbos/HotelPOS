@@ -2858,11 +2858,12 @@ input:where([type='file']):focus {
   background: #e6e6e6;
 }
 
-.receipt-totals td {
+.receipt-totals td, .receipt-totals th {
   padding: 2px 5px;
+  font-weight: inherit;
 }
 
-.receipt-grand td {
+.receipt-grand td, .receipt-grand th {
   font-size: 1.15em;
 }
 
