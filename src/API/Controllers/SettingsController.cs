@@ -62,7 +62,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> SaveSettings([FromBody] SaveSettingsDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

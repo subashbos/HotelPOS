@@ -14,7 +14,7 @@ namespace HotelPOS.Tests
 
         public DeletePurchaseCommandHandlerTests()
         {
-            _handler = new DeletePurchaseCommandHandler(_purchaseRepoMock.Object, _itemRepoMock.Object);
+            _handler = new DeletePurchaseCommandHandler(_purchaseRepoMock.Object, _itemRepoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

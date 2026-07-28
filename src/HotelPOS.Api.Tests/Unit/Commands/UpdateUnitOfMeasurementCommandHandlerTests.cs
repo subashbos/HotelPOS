@@ -13,7 +13,7 @@ namespace HotelPOS.Tests.Unit.Commands
 
         public UpdateUnitOfMeasurementCommandHandlerTests()
         {
-            _handler = new UpdateUnitOfMeasurementCommandHandler(_repo.Object);
+            _handler = new UpdateUnitOfMeasurementCommandHandler(_repo.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

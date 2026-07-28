@@ -1,7 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +39,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<ExpenseDto>> CreateExpense([FromBody] SaveExpenseDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -61,7 +59,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> UpdateExpense(int id, [FromBody] SaveExpenseDto request)
         {
             if (id <= 0) return BadRequest("Invalid expense ID.");
@@ -86,7 +83,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteExpense(int id)
         {
             if (id <= 0) return BadRequest("Invalid expense ID.");

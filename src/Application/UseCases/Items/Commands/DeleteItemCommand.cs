@@ -1,5 +1,6 @@
 using MediatR;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,14 +13,18 @@ namespace HotelPOS.Application.UseCases.Items.Commands
     public class DeleteItemCommandHandler : IRequestHandler<DeleteItemCommand, bool>
     {
         private readonly IItemRepository _itemRepository;
+        private readonly IAuthorizationService _authorization;
 
-        public DeleteItemCommandHandler(IItemRepository itemRepository)
+        public DeleteItemCommandHandler(IItemRepository itemRepository, IAuthorizationService authorization)
         {
             _itemRepository = itemRepository;
+            _authorization = authorization;
         }
 
         public async Task<bool> Handle(DeleteItemCommand request, CancellationToken cancellationToken)
         {
+            _authorization.EnsurePermission(PermissionModules.Items);
+
             if (request.Id <= 0)
                 throw new ArgumentException("Invalid item ID.", nameof(request));
 

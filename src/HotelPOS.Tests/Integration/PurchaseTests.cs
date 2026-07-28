@@ -25,7 +25,7 @@ namespace HotelPOS.Tests
         {
             _purchaseRepoMock = new Mock<IPurchaseRepository>();
             _itemRepoMock = new Mock<IItemRepository>();
-            _purchaseService = new PurchaseService(_purchaseRepoMock.Object, _itemRepoMock.Object);
+            _purchaseService = new PurchaseService(_purchaseRepoMock.Object, _itemRepoMock.Object, TestAuthorization.AllowAll().Object);
 
             _itemServiceMock = new Mock<IItemService>();
             _notificationServiceMock = new Mock<INotificationService>();

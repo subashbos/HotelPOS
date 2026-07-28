@@ -62,7 +62,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("{id:int}/void")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> VoidOrder(int id, [FromBody] VoidOrderRequest request)
         {
             if (id <= 0) return BadRequest(InvalidOrderIdErrorMessage);
@@ -74,9 +73,8 @@ namespace HotelPOS.Api.Controllers
             return NoContent();
         }
 
-        // Money-back action - same role gate as Void.
+        // Money-back action - same permission gate as Void.
         [HttpPost("{id:int}/refund")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> RefundOrder(int id, [FromBody] RefundOrderRequest request)
         {
             if (id <= 0) return BadRequest(InvalidOrderIdErrorMessage);
@@ -104,7 +102,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> UpdateOrder(int id, [FromBody] UpdateOrderRequest request)
         {
             if (id <= 0) return BadRequest(InvalidOrderIdErrorMessage);

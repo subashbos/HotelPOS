@@ -17,6 +17,7 @@ namespace HotelPOS.Application.UseCases
         private readonly IMediator? _mediator;
         private readonly IPurchaseRepository? _purchaseRepository;
         private readonly IItemRepository? _itemRepository;
+        private readonly IAuthorizationService? _authorization;
 
         /// <summary>DI constructor — uses MediatR pipeline (validators + handlers).</summary>
         public PurchaseService(IMediator mediator)
@@ -25,10 +26,11 @@ namespace HotelPOS.Application.UseCases
         }
 
         /// <summary>Legacy constructor for unit tests that inject repositories directly.</summary>
-        public PurchaseService(IPurchaseRepository purchaseRepository, IItemRepository itemRepository)
+        public PurchaseService(IPurchaseRepository purchaseRepository, IItemRepository itemRepository, IAuthorizationService authorization)
         {
             _purchaseRepository = purchaseRepository;
             _itemRepository = itemRepository;
+            _authorization = authorization;
         }
 
         public async Task<List<Supplier>> GetSuppliersAsync()
@@ -69,7 +71,7 @@ namespace HotelPOS.Application.UseCases
 
             // Legacy path: validate and delegate to command handler
             ValidatePurchase(purchase);
-            var handler = new SavePurchaseCommandHandler(_purchaseRepository!, _itemRepository!);
+            var handler = new SavePurchaseCommandHandler(_purchaseRepository!, _itemRepository!, _authorization!);
             await handler.Handle(new SavePurchaseCommand(purchase), CancellationToken.None);
         }
 
@@ -87,7 +89,7 @@ namespace HotelPOS.Application.UseCases
 
             // Legacy path: validate and delegate to command handler
             ValidatePurchase(purchase);
-            var handler = new UpdatePurchaseCommandHandler(_purchaseRepository!, _itemRepository!);
+            var handler = new UpdatePurchaseCommandHandler(_purchaseRepository!, _itemRepository!, _authorization!);
             await handler.Handle(new UpdatePurchaseCommand(purchase), CancellationToken.None);
         }
 
@@ -101,7 +103,7 @@ namespace HotelPOS.Application.UseCases
             }
 
             // Legacy path: delegate to command handler
-            var handler = new DeletePurchaseCommandHandler(_purchaseRepository!, _itemRepository!);
+            var handler = new DeletePurchaseCommandHandler(_purchaseRepository!, _itemRepository!, _authorization!);
             await handler.Handle(new DeletePurchaseCommand(id), CancellationToken.None);
         }
 

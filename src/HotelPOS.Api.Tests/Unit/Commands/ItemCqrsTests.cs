@@ -86,7 +86,7 @@ namespace HotelPOS.Tests
                 TrackInventory: true,
                 UnitId: 1
             );
-            var handler = new CreateItemCommandHandler(_repoMock.Object);
+            var handler = new CreateItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -115,7 +115,7 @@ namespace HotelPOS.Tests
                 TrackInventory: true,
                 UnitId: 1
             );
-            var handler = new CreateItemCommandHandler(_repoMock.Object);
+            var handler = new CreateItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
@@ -153,7 +153,7 @@ namespace HotelPOS.Tests
                 true,
                 1
             );
-            var handler = new UpdateItemCommandHandler(_repoMock.Object);
+            var handler = new UpdateItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -187,7 +187,7 @@ namespace HotelPOS.Tests
                 true,
                 1
             );
-            var handler = new UpdateItemCommandHandler(_repoMock.Object);
+            var handler = new UpdateItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(command, CancellationToken.None));
@@ -212,7 +212,7 @@ namespace HotelPOS.Tests
                 true,
                 1
             );
-            var handler = new UpdateItemCommandHandler(_repoMock.Object);
+            var handler = new UpdateItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(command, CancellationToken.None));
@@ -234,7 +234,7 @@ namespace HotelPOS.Tests
                 true,
                 1
             );
-            var handler = new UpdateItemCommandHandler(_repoMock.Object);
+            var handler = new UpdateItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(command, CancellationToken.None));
@@ -247,7 +247,7 @@ namespace HotelPOS.Tests
             var item = new Item { Id = 10, Name = "Item to Delete" };
             _repoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(item);
             var command = new DeleteItemCommand(10);
-            var handler = new DeleteItemCommandHandler(_repoMock.Object);
+            var handler = new DeleteItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act
             var result = await handler.Handle(command, CancellationToken.None);
@@ -263,7 +263,7 @@ namespace HotelPOS.Tests
             // Arrange
             _repoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Item?)null);
             var command = new DeleteItemCommand(99);
-            var handler = new DeleteItemCommandHandler(_repoMock.Object);
+            var handler = new DeleteItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<KeyNotFoundException>(() => handler.Handle(command, CancellationToken.None));
@@ -275,7 +275,7 @@ namespace HotelPOS.Tests
         {
             // Arrange
             var command = new DeleteItemCommand(-1);
-            var handler = new DeleteItemCommandHandler(_repoMock.Object);
+            var handler = new DeleteItemCommandHandler(_repoMock.Object, TestAuthorization.AllowAll().Object);
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(() => handler.Handle(command, CancellationToken.None));

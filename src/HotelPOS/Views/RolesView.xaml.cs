@@ -56,6 +56,9 @@ namespace HotelPOS.Views
             ["HrLeave"] = ("🌴", "HR: Leave", "Apply for, approve, or reject employee leave"),
             ["HrPayroll"] = ("💰", "HR: Payroll", "View salary structures, payroll runs, and payslips"),
             ["HrPayrollRun"] = ("🧮", "HR: Run Payroll", "Save salary structures, run/mark-paid/void payroll"),
+            ["Tds"] = ("🧾", "TDS Slabs", "Manage income-tax TDS slab structures"),
+            ["OrderManagement"] = ("🔁", "Order Management", "Void, refund, or edit an already-placed order"),
+            ["CustomerManagement"] = ("🗑", "Customer Management", "Delete customer records"),
         };
 
         public static PermissionViewModel FromPermission(RolePermission p)

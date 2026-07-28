@@ -4,6 +4,7 @@ using HotelPOS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelPOS.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260728170934_AddTdsPermission")]
+    partial class AddTdsPermission
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1590,24 +1593,6 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = 47,
-                            CanAccess = true,
-                            CanDelete = true,
-                            CanEdit = true,
-                            ModuleName = "OrderManagement",
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 49,
-                            CanAccess = true,
-                            CanDelete = true,
-                            CanEdit = true,
-                            ModuleName = "CustomerManagement",
-                            RoleId = 1
-                        },
-                        new
-                        {
                             Id = 11,
                             CanAccess = false,
                             CanDelete = true,
@@ -1802,24 +1787,6 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             CanDelete = true,
                             CanEdit = true,
                             ModuleName = "Tds",
-                            RoleId = 2
-                        },
-                        new
-                        {
-                            Id = 48,
-                            CanAccess = false,
-                            CanDelete = true,
-                            CanEdit = true,
-                            ModuleName = "OrderManagement",
-                            RoleId = 2
-                        },
-                        new
-                        {
-                            Id = 50,
-                            CanAccess = false,
-                            CanDelete = true,
-                            CanEdit = true,
-                            ModuleName = "CustomerManagement",
                             RoleId = 2
                         });
                 });

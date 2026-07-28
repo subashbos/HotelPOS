@@ -1,7 +1,7 @@
 export const PERMISSION_MODULES = [
   'Dashboard', 'Billing', 'Items', 'Categories', 'Units', 'Tables', 'Ledger', 'Journal', 'Settings',
   'Audit', 'Shift', 'Roles', 'SalesReport', 'HrEmployees', 'HrAttendance', 'HrLeave', 'HrPayroll',
-  'HrPayrollRun', 'Expenses'
+  'HrPayrollRun', 'Expenses', 'Customers', 'Purchase', 'Tds', 'OrderManagement', 'CustomerManagement'
 ] as const;
 
 export interface RolePermission {

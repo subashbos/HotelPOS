@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 
@@ -10,15 +11,19 @@ namespace HotelPOS.Application.UseCases.Purchases.Commands
     {
         private readonly IPurchaseRepository _purchaseRepository;
         private readonly IItemRepository _itemRepository;
+        private readonly IAuthorizationService _authorization;
 
-        public SavePurchaseCommandHandler(IPurchaseRepository purchaseRepository, IItemRepository itemRepository)
+        public SavePurchaseCommandHandler(IPurchaseRepository purchaseRepository, IItemRepository itemRepository, IAuthorizationService authorization)
         {
             _purchaseRepository = purchaseRepository;
             _itemRepository = itemRepository;
+            _authorization = authorization;
         }
 
         public async Task Handle(SavePurchaseCommand request, CancellationToken cancellationToken)
         {
+            _authorization.EnsurePermission(PermissionModules.Purchase);
+
             var purchase = request.Purchase;
 
             await _purchaseRepository.BeginTransactionAsync();

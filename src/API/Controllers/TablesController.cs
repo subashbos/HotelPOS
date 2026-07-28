@@ -1,7 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +27,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<TableDto>> CreateTable([FromBody] CreateTableDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -47,7 +45,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> UpdateTable(int id, [FromBody] CreateTableDto request)
         {
             if (id <= 0) return BadRequest("Invalid table ID.");
@@ -70,7 +67,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteTable(int id)
         {
             if (id <= 0) return BadRequest("Invalid table ID.");

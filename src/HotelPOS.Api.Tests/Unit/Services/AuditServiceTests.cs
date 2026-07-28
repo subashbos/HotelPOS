@@ -23,7 +23,7 @@ namespace HotelPOS.Tests
         public AuditServiceTests()
         {
             _mediatorMock = new Mock<IMediator>();
-            _service = new AuditService(_mediatorMock.Object);
+            _service = new AuditService(_mediatorMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

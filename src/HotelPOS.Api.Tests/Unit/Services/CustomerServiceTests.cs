@@ -20,7 +20,7 @@ namespace HotelPOS.Tests.Unit.Services
         {
             _repoMock = new Mock<ICustomerRepository>();
             _orderRepoMock = new Mock<IOrderRepository>();
-            _service = new CustomerService(_repoMock.Object, _orderRepoMock.Object);
+            _service = new CustomerService(_repoMock.Object, _orderRepoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

@@ -36,6 +36,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveEmployeeAsync(Employee employee)
         {
+            _authorization.EnsurePermission(PermissionModules.HrEmployees);
+
             if (employee == null) throw new ArgumentNullException(nameof(employee));
 
             employee.EmployeeCode = employee.EmployeeCode?.Trim() ?? string.Empty;
@@ -60,6 +62,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteEmployeeAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.HrEmployees);
+
             _ = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Employee #{id} not found.");
             await _repository.DeleteAsync(id);
@@ -76,9 +80,34 @@ namespace HotelPOS.Application.UseCases
             return await _repository.GetDepartmentsAsync();
         }
 
+        public async Task SaveDepartmentAsync(Department department)
+        {
+            if (department == null) throw new ArgumentNullException(nameof(department));
+            if (string.IsNullOrWhiteSpace(department.Name)) throw new ArgumentException("Department name is required.");
+            await _repository.SaveDepartmentAsync(department);
+        }
+
+        public async Task DeleteDepartmentAsync(int id)
+        {
+            await _repository.DeleteDepartmentAsync(id);
+        }
+
         public async Task<List<Designation>> GetDesignationsAsync()
         {
             return await _repository.GetDesignationsAsync();
+        }
+
+        public async Task SaveDesignationAsync(Designation designation)
+        {
+            if (designation == null) throw new ArgumentNullException(nameof(designation));
+            if (string.IsNullOrWhiteSpace(designation.Title)) throw new ArgumentException("Designation title is required.");
+            if (designation.DepartmentId <= 0) throw new ArgumentException("Please select a valid department.");
+            await _repository.SaveDesignationAsync(designation);
+        }
+
+        public async Task DeleteDesignationAsync(int id)
+        {
+            await _repository.DeleteDesignationAsync(id);
         }
 
         private async Task<string> GenerateNextEmployeeCodeAsync()

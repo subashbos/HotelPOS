@@ -73,12 +73,20 @@ namespace HotelPOS.Domain.Common.Constants
         public const string Expenses = "Expenses";
         public const string Customers = "Customers";
         public const string Units = "Units";
+        /// <summary>Covers both purchase orders/entries and supplier management — mirrors the WPF nav grouping (Purchase, Suppliers, RawMaterials, BOM all gate on this one module).</summary>
+        public const string Purchase = "Purchase";
+        public const string Tds = "Tds";
+        /// <summary>Voiding/refunding/editing an already-placed order — a more sensitive action than <see cref="Billing"/>'s create/pay flow, which Cashiers also hold.</summary>
+        public const string OrderManagement = "OrderManagement";
+        /// <summary>Deleting a customer record — a more sensitive action than <see cref="Customers"/>'s create/update/view access, which Cashiers also hold.</summary>
+        public const string CustomerManagement = "CustomerManagement";
 
         public static readonly string[] All =
         {
             Dashboard, Billing, Items, Categories, Tables,
             Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport,
-            HrEmployees, HrAttendance, HrLeave, HrPayroll, HrPayrollRun, Expenses, Customers, Units
+            HrEmployees, HrAttendance, HrLeave, HrPayroll, HrPayrollRun, Expenses, Customers, Units,
+            Purchase, Tds, OrderManagement, CustomerManagement
         };
     }
 
