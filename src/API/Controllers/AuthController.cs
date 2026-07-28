@@ -4,6 +4,7 @@ using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
@@ -14,6 +15,7 @@ using System.Text;
 
 namespace HotelPOS.Api.Controllers
 {
+    [EnableRateLimiting("AuthPolicy")]
     public class AuthController : BaseApiController
     {
         private readonly IAuthService _authService;

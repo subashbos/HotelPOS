@@ -109,6 +109,26 @@ namespace HotelPOS
                      "Connection string is missing. Configure 'ConnectionStrings:DefaultConnection' in appsettings or set HOTELPOS_DEFAULT_CONNECTION.");
             }
 
+            // ── PII column encryption key ────────────────────────────────────
+            // Must match the API host's Encryption:PiiKey exactly — both read/write the same
+            // Employee.Pan/Aadhaar/Uan/EsicNumber/BankAccountNumber/BankIfsc columns.
+            var piiKeyBase64 = config["Encryption:PiiKey"];
+            if (string.IsNullOrWhiteSpace(piiKeyBase64))
+                piiKeyBase64 = Environment.GetEnvironmentVariable("HOTELPOS_PII_KEY");
+            if (string.IsNullOrWhiteSpace(piiKeyBase64))
+            {
+                throw new InvalidOperationException(
+                    "PII encryption key is not configured. Set Encryption:PiiKey in appsettings or HOTELPOS_PII_KEY environment variable.");
+            }
+            try
+            {
+                HotelPOS.Infrastructure.Persistence.PiiEncryptionKeyProvider.SetKey(Convert.FromBase64String(piiKeyBase64));
+            }
+            catch (FormatException ex)
+            {
+                throw new InvalidOperationException("PII encryption key (Encryption:PiiKey / HOTELPOS_PII_KEY) must be valid Base64.", ex);
+            }
+
             var services = new ServiceCollection();
             ConfigureServices(services, connectionString);
 

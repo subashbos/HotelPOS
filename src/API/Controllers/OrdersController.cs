@@ -104,6 +104,7 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> UpdateOrder(int id, [FromBody] UpdateOrderRequest request)
         {
             if (id <= 0) return BadRequest(InvalidOrderIdErrorMessage);

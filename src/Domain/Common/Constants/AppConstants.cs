@@ -68,6 +68,8 @@ namespace HotelPOS.Domain.Common.Constants
         public const string HrAttendance = "HrAttendance";
         public const string HrLeave = "HrLeave";
         public const string HrPayroll = "HrPayroll";
+        /// <summary>Salary structures, running/voiding payroll — a finer-grained action distinct from <see cref="HrPayroll"/>'s read/view access.</summary>
+        public const string HrPayrollRun = "HrPayrollRun";
         public const string Expenses = "Expenses";
         public const string Customers = "Customers";
         public const string Units = "Units";
@@ -76,7 +78,7 @@ namespace HotelPOS.Domain.Common.Constants
         {
             Dashboard, Billing, Items, Categories, Tables,
             Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport,
-            HrEmployees, HrAttendance, HrLeave, HrPayroll, Expenses, Customers, Units
+            HrEmployees, HrAttendance, HrLeave, HrPayroll, HrPayrollRun, Expenses, Customers, Units
         };
     }
 

@@ -175,6 +175,15 @@ namespace HotelPOS.Infrastructure.Persistence
                 .HasIndex(e => e.EmployeeCode)
                 .IsUnique();
 
+            // ── PII encryption at rest ────────────────────────────────────────
+            var piiConverter = new EncryptedStringConverter();
+            modelBuilder.Entity<Employee>().Property(e => e.Pan).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.Aadhaar).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.Uan).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.EsicNumber).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.BankAccountNumber).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.BankIfsc).HasConversion(piiConverter);
+
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Customer)
                 .WithMany()
@@ -346,6 +355,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 34, RoleId = 1, ModuleName = PermissionModules.HrPayroll, CanAccess = true },
                 new RolePermission { Id = 39, RoleId = 1, ModuleName = PermissionModules.Customers, CanAccess = true },
                 new RolePermission { Id = 41, RoleId = 1, ModuleName = PermissionModules.Units, CanAccess = true },
+                new RolePermission { Id = 43, RoleId = 1, ModuleName = PermissionModules.HrPayrollRun, CanAccess = true },
 
                 // Cashier: Restricted access
                 new RolePermission { Id = 11, RoleId = 2, ModuleName = PermissionModules.Dashboard, CanAccess = false },
@@ -367,7 +377,8 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 37, RoleId = 2, ModuleName = PermissionModules.HrLeave, CanAccess = false },
                 new RolePermission { Id = 38, RoleId = 2, ModuleName = PermissionModules.HrPayroll, CanAccess = false },
                 new RolePermission { Id = 40, RoleId = 2, ModuleName = PermissionModules.Customers, CanAccess = true },
-                new RolePermission { Id = 42, RoleId = 2, ModuleName = PermissionModules.Units, CanAccess = false }
+                new RolePermission { Id = 42, RoleId = 2, ModuleName = PermissionModules.Units, CanAccess = false },
+                new RolePermission { Id = 44, RoleId = 2, ModuleName = PermissionModules.HrPayrollRun, CanAccess = false }
             );
 
 

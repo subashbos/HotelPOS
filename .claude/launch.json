@@ -9,8 +9,8 @@
     },
     {
       "name": "api",
-      "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--project", "src/API/HotelPOS.Api.csproj"],
+      "runtimeExecutable": "powershell.exe",
+      "runtimeArgs": ["-NoProfile", "-Command", "$env:HOTELPOS_PII_KEY = [Environment]::GetEnvironmentVariable('HOTELPOS_PII_KEY','User'); dotnet run --project src/API/HotelPOS.Api.csproj"],
       "port": 55982
     }
   ]

@@ -54,7 +54,8 @@ namespace HotelPOS.Views
             ["HrEmployees"] = ("🧑\u200D💼", "HR: Employees", "View and manage employee master data"),
             ["HrAttendance"] = ("🕒", "HR: Attendance", "Mark and review employee attendance"),
             ["HrLeave"] = ("🌴", "HR: Leave", "Apply for, approve, or reject employee leave"),
-            ["HrPayroll"] = ("💰", "HR: Payroll", "Manage salary structures and run payroll"),
+            ["HrPayroll"] = ("💰", "HR: Payroll", "View salary structures, payroll runs, and payslips"),
+            ["HrPayrollRun"] = ("🧮", "HR: Run Payroll", "Save salary structures, run/mark-paid/void payroll"),
         };
 
         public static PermissionViewModel FromPermission(RolePermission p)

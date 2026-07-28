@@ -1,5 +1,6 @@
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -70,12 +71,14 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpGet("margins/summary")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<ProfitMarginSummaryDto>> GetMarginSummary([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             return Ok(await _biReportService.GetProfitMarginSummaryAsync(from, to));
         }
 
         [HttpGet("margins/items")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<List<ItemMarginRowDto>>> GetItemMargins([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             return Ok(await _biReportService.GetItemMarginsAsync(from, to));
@@ -88,6 +91,7 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("wastage")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> LogWastage([FromBody] LogWastageRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Reason)) return BadRequest("A wastage reason is required.");
@@ -116,24 +120,28 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpGet("void-audit")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<List<VoidDiscountAuditRowDto>>> GetVoidDiscountAuditReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             return Ok(await _biReportService.GetVoidDiscountAuditReportAsync(from, to));
         }
 
         [HttpGet("staff-performance")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<List<StaffPerformanceReportDto>>> GetStaffPerformanceReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             return Ok(await _biReportService.GetStaffPerformanceReportAsync(from, to));
         }
 
         [HttpGet("stock-valuation")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<StockValuationSummaryDto>> GetStockValuationReport()
         {
             return Ok(await _biReportService.GetStockValuationReportAsync());
         }
 
         [HttpGet("pnl")]
+        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<ProfitAndLossReportDto>> GetProfitAndLossReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             return Ok(await _biReportService.GetProfitAndLossReportAsync(from, to));

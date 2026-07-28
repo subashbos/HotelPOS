@@ -1,7 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.Payroll;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +29,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("salary-structures")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> SaveSalaryStructure([FromBody] SaveSalaryStructureDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -49,7 +47,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("run")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<ActionResult<PayrollRunDto>> RunPayroll([FromBody] RunPayrollDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -66,7 +63,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("runs/{id:int}/mark-paid")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> MarkRunAsPaid(int id)
         {
             if (id <= 0) return BadRequest("Invalid payroll run ID.");
@@ -88,7 +84,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("runs/{id:int}/void")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> VoidRun(int id, [FromBody] VoidPayrollRunDto request)
         {
             if (id <= 0) return BadRequest("Invalid payroll run ID.");

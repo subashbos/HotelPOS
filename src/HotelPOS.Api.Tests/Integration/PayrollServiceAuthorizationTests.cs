@@ -121,5 +121,113 @@ namespace HotelPOS.Tests
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetPayslipsByEmployeeAsync(42));
         }
+
+        // ---------- HrPayrollRun: SaveSalaryStructureAsync ----------
+
+        [Fact]
+        public async Task SaveSalaryStructureAsync_WhenUnauthorized_ThrowsAndDoesNotPersist()
+        {
+            var auth = TestAuthorization.DenyAll();
+            var service = BuildService(auth);
+            var structure = new SalaryStructure { EmployeeId = 1, Basic = 30000 };
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.SaveSalaryStructureAsync(structure));
+
+            _payrollRepo.Verify(r => r.AddSalaryStructureAsync(It.IsAny<SalaryStructure>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SaveSalaryStructureAsync_WhenGrantedHrPayrollRun_Persists()
+        {
+            var auth = TestAuthorization.AllowAll();
+            var service = BuildService(auth);
+            var structure = new SalaryStructure { EmployeeId = 1, Basic = 30000 };
+
+            await service.SaveSalaryStructureAsync(structure);
+
+            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
+            _payrollRepo.Verify(r => r.AddSalaryStructureAsync(structure), Times.Once);
+        }
+
+        // ---------- HrPayrollRun: RunPayrollAsync ----------
+
+        [Fact]
+        public async Task RunPayrollAsync_WhenUnauthorized_ThrowsAndDoesNotCheckForExistingRun()
+        {
+            var auth = TestAuthorization.DenyAll();
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.RunPayrollAsync(1, 2025, null));
+
+            _payrollRepo.Verify(r => r.GetRunAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task RunPayrollAsync_WhenGrantedHrPayrollRun_Runs()
+        {
+            var auth = TestAuthorization.AllowAll();
+            _payrollRepo.Setup(r => r.GetRunAsync(1, 2025)).ReturnsAsync((PayrollRun?)null);
+            _employeeRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Employee>());
+            var service = BuildService(auth);
+
+            await service.RunPayrollAsync(1, 2025, null);
+
+            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
+            _payrollRepo.Verify(r => r.AddRunAsync(It.IsAny<PayrollRun>()), Times.Once);
+        }
+
+        // ---------- HrPayrollRun: MarkRunAsPaidAsync ----------
+
+        [Fact]
+        public async Task MarkRunAsPaidAsync_WhenUnauthorized_ThrowsAndDoesNotLoadRun()
+        {
+            var auth = TestAuthorization.DenyAll();
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.MarkRunAsPaidAsync(1));
+
+            _payrollRepo.Verify(r => r.GetRunByIdAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task MarkRunAsPaidAsync_WhenGrantedHrPayrollRun_MarksPaid()
+        {
+            var auth = TestAuthorization.AllowAll();
+            var run = new PayrollRun { Id = 1, Status = PayrollRunStatuses.Processed };
+            _payrollRepo.Setup(r => r.GetRunByIdAsync(1)).ReturnsAsync(run);
+            var service = BuildService(auth);
+
+            await service.MarkRunAsPaidAsync(1);
+
+            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
+            Assert.Equal(PayrollRunStatuses.Paid, run.Status);
+        }
+
+        // ---------- HrPayrollRun: VoidRunAsync ----------
+
+        [Fact]
+        public async Task VoidRunAsync_WhenUnauthorized_ThrowsAndDoesNotLoadRun()
+        {
+            var auth = TestAuthorization.DenyAll();
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.VoidRunAsync(1, "Correction"));
+
+            _payrollRepo.Verify(r => r.GetRunByIdAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task VoidRunAsync_WhenGrantedHrPayrollRun_Voids()
+        {
+            var auth = TestAuthorization.AllowAll();
+            var run = new PayrollRun { Id = 1, Status = PayrollRunStatuses.Processed };
+            _payrollRepo.Setup(r => r.GetRunByIdAsync(1)).ReturnsAsync(run);
+            var service = BuildService(auth);
+
+            await service.VoidRunAsync(1, "Correction");
+
+            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
+            Assert.Equal(PayrollRunStatuses.Voided, run.Status);
+        }
     }
 }
