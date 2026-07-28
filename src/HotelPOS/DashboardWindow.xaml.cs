@@ -15,8 +15,6 @@ namespace HotelPOS
 {
     public partial class DashboardWindow : Window
     {
-        private const string PurchaseModule = "Purchase";
-
         private readonly IServiceProvider _serviceProvider;
 
         // Cached views — created once, reused on navigation
@@ -45,6 +43,10 @@ namespace HotelPOS
         private AttendanceView? _cachedAttendance;
         private LeaveView? _cachedLeave;
         private PayrollView? _cachedPayroll;
+        private TdsView? _cachedTds;
+        private AccountView? _cachedAccount;
+        private DepartmentDesignationView? _cachedDeptDesig;
+        private SalaryStructureView? _cachedSalaryStructure;
         private ExpenseView? _cachedExpenses;
         private CustomerView? _cachedCustomers;
         private readonly IThemeService _themeService;
@@ -251,13 +253,13 @@ namespace HotelPOS
 
             NavCats.Visibility = Vis(HasPermission("Categories"));
             NavUnits.Visibility = Vis(HasPermission("Units"));
-            NavPurchase.Visibility = Vis(HasPermission(PurchaseModule));
-            NavSuppliers.Visibility = Vis(HasPermission(PurchaseModule));
-            NavRawMaterials.Visibility = Vis(HasPermission(PurchaseModule));
-            NavBom.Visibility = Vis(HasPermission(PurchaseModule));
+            NavPurchase.Visibility = Vis(HasPermission(PermissionModules.Purchase));
+            NavSuppliers.Visibility = Vis(HasPermission(PermissionModules.Purchase));
+            NavRawMaterials.Visibility = Vis(HasPermission(PermissionModules.Purchase));
+            NavBom.Visibility = Vis(HasPermission(PermissionModules.Purchase));
 
             NavItemReport.Visibility = Vis(HasPermission(PermissionModules.SalesReport));
-            NavPurchaseReport.Visibility = Vis(HasPermission(PurchaseModule) || HasPermission(PermissionModules.SalesReport));
+            NavPurchaseReport.Visibility = Vis(HasPermission(PermissionModules.Purchase) || HasPermission(PermissionModules.SalesReport));
             NavLedger.Visibility = Vis(HasPermission("Ledger"));
             NavJournal.Visibility = Vis(HasPermission("Journal"));
 
@@ -265,11 +267,15 @@ namespace HotelPOS
             NavUsers.Visibility = Vis(HasPermission("Settings"));
 
             NavEmployees.Visibility = Vis(HasPermission(PermissionModules.HrEmployees));
+            NavDeptDesig.Visibility = Vis(HasPermission(PermissionModules.HrEmployees));
             NavAttendance.Visibility = Vis(HasPermission(PermissionModules.HrAttendance));
             NavLeave.Visibility = Vis(HasPermission(PermissionModules.HrLeave));
             NavPayroll.Visibility = Vis(HasPermission(PermissionModules.HrPayroll));
+            NavSalaryStructure.Visibility = Vis(HasPermission(PermissionModules.HrPayroll));
 
             NavSettings.Visibility = Vis(HasPermission("Settings"));
+            NavTds.Visibility = Vis(HasPermission(PermissionModules.Tds));
+            NavAccount.Visibility = Visibility.Visible; // Always visible to logged-in user
             NavAudit.Visibility = Vis(HasPermission("Audit"));
 
             // Update section header visibilities dynamically
@@ -471,6 +477,34 @@ namespace HotelPOS
             SetActive(NavPayroll);
         }
 
+        private void NavTds_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedTds ??= _serviceProvider.GetRequiredService<TdsView>();
+            MainContentArea.Content = _cachedTds;
+            SetActive(NavTds);
+        }
+
+        private void NavAccount_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedAccount ??= _serviceProvider.GetRequiredService<AccountView>();
+            MainContentArea.Content = _cachedAccount;
+            SetActive(NavAccount);
+        }
+
+        private void NavDeptDesig_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedDeptDesig ??= _serviceProvider.GetRequiredService<DepartmentDesignationView>();
+            MainContentArea.Content = _cachedDeptDesig;
+            SetActive(NavDeptDesig);
+        }
+
+        private void NavSalaryStructure_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedSalaryStructure ??= _serviceProvider.GetRequiredService<SalaryStructureView>();
+            MainContentArea.Content = _cachedSalaryStructure;
+            SetActive(NavSalaryStructure);
+        }
+
         private void NavCustomers_Click(object sender, RoutedEventArgs e)
         {
             _cachedCustomers ??= _serviceProvider.GetRequiredService<CustomerView>();
@@ -486,8 +520,8 @@ namespace HotelPOS
                 NavBilling, NavShift, NavExpenses, NavCustomers,
                 NavMenu, NavCats, NavUnits, NavTables, NavPurchase, NavSuppliers, NavRawMaterials, NavBom,
                 NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
-                NavEmployees, NavAttendance, NavLeave, NavPayroll,
-                NavSettings, NavRoles, NavUsers, NavAudit
+                NavEmployees, NavDeptDesig, NavAttendance, NavLeave, NavPayroll, NavSalaryStructure,
+                NavSettings, NavTds, NavAccount, NavRoles, NavUsers, NavAudit
             };
             foreach (var btn in allButtons)
             {
@@ -528,11 +562,11 @@ namespace HotelPOS
                 HeaderStats.Visibility = (NavDash.Visibility == Visibility.Visible || NavSales.Visibility == Visibility.Visible || NavItemReport.Visibility == Visibility.Visible || NavPurchaseReport.Visibility == Visibility.Visible || NavLedger.Visibility == Visibility.Visible || NavJournal.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
 
-                HeaderAdmin.Visibility = (NavSettings.Visibility == Visibility.Visible || NavRoles.Visibility == Visibility.Visible || NavUsers.Visibility == Visibility.Visible || NavAudit.Visibility == Visibility.Visible)
+                HeaderAdmin.Visibility = (NavSettings.Visibility == Visibility.Visible || NavTds.Visibility == Visibility.Visible || NavAccount.Visibility == Visibility.Visible || NavRoles.Visibility == Visibility.Visible || NavUsers.Visibility == Visibility.Visible || NavAudit.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
 
-                HeaderHR.Visibility = (NavEmployees.Visibility == Visibility.Visible || NavAttendance.Visibility == Visibility.Visible
-                        || NavLeave.Visibility == Visibility.Visible || NavPayroll.Visibility == Visibility.Visible)
+                HeaderHR.Visibility = (NavEmployees.Visibility == Visibility.Visible || NavDeptDesig.Visibility == Visibility.Visible || NavAttendance.Visibility == Visibility.Visible
+                        || NavLeave.Visibility == Visibility.Visible || NavPayroll.Visibility == Visibility.Visible || NavSalaryStructure.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
             }
         }

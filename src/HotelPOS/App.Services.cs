@@ -119,6 +119,7 @@ namespace HotelPOS
             services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<ILeaveService, LeaveService>();
             services.AddScoped<IPayrollService, PayrollService>();
+            services.AddScoped<ITdsService, TdsService>();
             services.AddScoped<ICustomerService, CustomerService>();
 
             services.AddSingleton<ICartService, CartService>();
@@ -141,6 +142,10 @@ namespace HotelPOS
             services.AddTransient<AttendanceViewModel>();
             services.AddTransient<LeaveViewModel>();
             services.AddTransient<PayrollViewModel>();
+            services.AddTransient<TdsViewModel>();
+            services.AddTransient<AccountViewModel>();
+            services.AddTransient<DepartmentDesignationViewModel>();
+            services.AddTransient<SalaryStructureViewModel>();
             services.AddTransient<ExpenseViewModel>();
             services.AddTransient<ExpenseEntryViewModel>();
             services.AddTransient<CustomerViewModel>();
@@ -173,6 +178,10 @@ namespace HotelPOS
             services.AddTransient<AttendanceView>();
             services.AddTransient<LeaveView>();
             services.AddTransient<PayrollView>();
+            services.AddTransient<TdsView>();
+            services.AddTransient<AccountView>();
+            services.AddTransient<DepartmentDesignationView>();
+            services.AddTransient<SalaryStructureView>();
             services.AddTransient<ExpenseView>();
             services.AddTransient<CustomerView>();
 

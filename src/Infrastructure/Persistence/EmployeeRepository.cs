@@ -77,9 +77,47 @@ namespace HotelPOS.Infrastructure.Persistence
             return await _context.Departments.OrderBy(d => d.Name).ToListAsync();
         }
 
+        public async Task SaveDepartmentAsync(Department department)
+        {
+            if (department.Id == 0)
+                _context.Departments.Add(department);
+            else
+                _context.Departments.Update(department);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteDepartmentAsync(int id)
+        {
+            var dept = await _context.Departments.FindAsync(id);
+            if (dept != null)
+            {
+                _context.Departments.Remove(dept);
+                await _context.SaveChangesAsync();
+            }
+        }
+
         public async Task<List<Designation>> GetDesignationsAsync()
         {
             return await _context.Designations.Include(d => d.Department).OrderBy(d => d.Title).ToListAsync();
+        }
+
+        public async Task SaveDesignationAsync(Designation designation)
+        {
+            if (designation.Id == 0)
+                _context.Designations.Add(designation);
+            else
+                _context.Designations.Update(designation);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteDesignationAsync(int id)
+        {
+            var desig = await _context.Designations.FindAsync(id);
+            if (desig != null)
+            {
+                _context.Designations.Remove(desig);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }
