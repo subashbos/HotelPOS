@@ -122,6 +122,60 @@ namespace HotelPOS.Tests
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetPayslipsByEmployeeAsync(42));
         }
 
+        // ---------- HrPayroll: GetRunsAsync / GetRunByIdAsync ----------
+
+        [Fact]
+        public async Task GetRunsAsync_WhenUnauthorized_Throws()
+        {
+            var auth = TestAuthorization.DenyAll();
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetRunsAsync());
+
+            _payrollRepo.Verify(r => r.GetRunsAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetRunsAsync_WhenGrantedHrPayroll_ReturnsRuns()
+        {
+            var auth = TestAuthorization.AllowAll();
+            _payrollRepo.Setup(r => r.GetRunsAsync()).ReturnsAsync(new List<PayrollRun>
+            {
+                new PayrollRun { Id = 1 }
+            });
+
+            var service = BuildService(auth);
+            var result = await service.GetRunsAsync();
+
+            Assert.Single(result);
+            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayroll), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetRunByIdAsync_WhenUnauthorized_Throws()
+        {
+            var auth = TestAuthorization.DenyAll();
+            var service = BuildService(auth);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetRunByIdAsync(1));
+
+            _payrollRepo.Verify(r => r.GetRunByIdAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetRunByIdAsync_WhenGrantedHrPayroll_ReturnsRun()
+        {
+            var auth = TestAuthorization.AllowAll();
+            var run = new PayrollRun { Id = 1 };
+            _payrollRepo.Setup(r => r.GetRunByIdAsync(1)).ReturnsAsync(run);
+
+            var service = BuildService(auth);
+            var result = await service.GetRunByIdAsync(1);
+
+            Assert.Same(run, result);
+            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayroll), Times.Once);
+        }
+
         // ---------- HrPayrollRun: SaveSalaryStructureAsync ----------
 
         [Fact]

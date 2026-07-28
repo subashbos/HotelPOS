@@ -196,11 +196,13 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<PayrollRun>> GetRunsAsync()
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetRunsAsync();
         }
 
         public async Task<PayrollRun?> GetRunByIdAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetRunByIdAsync(id);
         }
 
