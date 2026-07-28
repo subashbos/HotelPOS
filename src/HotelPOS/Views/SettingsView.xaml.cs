@@ -327,7 +327,7 @@ namespace HotelPOS.Views
                         var backup = scope.ServiceProvider.GetRequiredService<IBackupService>();
                         await backup.RestoreBackupAsync(dlg.FileName);
                     }
-                    await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
+                    await App.CurrentApp.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                         "Database restored successfully!\n\nThe application will now close to reload context. Please restart the application.",
                         "Restore Success",
                         HotelPOS.Application.Interfaces.DialogButton.OK,

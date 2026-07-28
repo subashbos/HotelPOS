@@ -11,6 +11,7 @@ namespace HotelPOS.Application.UseCases
     public class LeaveService : ILeaveService
     {
         private const string LeaveRequestEntityType = "LeaveRequest";
+        private const string LeaveTypeNotFoundMessage = "The selected leave type does not exist.";
 
         private readonly ILeaveRepository _repository;
         private readonly IEmployeeRepository _employeeRepository;
@@ -89,7 +90,7 @@ namespace HotelPOS.Application.UseCases
                 throw new ArgumentException(result.Errors[0].ErrorMessage);
 
             var leaveType = await _repository.GetLeaveTypeByIdAsync(request.LeaveTypeId)
-                ?? throw new ArgumentException("The selected leave type does not exist.");
+                ?? throw new ArgumentException(LeaveTypeNotFoundMessage);
 
             if (leaveType.Code != LeaveTypeCodes.LeaveWithoutPay)
             {
@@ -123,7 +124,7 @@ namespace HotelPOS.Application.UseCases
                 throw new InvalidOperationException("Only pending leave requests can be approved.");
 
             var leaveType = request.LeaveType ?? await _repository.GetLeaveTypeByIdAsync(request.LeaveTypeId)
-                ?? throw new ArgumentException("The selected leave type does not exist.");
+                ?? throw new ArgumentException(LeaveTypeNotFoundMessage);
 
             if (leaveType.Code != LeaveTypeCodes.LeaveWithoutPay)
             {
@@ -158,7 +159,7 @@ namespace HotelPOS.Application.UseCases
                 throw new InvalidOperationException("Only pending leave requests can be rejected.");
 
             var leaveType = request.LeaveType ?? await _repository.GetLeaveTypeByIdAsync(request.LeaveTypeId)
-                ?? throw new ArgumentException("The selected leave type does not exist.");
+                ?? throw new ArgumentException(LeaveTypeNotFoundMessage);
 
             if (leaveType.Code != LeaveTypeCodes.LeaveWithoutPay)
             {
@@ -194,7 +195,7 @@ namespace HotelPOS.Application.UseCases
                 throw new InvalidOperationException("Only pending leave requests can be cancelled.");
 
             var leaveType = request.LeaveType ?? await _repository.GetLeaveTypeByIdAsync(request.LeaveTypeId)
-                ?? throw new ArgumentException("The selected leave type does not exist.");
+                ?? throw new ArgumentException(LeaveTypeNotFoundMessage);
 
             if (leaveType.Code != LeaveTypeCodes.LeaveWithoutPay)
             {

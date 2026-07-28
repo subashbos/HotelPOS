@@ -95,7 +95,7 @@ export class TdsComponent implements OnInit {
   }
 
   addSlabRow(): void {
-    const last = this.slabs[this.slabs.length - 1];
+    const last = this.slabs.at(-1);
     this.slabs.push({
       incomeFrom: last?.incomeTo ?? 0,
       incomeTo: null,
