@@ -53,7 +53,7 @@ namespace HotelPOS.Application.UseCases
             try
             {
                 await _emailService.SendEmailAsync(
-                    user.Email!,
+                    user.Email,
                     "HotelPOS password reset code",
                     $"Your password reset code is {code}. It expires in {CodeValidityMinutes} minutes. " +
                     "If you didn't request this, you can safely ignore this email.");

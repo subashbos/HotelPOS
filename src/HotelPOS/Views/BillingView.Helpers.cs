@@ -90,7 +90,7 @@ namespace HotelPOS.Views
             {
                 var child = VisualTreeHelper.GetChild(obj, i);
                 if (child is T t) return t;
-                var childOfChild = FindVisualChild<T>(child!);
+                var childOfChild = FindVisualChild<T>(child);
                 if (childOfChild != null) return childOfChild;
             }
             return null;

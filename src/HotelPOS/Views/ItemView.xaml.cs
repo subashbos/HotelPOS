@@ -255,42 +255,50 @@ namespace HotelPOS.Views
 
             foreach (var row in ws.RowsUsed().Skip(1))
             {
-                var name = row.Cell(nameCol).GetString().Trim();
-                var raw = row.Cell(priceCol).GetString().Trim();
-                if (!decimal.TryParse(raw, out var price)) continue;
-                if (string.IsNullOrWhiteSpace(name) || price <= 0) continue;
-
-                decimal tax = 0;
-                if (taxCol > 0)
-                {
-                    var taxRaw = row.Cell(taxCol).GetString().Trim();
-                    decimal.TryParse(taxRaw, out tax);
-                }
-
-                int? catId = null;
-                if (catCol > 0)
-                {
-                    var catName = row.Cell(catCol).GetString().Trim();
-                    if (!string.IsNullOrEmpty(catName))
-                    {
-                        catId = categories.FirstOrDefault(c => string.Equals(c.Name, catName, StringComparison.OrdinalIgnoreCase))?.Id;
-                    }
-                }
-
-                var unitId = defaultUnitId;
-                if (unitCol > 0)
-                {
-                    var unitRaw = row.Cell(unitCol).GetString().Trim();
-                    if (!string.IsNullOrEmpty(unitRaw))
-                    {
-                        var matched = units.FirstOrDefault(u => string.Equals(u.Name, unitRaw, StringComparison.OrdinalIgnoreCase));
-                        if (matched != null) unitId = matched.Id;
-                    }
-                }
-
-                result.Add(new CreateItemDto { Name = name, Price = price, TaxPercentage = tax, CategoryId = catId, UnitId = unitId });
+                var dto = ParseItemRow(row, nameCol, priceCol, taxCol, catCol, unitCol, categories, units, defaultUnitId);
+                if (dto != null) result.Add(dto);
             }
             return result;
+        }
+
+        private static CreateItemDto? ParseItemRow(
+            IXLRow row, int nameCol, int priceCol, int taxCol, int catCol, int unitCol,
+            List<Category> categories, List<UnitOfMeasurement> units, int defaultUnitId)
+        {
+            var name = row.Cell(nameCol).GetString().Trim();
+            var raw = row.Cell(priceCol).GetString().Trim();
+            if (!decimal.TryParse(raw, out var price)) return null;
+            if (string.IsNullOrWhiteSpace(name) || price <= 0) return null;
+
+            decimal tax = 0;
+            if (taxCol > 0)
+            {
+                var taxRaw = row.Cell(taxCol).GetString().Trim();
+                decimal.TryParse(taxRaw, out tax);
+            }
+
+            int? catId = null;
+            if (catCol > 0)
+            {
+                var catName = row.Cell(catCol).GetString().Trim();
+                if (!string.IsNullOrEmpty(catName))
+                {
+                    catId = categories.FirstOrDefault(c => string.Equals(c.Name, catName, StringComparison.OrdinalIgnoreCase))?.Id;
+                }
+            }
+
+            var unitId = defaultUnitId;
+            if (unitCol > 0)
+            {
+                var unitRaw = row.Cell(unitCol).GetString().Trim();
+                if (!string.IsNullOrEmpty(unitRaw))
+                {
+                    var matched = units.FirstOrDefault(u => string.Equals(u.Name, unitRaw, StringComparison.OrdinalIgnoreCase));
+                    if (matched != null) unitId = matched.Id;
+                }
+            }
+
+            return new CreateItemDto { Name = name, Price = price, TaxPercentage = tax, CategoryId = catId, UnitId = unitId };
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────
