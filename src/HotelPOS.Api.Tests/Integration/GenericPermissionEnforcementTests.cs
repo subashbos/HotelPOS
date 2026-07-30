@@ -295,6 +295,75 @@ namespace HotelPOS.Tests.Integration
             auth.Verify(a => a.EnsurePermission(PermissionModules.OrderManagement), Times.Once);
         }
 
+        // ---------- OrderService itself: the WPF desktop client calls IOrderService directly
+        // (in-process, no HTTP/MediatR involved), never through VoidOrderCommandHandler etc.
+        // above. Those handlers alone left VoidOrderAsync/RefundOrderAsync/UpdateOrderAsync/
+        // DeleteOrderAsync completely unguarded for that caller - the checks below close that gap
+        // at the one place both callers (API-via-handler and WPF-direct) actually converge.
+
+        [Fact]
+        public async Task OrderServiceVoidOrder_WhenUnauthorized_ThrowsAndDoesNotVoid()
+        {
+            var repo = new Mock<IOrderRepository>();
+            var service = new OrderService(repo.Object, null, new Mock<IItemService>().Object, TestCashService.WithOpenSession().Object, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.VoidOrderAsync(1, "reason", "user"));
+
+            repo.Verify(r => r.GetByIdWithItemsAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task OrderServiceRefundOrder_WhenUnauthorized_Throws()
+        {
+            var repo = new Mock<IOrderRepository>();
+            var service = new OrderService(repo.Object, null, new Mock<IItemService>().Object, TestCashService.WithOpenSession().Object, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.RefundOrderAsync(1, new List<OrderItemRefundDto> { new(1, 1) }, "reason"));
+
+            repo.Verify(r => r.GetByIdWithItemsAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task OrderServiceUpdateOrder_WhenUnauthorized_Throws()
+        {
+            var repo = new Mock<IOrderRepository>();
+            var service = new OrderService(repo.Object, null, new Mock<IItemService>().Object, TestCashService.WithOpenSession().Object, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.UpdateOrderAsync(new Order { Id = 1, Items = new List<OrderItem> { new() { ItemId = 1, Quantity = 1 } } }));
+
+            repo.Verify(r => r.GetByIdWithItemsAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task OrderServiceDeleteOrder_WhenUnauthorized_Throws()
+        {
+            var repo = new Mock<IOrderRepository>();
+            var service = new OrderService(repo.Object, null, new Mock<IItemService>().Object, TestCashService.WithOpenSession().Object, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.DeleteOrderAsync(1));
+
+            repo.Verify(r => r.GetByIdWithItemsAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task OrderServiceVoidOrder_WhenGrantedOrderManagement_Voids()
+        {
+            var repo = new Mock<IOrderRepository>();
+            var order = new Order { Id = 1, Status = OrderStatuses.Paid, Items = new List<OrderItem>() };
+            repo.Setup(r => r.GetByIdWithItemsAsync(1)).ReturnsAsync(order);
+            var auth = new Mock<IAuthorizationService>();
+            var service = new OrderService(repo.Object, null, new Mock<IItemService>().Object, TestCashService.WithOpenSession().Object, auth.Object);
+
+            await service.VoidOrderAsync(1, "reason", "user");
+
+            auth.Verify(a => a.EnsurePermission(PermissionModules.OrderManagement), Times.Once);
+            Assert.Equal(OrderStatuses.Void, order.Status);
+        }
+
         // ---------- Customers: CustomerManagement (delete) distinct from Customers (view/save) ----------
         // Cashiers hold Customers by default; DeleteCustomer must check CustomerManagement
         // specifically, or a Cashier would silently gain delete rights through Customers alone.
