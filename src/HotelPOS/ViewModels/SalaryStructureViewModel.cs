@@ -100,7 +100,10 @@ namespace HotelPOS.ViewModels
                 {
                     Structures.Add(st);
                 }
-                if (Structures.Count > 0)
+                // Sonar's symbolic execution engine doesn't track ObservableCollection.Add()
+                // across the foreach above, so it reports Structures.Count as always 0 here.
+                // Verified reachable/correct by LoadStructuresAsync_WithStructures_SelectsLatest.
+                if (Structures.Count > 0) // NOSONAR
                 {
                     SelectedStructure = Structures.OrderByDescending(s => s.EffectiveFrom).First();
                 }
