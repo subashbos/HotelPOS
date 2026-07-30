@@ -1,6 +1,7 @@
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
 using Moq;
@@ -54,7 +55,7 @@ namespace HotelPOS.Tests
                 SupplierId = 1,
                 InvoiceNumber = "INV-1001",
                 PurchaseDate = DateTime.Now,
-                PaymentType = "Credit",
+                PaymentType = PaymentModes.Credit,
                 PurchaseItems = new List<PurchaseItem>
                 {
                     new PurchaseItem { ItemId = 10, ItemName = "Milk Packet", Quantity = 10, UnitPrice = 40, TaxPercentage = 5, Total = 420 },

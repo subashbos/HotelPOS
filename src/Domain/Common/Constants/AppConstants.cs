@@ -18,6 +18,10 @@ namespace HotelPOS.Domain.Common.Constants
         /// <summary>WPF-only mixed-tender mode (cash+card+UPI split); not part of the API-validated set.</summary>
         public const string Split = "Split";
 
+        /// <summary>Purchase/Supplier payment term — the hotel paying a supplier on credit, not a
+        /// customer order tender; not part of the API-validated order payment set.</summary>
+        public const string Credit = "Credit";
+
         public static readonly string[] All = { Cash, Card, Upi };
     }
 
