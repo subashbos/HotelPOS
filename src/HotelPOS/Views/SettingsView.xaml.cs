@@ -92,6 +92,10 @@ namespace HotelPOS.Views
             SmtpPasswordBox.Password = _current.SmtpPassword ?? string.Empty;
             SmtpFromBox.Text = _current.SmtpFromAddress;
 
+            // Payroll
+            ProfessionalTaxThresholdBox.Text = _current.ProfessionalTaxThreshold.ToString();
+            ProfessionalTaxAmountBox.Text = _current.ProfessionalTaxAmount.ToString();
+
             RefreshTwoFactorUi();
         }
 
@@ -244,6 +248,29 @@ namespace HotelPOS.Views
                 _current.SmtpPassword = SmtpPasswordBox.Password;
             _current.SmtpFromAddress = string.IsNullOrWhiteSpace(SmtpFromBox.Text) ? null : SmtpFromBox.Text.Trim();
 
+            await Save();
+        }
+
+        // ── Save Payroll Settings ─────────────────────────────────────────────
+
+        private async void SavePayroll_Click(object sender, RoutedEventArgs e)
+        {
+            if (_current == null) return;
+
+            if (!decimal.TryParse(ProfessionalTaxThresholdBox.Text, out var threshold) || threshold < 0)
+            {
+                _notificationService.ShowError("Professional Tax threshold must be a non-negative number.");
+                return;
+            }
+
+            if (!decimal.TryParse(ProfessionalTaxAmountBox.Text, out var amount) || amount < 0)
+            {
+                _notificationService.ShowError("Professional Tax amount must be a non-negative number.");
+                return;
+            }
+
+            _current.ProfessionalTaxThreshold = threshold;
+            _current.ProfessionalTaxAmount = amount;
             await Save();
         }
 

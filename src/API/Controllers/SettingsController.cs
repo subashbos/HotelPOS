@@ -44,12 +44,15 @@ namespace HotelPOS.Api.Controllers
                 IdleTimeoutMinutes = settings.IdleTimeoutMinutes
             };
 
-            // SMTP credentials and the offsite backup path are only needed by whoever configures
-            // them (SaveSettings is Admin-only) — everything above is needed by any authenticated
-            // user for day-to-day billing (receipt/GST/round-off display), so only these are gated.
+            // SMTP credentials, the offsite backup path, and Professional Tax are only needed by
+            // whoever configures them (SaveSettings is Admin-only) — everything above is needed by
+            // any authenticated user for day-to-day billing (receipt/GST/round-off display), so only
+            // these are gated.
             if (_authorization.HasPermission(PermissionModules.Settings))
             {
                 dto.OffsiteBackupPath = settings.OffsiteBackupPath;
+                dto.ProfessionalTaxThreshold = settings.ProfessionalTaxThreshold;
+                dto.ProfessionalTaxAmount = settings.ProfessionalTaxAmount;
                 dto.SmtpHost = settings.SmtpHost;
                 dto.SmtpPort = settings.SmtpPort;
                 dto.SmtpUsername = settings.SmtpUsername;
@@ -88,6 +91,8 @@ namespace HotelPOS.Api.Controllers
                 EnableAutomatedBackups = request.EnableAutomatedBackups,
                 OffsiteBackupPath = request.OffsiteBackupPath,
                 IdleTimeoutMinutes = request.IdleTimeoutMinutes,
+                ProfessionalTaxThreshold = request.ProfessionalTaxThreshold ?? current.ProfessionalTaxThreshold,
+                ProfessionalTaxAmount = request.ProfessionalTaxAmount ?? current.ProfessionalTaxAmount,
                 SmtpHost = request.SmtpHost,
                 SmtpPort = request.SmtpPort,
                 SmtpUsername = request.SmtpUsername,

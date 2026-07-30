@@ -1,4 +1,5 @@
 using HotelPOS.Application.Common.Models;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.Interfaces
@@ -20,6 +21,12 @@ namespace HotelPOS.Application.Interfaces
         /// no I/O, safe to unit test directly against Indian PF/ESI/PT/TDS rules. A null
         /// <paramref name="tdsRuleSet"/> yields Tds = 0, same as before the TDS engine existed.
         /// </summary>
-        Payslip CalculatePayslip(SalaryStructure structure, decimal workingDays, decimal paidDays, TdsRuleSet? tdsRuleSet = null);
+        Payslip CalculatePayslip(
+            SalaryStructure structure,
+            decimal workingDays,
+            decimal paidDays,
+            TdsRuleSet? tdsRuleSet = null,
+            decimal professionalTaxThreshold = IndianStatutoryDefaults.ProfessionalTaxThreshold,
+            decimal professionalTaxAmount = IndianStatutoryDefaults.ProfessionalTaxAmount);
     }
 }
