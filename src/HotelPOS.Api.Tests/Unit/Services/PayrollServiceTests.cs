@@ -100,6 +100,24 @@ namespace HotelPOS.Tests.Unit.Services
         }
 
         [Fact]
+        public void CalculatePayslip_UsesSuppliedProfessionalTaxThresholdAndAmount_InsteadOfStatutoryDefault()
+        {
+            // Professional Tax is a state subject — an admin who has configured their state's own
+            // threshold/amount via SystemSetting must see those values applied, not the Karnataka-shaped
+            // 15000/200 statutory default baked into IndianStatutoryDefaults.
+            var structure = new SalaryStructure { Basic = 12000, ProfessionalTaxApplicable = true };
+
+            var withDefaults = _service.CalculatePayslip(structure, 30, 30);
+            var withStateOverride = _service.CalculatePayslip(
+                structure, 30, 30, tdsRuleSet: null,
+                professionalTaxThreshold: 10000m,
+                professionalTaxAmount: 150m);
+
+            Assert.Equal(0, withDefaults.ProfessionalTax); // below the 15000 statutory default
+            Assert.Equal(150m, withStateOverride.ProfessionalTax); // above the 10000 override
+        }
+
+        [Fact]
         public void CalculatePayslip_PartialAttendance_ProratesGrossAndLop()
         {
             var structure = new SalaryStructure { Basic = 15000, Hra = 5000 };

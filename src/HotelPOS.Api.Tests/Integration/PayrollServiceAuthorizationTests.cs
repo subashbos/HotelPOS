@@ -13,8 +13,9 @@ namespace HotelPOS.Tests
         private readonly Mock<IEmployeeRepository> _employeeRepo = new();
         private readonly Mock<IAttendanceRepository> _attendanceRepo = new();
 
-        private PayrollService BuildService(Mock<IAuthorizationService> auth) =>
-            new(_payrollRepo.Object, _employeeRepo.Object, _attendanceRepo.Object, auth.Object);
+        private PayrollService BuildService(Mock<IAuthorizationService> auth, ISettingService? settingService = null) =>
+            new(_payrollRepo.Object, _employeeRepo.Object, _attendanceRepo.Object, auth.Object,
+                validator: null, mediator: null, settingService: settingService);
 
         [Fact]
         public async Task GetSalaryStructuresAsync_WhenUnauthorized_Throws()
@@ -228,6 +229,39 @@ namespace HotelPOS.Tests
 
             auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
             _payrollRepo.Verify(r => r.AddRunAsync(It.IsAny<PayrollRun>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RunPayrollAsync_UsesConfiguredProfessionalTaxFromSystemSettings_NotTheStatutoryDefault()
+        {
+            // Confirms the Settings > Payroll tab's Professional Tax fields actually reach a real
+            // payroll run, end to end, rather than just being stored and ignored.
+            var auth = TestAuthorization.AllowAll();
+            var employee = new Employee { Id = 1, Status = EmployeeStatuses.Active };
+            var structure = new SalaryStructure
+            {
+                Id = 1,
+                EmployeeId = 1,
+                Basic = 12000,
+                ProfessionalTaxApplicable = true
+            };
+            var settings = new SystemSetting { ProfessionalTaxThreshold = 10000m, ProfessionalTaxAmount = 150m };
+
+            _payrollRepo.Setup(r => r.GetRunAsync(1, 2025)).ReturnsAsync((PayrollRun?)null);
+            _employeeRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Employee> { employee });
+            _payrollRepo.Setup(r => r.GetCurrentSalaryStructureAsync(1, It.IsAny<DateTime>())).ReturnsAsync(structure);
+            _attendanceRepo.Setup(r => r.GetByEmployeeAsync(1, It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+                .ReturnsAsync(new List<Attendance>());
+
+            var settingService = new Mock<ISettingService>();
+            settingService.Setup(s => s.GetSettingsAsync()).ReturnsAsync(settings);
+
+            var service = BuildService(auth, settingService.Object);
+
+            var run = await service.RunPayrollAsync(1, 2025, null);
+
+            var payslip = Assert.Single(run.Payslips);
+            Assert.Equal(150m, payslip.ProfessionalTax); // configured amount, not the 200 statutory default
         }
 
         // ---------- HrPayrollRun: MarkRunAsPaidAsync ----------

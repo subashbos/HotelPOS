@@ -566,6 +566,50 @@ namespace HotelPOS.Tests
             Assert.Null(deleted);
         }
 
+        [Fact]
+        public async Task RoleRepository_UpdatePermissionsAsync_UpdatesInPlaceAndPreservesRowIds()
+        {
+            // Regression test: UpdatePermissionsAsync used to delete every row and reinsert with a
+            // fresh identity, which could leave stale rows behind on a partial delete and collide
+            // with fixed Ids that later EF migrations hardcode for new permission modules
+            // (PK_RolePermissions violation on Id 45 after AddTdsPermission). It must now update
+            // matching modules in place, add only genuinely new ones, and remove only modules that
+            // are no longer present in the incoming set.
+            using var context = GetContext("RolePermissionsUpsertDb");
+            var repo = new RoleRepository(context);
+
+            var role = new Role { Id = 20, Name = "PermUpsertRole", Description = "Test" };
+            await repo.AddRoleAsync(role);
+
+            await repo.UpdatePermissionsAsync(20, new List<RolePermission>
+            {
+                new RolePermission { ModuleName = "Billing", CanAccess = true, CanEdit = false, CanDelete = false },
+                new RolePermission { ModuleName = "Items", CanAccess = true, CanEdit = true, CanDelete = false }
+            });
+
+            var firstSave = await repo.GetPermissionsByRoleIdAsync(20);
+            var billingId = firstSave.Single(p => p.ModuleName == "Billing").Id;
+
+            // Second save: "Billing" gets CanEdit/CanDelete promoted, "Items" is dropped, and a
+            // brand-new module "Categories" is added.
+            await repo.UpdatePermissionsAsync(20, new List<RolePermission>
+            {
+                new RolePermission { ModuleName = "Billing", CanAccess = true, CanEdit = true, CanDelete = true },
+                new RolePermission { ModuleName = "Categories", CanAccess = true, CanEdit = false, CanDelete = false }
+            });
+
+            var secondSave = await repo.GetPermissionsByRoleIdAsync(20);
+            Assert.Equal(2, secondSave.Count);
+
+            var billing = secondSave.Single(p => p.ModuleName == "Billing");
+            Assert.Equal(billingId, billing.Id); // updated in place, not deleted/reinserted
+            Assert.True(billing.CanEdit);
+            Assert.True(billing.CanDelete);
+
+            Assert.DoesNotContain(secondSave, p => p.ModuleName == "Items"); // removed
+            Assert.Contains(secondSave, p => p.ModuleName == "Categories"); // added
+        }
+
         // 8. SettingRepository Tests
         [Fact]
         public async Task SettingRepository_Integration()
