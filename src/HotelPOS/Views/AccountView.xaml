@@ -36,8 +36,8 @@
                                 <Border Width="72" Height="72" CornerRadius="36" Background="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center">
                                     <TextBlock Text="👤" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock Text="{Binding Username}" Style="{StaticResource HeaderTextBlockStyle}" HorizontalAlignment="Center" Margin="0,12,0,2"/>
-                                <TextBlock Text="{Binding Role}" Style="{StaticResource SubheaderTextBlockStyle}" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding Username}" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" Margin="0,12,0,2"/>
+                                <TextBlock Text="{Binding Role}" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"/>
                             </StackPanel>
 
                             <Separator Background="{DynamicResource BorderBrush}" Margin="0,8,0,16"/>
@@ -45,8 +45,8 @@
                             <TextBlock Text="EMAIL ADDRESS" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,8"/>
                             <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
 
-                            <Button Content="📧 Save Email Address" Command="{Binding UpdateEmailCommand}" 
-                                    Style="{StaticResource PrimaryButtonStyle}" Height="36"/>
+                            <Button Content="📧 Save Email Address" Command="{Binding UpdateEmailCommand}"
+                                    Style="{StaticResource PrimaryBtn}"/>
                         </StackPanel>
                     </Border>
 
@@ -59,12 +59,11 @@
 
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                 <TextBlock Text="Status: " Style="{StaticResource BodySmallTextBlockStyle}" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding IsTwoFactorEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Visibility="Collapsed"/>
                                 <TextBlock Text="{Binding IsTwoFactorEnabled}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                             </StackPanel>
 
-                            <Button Content="🛡️ Toggle Two-Factor Auth" Command="{Binding ToggleTwoFactorCommand}" 
-                                    Style="{StaticResource SecondaryButtonStyle}" Height="36"/>
+                            <Button Content="🛡️ Toggle Two-Factor Auth" Command="{Binding ToggleTwoFactorCommand}"
+                                    Style="{StaticResource SecondaryBtn}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -83,8 +82,8 @@
                         <TextBlock Text="Confirm New Password" Style="{StaticResource FieldLabel}"/>
                         <PasswordBox x:Name="ConfirmPasswordBox" PasswordChanged="ConfirmPasswordBox_PasswordChanged" Margin="0,0,0,24"/>
 
-                        <Button Content="🔒 Change Password" Command="{Binding ChangePasswordCommand}" 
-                                Style="{StaticResource PrimaryButtonStyle}" Height="40"/>
+                        <Button Content="🔒 Change Password" Command="{Binding ChangePasswordCommand}"
+                                Style="{StaticResource PrimaryBtn}"/>
                     </StackPanel>
                 </Border>
             </Grid>

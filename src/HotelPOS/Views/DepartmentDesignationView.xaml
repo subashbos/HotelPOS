@@ -64,9 +64,9 @@
                                     <ColumnDefinition Width="8"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Content="✨ New" Command="{Binding NewDepartmentCommand}" Style="{StaticResource SecondaryButtonStyle}" Height="36"/>
-                                <Button Grid.Column="2" Content="💾 Save" Command="{Binding SaveDepartmentCommand}" Style="{StaticResource PrimaryButtonStyle}" Height="36"/>
-                                <Button Grid.Column="4" Content="🗑️ Delete" Command="{Binding DeleteDepartmentCommand}" Style="{StaticResource DangerButtonStyle}" Height="36"/>
+                                <Button Grid.Column="0" Content="✨ New" Command="{Binding NewDepartmentCommand}" Style="{StaticResource SecondaryBtn}"/>
+                                <Button Grid.Column="2" Content="💾 Save" Command="{Binding SaveDepartmentCommand}" Style="{StaticResource PrimaryBtn}"/>
+                                <Button Grid.Column="4" Content="🗑️ Delete" Command="{Binding DeleteDepartmentCommand}" Style="{StaticResource DangerBtn}"/>
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>
@@ -110,9 +110,9 @@
                                     <ColumnDefinition Width="8"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Content="✨ New" Command="{Binding NewDesignationCommand}" Style="{StaticResource SecondaryButtonStyle}" Height="36"/>
-                                <Button Grid.Column="2" Content="💾 Save" Command="{Binding SaveDesignationCommand}" Style="{StaticResource PrimaryButtonStyle}" Height="36"/>
-                                <Button Grid.Column="4" Content="🗑️ Delete" Command="{Binding DeleteDesignationCommand}" Style="{StaticResource DangerButtonStyle}" Height="36"/>
+                                <Button Grid.Column="0" Content="✨ New" Command="{Binding NewDesignationCommand}" Style="{StaticResource SecondaryBtn}"/>
+                                <Button Grid.Column="2" Content="💾 Save" Command="{Binding SaveDesignationCommand}" Style="{StaticResource PrimaryBtn}"/>
+                                <Button Grid.Column="4" Content="🗑️ Delete" Command="{Binding DeleteDesignationCommand}" Style="{StaticResource DangerBtn}"/>
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>

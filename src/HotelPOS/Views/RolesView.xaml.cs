@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace HotelPOS.Views
 {
@@ -16,6 +17,8 @@ namespace HotelPOS.Views
     public class PermissionViewModel : INotifyPropertyChanged
     {
         private bool _canAccess;
+        private bool _canEdit;
+        private bool _canDelete;
 
         public int Id { get; set; }
         public int RoleId { get; set; }
@@ -23,6 +26,8 @@ namespace HotelPOS.Views
         public string DisplayName { get; set; } = string.Empty;
         public string Icon { get; set; } = "📄";
         public string Description { get; set; } = string.Empty;
+        public string Group { get; set; } = "Other";
+        public int GroupOrder { get; set; } = int.MaxValue;
 
         public bool CanAccess
         {
@@ -30,40 +35,66 @@ namespace HotelPOS.Views
             set { _canAccess = value; OnPropertyChanged(); }
         }
 
+        public bool CanEdit
+        {
+            get => _canEdit;
+            set { _canEdit = value; OnPropertyChanged(); }
+        }
+
+        public bool CanDelete
+        {
+            get => _canDelete;
+            set { _canDelete = value; OnPropertyChanged(); }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
         // ── Friendly metadata lookup ──────────────────────────────────────────
-        private static readonly Dictionary<string, (string Icon, string Display, string Desc)> _meta = new()
+        private static readonly Dictionary<string, (string Icon, string Display, string Desc, string Group)> _meta = new()
         {
-            ["Dashboard"] = ("📊", "Dashboard", "View sales summaries and KPI metrics"),
-            ["Billing"] = ("🖥", "Billing POS", "Create and manage customer bills"),
-            ["Items"] = ("📋", "Items / Menu", "Add, edit, or delete menu items"),
-            ["Categories"] = ("🏷", "Categories", "Manage item category groups"),
-            ["Tables"] = ("🪑", "Tables", "View and manage dining tables"),
-            ["Ledger"] = ("📒", "Ledger", "View financial transaction ledger"),
-            ["Journal"] = ("📓", "Journal", "View daily accounting journal entries"),
-            ["Settings"] = ("⚙", "Settings", "Configure system-wide settings"),
-            ["Audit"] = ("🛡", "Audit Log", "View system activity and audit trail"),
-            ["Shift"] = ("💵", "Shift / Session", "Open and close cash sessions"),
-            ["Roles"] = ("👥", "Roles", "Manage user roles and permissions"),
-            ["SalesReport"] = ("📈", "Sales Report", "View and export detailed sales reports"),
-            ["Purchase"] = ("📥", "Purchase", "Record supplier purchases and manage inventory"),
-            ["Expenses"] = ("🧾", "Daily Expenses", "Record and track day-to-day operating expenses"),
-            ["HrEmployees"] = ("🧑\u200D💼", "HR: Employees", "View and manage employee master data"),
-            ["HrAttendance"] = ("🕒", "HR: Attendance", "Mark and review employee attendance"),
-            ["HrLeave"] = ("🌴", "HR: Leave", "Apply for, approve, or reject employee leave"),
-            ["HrPayroll"] = ("💰", "HR: Payroll", "View salary structures, payroll runs, and payslips"),
-            ["HrPayrollRun"] = ("🧮", "HR: Run Payroll", "Save salary structures, run/mark-paid/void payroll"),
-            ["Tds"] = ("🧾", "TDS Slabs", "Manage income-tax TDS slab structures"),
-            ["OrderManagement"] = ("🔁", "Order Management", "Void, refund, or edit an already-placed order"),
-            ["CustomerManagement"] = ("🗑", "Customer Management", "Delete customer records"),
+            ["Dashboard"] = ("📊", "Dashboard", "View sales summaries and KPI metrics", "Point of Sale"),
+            ["Billing"] = ("🖥", "Billing POS", "Create and manage customer bills", "Point of Sale"),
+            ["Items"] = ("📋", "Items / Menu", "Add, edit, or delete menu items", "Point of Sale"),
+            ["Categories"] = ("🏷", "Categories", "Manage item category groups", "Point of Sale"),
+            ["Tables"] = ("🪑", "Tables", "View and manage dining tables", "Point of Sale"),
+            ["Shift"] = ("💵", "Shift / Session", "Open and close cash sessions", "Point of Sale"),
+            ["OrderManagement"] = ("🔁", "Order Management", "Void, refund, or edit an already-placed order", "Point of Sale"),
+            ["Customers"] = ("👤", "Customers", "View and manage customer master data", "Customers"),
+            ["CustomerManagement"] = ("🗑", "Customer Management", "Delete customer records", "Customers"),
+            ["Purchase"] = ("📥", "Purchase", "Record supplier purchases and manage inventory", "Purchasing & Inventory"),
+            ["Units"] = ("📏", "Units", "Manage units of measurement", "Purchasing & Inventory"),
+            ["Ledger"] = ("📒", "Ledger", "View financial transaction ledger", "Finance & Reports"),
+            ["Journal"] = ("📓", "Journal", "View daily accounting journal entries", "Finance & Reports"),
+            ["SalesReport"] = ("📈", "Sales Report", "View and export detailed sales reports", "Finance & Reports"),
+            ["Expenses"] = ("🧾", "Daily Expenses", "Record and track day-to-day operating expenses", "Finance & Reports"),
+            ["HrEmployees"] = ("🧑\u200D💼", "HR: Employees", "View and manage employee master data", "Human Resources"),
+            ["HrAttendance"] = ("🕒", "HR: Attendance", "Mark and review employee attendance", "Human Resources"),
+            ["HrLeave"] = ("🌴", "HR: Leave", "Apply for, approve, or reject employee leave", "Human Resources"),
+            ["HrPayroll"] = ("💰", "HR: Payroll", "View salary structures, payroll runs, and payslips", "Human Resources"),
+            ["HrPayrollRun"] = ("🧮", "HR: Run Payroll", "Save salary structures, run/mark-paid/void payroll", "Human Resources"),
+            ["Tds"] = ("🧾", "TDS Slabs", "Manage income-tax TDS slab structures", "Human Resources"),
+            ["Settings"] = ("⚙", "Settings", "Configure system-wide settings", "Administration"),
+            ["Audit"] = ("🛡", "Audit Log", "View system activity and audit trail", "Administration"),
+            ["Roles"] = ("👥", "Roles", "Manage user roles and permissions", "Administration"),
+        };
+
+        // Display order of the groups above in the permissions editor.
+        private static readonly Dictionary<string, int> _groupOrder = new()
+        {
+            ["Point of Sale"] = 0,
+            ["Customers"] = 1,
+            ["Purchasing & Inventory"] = 2,
+            ["Finance & Reports"] = 3,
+            ["Human Resources"] = 4,
+            ["Administration"] = 5,
         };
 
         public static PermissionViewModel FromPermission(RolePermission p)
         {
             _meta.TryGetValue(p.ModuleName, out var m);
+            var group = m.Group ?? "Other";
             return new PermissionViewModel
             {
                 Id = p.Id,
@@ -72,7 +103,11 @@ namespace HotelPOS.Views
                 DisplayName = m.Display ?? p.ModuleName,
                 Icon = m.Icon ?? "📄",
                 Description = m.Desc ?? "Toggle access to this module",
+                Group = group,
+                GroupOrder = _groupOrder.TryGetValue(group, out var order) ? order : int.MaxValue,
                 CanAccess = p.CanAccess,
+                CanEdit = p.CanEdit,
+                CanDelete = p.CanDelete,
             };
         }
 
@@ -82,6 +117,8 @@ namespace HotelPOS.Views
             RoleId = RoleId,
             ModuleName = ModuleName,
             CanAccess = CanAccess,
+            CanEdit = CanEdit,
+            CanDelete = CanDelete,
         };
     }
 
@@ -136,15 +173,19 @@ namespace HotelPOS.Views
             {
                 EditingRoleTitle.Text = $"Permissions — {_selectedRole.Name}";
 
-                // Deduplicate, prioritising Allow=true, then sort by display name
+                // Deduplicate, prioritising Allow=true, then sort by module group and display name
                 _currentPermissions = _selectedRole.Permissions
                     .OrderByDescending(p => p.CanAccess)
                     .GroupBy(p => p.ModuleName)
                     .Select(g => PermissionViewModel.FromPermission(g.First()))
-                    .OrderBy(p => p.DisplayName)
+                    .OrderBy(p => p.GroupOrder)
+                    .ThenBy(p => p.DisplayName)
                     .ToList();
 
-                PermissionsList.ItemsSource = _currentPermissions;
+                var groupedView = CollectionViewSource.GetDefaultView(_currentPermissions);
+                groupedView.GroupDescriptions.Clear();
+                groupedView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(PermissionViewModel.Group)));
+                PermissionsList.ItemsSource = groupedView;
 
                 // Admin role: disable delete button
                 DeleteRoleBtn.IsEnabled = _selectedRole.Name != RoleNames.Admin;
@@ -196,12 +237,22 @@ namespace HotelPOS.Views
 
         private void GrantAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var p in _currentPermissions) p.CanAccess = true;
+            foreach (var p in _currentPermissions)
+            {
+                p.CanAccess = true;
+                p.CanEdit = true;
+                p.CanDelete = true;
+            }
         }
 
         private void RevokeAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var p in _currentPermissions) p.CanAccess = false;
+            foreach (var p in _currentPermissions)
+            {
+                p.CanAccess = false;
+                p.CanEdit = false;
+                p.CanDelete = false;
+            }
         }
 
         /// <summary>

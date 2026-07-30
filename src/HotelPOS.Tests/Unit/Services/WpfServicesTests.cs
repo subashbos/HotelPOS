@@ -154,6 +154,131 @@ namespace HotelPOS.Tests.Unit.Services
         }
 
         [Fact]
+        public void Verify_AccountView_CanBeResolved_STA()
+        {
+            try
+            {
+                var threadEx = ExceptionCheck(() =>
+                {
+                    if (!IsApplicationCreated())
+                    {
+                        var appInstance = new HotelPOS.App();
+                        appInstance.InitializeComponent();
+                    }
+
+                    var userService = new Moq.Mock<HotelPOS.Application.Interfaces.IUserService>();
+                    var notificationService = new Moq.Mock<HotelPOS.Application.Interfaces.INotificationService>();
+                    var viewModel = new AccountViewModel(userService.Object, notificationService.Object);
+                    var view = new AccountView(viewModel);
+                    Assert.NotNull(view);
+                });
+
+                if (threadEx != null)
+                {
+                    throw threadEx;
+                }
+            }
+            finally
+            {
+                ClearApplicationSingleton();
+            }
+        }
+
+        [Fact]
+        public void Verify_DepartmentDesignationView_CanBeResolved_STA()
+        {
+            try
+            {
+                var threadEx = ExceptionCheck(() =>
+                {
+                    if (!IsApplicationCreated())
+                    {
+                        var appInstance = new HotelPOS.App();
+                        appInstance.InitializeComponent();
+                    }
+
+                    var employeeService = new Moq.Mock<HotelPOS.Application.Interfaces.IEmployeeService>();
+                    var notificationService = new Moq.Mock<HotelPOS.Application.Interfaces.INotificationService>();
+                    var viewModel = new DepartmentDesignationViewModel(employeeService.Object, notificationService.Object);
+                    var view = new DepartmentDesignationView(viewModel);
+                    Assert.NotNull(view);
+                });
+
+                if (threadEx != null)
+                {
+                    throw threadEx;
+                }
+            }
+            finally
+            {
+                ClearApplicationSingleton();
+            }
+        }
+
+        [Fact]
+        public void Verify_SalaryStructureView_CanBeResolved_STA()
+        {
+            try
+            {
+                var threadEx = ExceptionCheck(() =>
+                {
+                    if (!IsApplicationCreated())
+                    {
+                        var appInstance = new HotelPOS.App();
+                        appInstance.InitializeComponent();
+                    }
+
+                    var payrollService = new Moq.Mock<HotelPOS.Application.Interfaces.IPayrollService>();
+                    var employeeService = new Moq.Mock<HotelPOS.Application.Interfaces.IEmployeeService>();
+                    var notificationService = new Moq.Mock<HotelPOS.Application.Interfaces.INotificationService>();
+                    var viewModel = new SalaryStructureViewModel(payrollService.Object, employeeService.Object, notificationService.Object);
+                    var view = new SalaryStructureView(viewModel);
+                    Assert.NotNull(view);
+                });
+
+                if (threadEx != null)
+                {
+                    throw threadEx;
+                }
+            }
+            finally
+            {
+                ClearApplicationSingleton();
+            }
+        }
+
+        [Fact]
+        public void Verify_TdsView_CanBeResolved_STA()
+        {
+            try
+            {
+                var threadEx = ExceptionCheck(() =>
+                {
+                    if (!IsApplicationCreated())
+                    {
+                        var appInstance = new HotelPOS.App();
+                        appInstance.InitializeComponent();
+                    }
+
+                    var tdsService = new Moq.Mock<HotelPOS.Application.Interfaces.ITdsService>();
+                    var notificationService = new Moq.Mock<HotelPOS.Application.Interfaces.INotificationService>();
+                    var viewModel = new TdsViewModel(tdsService.Object, notificationService.Object);
+                    var view = new TdsView(viewModel);
+                    Assert.NotNull(view);
+                });
+
+                if (threadEx != null)
+                {
+                    throw threadEx;
+                }
+            }
+            finally
+            {
+                ClearApplicationSingleton();
+            }
+        }
+
+        [Fact]
         public void PrintPreview_DefaultPrinterMissing_FallsBackToDialogOrReportsCleanly()
         {
             var result = PrintPreviewWindow.TryGetPrintQueue("NonExistent_Missing_Printer_Device_9999", out var queue);

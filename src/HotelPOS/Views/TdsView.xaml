@@ -51,11 +51,11 @@
                             <TextBlock Text="Health &amp; Education Cess Rate (%)" Style="{StaticResource FieldLabel}"/>
                             <TextBox Text="{Binding CessRatePercent, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20"/>
 
-                            <Button Content="💾 Save TDS Configuration" Command="{Binding SaveCommand}" 
-                                    Style="{StaticResource PrimaryButtonStyle}" Height="40" Margin="0,0,0,10"/>
-                            
-                            <Button Content="🗑️ Delete Year Config" Command="{Binding DeleteCommand}" 
-                                    Style="{StaticResource DangerButtonStyle}" Height="36"/>
+                            <Button Content="💾 Save TDS Configuration" Command="{Binding SaveCommand}"
+                                    Style="{StaticResource PrimaryBtn}" Margin="0,0,0,10"/>
+
+                            <Button Content="🗑️ Delete Year Config" Command="{Binding DeleteCommand}"
+                                    Style="{StaticResource DangerBtn}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -73,8 +73,8 @@
                     <Grid Grid.Row="0" Margin="0,0,0,12">
                         <TextBlock Text="INCOME SLAB BANDS" Style="{StaticResource FieldLabel}" FontWeight="Bold" VerticalAlignment="Center"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="➕ Add Slab Band" Command="{Binding AddSlabCommand}" Style="{StaticResource SecondaryButtonStyle}" Height="32" Margin="0,0,8,0"/>
-                            <Button Content="➖ Remove Selected" Command="{Binding RemoveSlabCommand}" Style="{StaticResource DangerButtonStyle}" Height="32"/>
+                            <Button Content="➕ Add Slab Band" Command="{Binding AddSlabCommand}" Style="{StaticResource SecondaryBtn}" Margin="0,0,8,0"/>
+                            <Button Content="➖ Remove Selected" Command="{Binding RemoveSlabCommand}" Style="{StaticResource DangerBtn}"/>
                         </StackPanel>
                     </Grid>
 

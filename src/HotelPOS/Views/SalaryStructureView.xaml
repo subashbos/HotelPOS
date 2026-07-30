@@ -73,7 +73,7 @@
                     <StackPanel>
                         <Grid Margin="0,0,0,16">
                             <TextBlock Text="COMPENSATION BREAKDOWN" Style="{StaticResource FieldLabel}" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <Button Content="➕ New Revision" Command="{Binding NewStructureCommand}" Style="{StaticResource SecondaryButtonStyle}" Height="32" HorizontalAlignment="Right"/>
+                            <Button Content="➕ New Revision" Command="{Binding NewStructureCommand}" Style="{StaticResource SecondaryBtn}" HorizontalAlignment="Right"/>
                         </Grid>
 
                         <Grid Margin="0,0,0,12">
@@ -109,7 +109,7 @@
                         <Border Background="{DynamicResource HeaderBrush}" CornerRadius="6" Padding="16,12" Margin="0,0,0,20">
                             <Grid>
                                 <TextBlock Text="TOTAL GROSS MONTHLY SALARY:" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding GrossMonthly, StringFormat={}{0:C0}}" Style="{StaticResource HeaderTextBlockStyle}" Foreground="White" HorizontalAlignment="Right"/>
+                                <TextBlock Text="{Binding GrossMonthly, StringFormat={}{0:C0}}" Style="{StaticResource H2TextBlockStyle}" Foreground="White" HorizontalAlignment="Right"/>
                             </Grid>
                         </Border>
 
@@ -123,16 +123,16 @@
                                 <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
-                            <CheckBox Grid.Column="0" Content="Provident Fund (PF)" IsChecked="{Binding PfApplicable}" Style="{StaticResource CheckBoxStyle}"/>
-                            <CheckBox Grid.Column="1" Content="ESI Deductions" IsChecked="{Binding EsiApplicable}" Style="{StaticResource CheckBoxStyle}"/>
-                            <CheckBox Grid.Column="2" Content="Professional Tax (PT)" IsChecked="{Binding ProfessionalTaxApplicable}" Style="{StaticResource CheckBoxStyle}"/>
+                            <CheckBox Grid.Column="0" Content="Provident Fund (PF)" IsChecked="{Binding PfApplicable}"/>
+                            <CheckBox Grid.Column="1" Content="ESI Deductions" IsChecked="{Binding EsiApplicable}"/>
+                            <CheckBox Grid.Column="2" Content="Professional Tax (PT)" IsChecked="{Binding ProfessionalTaxApplicable}"/>
                         </Grid>
 
                         <TextBlock Text="Effective From Date" Style="{StaticResource FieldLabel}"/>
                         <DatePicker SelectedDate="{Binding EffectiveFrom}" Margin="0,0,0,20" Width="200" HorizontalAlignment="Left"/>
 
-                        <Button Content="💾 Save Salary Structure" Command="{Binding SaveStructureCommand}" 
-                                Style="{StaticResource PrimaryButtonStyle}" Height="40"/>
+                        <Button Content="💾 Save Salary Structure" Command="{Binding SaveStructureCommand}"
+                                Style="{StaticResource PrimaryBtn}"/>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
