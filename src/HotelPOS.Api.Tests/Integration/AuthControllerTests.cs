@@ -39,6 +39,7 @@ namespace HotelPOS.Tests
                 new Mock<IUserRepository>().Object,
                 new Mock<IRefreshTokenRepository>().Object,
                 new Mock<IPasswordResetService>().Object,
+                TestAuthorization.AllowAll().Object,
                 CreateJwtOptions());
             var result = await controller.Login(new LoginDto { Username = "admin", Password = "password" });
 
@@ -64,6 +65,7 @@ namespace HotelPOS.Tests
                 new Mock<IUserRepository>().Object,
                 new Mock<IRefreshTokenRepository>().Object,
                 new Mock<IPasswordResetService>().Object,
+                TestAuthorization.AllowAll().Object,
                 CreateJwtOptions());
             var result = await controller.Login(new LoginDto { Username = "cashier", Password = "password" });
 

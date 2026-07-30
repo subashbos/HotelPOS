@@ -1,6 +1,7 @@
 using HotelPOS.Api.Configuration;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,7 @@ namespace HotelPOS.Api.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordResetService _passwordResetService;
+        private readonly Application.Interfaces.IAuthorizationService _authorization;
         private readonly JwtOptions _jwtOptions;
 
         private const int RefreshTokenDays = 30;
@@ -32,12 +34,14 @@ namespace HotelPOS.Api.Controllers
             IUserRepository userRepository,
             IRefreshTokenRepository refreshTokenRepository,
             IPasswordResetService passwordResetService,
+            Application.Interfaces.IAuthorizationService authorization,
             IOptions<JwtOptions> jwtOptions)
         {
             _authService = authService;
             _userRepository = userRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _passwordResetService = passwordResetService;
+            _authorization = authorization;
             _jwtOptions = jwtOptions.Value;
         }
 
@@ -203,6 +207,19 @@ namespace HotelPOS.Api.Controllers
         {
             var isValid = TotpGenerator.ValidateCode(dto?.Secret, dto?.Code);
             return Ok(new { Valid = isValid });
+        }
+
+        // The current user's own effective access per module - computed via the same
+        // IAuthorizationService.HasPermission used to enforce every API endpoint, so the
+        // frontend's route guards and nav visibility can never drift from what the backend
+        // actually allows. No module-specific permission is required to call this: it only
+        // ever reports the caller's own access, never anyone else's.
+        [Authorize]
+        [HttpGet("permissions")]
+        public IActionResult GetMyPermissions()
+        {
+            var permissions = PermissionModules.All.ToDictionary(m => m, _authorization.HasPermission);
+            return Ok(permissions);
         }
 
         private async Task<string> IssueRefreshTokenAsync(int userId, Guid familyId)
