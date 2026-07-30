@@ -20,7 +20,7 @@ namespace HotelPOS.Tests
 
         public LoopholesFinalTests()
         {
-            _service = new OrderService(_orderRepo.Object, _mediator.Object, _itemService.Object, TestCashService.WithOpenSession().Object);
+            _service = new OrderService(_orderRepo.Object, _mediator.Object, _itemService.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

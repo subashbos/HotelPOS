@@ -21,7 +21,7 @@ public class StockReconciliationTests
         // stock-reconciliation/repo calls, not totals, so any consistent catalog entry works.
         _mockItemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
             .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Item", Price = 100m }).ToList());
-        _service = new OrderService(_mockOrderRepo.Object, _mockMediator.Object, _mockItemService.Object, TestCashService.WithOpenSession().Object);
+        _service = new OrderService(_mockOrderRepo.Object, _mockMediator.Object, _mockItemService.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
     }
 
     [Fact]

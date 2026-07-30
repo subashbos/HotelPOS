@@ -119,7 +119,7 @@ namespace HotelPOS.ViewModels
         {
             if (value != null)
             {
-                _ = LoadStructuresAsync();
+                LoadStructuresCommand.Execute(null);
             }
         }
 

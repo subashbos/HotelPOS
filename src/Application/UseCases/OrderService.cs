@@ -17,15 +17,17 @@ namespace HotelPOS.Application.UseCases
         private readonly IMediator? _mediator;
         private readonly IItemService _itemService;
         private readonly ICashService _cashService;
+        private readonly IAuthorizationService _authorization;
         private readonly IValidator<CreateOrderCommand> _validator;
         private readonly IBomService? _bomService;
 
-        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, ICashService cashService, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null)
+        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, ICashService cashService, IAuthorizationService authorization, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null)
         {
             _repo = repo;
             _mediator = mediator;
             _itemService = itemService;
             _cashService = cashService;
+            _authorization = authorization;
             _validator = validator ?? new CreateOrderCommandValidator();
             _bomService = bomService;
         }
@@ -200,6 +202,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task UpdateOrderInternalAsync(Order order)
         {
+            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+
             if (order.Items == null || order.Items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.");
 
@@ -281,6 +285,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteOrderInternalAsync(int orderId)
         {
+            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+
             var existing = await _repo.GetByIdWithItemsAsync(orderId);
             if (existing != null)
             {
@@ -302,6 +308,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task VoidOrderInternalAsync(int orderId, string reason, string authorizedUser)
         {
+            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
             if (order.Status == OrderStatuses.Void) throw new InvalidOperationException("Order is already void.");
@@ -356,6 +364,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task RefundOrderInternalAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason)
         {
+            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+
             if (itemsToRefund == null || itemsToRefund.Count == 0)
                 throw new ArgumentException("No items specified for refund.", nameof(itemsToRefund));
 

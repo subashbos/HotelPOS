@@ -25,7 +25,7 @@ namespace HotelPOS.Tests
             _orderRepoMock = new Mock<IOrderRepository>();
             _mediatorMock = new Mock<IMediator>();
             _itemServiceMock = new Mock<IItemService>();
-            _service = new OrderService(_orderRepoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithOpenSession().Object);
+            _service = new OrderService(_orderRepoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

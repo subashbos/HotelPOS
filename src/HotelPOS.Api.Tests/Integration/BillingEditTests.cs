@@ -19,7 +19,7 @@ namespace HotelPOS.Tests
             var mockItemService = new Mock<IItemService>();
             mockItemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
                 .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Test", Price = 100m, TaxPercentage = 5m }).ToList());
-            var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object, TestCashService.WithOpenSession().Object);
+            var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
 
             var order = new Order
             {

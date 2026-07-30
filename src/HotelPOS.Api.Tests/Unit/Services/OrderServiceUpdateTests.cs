@@ -22,7 +22,7 @@ namespace HotelPOS.Tests
 
         public OrderServiceUpdateTests()
         {
-            _service = new OrderService(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithOpenSession().Object);
+            _service = new OrderService(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
         }
 
         // UpdateOrderInternalAsync now reprices every line from the catalog (same as Create),

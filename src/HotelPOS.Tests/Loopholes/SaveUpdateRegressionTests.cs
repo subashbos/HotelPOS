@@ -464,7 +464,7 @@ namespace HotelPOS.Tests
                 .Options;
             _ctx = new HotelDbContext(opts);
             _orderRepo = new OrderRepository(_ctx);
-            _orderService = new OrderService(_orderRepo, _mediatorMock.Object, _itemSvcMock.Object, TestCashService.WithOpenSession().Object);
+            _orderService = new OrderService(_orderRepo, _mediatorMock.Object, _itemSvcMock.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
         }
 
         public void Dispose() => _ctx.Dispose();

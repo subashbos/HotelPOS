@@ -98,7 +98,7 @@ namespace HotelPOS.Tests
             var mockItemService = new Mock<IItemService>();
             mockItemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
                 .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Item 1", Price = 100m }).ToList());
-            var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object, TestCashService.WithOpenSession().Object);
+            var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
 
             var items = new List<OrderItem>
             {
@@ -128,7 +128,7 @@ namespace HotelPOS.Tests
             var mockItemService = new Mock<IItemService>();
             mockItemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
                 .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Item", Price = 100m }).ToList());
-            var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object, TestCashService.WithOpenSession().Object);
+            var service = new OrderService(mockRepo.Object, mockMediator.Object, mockItemService.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
 
             var oldOrder = new Order
             {

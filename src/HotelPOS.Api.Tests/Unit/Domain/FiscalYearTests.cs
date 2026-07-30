@@ -19,7 +19,7 @@ namespace HotelPOS.Tests
         {
             _itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
                 .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Test", Price = 100m }).ToList());
-            _service = new OrderService(_orderRepo.Object, _mediator.Object, _itemService.Object, TestCashService.WithOpenSession().Object);
+            _service = new OrderService(_orderRepo.Object, _mediator.Object, _itemService.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

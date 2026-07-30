@@ -23,7 +23,7 @@ namespace HotelPOS.Tests
         }
 
         private OrderService BuildService(IBomService? bomService)
-            => new(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, _cashServiceMock.Object, bomService: bomService);
+            => new(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, _cashServiceMock.Object, TestAuthorization.AllowAll().Object, bomService: bomService);
 
         [Fact]
         public async Task SaveOrderAsync_WithBomService_DeductsIngredientStockPerItem()

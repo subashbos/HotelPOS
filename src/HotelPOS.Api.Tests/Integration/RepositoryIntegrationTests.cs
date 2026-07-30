@@ -298,7 +298,7 @@ namespace HotelPOS.Tests
             var orderRepo = new OrderRepository(context);
             var itemRepo = new ItemRepository(context);
             var itemService = new ItemService(itemRepo);
-            var orderService = new OrderService(orderRepo, mediator: null, itemService, TestCashService.WithOpenSession().Object);
+            var orderService = new OrderService(orderRepo, mediator: null, itemService, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
 
             var request = new SaveOrderRequest(
                 new List<OrderItem>
