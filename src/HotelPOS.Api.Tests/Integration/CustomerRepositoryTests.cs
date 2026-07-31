@@ -1,28 +1,25 @@
 using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using HotelPOS.TestCommon;
 using Xunit;
 
 namespace HotelPOS.Tests.Integration
 {
     /// <summary>
-    /// Exercises the Customer persistence layer against the EF InMemory provider,
+    /// Exercises the Customer persistence layer against the shared seed-once SQLite fixture,
     /// mirroring HrRepositoryTests / RepositoryIntegrationTests.
     /// </summary>
-    public class CustomerRepositoryTests
+    [Collection("SharedDatabase")]
+    public class CustomerRepositoryTests : DatabaseCollectionTestBase
     {
-        private static HotelDbContext GetContext(string dbName)
+        public CustomerRepositoryTests(SharedSqliteDatabaseFixture fixture) : base(fixture)
         {
-            var options = new DbContextOptionsBuilder<HotelDbContext>()
-                .UseInMemoryDatabase(databaseName: dbName)
-                .Options;
-            return new HotelDbContext(options);
         }
 
         [Fact]
         public async Task CustomerRepository_CrudAndLookups()
         {
-            using var context = GetContext(nameof(CustomerRepository_CrudAndLookups));
+            var context = Context;
             var repo = new CustomerRepository(context);
 
             await repo.AddAsync(new Customer { Name = "Zara", Phone = "9876543210" });

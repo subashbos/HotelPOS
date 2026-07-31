@@ -1,24 +1,21 @@
 using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using HotelPOS.TestCommon;
 using Xunit;
 
 namespace HotelPOS.Tests
 {
-    public class SoftDeleteTests
+    [Collection("SharedDatabase")]
+    public class SoftDeleteTests : DatabaseCollectionTestBase
     {
-        private HotelDbContext GetContext(string dbName)
+        public SoftDeleteTests(SharedSqliteDatabaseFixture fixture) : base(fixture)
         {
-            var options = new DbContextOptionsBuilder<HotelDbContext>()
-                .UseInMemoryDatabase(databaseName: dbName)
-                .Options;
-            return new HotelDbContext(options);
         }
 
         [Fact]
         public async Task GetAllWithItemsAsync_FiltersOutDeletedOrders()
         {
-            using var context = GetContext("SoftDelete_GetAll");
+            var context = Context;
             var repo = new OrderRepository(context);
 
             context.Orders.Add(new Order { Id = 1, InvoiceNumber = "INV/1", IsDeleted = false, CreatedAt = DateTime.UtcNow });
@@ -34,7 +31,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task GetPagedWithItemsAsync_FiltersOutDeletedOrders()
         {
-            using var context = GetContext("SoftDelete_Paged");
+            var context = Context;
             var repo = new OrderRepository(context);
 
             context.Orders.Add(new Order { Id = 1, IsDeleted = false, CreatedAt = DateTime.UtcNow });
@@ -51,7 +48,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task DeleteAsync_SetsIsDeletedTrue()
         {
-            using var context = GetContext("SoftDelete_Action");
+            var context = Context;
             var repo = new OrderRepository(context);
 
             var order = new Order { Id = 1, IsDeleted = false, CreatedAt = DateTime.UtcNow };
@@ -66,4 +63,3 @@ namespace HotelPOS.Tests
         }
     }
 }
-

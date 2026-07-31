@@ -1,7 +1,6 @@
 using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+using HotelPOS.TestCommon;
 using Xunit;
 
 namespace HotelPOS.Tests.Integration
@@ -11,22 +10,17 @@ namespace HotelPOS.Tests.Integration
     /// only overrides GetAllAsync) so the shared base CRUD implementation is
     /// verified independently of any subclass override.
     /// </summary>
-    public class GenericRepositoryTests
+    [Collection("SharedDatabase")]
+    public class GenericRepositoryTests : DatabaseCollectionTestBase
     {
-        private static HotelDbContext GetContext(string dbName)
+        public GenericRepositoryTests(SharedSqliteDatabaseFixture fixture) : base(fixture)
         {
-            var options = new DbContextOptionsBuilder<HotelDbContext>()
-                .UseInMemoryDatabase(databaseName: dbName)
-                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                .Options;
-            return new HotelDbContext(options);
         }
 
         [Fact]
         public async Task GetAllAsync_OnEmptySet_ReturnsEmptyList()
         {
-            using var context = GetContext(nameof(GetAllAsync_OnEmptySet_ReturnsEmptyList));
-            var repo = new GenericRepository<Category>(context);
+            var repo = new GenericRepository<Category>(Context);
 
             var result = await repo.GetAllAsync();
 
@@ -36,8 +30,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task AddAsync_PersistsEntity_AndAssignsId()
         {
-            using var context = GetContext(nameof(AddAsync_PersistsEntity_AndAssignsId));
-            var repo = new GenericRepository<Category>(context);
+            var repo = new GenericRepository<Category>(Context);
 
             var added = await repo.AddAsync(new Category { Name = "Snacks" });
 
@@ -50,8 +43,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task GetByIdAsync_MissingId_ReturnsNull()
         {
-            using var context = GetContext(nameof(GetByIdAsync_MissingId_ReturnsNull));
-            var repo = new GenericRepository<Category>(context);
+            var repo = new GenericRepository<Category>(Context);
 
             var found = await repo.GetByIdAsync(999);
 
@@ -61,8 +53,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task GetByIdAsync_ExistingId_ReturnsEntity()
         {
-            using var context = GetContext(nameof(GetByIdAsync_ExistingId_ReturnsEntity));
-            var repo = new GenericRepository<Category>(context);
+            var repo = new GenericRepository<Category>(Context);
             var added = await repo.AddAsync(new Category { Name = "Beverages" });
 
             var found = await repo.GetByIdAsync(added.Id);
@@ -74,8 +65,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task UpdateAsync_PersistsModifications()
         {
-            using var context = GetContext(nameof(UpdateAsync_PersistsModifications));
-            var repo = new GenericRepository<Category>(context);
+            var repo = new GenericRepository<Category>(Context);
             var added = await repo.AddAsync(new Category { Name = "Starters", DisplayOrder = 1 });
 
             added.Name = "Appetizers";
@@ -90,8 +80,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task DeleteAsync_ExistingId_RemovesEntity()
         {
-            using var context = GetContext(nameof(DeleteAsync_ExistingId_RemovesEntity));
-            var repo = new GenericRepository<Category>(context);
+            var repo = new GenericRepository<Category>(Context);
             var added = await repo.AddAsync(new Category { Name = "Desserts" });
 
             await repo.DeleteAsync(added.Id);
@@ -103,8 +92,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task DeleteAsync_MissingId_IsNoOp()
         {
-            using var context = GetContext(nameof(DeleteAsync_MissingId_IsNoOp));
-            var repo = new GenericRepository<Category>(context);
+            var repo = new GenericRepository<Category>(Context);
             await repo.AddAsync(new Category { Name = "Mains" });
 
             await repo.DeleteAsync(999);
