@@ -12,11 +12,13 @@ namespace HotelPOS.Application.UseCases
         private readonly ICustomerRepository _repository;
         private readonly IOrderRepository _orderRepository;
         private readonly IValidator<Customer> _validator;
+        private readonly IAuthorizationService _authorization;
 
-        public CustomerService(ICustomerRepository repository, IOrderRepository orderRepository, IValidator<Customer>? validator = null)
+        public CustomerService(ICustomerRepository repository, IOrderRepository orderRepository, IAuthorizationService authorization, IValidator<Customer>? validator = null)
         {
             _repository = repository;
             _orderRepository = orderRepository;
+            _authorization = authorization;
             _validator = validator ?? new CustomerValidator();
         }
 
@@ -38,6 +40,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveCustomerAsync(Customer customer)
         {
+            _authorization.EnsurePermission(PermissionModules.Customers);
+
             if (customer == null) throw new ArgumentNullException(nameof(customer));
 
             customer.Name = customer.Name?.Trim() ?? string.Empty;
@@ -77,6 +81,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteCustomerAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.CustomerManagement);
+
             _ = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Customer #{id} not found.");
             await _repository.DeactivateAsync(id);

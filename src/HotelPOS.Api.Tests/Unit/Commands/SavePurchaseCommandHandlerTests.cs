@@ -14,7 +14,7 @@ namespace HotelPOS.Tests
 
         public SavePurchaseCommandHandlerTests()
         {
-            _handler = new SavePurchaseCommandHandler(_purchaseRepoMock.Object, _itemRepoMock.Object);
+            _handler = new SavePurchaseCommandHandler(_purchaseRepoMock.Object, _itemRepoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

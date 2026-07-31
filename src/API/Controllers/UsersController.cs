@@ -24,7 +24,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
         {
             var users = await _userService.GetAllUsersAsync();
@@ -32,7 +31,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> CreateUser([FromBody] AddUserRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
@@ -45,7 +43,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("{id:int}/toggle-active")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> ToggleActive(int id, [FromBody] ToggleActiveRequest request)
         {
             if (id <= 0) return BadRequest(InvalidUserId);
@@ -54,7 +51,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("{id:int}/set-email")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> SetEmail(int id, [FromBody] SetEmailRequest request)
         {
             if (id <= 0) return BadRequest(InvalidUserId);
@@ -86,7 +82,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteUser(int id)
         {
             if (id <= 0) return BadRequest(InvalidUserId);

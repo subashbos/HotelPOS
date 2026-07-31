@@ -369,20 +369,20 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Aadhaar")
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Address")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("BankAccountNumber")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("BankIfsc")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("BankName")
                         .HasMaxLength(100)
@@ -426,8 +426,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("EsicNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -443,8 +443,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Pan")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
@@ -459,8 +459,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Uan")
-                        .HasMaxLength(22)
-                        .HasColumnType("nvarchar(22)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -1572,6 +1572,42 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
+                            Id = 43,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrPayrollRun",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 45,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Tds",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 47,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "OrderManagement",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 49,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "CustomerManagement",
+                            RoleId = 1
+                        },
+                        new
+                        {
                             Id = 11,
                             CanAccess = false,
                             CanDelete = true,
@@ -1748,6 +1784,42 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             CanDelete = true,
                             CanEdit = true,
                             ModuleName = "Units",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 44,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrPayrollRun",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 46,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Tds",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 48,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "OrderManagement",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 50,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "CustomerManagement",
                             RoleId = 2
                         });
                 });
@@ -1971,6 +2043,14 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Property<string>("OffsiteBackupPath")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("ProfessionalTaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ProfessionalTaxThreshold")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("ReceiptFormat")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -2028,6 +2108,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             HotelPhone = "",
                             IdleTimeoutMinutes = 15,
                             IsCompositionScheme = false,
+                            ProfessionalTaxAmount = 200m,
+                            ProfessionalTaxThreshold = 15000m,
                             ReceiptFormat = "Thermal",
                             ShowDiscountLine = false,
                             ShowGstBreakdown = true,

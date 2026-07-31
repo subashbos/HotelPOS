@@ -56,6 +56,7 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
 import { RawMaterialsComponent } from './views/admin/raw-materials/raw-materials.component';
 import { BomComponent } from './views/admin/bom/bom.component';
 import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.component';
+import { AccessDeniedComponent } from './views/admin/access-denied/access-denied.component';
 import { ReceiptComponent } from './components/print/receipt/receipt.component';
 import { KotComponent } from './components/print/kot/kot.component';
 import { EssLeaveComponent } from './views/ess/leave/ess-leave.component';
@@ -111,6 +112,7 @@ import { EssProfileComponent } from './views/ess/profile/ess-profile.component';
     RawMaterialsComponent,
     BomComponent,
     BiAnalyticsComponent,
+    AccessDeniedComponent,
     ReceiptComponent,
     KotComponent,
     EssComponent,
@@ -172,6 +174,7 @@ import { EssProfileComponent } from './views/ess/profile/ess-profile.component';
     RawMaterialsComponent,
     BomComponent,
     BiAnalyticsComponent,
+    AccessDeniedComponent,
     EssComponent,
     EssLeaveComponent,
     EssPayslipsComponent,

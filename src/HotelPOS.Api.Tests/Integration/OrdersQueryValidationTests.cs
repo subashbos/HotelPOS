@@ -23,6 +23,7 @@ namespace HotelPOS.Tests
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IItemService>(_ => new Mock<IItemService>().Object);
             services.AddScoped<ICashService>(_ => TestCashService.WithOpenSession().Object);
+            services.AddScoped<IAuthorizationService>(_ => TestAuthorization.AllowAll().Object);
             services.AddScoped<IOrderService, OrderService>();
 
             services.AddMediatR(cfg =>

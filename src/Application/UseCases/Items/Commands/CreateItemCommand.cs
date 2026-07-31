@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 using HotelPOS.Application.Interfaces;
@@ -24,14 +25,18 @@ namespace HotelPOS.Application.UseCases.Items.Commands
     public class CreateItemCommandHandler : IRequestHandler<CreateItemCommand, Item>
     {
         private readonly IItemRepository _itemRepository;
+        private readonly IAuthorizationService _authorization;
 
-        public CreateItemCommandHandler(IItemRepository itemRepository)
+        public CreateItemCommandHandler(IItemRepository itemRepository, IAuthorizationService authorization)
         {
             _itemRepository = itemRepository;
+            _authorization = authorization;
         }
 
         public async Task<Item> Handle(CreateItemCommand request, CancellationToken cancellationToken)
         {
+            _authorization.EnsurePermission(PermissionModules.Items);
+
             if (string.IsNullOrWhiteSpace(request.Name))
                 throw new ArgumentException("Item name cannot be empty or whitespace.", nameof(request));
 

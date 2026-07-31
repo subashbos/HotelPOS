@@ -12,8 +12,10 @@ using Xunit;
 namespace HotelPOS.Tests.Integration
 {
     /// <summary>
-    /// Exercises the real HTTP pipeline (JWT auth + [Authorize(Roles=...)]) to prove
-    /// Cashier tokens can no longer mutate the menu or void orders (issue #23).
+    /// Exercises the real HTTP pipeline (JWT auth + permission-module checks driven by the
+    /// Role/RolePermission tables) to prove Cashier tokens can no longer mutate the menu or void
+    /// orders (issue #23), and that a custom role only gains access once granted a real
+    /// RolePermission row — not merely by carrying a matching JWT role-name claim.
     /// </summary>
     public class RoleAuthorizationTests : IClassFixture<CustomWebApplicationFactory>
     {
@@ -50,7 +52,7 @@ namespace HotelPOS.Tests.Integration
         {
             var client = CreateClient(RoleNames.Cashier);
 
-            var response = await client.PostAsJsonAsync("/api/items", new { Name = "Cashier Item", Price = 10m, TaxPercentage = 5m });
+            var response = await client.PostAsJsonAsync("/api/items", new { Name = "Cashier Item", Price = 10m, TaxPercentage = 5m, UnitId = 1 });
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -68,11 +70,30 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task CreateItem_ManagerToken_ReturnsCreated()
         {
-            var client = CreateClient(RoleNames.Manager);
+            // A bare "Manager" role-name JWT claim grants nothing under the generic permission
+            // system - access requires a real Role row with a granted RolePermission, exactly
+            // like an admin would configure via the Roles screen.
+            const string username = "manager.user";
+            await SeedUserWithGrantedModuleAsync(username, "Manager", PermissionModules.Items);
+            var client = CreateClient(RoleNames.Manager, username);
 
             var response = await client.PostAsJsonAsync("/api/items", new { Name = "Manager Item", Price = 10m, TaxPercentage = 5m, UnitId = 1 });
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CreateItem_CustomRoleWithoutItemsGrant_ReturnsForbidden()
+        {
+            // Same custom role as above, but without the Items grant - proves access is driven
+            // by the RolePermission row, not by the role simply existing or being named "Manager".
+            const string username = "manager.no-items";
+            await SeedUserWithGrantedModuleAsync(username, "ManagerNoItems", PermissionModules.HrAttendance);
+            var client = CreateClient("ManagerNoItems", username);
+
+            var response = await client.PostAsJsonAsync("/api/items", new { Name = "Should Not Save", Price = 10m, TaxPercentage = 5m, UnitId = 1 });
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]
@@ -114,6 +135,28 @@ namespace HotelPOS.Tests.Integration
             var response = await client.PostAsJsonAsync($"/api/orders/{orderId}/void", new { Reason = "Admin void" });
 
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
+        /// <summary>Creates a custom Role granted access to exactly one module, plus a User linked to it — the DB-driven path an admin would set up via the Roles screen.</summary>
+        private async Task SeedUserWithGrantedModuleAsync(string username, string roleName, string grantedModule)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
+
+            var role = new Role { Name = roleName, Description = "Test role" };
+            context.Roles.Add(role);
+            await context.SaveChangesAsync();
+
+            context.RolePermissions.Add(new RolePermission { RoleId = role.Id, ModuleName = grantedModule, CanAccess = true });
+            context.Users.Add(new User
+            {
+                Username = username,
+                PasswordHash = "test-hash",
+                Salt = "test-salt",
+                Role = roleName,
+                RoleId = role.Id
+            });
+            await context.SaveChangesAsync();
         }
 
         private async Task<int> SeedPaidOrderAsync()

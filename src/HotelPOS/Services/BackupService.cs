@@ -33,7 +33,7 @@ namespace HotelPOS.Services
             }
 
             var conn = db.Database.GetDbConnection();
-            var backupDir = customPath ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+            var backupDir = customPath ?? GetDefaultBackupDir();
             if (!Directory.Exists(backupDir)) Directory.CreateDirectory(backupDir);
 
             string? createdFile = null;
@@ -117,6 +117,10 @@ namespace HotelPOS.Services
                 await cmd.ExecuteNonQueryAsync();
             }
         }
+
+        private static string GetDefaultBackupDir() => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "HotelPOS", "Backups");
 
         private static async Task<string?> PerformSqliteBackup(System.Data.Common.DbConnection conn, string backupDir)
         {

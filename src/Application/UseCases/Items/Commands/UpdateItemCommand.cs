@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 using HotelPOS.Application.Interfaces;
@@ -25,14 +26,18 @@ namespace HotelPOS.Application.UseCases.Items.Commands
     public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, Item>
     {
         private readonly IItemRepository _itemRepository;
+        private readonly IAuthorizationService _authorization;
 
-        public UpdateItemCommandHandler(IItemRepository itemRepository)
+        public UpdateItemCommandHandler(IItemRepository itemRepository, IAuthorizationService authorization)
         {
             _itemRepository = itemRepository;
+            _authorization = authorization;
         }
 
         public async Task<Item> Handle(UpdateItemCommand request, CancellationToken cancellationToken)
         {
+            _authorization.EnsurePermission(PermissionModules.Items);
+
             if (request.Id <= 0)
                 throw new ArgumentException("Invalid item ID.", nameof(request));
 

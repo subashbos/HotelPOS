@@ -96,7 +96,7 @@ namespace HotelPOS.Tests
             vm.SelectedSupplier = vm.Suppliers[1]; // Supplier A
             vm.ItemNameSearch = "Onions";
             vm.InvoiceNoSearch = "INV123";
-            vm.SelectedPaymentType = "Credit";
+            vm.SelectedPaymentType = PaymentModes.Credit;
 
             // Act
             await vm.ApplyFilterAsync();
@@ -104,7 +104,7 @@ namespace HotelPOS.Tests
             // Assert
             _reportServiceMock.Verify(r => r.GetPagedPurchaseReportAsync(It.Is<PagedPurchaseReportRequest>(req => 
                 req.Page == 1 && req.PageSize == 20 && req.From == targetFrom && req.To == targetTo.AddDays(1) &&
-                req.SupplierId == 1 && req.ItemName == "Onions" && req.PaymentType == "Credit" && req.InvoiceNo == "INV123")), Times.Once);
+                req.SupplierId == 1 && req.ItemName == "Onions" && req.PaymentType == PaymentModes.Credit && req.InvoiceNo == "INV123")), Times.Once);
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace HotelPOS.Tests
                 TaxAmount = 6.25m,
                 Discount = 1.0m,
                 TotalAmount = 630.25m,
-                PaymentType = "Credit"
+                PaymentType = PaymentModes.Credit
             };
 
             _purchaseServiceMock.Setup(s => s.GetSuppliersAsync()).ReturnsAsync(new List<Supplier>());
@@ -178,7 +178,7 @@ namespace HotelPOS.Tests
             Assert.Equal(6.25m, exportItem.TaxAmount);
             Assert.Equal(1.0m, exportItem.Discount);
             Assert.Equal(630.25m, exportItem.TotalAmount);
-            Assert.Equal("Credit", exportItem.PaymentType);
+            Assert.Equal(PaymentModes.Credit, exportItem.PaymentType);
         }
 
         [Fact]

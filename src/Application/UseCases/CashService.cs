@@ -38,15 +38,15 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<int> OpenSessionAsync(decimal openingBalance, string username)
         {
+            if (openingBalance < 0)
+                throw new ArgumentException("Opening balance cannot be negative.");
+
             if (_mediator != null)
                 return await _mediator.Send(new OpenSessionCommand(new OpenSessionDto
                 {
                     OpeningBalance = openingBalance,
                     OpenedBy = username
                 }));
-
-            if (openingBalance < 0)
-                throw new ArgumentException("Opening balance cannot be negative.");
 
             var active = await _repo!.GetCurrentSessionAsync();
             if (active != null)

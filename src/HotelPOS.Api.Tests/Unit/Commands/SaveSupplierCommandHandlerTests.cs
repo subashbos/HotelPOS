@@ -14,7 +14,7 @@ namespace HotelPOS.Tests.Unit.Commands
 
         public SaveSupplierCommandHandlerTests()
         {
-            _handler = new SaveSupplierCommandHandler(_repo.Object);
+            _handler = new SaveSupplierCommandHandler(_repo.Object, TestAuthorization.AllowAll().Object);
         }
 
         private static SaveSupplierDto NewSupplierDto() => new()

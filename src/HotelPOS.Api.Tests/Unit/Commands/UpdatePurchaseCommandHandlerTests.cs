@@ -14,7 +14,7 @@ namespace HotelPOS.Tests
 
         public UpdatePurchaseCommandHandlerTests()
         {
-            _handler = new UpdatePurchaseCommandHandler(_purchaseRepoMock.Object, _itemRepoMock.Object);
+            _handler = new UpdatePurchaseCommandHandler(_purchaseRepoMock.Object, _itemRepoMock.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

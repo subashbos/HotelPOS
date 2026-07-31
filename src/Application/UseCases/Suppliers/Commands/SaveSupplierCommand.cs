@@ -1,5 +1,6 @@
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 using System.Text.RegularExpressions;
@@ -11,14 +12,18 @@ namespace HotelPOS.Application.UseCases.Suppliers.Commands
     public class SaveSupplierCommandHandler : IRequestHandler<SaveSupplierCommand, int>
     {
         private readonly ISupplierRepository _repository;
+        private readonly IAuthorizationService _authorization;
 
-        public SaveSupplierCommandHandler(ISupplierRepository repository)
+        public SaveSupplierCommandHandler(ISupplierRepository repository, IAuthorizationService authorization)
         {
             _repository = repository;
+            _authorization = authorization;
         }
 
         public async Task<int> Handle(SaveSupplierCommand request, CancellationToken cancellationToken)
         {
+            _authorization.EnsurePermission(PermissionModules.Purchase);
+
             var dto = request.Dto;
 
             if (await _repository.ExistsByNameAsync(dto.Name.Trim(), dto.Id))

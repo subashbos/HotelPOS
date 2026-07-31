@@ -1,7 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.UnitOfMeasurement;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +27,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<UnitOfMeasurementDto>> CreateUnitOfMeasurement([FromBody] SaveUnitOfMeasurementDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -50,7 +48,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> UpdateUnitOfMeasurement(int id, [FromBody] SaveUnitOfMeasurementDto request)
         {
             if (id <= 0) return BadRequest("Invalid unit ID.");
@@ -77,7 +74,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteUnitOfMeasurement(int id)
         {
             if (id <= 0) return BadRequest("Invalid unit ID.");

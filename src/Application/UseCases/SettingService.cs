@@ -3,6 +3,7 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Settings.Commands;
 using HotelPOS.Application.UseCases.Settings.Queries;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Domain.Events;
 using MediatR;
@@ -45,7 +46,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveSettingsAsync(SystemSetting settings)
         {
-            _authorization?.EnsurePermission("Settings");
+            _authorization?.EnsurePermission(PermissionModules.Settings);
 
             if (_mediator != null)
             {

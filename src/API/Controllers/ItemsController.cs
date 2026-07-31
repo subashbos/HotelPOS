@@ -1,7 +1,6 @@
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Items.Queries;
-using HotelPOS.Domain.Common.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +41,6 @@ namespace HotelPOS.Api.Controllers
 
         // POST body uses CreateItemRequest DTO — never the raw domain entity
         [HttpPost]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<ItemDto>> CreateItem([FromBody] CreateItemRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -54,7 +52,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<ItemDto>> UpdateItem(int id, [FromBody] CreateItemRequest request)
         {
             if (id <= 0) return BadRequest("Invalid item ID.");
@@ -92,7 +89,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> DeleteItem(int id)
         {
             if (id <= 0) return BadRequest("Invalid item ID.");

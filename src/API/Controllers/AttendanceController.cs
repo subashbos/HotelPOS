@@ -1,7 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.Attendance;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,7 +38,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> MarkAttendance([FromBody] MarkAttendanceDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -58,7 +56,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> DeleteAttendance(int id)
         {
             if (id <= 0) return BadRequest("Invalid attendance ID.");

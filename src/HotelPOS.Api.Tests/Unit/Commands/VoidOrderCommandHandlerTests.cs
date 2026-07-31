@@ -14,7 +14,7 @@ public class VoidOrderCommandHandlerTests
     {
         // Arrange
         var orderServiceMock = new Mock<IOrderService>();
-        var handler = new VoidOrderCommandHandler(orderServiceMock.Object);
+        var handler = new VoidOrderCommandHandler(orderServiceMock.Object, TestAuthorization.AllowAll().Object);
         var command = new VoidOrderCommand(OrderId: 1, Reason: "Mistake", AuthorizedUser: RoleNames.Admin);
 
         // Act

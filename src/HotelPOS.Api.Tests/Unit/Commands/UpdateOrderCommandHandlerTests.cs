@@ -15,7 +15,7 @@ public class UpdateOrderCommandHandlerTests
     public UpdateOrderCommandHandlerTests()
     {
         _orderServiceMock = new Mock<IOrderService>();
-        _handler = new UpdateOrderCommandHandler(_orderServiceMock.Object);
+        _handler = new UpdateOrderCommandHandler(_orderServiceMock.Object, TestAuthorization.AllowAll().Object);
     }
 
     [Fact]

@@ -65,8 +65,8 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task UpdatePermissionsAsync(int roleId, List<RolePermission> permissions)
         {
             var existing = await _context.RolePermissions.Where(p => p.RoleId == roleId).ToListAsync();
-            _context.RolePermissions.RemoveRange(existing);
-            
+            var existingByModule = existing.ToDictionary(p => p.ModuleName);
+
             // Ensure we only save distinct modules to prevent duplicates in the DB
             // Prioritize 'true' permissions if duplicates exist
             var distinctPermissions = permissions
@@ -75,13 +75,36 @@ namespace HotelPOS.Infrastructure.Persistence
                 .Select(g => g.First())
                 .ToList();
 
-            foreach(var p in distinctPermissions)
+            // Update matching modules in place and add only genuinely new ones, instead of
+            // delete-all/reinsert-with-new-identity: that pattern let a partially-applied
+            // delete leave stale rows behind, and the fresh identity values it consumed could
+            // collide with the fixed Ids that later EF migrations hardcode for new permission
+            // modules (see PK_RolePermissions violation on Id 45 after AddTdsPermission).
+            foreach (var p in distinctPermissions)
             {
-                p.RoleId = roleId;
-                p.Id = 0; // Ensure new identity
+                if (existingByModule.TryGetValue(p.ModuleName, out var row))
+                {
+                    row.CanAccess = p.CanAccess;
+                    row.CanEdit = p.CanEdit;
+                    row.CanDelete = p.CanDelete;
+                }
+                else
+                {
+                    _context.RolePermissions.Add(new RolePermission
+                    {
+                        RoleId = roleId,
+                        ModuleName = p.ModuleName,
+                        CanAccess = p.CanAccess,
+                        CanEdit = p.CanEdit,
+                        CanDelete = p.CanDelete
+                    });
+                }
             }
-            
-            _context.RolePermissions.AddRange(distinctPermissions);
+
+            var incomingModules = new HashSet<string>(distinctPermissions.Select(p => p.ModuleName));
+            var toRemove = existing.Where(e => !incomingModules.Contains(e.ModuleName)).ToList();
+            _context.RolePermissions.RemoveRange(toRemove);
+
             await _context.SaveChangesAsync();
         }
     }

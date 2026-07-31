@@ -26,6 +26,7 @@ namespace HotelPOS.Application.UseCases
         private readonly IAuthorizationService _authorization;
         private readonly IValidator<SalaryStructure> _validator;
         private readonly IMediator? _mediator;
+        private readonly ISettingService? _settingService;
 
         public PayrollService(
             IPayrollRepository payrollRepository,
@@ -33,7 +34,8 @@ namespace HotelPOS.Application.UseCases
             IAttendanceRepository attendanceRepository,
             IAuthorizationService authorization,
             IValidator<SalaryStructure>? validator = null,
-            IMediator? mediator = null)
+            IMediator? mediator = null,
+            ISettingService? settingService = null)
         {
             _payrollRepository = payrollRepository;
             _employeeRepository = employeeRepository;
@@ -41,6 +43,7 @@ namespace HotelPOS.Application.UseCases
             _authorization = authorization;
             _validator = validator ?? new SalaryStructureValidator();
             _mediator = mediator;
+            _settingService = settingService;
         }
 
         public async Task<List<SalaryStructure>> GetSalaryStructuresAsync(int employeeId)
@@ -51,6 +54,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveSalaryStructureAsync(SalaryStructure structure)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+
             if (structure == null) throw new ArgumentNullException(nameof(structure));
 
             var result = _validator.Validate(structure);
@@ -73,6 +78,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<PayrollRun> RunPayrollAsync(int month, int year, int? processedByUserId)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+
             if (month < 1 || month > 12) throw new ArgumentException("Month must be between 1 and 12.");
 
             var existingRun = await _payrollRepository.GetRunAsync(month, year);
@@ -100,6 +107,10 @@ namespace HotelPOS.Application.UseCases
             var financialYearStart = month >= 4 ? year : year - 1;
             var tdsRuleSet = await _payrollRepository.GetTdsRuleSetAsync(financialYearStart);
 
+            var settings = _settingService != null ? await _settingService.GetSettingsAsync() : null;
+            var professionalTaxThreshold = settings?.ProfessionalTaxThreshold ?? IndianStatutoryDefaults.ProfessionalTaxThreshold;
+            var professionalTaxAmount = settings?.ProfessionalTaxAmount ?? IndianStatutoryDefaults.ProfessionalTaxAmount;
+
             foreach (var employee in employees.Where(e => e.Status == EmployeeStatuses.Active))
             {
                 var structure = await _payrollRepository.GetCurrentSalaryStructureAsync(employee.Id, monthEnd);
@@ -118,7 +129,7 @@ namespace HotelPOS.Application.UseCases
                 var lopDays = absentDays + (halfDays * 0.5m);
                 var paidDays = Math.Max(0, workingDays - lopDays);
 
-                var payslip = CalculatePayslip(structure, workingDays, paidDays, tdsRuleSet);
+                var payslip = CalculatePayslip(structure, workingDays, paidDays, tdsRuleSet, professionalTaxThreshold, professionalTaxAmount);
                 payslip.PayrollRunId = run.Id;
                 payslip.EmployeeId = employee.Id;
                 payslip.Employee = employee;
@@ -139,6 +150,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task MarkRunAsPaidAsync(int runId)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+
             var run = await _payrollRepository.GetRunByIdAsync(runId)
                 ?? throw new KeyNotFoundException($"Payroll run #{runId} not found.");
 
@@ -166,6 +179,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task VoidRunAsync(int runId, string reason)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+
             var run = await _payrollRepository.GetRunByIdAsync(runId)
                 ?? throw new KeyNotFoundException($"Payroll run #{runId} not found.");
 
@@ -188,11 +203,13 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<List<PayrollRun>> GetRunsAsync()
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetRunsAsync();
         }
 
         public async Task<PayrollRun?> GetRunByIdAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetRunByIdAsync(id);
         }
 
@@ -206,7 +223,13 @@ namespace HotelPOS.Application.UseCases
             return await _payrollRepository.GetPayslipsByEmployeeAsync(employeeId);
         }
 
-        public Payslip CalculatePayslip(SalaryStructure structure, decimal workingDays, decimal paidDays, TdsRuleSet? tdsRuleSet = null)
+        public Payslip CalculatePayslip(
+            SalaryStructure structure,
+            decimal workingDays,
+            decimal paidDays,
+            TdsRuleSet? tdsRuleSet = null,
+            decimal professionalTaxThreshold = IndianStatutoryDefaults.ProfessionalTaxThreshold,
+            decimal professionalTaxAmount = IndianStatutoryDefaults.ProfessionalTaxAmount)
         {
             if (structure == null) throw new ArgumentNullException(nameof(structure));
             if (workingDays <= 0) throw new ArgumentException("Working days must be greater than zero.");
@@ -234,9 +257,9 @@ namespace HotelPOS.Application.UseCases
             }
 
             decimal professionalTax = 0;
-            if (structure.ProfessionalTaxApplicable && grossEarnings > IndianStatutoryDefaults.ProfessionalTaxThreshold)
+            if (structure.ProfessionalTaxApplicable && grossEarnings > professionalTaxThreshold)
             {
-                professionalTax = IndianStatutoryDefaults.ProfessionalTaxAmount;
+                professionalTax = professionalTaxAmount;
             }
 
             var tds = TdsCalculator.CalculateMonthlyTds(grossMonthly, tdsRuleSet);

@@ -1,5 +1,6 @@
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 
@@ -10,14 +11,18 @@ namespace HotelPOS.Application.UseCases.Expenses.Commands
     public class SaveExpenseCommandHandler : IRequestHandler<SaveExpenseCommand, int>
     {
         private readonly IExpenseRepository _repository;
+        private readonly IAuthorizationService _authorization;
 
-        public SaveExpenseCommandHandler(IExpenseRepository repository)
+        public SaveExpenseCommandHandler(IExpenseRepository repository, IAuthorizationService authorization)
         {
             _repository = repository;
+            _authorization = authorization;
         }
 
         public async Task<int> Handle(SaveExpenseCommand request, CancellationToken cancellationToken)
         {
+            _authorization.EnsurePermission(PermissionModules.Expenses);
+
             var dto = request.Dto;
 
             if (dto.Id == 0)

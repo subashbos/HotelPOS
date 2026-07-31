@@ -1,13 +1,12 @@
 using HotelPOS.Application.DTOs.Audit;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelPOS.Api.Controllers
 {
-    /// <summary>Security audit log — requires a valid JWT token on all endpoints.</summary>
-    [Authorize(Roles = RoleNames.Admin)]
+    /// <summary>Security audit log — requires a valid JWT token; permission enforced by AuditService.</summary>
+    [Authorize]
     public class AuditController : BaseApiController
     {
         private readonly IAuditService _auditService;

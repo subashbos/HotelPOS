@@ -52,6 +52,10 @@ namespace HotelPOS.Tests.Integration
             Environment.SetEnvironmentVariable("Jwt__Key", SigningKey);
             Environment.SetEnvironmentVariable("Jwt__Issuer", TestJwtIssuer);
             Environment.SetEnvironmentVariable("Jwt__Audience", TestJwtAudience);
+
+            // Same eager-read-before-Build() timing constraint as Jwt:Key above (see comment on
+            // SigningKey) — Program.cs reads Encryption:PiiKey just as eagerly.
+            Environment.SetEnvironmentVariable("Encryption__PiiKey", Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)));
         }
 
         private readonly SqliteConnection _connection = new("DataSource=:memory:");

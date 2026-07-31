@@ -1,15 +1,14 @@
 using HotelPOS.Application.Common.Models;
 using HotelPOS.Application.DTOs.Tds;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelPOS.Api.Controllers
 {
-    /// <summary>Admin-editable income-tax TDS slab structures, one per financial year.</summary>
-    [Authorize(Roles = RoleNames.Admin)]
+    /// <summary>Income-tax TDS slab structures, one per financial year — requires a valid JWT token; permission enforced by TdsService.</summary>
+    [Authorize]
     public class TdsController : BaseApiController
     {
         private readonly ITdsService _tdsService;

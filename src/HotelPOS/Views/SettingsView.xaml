@@ -187,6 +187,26 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- ══ TAB 5: Payroll ══ -->
+            <TabItem Header="💰  Payroll">
+                <ScrollViewer>
+                    <Border Padding="32">
+                        <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+                            <TextBlock Text="Professional Tax" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,8"/>
+                            <TextBlock Text="Professional Tax is levied by state governments, not the centre — several states charge none at all. Set these to match your state; they default to a common (Karnataka-style) slab." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,18" TextWrapping="Wrap"/>
+
+                            <TextBlock Text="MONTHLY GROSS THRESHOLD (₹, TAX APPLIES ABOVE THIS)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="ProfessionalTaxThresholdBox" Margin="0,0,0,18" Width="160" HorizontalAlignment="Left"/>
+
+                            <TextBlock Text="TAX AMOUNT (₹ PER MONTH)" Style="{StaticResource FieldLabel}"/>
+                            <TextBox x:Name="ProfessionalTaxAmountBox" Margin="0,0,0,24" Width="160" HorizontalAlignment="Left"/>
+
+                            <Button Content="💾  Save Payroll Settings" Style="{StaticResource PrimaryBtn}" Click="SavePayroll_Click" Padding="28,12" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+            </TabItem>
+
         </TabControl>
         </Grid>
     </Grid>

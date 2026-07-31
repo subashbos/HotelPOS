@@ -14,7 +14,7 @@ namespace HotelPOS.Tests.Unit.Services
 
         public TdsServiceTests()
         {
-            _service = new TdsService(_repository.Object);
+            _service = new TdsService(_repository.Object, TestAuthorization.AllowAll().Object);
         }
 
         private static TdsRuleSet ValidRuleSet() => new()

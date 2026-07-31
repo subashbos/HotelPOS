@@ -29,12 +29,18 @@ namespace HotelPOS.Application.UseCases
 
         /// <summary>
         /// Production constructor: resolves scope factory from DI and uses the
-        /// default carts.json path in the application's base directory.
+        /// default carts.json path under the current user's local application data
+        /// (not the install directory, which is typically read-only for non-admin
+        /// users when installed under Program Files).
         /// </summary>
         public CartService(IServiceScopeFactory? scopeFactory = null)
-            : this(scopeFactory, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "carts.json"), null)
+            : this(scopeFactory, GetDefaultCartsFilePath(), null)
         {
         }
+
+        private static string GetDefaultCartsFilePath() => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "HotelPOS", "carts.json");
 
         internal CartService(IServiceScopeFactory? scopeFactory, string? cartsFilePath)
             : this(scopeFactory, cartsFilePath, null)
@@ -69,6 +75,10 @@ namespace HotelPOS.Application.UseCases
             if (_cartsFilePath == null) return;
             try
             {
+                var dir = Path.GetDirectoryName(_cartsFilePath);
+                if (!string.IsNullOrEmpty(dir))
+                    Directory.CreateDirectory(dir);
+
                 var json = JsonSerializer.Serialize(_tableCarts);
                 File.WriteAllText(_cartsFilePath, json);
             }

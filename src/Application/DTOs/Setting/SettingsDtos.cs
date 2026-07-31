@@ -26,6 +26,9 @@ namespace HotelPOS.Application.DTOs.Setting
 
         public int IdleTimeoutMinutes { get; set; }
 
+        public decimal ProfessionalTaxThreshold { get; set; }
+        public decimal ProfessionalTaxAmount { get; set; }
+
         public string? SmtpHost { get; set; }
         public int SmtpPort { get; set; }
         public string? SmtpUsername { get; set; }
@@ -59,6 +62,11 @@ namespace HotelPOS.Application.DTOs.Setting
         public string? OffsiteBackupPath { get; set; }
 
         public int IdleTimeoutMinutes { get; set; }
+
+        /// <summary>Null means "leave the current value unchanged" — omitted by clients that don't edit Professional Tax.</summary>
+        public decimal? ProfessionalTaxThreshold { get; set; }
+        /// <summary>Null means "leave the current value unchanged" — omitted by clients that don't edit Professional Tax.</summary>
+        public decimal? ProfessionalTaxAmount { get; set; }
 
         public string? SmtpHost { get; set; }
         public int SmtpPort { get; set; }

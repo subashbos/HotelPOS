@@ -14,6 +14,10 @@ namespace HotelPOS.Application.Interfaces
         Task<bool> ExistsByCodeAsync(string code, int excludeId = 0);
 
         Task<List<Department>> GetDepartmentsAsync();
+        Task SaveDepartmentAsync(Department department);
+        Task DeleteDepartmentAsync(int id);
         Task<List<Designation>> GetDesignationsAsync();
+        Task SaveDesignationAsync(Designation designation);
+        Task DeleteDesignationAsync(int id);
     }
 }

@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { RoleService } from '../../../services/role.service';
-import { PERMISSION_MODULES, Role, RolePermission } from '../../../models/role.model';
+import { PERMISSION_GROUP_ORDER, PERMISSION_MODULES, PERMISSION_MODULE_GROUPS, Role, RolePermission } from '../../../models/role.model';
+
+export interface PermissionGroup {
+  name: string;
+  permissions: RolePermission[];
+}
 
 @Component({
   standalone: false,
@@ -22,6 +27,7 @@ export class RolesComponent implements OnInit {
 
   editingRole: Role | null = null;
   editingPermissions: RolePermission[] = [];
+  editingGroups: PermissionGroup[] = [];
 
   constructor(private readonly roleService: RoleService) {}
 
@@ -81,7 +87,18 @@ export class RolesComponent implements OnInit {
       const existing = role.permissions.find((p) => p.moduleName === moduleName);
       return existing ?? { id: 0, roleId: role.id, moduleName, canAccess: false, canEdit: false, canDelete: false };
     });
+    this.editingGroups = this.groupPermissions(this.editingPermissions);
     this.actionError = '';
+  }
+
+  // Group permissions by module (e.g. all Hr* modules under "Human Resources") for display.
+  private groupPermissions(permissions: RolePermission[]): PermissionGroup[] {
+    return PERMISSION_GROUP_ORDER
+      .map((name) => ({
+        name,
+        permissions: permissions.filter((p) => PERMISSION_MODULE_GROUPS[p.moduleName] === name)
+      }))
+      .filter((group) => group.permissions.length > 0);
   }
 
   closePermissionsEditor(): void {

@@ -23,7 +23,7 @@ namespace HotelPOS.Tests
             _itemServiceMock = new Mock<IItemService>();
             _itemServiceMock.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
                 .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Test", Price = 100m, TaxPercentage = 5m }).ToList());
-            _service = new OrderService(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithOpenSession().Object);
+            _service = new OrderService(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task SaveOrderAsync_NoOpenCashSession_ThrowsInvalidOperationException()
         {
-            var service = new OrderService(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithNoOpenSession().Object);
+            var service = new OrderService(_repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object, TestCashService.WithNoOpenSession().Object, TestAuthorization.AllowAll().Object);
             var items = new List<OrderItem>
             {
                 new OrderItem { ItemId = 1, ItemName = "Test", Quantity = 1, Price = 100, Total = 100 }

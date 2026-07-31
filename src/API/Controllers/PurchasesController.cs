@@ -2,7 +2,6 @@ using AutoMapper;
 using HotelPOS.Application.DTOs.Purchase;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,7 +47,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<ActionResult<PurchaseDto>> CreatePurchase([FromBody] SavePurchaseDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -70,7 +68,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> UpdatePurchase(int id, [FromBody] SavePurchaseDto request)
         {
             if (id <= 0) return BadRequest("Invalid purchase ID.");
@@ -97,7 +94,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> DeletePurchase(int id)
         {
             if (id <= 0) return BadRequest("Invalid purchase ID.");

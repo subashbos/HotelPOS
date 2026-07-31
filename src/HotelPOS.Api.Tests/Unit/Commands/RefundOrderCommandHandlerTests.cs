@@ -14,7 +14,7 @@ public class RefundOrderCommandHandlerTests
     public RefundOrderCommandHandlerTests()
     {
         _orderServiceMock = new Mock<IOrderService>();
-        _handler = new RefundOrderCommandHandler(_orderServiceMock.Object);
+        _handler = new RefundOrderCommandHandler(_orderServiceMock.Object, TestAuthorization.AllowAll().Object);
     }
 
     [Fact]

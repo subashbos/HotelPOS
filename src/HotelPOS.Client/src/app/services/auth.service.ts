@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { PermissionService } from './permission.service';
 
 interface LoginResponse {
   token: string;
@@ -25,6 +26,8 @@ export class AuthService {
   // than the access token, so persisting them would hand an XSS payload a durable way
   // to mint fresh access tokens even after the tab is closed and reopened.
   private refreshTokenValue: string | null = null;
+
+  private readonly permissionService = inject(PermissionService);
 
   constructor(private readonly http: HttpClient) { }
 
@@ -57,6 +60,10 @@ export class AuthService {
     localStorage.setItem('auth_token', token);
     localStorage.setItem('auth_username', username);
     this.refreshTokenValue = refreshToken;
+    // Drop any cached permission snapshot so it's re-fetched under the new/renewed token - this
+    // also means a role change an admin makes mid-session takes effect on the next token refresh
+    // (~20 min access token lifetime) rather than requiring the user to log out and back in.
+    this.permissionService.clear();
   }
 
   getToken(): string | null {
@@ -117,6 +124,7 @@ export class AuthService {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_username');
     this.refreshTokenValue = null;
+    this.permissionService.clear();
 
     if (refreshToken) {
       // Best-effort server-side revocation; the client-side session is already cleared either way.

@@ -175,6 +175,15 @@ namespace HotelPOS.Infrastructure.Persistence
                 .HasIndex(e => e.EmployeeCode)
                 .IsUnique();
 
+            // ── PII encryption at rest ────────────────────────────────────────
+            var piiConverter = new EncryptedStringConverter();
+            modelBuilder.Entity<Employee>().Property(e => e.Pan).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.Aadhaar).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.Uan).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.EsicNumber).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.BankAccountNumber).HasConversion(piiConverter);
+            modelBuilder.Entity<Employee>().Property(e => e.BankIfsc).HasConversion(piiConverter);
+
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Customer)
                 .WithMany()
@@ -338,7 +347,7 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 10, RoleId = 1, ModuleName = PermissionModules.Shift, CanAccess = true },
                 new RolePermission { Id = 21, RoleId = 1, ModuleName = PermissionModules.Roles, CanAccess = true },
                 new RolePermission { Id = 23, RoleId = 1, ModuleName = PermissionModules.SalesReport, CanAccess = true },
-                new RolePermission { Id = 25, RoleId = 1, ModuleName = "Purchase", CanAccess = true },
+                new RolePermission { Id = 25, RoleId = 1, ModuleName = PermissionModules.Purchase, CanAccess = true },
                 new RolePermission { Id = 27, RoleId = 1, ModuleName = PermissionModules.Expenses, CanAccess = true },
                 new RolePermission { Id = 31, RoleId = 1, ModuleName = PermissionModules.HrEmployees, CanAccess = true },
                 new RolePermission { Id = 32, RoleId = 1, ModuleName = PermissionModules.HrAttendance, CanAccess = true },
@@ -346,6 +355,10 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 34, RoleId = 1, ModuleName = PermissionModules.HrPayroll, CanAccess = true },
                 new RolePermission { Id = 39, RoleId = 1, ModuleName = PermissionModules.Customers, CanAccess = true },
                 new RolePermission { Id = 41, RoleId = 1, ModuleName = PermissionModules.Units, CanAccess = true },
+                new RolePermission { Id = 43, RoleId = 1, ModuleName = PermissionModules.HrPayrollRun, CanAccess = true },
+                new RolePermission { Id = 45, RoleId = 1, ModuleName = PermissionModules.Tds, CanAccess = true },
+                new RolePermission { Id = 47, RoleId = 1, ModuleName = PermissionModules.OrderManagement, CanAccess = true },
+                new RolePermission { Id = 49, RoleId = 1, ModuleName = PermissionModules.CustomerManagement, CanAccess = true },
 
                 // Cashier: Restricted access
                 new RolePermission { Id = 11, RoleId = 2, ModuleName = PermissionModules.Dashboard, CanAccess = false },
@@ -360,14 +373,18 @@ namespace HotelPOS.Infrastructure.Persistence
                 new RolePermission { Id = 20, RoleId = 2, ModuleName = PermissionModules.Shift, CanAccess = true },
                 new RolePermission { Id = 22, RoleId = 2, ModuleName = PermissionModules.Roles, CanAccess = false },
                 new RolePermission { Id = 24, RoleId = 2, ModuleName = PermissionModules.SalesReport, CanAccess = false },
-                new RolePermission { Id = 26, RoleId = 2, ModuleName = "Purchase", CanAccess = false },
+                new RolePermission { Id = 26, RoleId = 2, ModuleName = PermissionModules.Purchase, CanAccess = false },
                 new RolePermission { Id = 28, RoleId = 2, ModuleName = PermissionModules.Expenses, CanAccess = false },
                 new RolePermission { Id = 35, RoleId = 2, ModuleName = PermissionModules.HrEmployees, CanAccess = false },
                 new RolePermission { Id = 36, RoleId = 2, ModuleName = PermissionModules.HrAttendance, CanAccess = false },
                 new RolePermission { Id = 37, RoleId = 2, ModuleName = PermissionModules.HrLeave, CanAccess = false },
                 new RolePermission { Id = 38, RoleId = 2, ModuleName = PermissionModules.HrPayroll, CanAccess = false },
                 new RolePermission { Id = 40, RoleId = 2, ModuleName = PermissionModules.Customers, CanAccess = true },
-                new RolePermission { Id = 42, RoleId = 2, ModuleName = PermissionModules.Units, CanAccess = false }
+                new RolePermission { Id = 42, RoleId = 2, ModuleName = PermissionModules.Units, CanAccess = false },
+                new RolePermission { Id = 44, RoleId = 2, ModuleName = PermissionModules.HrPayrollRun, CanAccess = false },
+                new RolePermission { Id = 46, RoleId = 2, ModuleName = PermissionModules.Tds, CanAccess = false },
+                new RolePermission { Id = 48, RoleId = 2, ModuleName = PermissionModules.OrderManagement, CanAccess = false },
+                new RolePermission { Id = 50, RoleId = 2, ModuleName = PermissionModules.CustomerManagement, CanAccess = false }
             );
 
 
@@ -395,10 +412,10 @@ namespace HotelPOS.Infrastructure.Persistence
             // ── Suppliers seed ────────────────────────────────────────────────
             const string maharashtra = "Maharashtra";
             modelBuilder.Entity<Supplier>().HasData(
-                new Supplier { Id = 1, Name = "Metro Wholesalers", Phone = "9876543210", Gstin = "27AAAAA1111A1Z1", City = "Mumbai", State = maharashtra, Pincode = "400001", OpeningBalance = 0, CreditLimit = 50000, PaymentTerms = "Credit" },
+                new Supplier { Id = 1, Name = "Metro Wholesalers", Phone = "9876543210", Gstin = "27AAAAA1111A1Z1", City = "Mumbai", State = maharashtra, Pincode = "400001", OpeningBalance = 0, CreditLimit = 50000, PaymentTerms = PaymentModes.Credit },
                 new Supplier { Id = 2, Name = "Apex Food Distributors", Phone = "9876543211", Gstin = "27BBBBB2222B2Z2", City = "Pune", State = maharashtra, Pincode = "411001", OpeningBalance = 5000, CreditLimit = 100000, PaymentTerms = "30 Days" },
                 new Supplier { Id = 3, Name = "Supreme Dairy Partners", Phone = "9876543212", Gstin = "27CCCCC3333C3Z3", City = "Mumbai", State = maharashtra, Pincode = "400002", OpeningBalance = 0, CreditLimit = 25000, PaymentTerms = PaymentModes.Cash },
-                new Supplier { Id = 4, Name = "Standard Kitchen Supplies", Phone = "9876543213", Gstin = "27DDDDD4444D4Z4", City = "Nashik", State = maharashtra, Pincode = "422001", OpeningBalance = 1500, CreditLimit = 30000, PaymentTerms = "Credit" }
+                new Supplier { Id = 4, Name = "Standard Kitchen Supplies", Phone = "9876543213", Gstin = "27DDDDD4444D4Z4", City = "Nashik", State = maharashtra, Pincode = "422001", OpeningBalance = 1500, CreditLimit = 30000, PaymentTerms = PaymentModes.Credit }
             );
         }
     }

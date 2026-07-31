@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,7 +86,8 @@ bool isCorsOriginAllowed(string? origin)
 
     return builder.Environment.IsDevelopment()
         && Uri.TryCreate(origin, UriKind.Absolute, out var uri)
-        && uri.Host is "localhost" or "127.0.0.1";
+        && uri.Host is "localhost" or "127.0.0.1"
+        && uri.Port is 4200 or 4201 or 4202 or 3000 or 5173 or 8080;
 }
 
 builder.Services.AddCors(options =>
@@ -103,11 +106,28 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
-var jwtKey = jwtOptions.Key
-    ?? Environment.GetEnvironmentVariable("HOTELPOS_JWT_KEY");
+var jwtKey = jwtOptions.Key;
+if (string.IsNullOrWhiteSpace(jwtKey))
+    jwtKey = Environment.GetEnvironmentVariable("HOTELPOS_JWT_KEY");
 if (string.IsNullOrWhiteSpace(jwtKey))
     throw new InvalidOperationException(
         "JWT Key is not configured. Set Jwt:Key in appsettings or HOTELPOS_JWT_KEY environment variable.");
+
+// ── PII column encryption key ─────────────────────────────────────────────
+var piiKeyBase64 = builder.Configuration["Encryption:PiiKey"];
+if (string.IsNullOrWhiteSpace(piiKeyBase64))
+    piiKeyBase64 = Environment.GetEnvironmentVariable("HOTELPOS_PII_KEY");
+if (string.IsNullOrWhiteSpace(piiKeyBase64))
+    throw new InvalidOperationException(
+        "PII encryption key is not configured. Set Encryption:PiiKey in appsettings or HOTELPOS_PII_KEY environment variable.");
+try
+{
+    HotelPOS.Infrastructure.Persistence.PiiEncryptionKeyProvider.SetKey(Convert.FromBase64String(piiKeyBase64));
+}
+catch (FormatException ex)
+{
+    throw new InvalidOperationException("PII encryption key (Encryption:PiiKey / HOTELPOS_PII_KEY) must be valid Base64.", ex);
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -127,6 +147,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// ── Rate Limiting ─────────────────────────────────────────────────────────
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("AuthPolicy", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+});
+
 // ── OpenAPI ───────────────────────────────────────────────────────────────
 builder.Services.AddOpenApi();
 
@@ -135,6 +167,7 @@ var app = builder.Build();
 // ── Middleware Pipeline ───────────────────────────────────────────────────
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors("AllowAngular");
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {

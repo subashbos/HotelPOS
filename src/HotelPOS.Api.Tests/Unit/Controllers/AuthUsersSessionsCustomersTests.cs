@@ -39,14 +39,35 @@ namespace HotelPOS.Tests.Unit.Controllers
             Mock<IAuthService>? authSvc = null,
             Mock<IUserRepository>? userRepo = null,
             Mock<IRefreshTokenRepository>? refreshRepo = null,
-            Mock<IPasswordResetService>? resetSvc = null)
+            Mock<IPasswordResetService>? resetSvc = null,
+            Mock<IAuthorizationService>? authorization = null)
         {
             return new AuthController(
                 (authSvc ?? new Mock<IAuthService>()).Object,
                 (userRepo ?? new Mock<IUserRepository>()).Object,
                 (refreshRepo ?? new Mock<IRefreshTokenRepository>()).Object,
                 (resetSvc ?? new Mock<IPasswordResetService>()).Object,
+                (authorization ?? TestAuthorization.AllowAll()).Object,
                 CreateJwtOptions());
+        }
+
+        // ================= AuthController.GetMyPermissions =================
+
+        [Fact]
+        public void GetMyPermissions_ReturnsEveryKnownModule_UsingAuthorizationServiceForEach()
+        {
+            var auth = new Mock<IAuthorizationService>();
+            auth.Setup(a => a.HasPermission(PermissionModules.Items)).Returns(true);
+            auth.Setup(a => a.HasPermission(It.Is<string>(m => m != PermissionModules.Items))).Returns(false);
+            var controller = CreateAuthController(authorization: auth);
+
+            var result = Assert.IsType<OkObjectResult>(controller.GetMyPermissions());
+            var permissions = Assert.IsType<Dictionary<string, bool>>(result.Value);
+
+            Assert.Equal(PermissionModules.All.Length, permissions.Count);
+            Assert.True(permissions[PermissionModules.Items]);
+            Assert.False(permissions[PermissionModules.Roles]);
+            auth.Verify(a => a.HasPermission(It.IsAny<string>()), Times.Exactly(PermissionModules.All.Length));
         }
 
         // ================= AuthController.Login (2FA branch) =================

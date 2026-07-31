@@ -13,7 +13,7 @@ namespace HotelPOS.Tests.Unit.Commands
 
         public DeleteSupplierCommandHandlerTests()
         {
-            _handler = new DeleteSupplierCommandHandler(_repo.Object);
+            _handler = new DeleteSupplierCommandHandler(_repo.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

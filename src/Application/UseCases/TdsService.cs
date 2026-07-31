@@ -1,25 +1,38 @@
 using HotelPOS.Application.Common.Models;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.UseCases
 {
-    /// <summary>Admin CRUD over TDS slab structures. Authorization is enforced by the Admin-only controller route.</summary>
+    /// <summary>CRUD over TDS slab structures, gated by the Tds permission module.</summary>
     public class TdsService : ITdsService
     {
         private readonly ITdsRepository _repository;
+        private readonly IAuthorizationService _authorization;
 
-        public TdsService(ITdsRepository repository)
+        public TdsService(ITdsRepository repository, IAuthorizationService authorization)
         {
             _repository = repository;
+            _authorization = authorization;
         }
 
-        public Task<List<int>> GetFinancialYearsAsync() => _repository.GetFinancialYearsAsync();
+        public Task<List<int>> GetFinancialYearsAsync()
+        {
+            _authorization.EnsurePermission(PermissionModules.Tds);
+            return _repository.GetFinancialYearsAsync();
+        }
 
-        public Task<TdsRuleSet?> GetRuleSetAsync(int financialYearStart) => _repository.GetRuleSetAsync(financialYearStart);
+        public Task<TdsRuleSet?> GetRuleSetAsync(int financialYearStart)
+        {
+            _authorization.EnsurePermission(PermissionModules.Tds);
+            return _repository.GetRuleSetAsync(financialYearStart);
+        }
 
         public async Task SaveRuleSetAsync(TdsRuleSet ruleSet)
         {
+            _authorization.EnsurePermission(PermissionModules.Tds);
+
             if (ruleSet == null) throw new ArgumentNullException(nameof(ruleSet));
             ValidateConfig(ruleSet);
 
@@ -29,7 +42,11 @@ namespace HotelPOS.Application.UseCases
             await _repository.SaveRuleSetAsync(ruleSet);
         }
 
-        public Task DeleteRuleSetAsync(int financialYearStart) => _repository.DeleteRuleSetAsync(financialYearStart);
+        public Task DeleteRuleSetAsync(int financialYearStart)
+        {
+            _authorization.EnsurePermission(PermissionModules.Tds);
+            return _repository.DeleteRuleSetAsync(financialYearStart);
+        }
 
         private static void ValidateConfig(TdsRuleSet ruleSet)
         {

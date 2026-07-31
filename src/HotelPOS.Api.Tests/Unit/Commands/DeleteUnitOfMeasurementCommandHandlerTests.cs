@@ -14,7 +14,7 @@ namespace HotelPOS.Tests.Unit.Commands
 
         public DeleteUnitOfMeasurementCommandHandlerTests()
         {
-            _handler = new DeleteUnitOfMeasurementCommandHandler(_repo.Object, _itemRepo.Object);
+            _handler = new DeleteUnitOfMeasurementCommandHandler(_repo.Object, _itemRepo.Object, TestAuthorization.AllowAll().Object);
         }
 
         [Fact]

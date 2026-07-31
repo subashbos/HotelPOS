@@ -18,6 +18,10 @@ namespace HotelPOS.Domain.Common.Constants
         /// <summary>WPF-only mixed-tender mode (cash+card+UPI split); not part of the API-validated set.</summary>
         public const string Split = "Split";
 
+        /// <summary>Purchase/Supplier payment term — the hotel paying a supplier on credit, not a
+        /// customer order tender; not part of the API-validated order payment set.</summary>
+        public const string Credit = "Credit";
+
         public static readonly string[] All = { Cash, Card, Upi };
     }
 
@@ -68,15 +72,25 @@ namespace HotelPOS.Domain.Common.Constants
         public const string HrAttendance = "HrAttendance";
         public const string HrLeave = "HrLeave";
         public const string HrPayroll = "HrPayroll";
+        /// <summary>Salary structures, running/voiding payroll — a finer-grained action distinct from <see cref="HrPayroll"/>'s read/view access.</summary>
+        public const string HrPayrollRun = "HrPayrollRun";
         public const string Expenses = "Expenses";
         public const string Customers = "Customers";
         public const string Units = "Units";
+        /// <summary>Covers both purchase orders/entries and supplier management — mirrors the WPF nav grouping (Purchase, Suppliers, RawMaterials, BOM all gate on this one module).</summary>
+        public const string Purchase = "Purchase";
+        public const string Tds = "Tds";
+        /// <summary>Voiding/refunding/editing an already-placed order — a more sensitive action than <see cref="Billing"/>'s create/pay flow, which Cashiers also hold.</summary>
+        public const string OrderManagement = "OrderManagement";
+        /// <summary>Deleting a customer record — a more sensitive action than <see cref="Customers"/>'s create/update/view access, which Cashiers also hold.</summary>
+        public const string CustomerManagement = "CustomerManagement";
 
         public static readonly string[] All =
         {
             Dashboard, Billing, Items, Categories, Tables,
             Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport,
-            HrEmployees, HrAttendance, HrLeave, HrPayroll, Expenses, Customers, Units
+            HrEmployees, HrAttendance, HrLeave, HrPayroll, HrPayrollRun, Expenses, Customers, Units,
+            Purchase, Tds, OrderManagement, CustomerManagement
         };
     }
 
