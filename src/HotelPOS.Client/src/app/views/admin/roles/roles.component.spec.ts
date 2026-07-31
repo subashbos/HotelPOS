@@ -1,3 +1,4 @@
+import { MOCK_ROLE } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,12 +11,7 @@ describe('RolesComponent', () => {
   let fixture: ComponentFixture<RolesComponent>;
   let roleServiceSpy: jasmine.SpyObj<RoleService>;
 
-  const mockRole: Role = {
-    id: 1,
-    name: 'Manager',
-    description: 'Store manager',
-    permissions: []
-  };
+  const mockRole = MOCK_ROLE;
 
   beforeEach(async () => {
     roleServiceSpy = jasmine.createSpyObj('RoleService', ['getRoles', 'createRole', 'deleteRole', 'updatePermissions']);

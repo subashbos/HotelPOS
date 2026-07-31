@@ -1,3 +1,4 @@
+import { MOCK_PURCHASES, MOCK_SUPPLIERS } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -28,12 +29,7 @@ describe('PurchaseService', () => {
 
   describe('getPurchases', () => {
     it('should retrieve all purchases', () => {
-      const dummyPurchases: Purchase[] = [
-        {
-          sNo: 1, id: 1, supplierId: 1, invoiceNumber: 'INV-001', purchaseDate: '2026-07-01',
-          paymentType: 'Cash', subtotal: 1000, totalTax: 100, totalDiscount: 0, grandTotal: 1100, items: []
-        }
-      ];
+      const dummyPurchases = MOCK_PURCHASES;
 
       service.getPurchases().subscribe(purchases => {
         expect(purchases).toEqual(dummyPurchases);
@@ -47,9 +43,7 @@ describe('PurchaseService', () => {
 
   describe('getSuppliers', () => {
     it('should retrieve suppliers scoped to purchases endpoint', () => {
-      const dummySuppliers: Supplier[] = [
-        { id: 1, name: 'Supplier A', contactPerson: 'Alice', phone: '1234567890', email: 'a@example.com', openingBalance: 0, creditLimit: 10000 }
-      ];
+      const dummySuppliers = MOCK_SUPPLIERS;
 
       service.getSuppliers().subscribe(suppliers => {
         expect(suppliers).toEqual(dummySuppliers);

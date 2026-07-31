@@ -1,0 +1,28 @@
+{
+  "mockSuppliers": [
+    {
+      "id": 1,
+      "name": "Supplier A",
+      "contactPerson": "Alice",
+      "phone": "1234567890",
+      "email": "a@example.com",
+      "openingBalance": 0,
+      "creditLimit": 10000
+    },
+    {
+      "id": 2,
+      "name": "Supplier B",
+      "contactPerson": "Bob",
+      "phone": "0987654321",
+      "email": "b@example.com",
+      "openingBalance": 500,
+      "creditLimit": 20000
+    }
+  ],
+  "mockSupplier": {
+    "id": 1,
+    "name": "Fresh Veggies Co",
+    "openingBalance": 0,
+    "creditLimit": 50000
+  }
+}

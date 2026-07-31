@@ -1,3 +1,4 @@
+import { MOCK_EMPLOYEES, MOCK_EMPLOYEE, MOCK_DEPARTMENTS, MOCK_DESIGNATIONS } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,34 +28,7 @@ describe('EmployeeService', () => {
 
   describe('getEmployees', () => {
     it('should retrieve all employees', () => {
-      const dummyEmployees: Employee[] = [
-        {
-          id: 1,
-          employeeCode: 'EMP001',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john@example.com',
-          phone: '1234567890',
-          departmentId: 1,
-          designationId: 1,
-          dateOfJoining: '2025-01-01',
-          employmentType: 'Permanent',
-          status: 'Active'
-        },
-        {
-          id: 2,
-          employeeCode: 'EMP002',
-          firstName: 'Jane',
-          lastName: 'Smith',
-          email: 'jane@example.com',
-          phone: '0987654321',
-          departmentId: 1,
-          designationId: 2,
-          dateOfJoining: '2025-02-01',
-          employmentType: 'Permanent',
-          status: 'Active'
-        }
-      ];
+      const dummyEmployees = MOCK_EMPLOYEES;
 
       service.getEmployees().subscribe(employees => {
         expect(employees).toHaveSize(2);
@@ -69,19 +43,7 @@ describe('EmployeeService', () => {
 
   describe('getEmployee', () => {
     it('should retrieve a single employee by id', () => {
-      const dummyEmployee: Employee = {
-        id: 1,
-        employeeCode: 'EMP001',
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john@example.com',
-        phone: '1234567890',
-        departmentId: 1,
-        designationId: 1,
-        dateOfJoining: '2025-01-01',
-        employmentType: 'Permanent',
-        status: 'Active'
-      };
+      const dummyEmployee = MOCK_EMPLOYEE;
 
       service.getEmployee(1).subscribe(employee => {
         expect(employee).toEqual(dummyEmployee);
@@ -95,11 +57,7 @@ describe('EmployeeService', () => {
 
   describe('getDepartments', () => {
     it('should retrieve all departments', () => {
-      const dummyDepartments: Department[] = [
-        { id: 1, name: 'Kitchen' },
-        { id: 2, name: 'Front Office' },
-        { id: 3, name: 'Management' }
-      ];
+      const dummyDepartments = MOCK_DEPARTMENTS;
 
       service.getDepartments().subscribe(departments => {
         expect(departments).toHaveSize(3);
@@ -114,11 +72,7 @@ describe('EmployeeService', () => {
 
   describe('getDesignations', () => {
     it('should retrieve all designations', () => {
-      const dummyDesignations: Designation[] = [
-        { id: 1, title: 'Chef', departmentId: 1 },
-        { id: 2, title: 'Waiter', departmentId: 2 },
-        { id: 3, title: 'Manager', departmentId: 3 }
-      ];
+      const dummyDesignations = MOCK_DESIGNATIONS;
 
       service.getDesignations().subscribe(designations => {
         expect(designations).toHaveSize(3);

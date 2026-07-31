@@ -1,3 +1,4 @@
+import { MOCK_EMPLOYEE } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,16 +11,7 @@ describe('EmployeesComponent', () => {
   let fixture: ComponentFixture<EmployeesComponent>;
   let employeeServiceSpy: jasmine.SpyObj<EmployeeService>;
 
-  const mockEmployee: Employee = {
-    id: 1,
-    employeeCode: 'EMP001',
-    firstName: 'John',
-    lastName: 'Doe',
-    gender: 'Male',
-    dateOfJoining: '2026-01-01',
-    employmentType: 'FullTime',
-    status: 'Active'
-  };
+  const mockEmployee = MOCK_EMPLOYEE;
 
   beforeEach(async () => {
     employeeServiceSpy = jasmine.createSpyObj('EmployeeService', [

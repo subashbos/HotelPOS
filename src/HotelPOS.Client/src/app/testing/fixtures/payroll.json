@@ -1,0 +1,46 @@
+{
+  "mockSalaryStructures": [
+    {
+      "id": 1,
+      "employeeId": 5,
+      "effectiveFrom": "2026-01-01",
+      "basic": 20000,
+      "hra": 8000,
+      "da": 2000,
+      "conveyanceAllowance": 1000,
+      "medicalAllowance": 1000,
+      "specialAllowance": 500,
+      "grossMonthly": 32500,
+      "pfApplicable": true,
+      "esiApplicable": false,
+      "professionalTaxApplicable": true
+    }
+  ],
+  "mockPayrollRun": {
+    "id": 1,
+    "month": 7,
+    "year": 2026,
+    "status": "Processed",
+    "payslips": []
+  },
+  "mockPayslips": [
+    {
+      "id": 1,
+      "payrollRunId": 1,
+      "employeeId": 5,
+      "grossEarnings": 32500,
+      "workingDays": 30,
+      "paidDays": 30,
+      "lopDays": 0,
+      "lopAmount": 0,
+      "pfEmployee": 1200,
+      "pfEmployer": 1200,
+      "esiEmployee": 0,
+      "esiEmployer": 0,
+      "professionalTax": 200,
+      "tds": 0,
+      "netPay": 31100,
+      "paymentStatus": "Paid"
+    }
+  ]
+}

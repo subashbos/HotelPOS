@@ -1,3 +1,4 @@
+import { MOCK_SETTINGS } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,14 +28,7 @@ describe('SettingsService', () => {
 
   describe('getSettings', () => {
     it('should retrieve system settings', () => {
-      const dummySettings: SystemSettings = {
-        hotelName: 'Grand Hotel', hotelAddress: '123 Main St', hotelPhone: '1234567890', hotelGst: 'GST123',
-        defaultPrinter: 'Printer1', showPrintPreview: true, receiptFormat: 'A4',
-        showGstBreakdown: true, showItemsOnBill: true, showDiscountLine: false, showPhoneOnReceipt: true,
-        showThankYouFooter: true, enableRoundOff: true, isCompositionScheme: false,
-        enableAutomatedBackups: false, idleTimeoutMinutes: 15,
-        smtpPort: 587, smtpPasswordSet: false, smtpUseSsl: true
-      };
+      const dummySettings = MOCK_SETTINGS;
 
       service.getSettings().subscribe(settings => {
         expect(settings).toEqual(dummySettings);

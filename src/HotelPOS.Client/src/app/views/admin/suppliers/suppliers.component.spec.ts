@@ -1,3 +1,4 @@
+import { MOCK_SUPPLIER } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,12 +11,7 @@ describe('SuppliersComponent', () => {
   let fixture: ComponentFixture<SuppliersComponent>;
   let supplierServiceSpy: jasmine.SpyObj<SupplierService>;
 
-  const mockSupplier: Supplier = {
-    id: 1,
-    name: 'Fresh Veggies Co',
-    openingBalance: 0,
-    creditLimit: 50000
-  };
+  const mockSupplier = MOCK_SUPPLIER;
 
   beforeEach(async () => {
     supplierServiceSpy = jasmine.createSpyObj('SupplierService', ['getSuppliers', 'createSupplier', 'updateSupplier', 'deleteSupplier']);

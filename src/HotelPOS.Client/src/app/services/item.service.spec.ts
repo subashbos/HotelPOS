@@ -4,6 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ItemService } from './item.service';
 import { environment } from '../../environments/environment';
 import { Item } from '../models/item.model';
+import { MOCK_ITEMS, MOCK_ITEM } from '../testing/test-data';
 
 describe('ItemService', () => {
   let service: ItemService;
@@ -26,10 +27,7 @@ describe('ItemService', () => {
   });
 
   it('should retrieve items from the API via GET', () => {
-    const dummyItems: Item[] = [
-      { id: 1, name: 'Item 1', price: 100, taxPercentage: 5, stockQuantity: 10, trackInventory: true, unitId: 1 },
-      { id: 2, name: 'Item 2', price: 200, taxPercentage: 12, stockQuantity: 5, trackInventory: false, unitId: 1 }
-    ];
+    const dummyItems: Item[] = MOCK_ITEMS;
 
     service.getItems().subscribe(items => {
       expect(items).toHaveSize(2);
@@ -42,7 +40,7 @@ describe('ItemService', () => {
   });
 
   it('should retrieve a single item from the API via GET', () => {
-    const dummyItem: Item = { id: 1, name: 'Item 1', price: 100, taxPercentage: 5, stockQuantity: 10, trackInventory: true, unitId: 1 };
+    const dummyItem: Item = MOCK_ITEM;
 
     service.getItem(1).subscribe(item => {
       expect(item).toEqual(dummyItem);

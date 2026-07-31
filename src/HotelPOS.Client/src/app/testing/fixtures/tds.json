@@ -1,0 +1,20 @@
+{
+  "mockRuleSet": {
+    "financialYearStart": 2025,
+    "standardDeduction": 75000,
+    "rebateIncomeLimit": 700000,
+    "cessRatePercent": 4,
+    "slabs": [
+      {
+        "incomeFrom": 0,
+        "incomeTo": 300000,
+        "ratePercent": 0,
+        "displayOrder": 1
+      }
+    ]
+  },
+  "mockFinancialYears": [
+    2024,
+    2025
+  ]
+}

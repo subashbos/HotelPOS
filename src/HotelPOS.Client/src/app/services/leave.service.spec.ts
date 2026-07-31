@@ -1,3 +1,4 @@
+import { MOCK_LEAVE_TYPES, MOCK_LEAVE_BALANCES } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,9 +28,7 @@ describe('LeaveService', () => {
 
   describe('getLeaveTypes', () => {
     it('should retrieve all leave types', () => {
-      const dummyTypes: LeaveType[] = [
-        { id: 1, code: 'CL', name: 'Casual Leave', annualQuota: 12, isPaid: true, carryForwardAllowed: false }
-      ];
+      const dummyTypes = MOCK_LEAVE_TYPES;
 
       service.getLeaveTypes().subscribe(types => {
         expect(types).toEqual(dummyTypes);
@@ -43,9 +42,7 @@ describe('LeaveService', () => {
 
   describe('getBalances', () => {
     it('should retrieve leave balances for an employee without year param', () => {
-      const dummyBalances: LeaveBalance[] = [
-        { id: 1, employeeId: 5, leaveTypeId: 1, year: 2026, entitledDays: 12, usedDays: 2, pendingDays: 0, availableDays: 10 }
-      ];
+      const dummyBalances = MOCK_LEAVE_BALANCES;
 
       service.getBalances(5).subscribe(balances => {
         expect(balances).toEqual(dummyBalances);

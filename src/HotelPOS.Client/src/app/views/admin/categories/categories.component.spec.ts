@@ -1,3 +1,4 @@
+import { MOCK_CATEGORY } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,11 +11,7 @@ describe('CategoriesComponent', () => {
   let fixture: ComponentFixture<CategoriesComponent>;
   let categoryServiceSpy: jasmine.SpyObj<CategoryService>;
 
-  const mockCategory: Category = {
-    id: 1,
-    name: 'Beverages',
-    displayOrder: 1
-  };
+  const mockCategory = MOCK_CATEGORY;
 
   beforeEach(async () => {
     categoryServiceSpy = jasmine.createSpyObj('CategoryService', [

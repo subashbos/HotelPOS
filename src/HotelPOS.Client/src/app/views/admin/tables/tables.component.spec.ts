@@ -1,3 +1,4 @@
+import { MOCK_SINGLE_TABLE_LIST } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,9 +11,7 @@ describe('TablesComponent', () => {
   let fixture: ComponentFixture<TablesComponent>;
   let tableServiceSpy: jasmine.SpyObj<TableService>;
 
-  const mockTables: DiningTable[] = [
-    { id: 1, number: 1, name: 'Table 1', capacity: 4, isActive: true, isDeleted: false }
-  ];
+  const mockTables = MOCK_SINGLE_TABLE_LIST;
 
   beforeEach(async () => {
     tableServiceSpy = jasmine.createSpyObj('TableService', [

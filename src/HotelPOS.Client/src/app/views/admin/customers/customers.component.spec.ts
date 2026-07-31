@@ -1,3 +1,4 @@
+import { MOCK_SINGLE_CUSTOMER_LIST } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,9 +11,7 @@ describe('CustomersComponent', () => {
   let fixture: ComponentFixture<CustomersComponent>;
   let customerServiceSpy: jasmine.SpyObj<CustomerService>;
 
-  const mockCustomers: Customer[] = [
-    { id: 1, name: 'John Doe', phone: '1234567890', isActive: true, createdAt: '2026-01-01' }
-  ];
+  const mockCustomers = MOCK_SINGLE_CUSTOMER_LIST;
 
   beforeEach(async () => {
     customerServiceSpy = jasmine.createSpyObj('CustomerService', [

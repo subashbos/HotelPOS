@@ -1,3 +1,4 @@
+import { MOCK_TABLES } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,10 +28,7 @@ describe('TableService', () => {
 
   describe('getTables', () => {
     it('should retrieve all tables', () => {
-      const dummyTables: DiningTable[] = [
-        { id: 1, number: 1, name: 'Table 1', capacity: 4, isActive: true, isDeleted: false },
-        { id: 2, number: 2, name: 'Table 2', capacity: 2, isActive: true, isDeleted: false }
-      ];
+      const dummyTables = MOCK_TABLES;
 
       service.getTables().subscribe(tables => {
         expect(tables).toHaveSize(2);

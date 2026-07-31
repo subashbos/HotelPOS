@@ -1,0 +1,12 @@
+[
+  { "Id": 1, "Name": "Pcs", "DisplayOrder": 0 },
+  { "Id": 2, "Name": "Kg", "DisplayOrder": 1 },
+  { "Id": 3, "Name": "Gram", "DisplayOrder": 2 },
+  { "Id": 4, "Name": "Litre", "DisplayOrder": 3 },
+  { "Id": 5, "Name": "Ml", "DisplayOrder": 4 },
+  { "Id": 6, "Name": "Plate", "DisplayOrder": 5 },
+  { "Id": 7, "Name": "Box", "DisplayOrder": 6 },
+  { "Id": 8, "Name": "Packet", "DisplayOrder": 7 },
+  { "Id": 9, "Name": "Bottle", "DisplayOrder": 8 },
+  { "Id": 10, "Name": "Dozen", "DisplayOrder": 9 }
+]
