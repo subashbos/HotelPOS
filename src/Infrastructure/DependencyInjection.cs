@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IPayrollRepository, PayrollRepository>();
         services.AddScoped<ITdsRepository, TdsRepository>();
         services.AddScoped<IUnitOfMeasurementRepository, UnitOfMeasurementRepository>();
+        services.AddScoped<IEstimationRepository, EstimationRepository>();
 
         return services;
     }

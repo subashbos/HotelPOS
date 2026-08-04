@@ -44,6 +44,8 @@ namespace HotelPOS.Infrastructure.Persistence
         public DbSet<Customer> Customers { get; set; }
         public DbSet<TdsSlab> TdsSlabs { get; set; }
         public DbSet<TdsConfig> TdsConfigs { get; set; }
+        public DbSet<Estimation> Estimations { get; set; }
+        public DbSet<EstimationItem> EstimationItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -269,6 +271,25 @@ namespace HotelPOS.Infrastructure.Persistence
             modelBuilder.Entity<TdsSlab>()
                 .HasIndex(s => new { s.FinancialYearStart, s.DisplayOrder })
                 .IsUnique();
+
+            modelBuilder.Entity<Estimation>()
+                .HasOne(e => e.Customer)
+                .WithMany()
+                .HasForeignKey(e => e.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Estimation>()
+                .HasOne(e => e.ConvertedOrder)
+                .WithMany()
+                .HasForeignKey(e => e.ConvertedOrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Estimation>()
+                .HasIndex(e => e.EstimationNumber)
+                .IsUnique();
+
+            // EstimationItem -> Item and EstimationItem -> Estimation relationships are left to
+            // convention (required FK => Cascade), same as PurchaseItem's equivalent relationships.
 
             // ── Seed data (loaded from embedded JSON resources) ─────────────
             SeedData.SeedDataLoader.ApplySeedData(modelBuilder);

@@ -84,14 +84,28 @@ namespace HotelPOS.Domain.Common.Constants
         public const string OrderManagement = "OrderManagement";
         /// <summary>Deleting a customer record — a more sensitive action than <see cref="Customers"/>'s create/update/view access, which Cashiers also hold.</summary>
         public const string CustomerManagement = "CustomerManagement";
+        /// <summary>Customer quotations/cost estimates and converting them into real orders.</summary>
+        public const string Estimation = "Estimation";
 
         public static readonly string[] All =
         {
             Dashboard, Billing, Items, Categories, Tables,
             Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport,
             HrEmployees, HrAttendance, HrLeave, HrPayroll, HrPayrollRun, Expenses, Customers, Units,
-            Purchase, Tds, OrderManagement, CustomerManagement
+            Purchase, Tds, OrderManagement, CustomerManagement, Estimation
         };
+    }
+
+    public static class EstimationStatuses
+    {
+        public const string Draft = "Draft";
+        public const string Sent = "Sent";
+        public const string Accepted = "Accepted";
+        public const string Rejected = "Rejected";
+        public const string Converted = "Converted";
+        public const string Expired = "Expired";
+
+        public static readonly string[] All = { Draft, Sent, Accepted, Rejected, Converted, Expired };
     }
 
     public static class ExpenseCategories

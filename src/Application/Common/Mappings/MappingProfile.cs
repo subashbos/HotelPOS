@@ -4,6 +4,7 @@ using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.DTOs.Category;
 using HotelPOS.Application.DTOs.Customer;
 using HotelPOS.Application.DTOs.Employee;
+using HotelPOS.Application.DTOs.Estimation;
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.DTOs.Leave;
@@ -27,6 +28,7 @@ namespace HotelPOS.Application.Common.Mappings
             CreateEmployeeAndAttendanceMaps();
             CreateLeaveAndPayrollMaps();
             CreatePurchaseMaps();
+            CreateEstimationMaps();
         }
 
         private void CreateCatalogMaps()
@@ -150,6 +152,14 @@ namespace HotelPOS.Application.Common.Mappings
                 .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : null))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.PurchaseItems));
             CreateMap<PurchaseItem, PurchaseItemDto>();
+        }
+
+        private void CreateEstimationMaps()
+        {
+            // ── Estimations ───────────────────────────────────────────────────
+            CreateMap<Estimation, EstimationDto>()
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.EstimationItems));
+            CreateMap<EstimationItem, EstimationItemDto>();
         }
     }
 }

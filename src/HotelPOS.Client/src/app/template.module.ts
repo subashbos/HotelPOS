@@ -35,6 +35,7 @@ import { UnitsComponent } from './views/admin/units/units.component';
 import { ItemsComponent } from './views/admin/items/items.component';
 import { SuppliersComponent } from './views/admin/suppliers/suppliers.component';
 import { PurchasesComponent } from './views/admin/purchases/purchases.component';
+import { EstimationsComponent } from './views/admin/estimations/estimations.component';
 import { ShiftSessionComponent } from './views/admin/shift-session/shift-session.component';
 import { ExpensesComponent } from './views/admin/expenses/expenses.component';
 import { EmployeesComponent } from './views/admin/employees/employees.component';
@@ -91,6 +92,7 @@ import { EssProfileComponent } from './views/ess/profile/ess-profile.component';
     ItemsComponent,
     SuppliersComponent,
     PurchasesComponent,
+    EstimationsComponent,
     ShiftSessionComponent,
     ExpensesComponent,
     EmployeesComponent,
@@ -153,6 +155,7 @@ import { EssProfileComponent } from './views/ess/profile/ess-profile.component';
     ItemsComponent,
     SuppliersComponent,
     PurchasesComponent,
+    EstimationsComponent,
     ShiftSessionComponent,
     ExpensesComponent,
     EmployeesComponent,
