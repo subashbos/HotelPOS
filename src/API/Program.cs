@@ -132,6 +132,14 @@ catch (FormatException ex)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Tokens are minted (AuthController) and read (ApiUserContext) using the raw JWT claim
+        // names (JwtRegisteredClaimNames.Sub/UniqueName) directly. Without this, the default
+        // inbound claim mapping silently renames "sub" to ClaimTypes.NameIdentifier before it
+        // reaches HttpContext.User, so ApiUserContext.CurrentUserId's FindFirst("sub") lookup
+        // never matches and always returns null - breaking every self-service check that
+        // compares the caller's ID (self-delete guard, self-service password/2FA changes,
+        // "own payslips" access) for every real login, not just tests.
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
