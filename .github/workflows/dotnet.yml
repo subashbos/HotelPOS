@@ -36,7 +36,7 @@ jobs:
       - name: Test (API/backend)
         # HotelPOS.Infrastructure.Persistence.Migrations is EF Core scaffolding (~71k generated
         # lines) with no hand-written logic to test; it's excluded so coverage reflects real code.
-        run: dotnet test src/HotelPOS.Api.Tests/HotelPOS.Api.Tests.csproj --configuration Release --logger trx --results-directory TestResults -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=../../TestResults/coverage-api/ -p:Exclude="[HotelPOS.Infrastructure]HotelPOS.Infrastructure.Persistence.Migrations.*" -p:Threshold=60 -p:ThresholdType=line -p:ThresholdStat=total
+        run: dotnet test src/HotelPOS.Api.Tests/HotelPOS.Api.Tests.csproj --configuration Release --logger trx --results-directory TestResults -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=../../TestResults/coverage-api/ -p:Exclude="[HotelPOS.Infrastructure]HotelPOS.Infrastructure.Persistence.Migrations.*" -p:Threshold=75 -p:ThresholdType=line -p:ThresholdStat=total
 
       - name: Publish test results
         uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc # v1
