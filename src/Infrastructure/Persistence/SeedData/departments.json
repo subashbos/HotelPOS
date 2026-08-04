@@ -1,0 +1,7 @@
+[
+  { "Id": 1, "Name": "Front Office", "Description": "Reception, reservations and guest services" },
+  { "Id": 2, "Name": "Housekeeping", "Description": "Room upkeep and laundry" },
+  { "Id": 3, "Name": "Food & Beverage", "Description": "Restaurant, bar and kitchen service" },
+  { "Id": 4, "Name": "Kitchen", "Description": "Culinary production" },
+  { "Id": 5, "Name": "Administration", "Description": "Management and back office" }
+]

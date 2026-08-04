@@ -1,0 +1,17 @@
+{
+  "mockPurchases": [
+    {
+      "sNo": 1,
+      "id": 1,
+      "supplierId": 1,
+      "invoiceNumber": "INV-001",
+      "purchaseDate": "2026-07-01",
+      "paymentType": "Cash",
+      "subtotal": 1000,
+      "totalTax": 100,
+      "totalDiscount": 0,
+      "grandTotal": 1100,
+      "items": []
+    }
+  ]
+}

@@ -1,23 +1,25 @@
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using HotelPOS.TestCommon;
 using Xunit;
 
 namespace HotelPOS.Tests.Integration
 {
     /// <summary>
-    /// Exercises the HR persistence layer (employees, attendance, leave, payroll)
-    /// against the EF InMemory provider, mirroring RepositoryIntegrationTests.
+    /// Exercises the HR persistence layer (employees, attendance, leave, payroll) against the
+    /// shared seed-once SQLite fixture, mirroring RepositoryIntegrationTests.
     /// </summary>
-    public class HrRepositoryTests
+    /// <remarks>
+    /// Department/Designation/LeaveType ids used here start at 101 rather than 1: HotelDbContext
+    /// bakes Department/Designation/LeaveType ids 1-5 into the model via HasData, which the shared
+    /// fixture's EnsureCreated() applies, so low ids would collide with that baseline.
+    /// </remarks>
+    [Collection("SharedDatabase")]
+    public class HrRepositoryTests : DatabaseCollectionTestBase
     {
-        private static HotelDbContext GetContext(string dbName)
+        public HrRepositoryTests(SharedSqliteDatabaseFixture fixture) : base(fixture)
         {
-            var options = new DbContextOptionsBuilder<HotelDbContext>()
-                .UseInMemoryDatabase(databaseName: dbName)
-                .Options;
-            return new HotelDbContext(options);
         }
 
         private static Employee NewEmployee(int id, string code, string firstName) => new()
@@ -31,17 +33,17 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task EmployeeRepository_CrudAndLookups()
         {
-            using var context = GetContext(nameof(EmployeeRepository_CrudAndLookups));
+            var context = Context;
             var repo = new EmployeeRepository(context);
 
-            context.Departments.Add(new Department { Id = 1, Name = "Kitchen" });
-            context.Designations.Add(new Designation { Id = 1, Title = "Chef", DepartmentId = 1 });
+            context.Departments.Add(new Department { Id = 101, Name = "Kitchen" });
+            context.Designations.Add(new Designation { Id = 101, Title = "Chef", DepartmentId = 101 });
             await context.SaveChangesAsync();
 
             await repo.AddAsync(NewEmployee(1, "EMP001", "Zara"));
             var second = NewEmployee(2, "EMP002", "Anil");
-            second.DepartmentId = 1;
-            second.DesignationId = 1;
+            second.DepartmentId = 101;
+            second.DesignationId = 101;
             second.ReportingManagerId = 1;
             await repo.AddAsync(second);
 
@@ -71,16 +73,18 @@ namespace HotelPOS.Tests.Integration
             Assert.Null(await repo.GetByIdAsync(2));
             await repo.DeleteAsync(999); // deleting a missing employee is a no-op
 
-            Assert.Single(await repo.GetDepartmentsAsync());
+            // 5 Department/Designation rows come from HotelDbContext's HasData baseline, plus the
+            // one this test seeded above.
+            Assert.Equal(6, (await repo.GetDepartmentsAsync()).Count);
             var designations = await repo.GetDesignationsAsync();
-            Assert.Single(designations);
-            Assert.Equal("Kitchen", designations[0].Department!.Name);
+            Assert.Equal(6, designations.Count);
+            Assert.Contains(designations, d => d.Id == 101 && d.Department!.Name == "Kitchen");
         }
 
         [Fact]
         public async Task AttendanceRepository_CrudAndRangeQueries()
         {
-            using var context = GetContext(nameof(AttendanceRepository_CrudAndRangeQueries));
+            var context = Context;
             var repo = new AttendanceRepository(context);
 
             context.Employees.Add(NewEmployee(1, "EMP001", "Zara"));
@@ -121,26 +125,27 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task LeaveRepository_TypesBalancesAndRequests()
         {
-            using var context = GetContext(nameof(LeaveRepository_TypesBalancesAndRequests));
+            var context = Context;
             var repo = new LeaveRepository(context);
 
             context.Employees.Add(NewEmployee(1, "EMP001", "Zara"));
             context.LeaveTypes.AddRange(
-                new LeaveType { Id = 1, Code = LeaveTypeCodes.CasualLeave, Name = "Casual Leave", AnnualQuota = 12, IsPaid = true },
-                new LeaveType { Id = 2, Code = LeaveTypeCodes.SickLeave, Name = "Sick Leave", AnnualQuota = 6, IsPaid = true });
+                new LeaveType { Id = 101, Code = LeaveTypeCodes.CasualLeave, Name = "Casual Leave", AnnualQuota = 12, IsPaid = true },
+                new LeaveType { Id = 102, Code = LeaveTypeCodes.SickLeave, Name = "Sick Leave", AnnualQuota = 6, IsPaid = true });
             await context.SaveChangesAsync();
 
             var types = await repo.GetLeaveTypesAsync();
-            Assert.Equal(2, types.Count);
+            // 5 LeaveType rows come from HotelDbContext's HasData baseline, plus the 2 this test seeded.
+            Assert.Equal(7, types.Count);
             Assert.Equal("Casual Leave", types[0].Name); // ordered by name
-            Assert.NotNull(await repo.GetLeaveTypeByIdAsync(2));
+            Assert.NotNull(await repo.GetLeaveTypeByIdAsync(102));
 
-            await repo.AddBalanceAsync(new LeaveBalance { Id = 1, EmployeeId = 1, LeaveTypeId = 1, Year = 2026, EntitledDays = 12, UsedDays = 2 });
+            await repo.AddBalanceAsync(new LeaveBalance { Id = 1, EmployeeId = 1, LeaveTypeId = 101, Year = 2026, EntitledDays = 12, UsedDays = 2 });
 
-            var balance = await repo.GetBalanceAsync(1, 1, 2026);
+            var balance = await repo.GetBalanceAsync(1, 101, 2026);
             Assert.NotNull(balance);
             Assert.Equal("Casual Leave", balance!.LeaveType!.Name);
-            Assert.Null(await repo.GetBalanceAsync(1, 1, 2025));
+            Assert.Null(await repo.GetBalanceAsync(1, 101, 2025));
 
             balance.UsedDays = 3;
             await repo.UpdateBalanceAsync(balance);
@@ -152,7 +157,7 @@ namespace HotelPOS.Tests.Integration
             {
                 Id = 1,
                 EmployeeId = 1,
-                LeaveTypeId = 1,
+                LeaveTypeId = 101,
                 FromDate = new DateTime(2026, 8, 3),
                 ToDate = new DateTime(2026, 8, 4),
                 TotalDays = 2,
@@ -163,7 +168,7 @@ namespace HotelPOS.Tests.Integration
             {
                 Id = 2,
                 EmployeeId = 1,
-                LeaveTypeId = 2,
+                LeaveTypeId = 102,
                 FromDate = new DateTime(2026, 8, 10),
                 ToDate = new DateTime(2026, 8, 10),
                 TotalDays = 1,
@@ -195,7 +200,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task PayrollRepository_SalaryStructuresAndRuns()
         {
-            using var context = GetContext(nameof(PayrollRepository_SalaryStructuresAndRuns));
+            var context = Context;
             var repo = new PayrollRepository(context);
 
             context.Employees.Add(NewEmployee(1, "EMP001", "Zara"));

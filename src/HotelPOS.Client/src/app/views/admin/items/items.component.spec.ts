@@ -1,3 +1,4 @@
+import { MOCK_SINGLE_ITEM_LIST, MOCK_SINGLE_CATEGORY_LIST, MOCK_UNITS } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -14,15 +15,9 @@ describe('ItemsComponent', () => {
   let categoryServiceSpy: jasmine.SpyObj<CategoryService>;
   let unitServiceSpy: jasmine.SpyObj<UnitOfMeasurementService>;
 
-  const mockItems: Item[] = [
-    { id: 1, name: 'Burger', price: 150, taxPercentage: 5, categoryId: 1, stockQuantity: 10, trackInventory: false, unitId: 1 }
-  ];
-  const mockCategories: Category[] = [
-    { id: 1, name: 'Main Course', displayOrder: 1 }
-  ];
-  const mockUnits: UnitOfMeasurement[] = [
-    { id: 1, name: 'Pcs', displayOrder: 0 }
-  ];
+  const mockItems = MOCK_SINGLE_ITEM_LIST;
+  const mockCategories = MOCK_SINGLE_CATEGORY_LIST;
+  const mockUnits = MOCK_UNITS;
 
   beforeEach(async () => {
     itemServiceSpy = jasmine.createSpyObj('ItemService', [

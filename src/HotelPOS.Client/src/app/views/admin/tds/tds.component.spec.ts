@@ -1,3 +1,4 @@
+import { MOCK_TDS_RULESET } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,13 +11,7 @@ describe('TdsComponent', () => {
   let fixture: ComponentFixture<TdsComponent>;
   let tdsServiceSpy: jasmine.SpyObj<TdsService>;
 
-  const mockRuleSet: TdsRuleSet = {
-    financialYearStart: 2025,
-    standardDeduction: 75000,
-    rebateIncomeLimit: 700000,
-    cessRatePercent: 4,
-    slabs: [{ incomeFrom: 0, incomeTo: 300000, ratePercent: 0, displayOrder: 1 }]
-  };
+  const mockRuleSet = MOCK_TDS_RULESET;
 
   beforeEach(async () => {
     tdsServiceSpy = jasmine.createSpyObj('TdsService', [

@@ -1,0 +1,44 @@
+{
+  "mockItems": [
+    {
+      "id": 1,
+      "name": "Item 1",
+      "price": 100,
+      "taxPercentage": 5,
+      "stockQuantity": 10,
+      "trackInventory": true,
+      "unitId": 1
+    },
+    {
+      "id": 2,
+      "name": "Item 2",
+      "price": 200,
+      "taxPercentage": 12,
+      "stockQuantity": 5,
+      "trackInventory": false,
+      "unitId": 1
+    }
+  ],
+  "mockSingleItemList": [
+    {
+      "id": 1,
+      "name": "Burger",
+      "price": 150,
+      "taxPercentage": 5,
+      "categoryId": 1,
+      "stockQuantity": 10,
+      "trackInventory": false,
+      "unitId": 1
+    }
+  ],
+  "mockItem": {
+    "id": 1,
+    "name": "Burger",
+    "price": 150,
+    "taxPercentage": 5,
+    "categoryId": 1,
+    "stockQuantity": 10,
+    "trackInventory": false,
+    "unitId": 1
+  }
+}

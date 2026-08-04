@@ -1,3 +1,4 @@
+import { MOCK_USERS } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,10 +28,7 @@ describe('UserService', () => {
 
   describe('getUsers', () => {
     it('should retrieve all users', () => {
-      const dummyUsers: AppUser[] = [
-        { sNo: 1, id: 1, username: 'admin', role: 'Admin', roleId: 1, isActive: true, mustChangePassword: false },
-        { sNo: 2, id: 2, username: 'cashier', role: 'Cashier', roleId: 2, isActive: true, mustChangePassword: true }
-      ];
+      const dummyUsers = MOCK_USERS;
 
       service.getUsers().subscribe(users => {
         expect(users).toHaveSize(2);

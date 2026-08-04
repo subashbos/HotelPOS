@@ -1,0 +1,22 @@
+{
+  "mockExpenses": [
+    {
+      "sNo": 1,
+      "id": 1,
+      "date": "2026-07-01",
+      "title": "Electricity Bill",
+      "amount": 500,
+      "category": "Utilities",
+      "paymentMode": "Cash"
+    }
+  ],
+  "mockExpense": {
+    "sNo": 1,
+    "id": 1,
+    "date": "2026-01-15",
+    "title": "Electricity",
+    "amount": 1500,
+    "category": "Utilities",
+    "paymentMode": "Cash"
+  }
+}

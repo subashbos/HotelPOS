@@ -1,0 +1,9 @@
+[
+  { "Id": 1, "FinancialYearStart": 2025, "IncomeFrom": 0, "IncomeTo": 400000, "RatePercent": 0, "DisplayOrder": 1 },
+  { "Id": 2, "FinancialYearStart": 2025, "IncomeFrom": 400000, "IncomeTo": 800000, "RatePercent": 5, "DisplayOrder": 2 },
+  { "Id": 3, "FinancialYearStart": 2025, "IncomeFrom": 800000, "IncomeTo": 1200000, "RatePercent": 10, "DisplayOrder": 3 },
+  { "Id": 4, "FinancialYearStart": 2025, "IncomeFrom": 1200000, "IncomeTo": 1600000, "RatePercent": 15, "DisplayOrder": 4 },
+  { "Id": 5, "FinancialYearStart": 2025, "IncomeFrom": 1600000, "IncomeTo": 2000000, "RatePercent": 20, "DisplayOrder": 5 },
+  { "Id": 6, "FinancialYearStart": 2025, "IncomeFrom": 2000000, "IncomeTo": 2400000, "RatePercent": 25, "DisplayOrder": 6 },
+  { "Id": 7, "FinancialYearStart": 2025, "IncomeFrom": 2400000, "IncomeTo": null, "RatePercent": 30, "DisplayOrder": 7 }
+]

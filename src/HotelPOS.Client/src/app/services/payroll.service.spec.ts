@@ -1,3 +1,4 @@
+import { MOCK_SALARY_STRUCTURES, MOCK_PAYROLL_RUN, MOCK_PAYSLIPS } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,13 +28,7 @@ describe('PayrollService', () => {
 
   describe('getSalaryStructures', () => {
     it('should retrieve salary structures for an employee', () => {
-      const dummyStructures: SalaryStructure[] = [
-        {
-          id: 1, employeeId: 5, effectiveFrom: '2026-01-01', basic: 20000, hra: 8000, da: 2000,
-          conveyanceAllowance: 1000, medicalAllowance: 1000, specialAllowance: 500, grossMonthly: 32500,
-          pfApplicable: true, esiApplicable: false, professionalTaxApplicable: true
-        }
-      ];
+      const dummyStructures = MOCK_SALARY_STRUCTURES;
 
       service.getSalaryStructures(5).subscribe(structures => {
         expect(structures).toEqual(dummyStructures);
@@ -67,7 +62,7 @@ describe('PayrollService', () => {
 
   describe('runPayroll', () => {
     it('should run payroll for a given month and year via POST', () => {
-      const dummyRun: PayrollRun = { id: 1, month: 7, year: 2026, status: 'Processed', payslips: [] };
+      const dummyRun = MOCK_PAYROLL_RUN;
 
       service.runPayroll(7, 2026).subscribe(run => {
         expect(run).toEqual(dummyRun);
@@ -95,9 +90,7 @@ describe('PayrollService', () => {
 
   describe('getRuns', () => {
     it('should retrieve all payroll runs', () => {
-      const dummyRuns: PayrollRun[] = [
-        { id: 1, month: 7, year: 2026, status: 'Processed', payslips: [] }
-      ];
+      const dummyRuns = [MOCK_PAYROLL_RUN];
 
       service.getRuns().subscribe(runs => {
         expect(runs).toEqual(dummyRuns);
@@ -125,13 +118,7 @@ describe('PayrollService', () => {
 
   describe('getPayslips', () => {
     it('should retrieve payslips for an employee', () => {
-      const dummyPayslips: Payslip[] = [
-        {
-          id: 1, payrollRunId: 1, employeeId: 5, grossEarnings: 32500, workingDays: 30, paidDays: 30,
-          lopDays: 0, lopAmount: 0, pfEmployee: 1200, pfEmployer: 1200, esiEmployee: 0, esiEmployer: 0,
-          professionalTax: 200, tds: 0, netPay: 31100, paymentStatus: 'Paid'
-        }
-      ];
+      const dummyPayslips = MOCK_PAYSLIPS;
 
       service.getPayslips(5).subscribe(payslips => {
         expect(payslips).toEqual(dummyPayslips);

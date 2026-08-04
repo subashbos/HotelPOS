@@ -1,3 +1,4 @@
+import { MOCK_ATTENDANCE_LIST } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,10 +28,7 @@ describe('AttendanceService', () => {
 
   describe('getAttendance', () => {
     it('should retrieve attendance records with employeeId, from and to params', () => {
-      const dummyAttendance: Attendance[] = [
-        { id: 1, employeeId: 5, date: '2026-07-01', status: 'Present', workedHours: 8 },
-        { id: 2, employeeId: 5, date: '2026-07-02', status: 'Absent', workedHours: 0 }
-      ];
+      const dummyAttendance = MOCK_ATTENDANCE_LIST;
 
       service.getAttendance(5, '2026-07-01', '2026-07-31').subscribe(records => {
         expect(records).toHaveSize(2);

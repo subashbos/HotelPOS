@@ -1,3 +1,4 @@
+import { MOCK_UNITS } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,10 +11,7 @@ describe('UnitsComponent', () => {
   let fixture: ComponentFixture<UnitsComponent>;
   let unitServiceSpy: jasmine.SpyObj<UnitOfMeasurementService>;
 
-  const mockUnits: UnitOfMeasurement[] = [
-    { id: 1, name: 'kg', displayOrder: 1 },
-    { id: 2, name: 'litre', displayOrder: 2 }
-  ];
+  const mockUnits = MOCK_UNITS;
 
   beforeEach(async () => {
     unitServiceSpy = jasmine.createSpyObj('UnitOfMeasurementService', [

@@ -1,0 +1,23 @@
+{
+  "mockSession": {
+    "sNo": 1,
+    "id": 1,
+    "openedAt": "2026-07-22T09:00:00",
+    "openingBalance": 1000,
+    "openedBy": "admin",
+    "status": "Open"
+  },
+  "mockHistory": [
+    {
+      "sNo": 1,
+      "id": 1,
+      "openedAt": "2026-07-21T09:00:00",
+      "closedAt": "2026-07-21T21:00:00",
+      "openingBalance": 1000,
+      "closingBalance": 5000,
+      "openedBy": "admin",
+      "closedBy": "admin",
+      "status": "Closed"
+    }
+  ]
+}

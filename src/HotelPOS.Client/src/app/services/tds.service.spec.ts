@@ -1,3 +1,4 @@
+import { MOCK_TDS_RULESET, MOCK_FINANCIAL_YEARS } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -28,7 +29,7 @@ describe('TdsService', () => {
 
   describe('getFinancialYears', () => {
     it('should retrieve the list of financial years', () => {
-      const years = [2024, 2025];
+      const years = MOCK_FINANCIAL_YEARS;
 
       service.getFinancialYears().subscribe(result => {
         expect(result).toEqual(years);
@@ -42,13 +43,7 @@ describe('TdsService', () => {
 
   describe('getRuleSet', () => {
     it('should retrieve a rule set for a financial year', () => {
-      const ruleSet: TdsRuleSet = {
-        financialYearStart: 2025,
-        standardDeduction: 75000,
-        rebateIncomeLimit: 700000,
-        cessRatePercent: 4,
-        slabs: []
-      };
+      const ruleSet = MOCK_TDS_RULESET;
 
       service.getRuleSet(2025).subscribe(result => {
         expect(result).toEqual(ruleSet);

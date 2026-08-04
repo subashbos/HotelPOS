@@ -1,3 +1,4 @@
+import { MOCK_EXPENSE } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,15 +11,7 @@ describe('ExpensesComponent', () => {
   let fixture: ComponentFixture<ExpensesComponent>;
   let expenseServiceSpy: jasmine.SpyObj<ExpenseService>;
 
-  const mockExpense: Expense = {
-    sNo: 1,
-    id: 1,
-    date: '2026-01-15',
-    title: 'Electricity',
-    amount: 1500,
-    category: 'Utilities',
-    paymentMode: 'Cash'
-  };
+  const mockExpense = MOCK_EXPENSE;
 
   beforeEach(async () => {
     expenseServiceSpy = jasmine.createSpyObj('ExpenseService', ['getExpenses', 'createExpense', 'updateExpense', 'deleteExpense']);

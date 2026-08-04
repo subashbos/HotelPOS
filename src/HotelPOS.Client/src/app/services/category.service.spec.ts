@@ -1,3 +1,4 @@
+import { MOCK_CATEGORIES } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,10 +28,7 @@ describe('CategoryService', () => {
 
   describe('getCategories', () => {
     it('should retrieve all categories', () => {
-      const dummyCategories: Category[] = [
-        { id: 1, name: 'Beverages', displayOrder: 1 },
-        { id: 2, name: 'Food', displayOrder: 2 }
-      ];
+      const dummyCategories = MOCK_CATEGORIES;
 
       service.getCategories().subscribe(categories => {
         expect(categories).toHaveSize(2);

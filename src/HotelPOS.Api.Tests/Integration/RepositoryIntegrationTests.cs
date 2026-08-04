@@ -7,28 +7,30 @@ using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure.Persistence;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
+using HotelPOS.TestCommon;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Xunit;
 
 namespace HotelPOS.Tests
 {
-    public class RepositoryIntegrationTests
+    /// <summary>
+    /// Ids used here for entities HotelDbContext seeds via HasData (UnitOfMeasurement, Supplier,
+    /// SystemSetting) start at 101 / update the existing row rather than reusing 1: the shared
+    /// fixture's EnsureCreated() applies that baseline, so low ids would collide with it.
+    /// </summary>
+    [Collection("SharedDatabase")]
+    public class RepositoryIntegrationTests : DatabaseCollectionTestBase
     {
-        private HotelDbContext GetContext(string dbName)
+        public RepositoryIntegrationTests(SharedSqliteDatabaseFixture fixture) : base(fixture)
         {
-            var options = new DbContextOptionsBuilder<HotelDbContext>()
-                .UseInMemoryDatabase(databaseName: dbName)
-                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-                .Options;
-            return new HotelDbContext(options);
         }
 
         // 1. AuditRepository Tests
         [Fact]
         public async Task AuditRepository_Integration()
         {
-            using var context = GetContext("AuditRepoDb");
+            var context = Context;
             var repo = new AuditRepository(context);
 
             var log1 = new AuditLog { Id = 1, Username = "user1", Action = "Create", Details = "Details 1", Timestamp = DateTime.UtcNow.AddMinutes(-10) };
@@ -46,7 +48,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task CashRepository_Integration()
         {
-            using var context = GetContext("CashRepoDb");
+            var context = Context;
             var repo = new CashRepository(context);
 
             var session1 = new CashSession { Id = 1, OpenedBy = "admin", OpenedAt = DateTime.UtcNow.AddHours(-2), Status = CashSessionStatuses.Closed, OpeningBalance = 1000 };
@@ -78,7 +80,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task CategoryRepository_Integration()
         {
-            using var context = GetContext("CategoryRepoDb");
+            var context = Context;
             var repo = new CategoryRepository(context);
 
             var cat1 = new Category { Id = 1, Name = "Drinks" };
@@ -108,14 +110,14 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task ItemRepository_Integration()
         {
-            using var context = GetContext("ItemRepoDb");
+            var context = Context;
             var repo = new ItemRepository(context);
 
-            context.UnitOfMeasurements.Add(new UnitOfMeasurement { Id = 1, Name = "Pcs" });
+            context.UnitOfMeasurements.Add(new UnitOfMeasurement { Id = 101, Name = "Pcs" });
             await context.SaveChangesAsync();
 
-            var item1 = new Item { Id = 1, Name = "Burger", Price = 150, TaxPercentage = 5, UnitId = 1 };
-            var item2 = new Item { Id = 2, Name = "Fries", Price = 80, TaxPercentage = 5, UnitId = 1 };
+            var item1 = new Item { Id = 1, Name = "Burger", Price = 150, TaxPercentage = 5, UnitId = 101 };
+            var item2 = new Item { Id = 2, Name = "Fries", Price = 80, TaxPercentage = 5, UnitId = 101 };
 
             await repo.AddAsync(item1);
             await repo.AddAsync(item2);
@@ -139,7 +141,9 @@ namespace HotelPOS.Tests
         // by every other test in this file) doesn't support at all. These tests run against real
         // SQLite instead — a shared-cache in-memory database keyed by a unique name per test, kept
         // alive by one open "anchor" connection, so multiple independent DbContext/connection pairs
-        // (simulating separate concurrent requests) can all see the same data.
+        // (simulating separate concurrent requests) can all see the same data. They intentionally
+        // keep their own private connection rather than the shared fixture's, since each needs
+        // exclusive control over its own database for the concurrency scenario under test.
         private static DbContextOptions<HotelDbContext> SqliteOptions(string connectionString) =>
             new DbContextOptionsBuilder<HotelDbContext>().UseSqlite(connectionString).Options;
 
@@ -396,7 +400,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task OrderRepository_Integration()
         {
-            using var context = GetContext("OrderRepoDb");
+            var context = Context;
             var repo = new OrderRepository(context);
 
             var order = new Order
@@ -440,28 +444,31 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task PurchaseRepository_Integration()
         {
-            using var context = GetContext("PurchaseRepoDb");
+            var context = Context;
             var repo = new PurchaseRepository(context);
 
-            var supplier = new Supplier { Id = 1, Name = "Veggies Supplier", Phone = "9876543210" };
+            var supplier = new Supplier { Id = 101, Name = "Veggies Supplier", Phone = "9876543210" };
             context.Suppliers.Add(supplier);
+            // PurchaseItem.ItemId is a required FK; UnitId=1 reuses HotelDbContext's HasData "Pcs" unit.
+            context.Items.Add(new Item { Id = 101, Name = "Onions", Price = 50, UnitId = 1 });
             await context.SaveChangesAsync();
 
             var purchase = new Purchase
             {
                 Id = 1,
-                SupplierId = 1,
+                SupplierId = 101,
                 InvoiceNumber = "PUR123",
                 PurchaseDate = DateTime.UtcNow,
                 GrandTotal = 5000,
                 PaymentType = PaymentModes.Cash,
-                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { Id = 1, ItemName = "Onions", Quantity = 100, UnitPrice = 50 } }
+                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { Id = 1, ItemId = 101, ItemName = "Onions", Quantity = 100, UnitPrice = 50 } }
             };
 
             await repo.AddAsync(purchase);
 
+            // 4 more suppliers come from HotelDbContext's HasData baseline.
             var suppliers = await repo.GetSuppliersAsync();
-            Assert.Single(suppliers);
+            Assert.Contains(suppliers, s => s.Id == 101 && s.Name == "Veggies Supplier");
 
             var purchases = await repo.GetPurchasesAsync();
             Assert.Single(purchases);
@@ -480,12 +487,12 @@ namespace HotelPOS.Tests
             var updatePayload = new Purchase
             {
                 Id = 1,
-                SupplierId = 1,
+                SupplierId = 101,
                 InvoiceNumber = "PUR123",
                 PurchaseDate = purchase.PurchaseDate,
                 GrandTotal = 9000,
                 PaymentType = PaymentModes.Cash,
-                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { ItemName = "Onions", Quantity = 200, UnitPrice = 45 } }
+                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { ItemId = 101, ItemName = "Onions", Quantity = 200, UnitPrice = 45 } }
             };
             await repo.UpdateAsync(updatePayload);
 
@@ -503,7 +510,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task PurchaseRepository_GetByIdAsync_UnknownId_ReturnsNull()
         {
-            using var context = GetContext("PurchaseRepoUnknownDb");
+            var context = Context;
             var repo = new PurchaseRepository(context);
 
             var result = await repo.GetByIdAsync(999);
@@ -514,7 +521,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task PurchaseRepository_UpdateAsync_UnknownId_ThrowsKeyNotFoundException()
         {
-            using var context = GetContext("PurchaseRepoUpdateUnknownDb");
+            var context = Context;
             var repo = new PurchaseRepository(context);
 
             var purchase = new Purchase { Id = 999, InvoiceNumber = "X", PurchaseItems = new List<PurchaseItem>() };
@@ -525,7 +532,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task PurchaseRepository_DeleteAsync_UnknownId_IsNoOp()
         {
-            using var context = GetContext("PurchaseRepoDeleteUnknownDb");
+            var context = Context;
             var repo = new PurchaseRepository(context);
 
             var exception = await Record.ExceptionAsync(() => repo.DeleteAsync(999));
@@ -537,7 +544,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task RoleRepository_Integration()
         {
-            using var context = GetContext("RoleRepoDb");
+            var context = Context;
             var repo = new RoleRepository(context);
 
             var role = new Role { Id = 10, Name = RoleNames.Manager, Description = "Store Manager" };
@@ -575,7 +582,7 @@ namespace HotelPOS.Tests
             // (PK_RolePermissions violation on Id 45 after AddTdsPermission). It must now update
             // matching modules in place, add only genuinely new ones, and remove only modules that
             // are no longer present in the incoming set.
-            using var context = GetContext("RolePermissionsUpsertDb");
+            var context = Context;
             var repo = new RoleRepository(context);
 
             var role = new Role { Id = 20, Name = "PermUpsertRole", Description = "Test" };
@@ -614,11 +621,18 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task SettingRepository_Integration()
         {
-            using var context = GetContext("SettingRepoDb");
+            var context = Context;
             var repo = new SettingRepository(context);
 
-            var setting = new SystemSetting { Id = 1, HotelName = "Standard POS Hotel", HotelAddress = "Address" };
-            await repo.AddAsync(setting);
+            // SystemSetting Id=1 already exists via HotelDbContext's HasData baseline (the shared
+            // fixture applies it via EnsureCreated), matching production's real singleton-settings
+            // row - so this updates that row rather than adding a fresh one.
+            var existing = await repo.GetByIdAsync(1);
+            Assert.NotNull(existing);
+
+            existing!.HotelName = "Standard POS Hotel";
+            existing.HotelAddress = "Address";
+            await repo.UpdateAsync(existing);
 
             var found = await repo.GetByIdAsync(1);
             Assert.NotNull(found);
@@ -635,16 +649,17 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task SupplierRepository_Integration()
         {
-            using var context = GetContext("SupplierRepoDb");
+            var context = Context;
             var repo = new SupplierRepository(context);
 
-            var sup = new Supplier { Id = 1, Name = "Bread Factory", Phone = "9876543210" };
+            var sup = new Supplier { Id = 101, Name = "Bread Factory", Phone = "9876543210" };
             await repo.AddAsync(sup);
 
+            // 4 more suppliers come from HotelDbContext's HasData baseline.
             var all = await repo.GetAllAsync();
-            Assert.Single(all);
+            Assert.Contains(all, s => s.Id == 101 && s.Name == "Bread Factory");
 
-            var found = await repo.GetByIdAsync(1);
+            var found = await repo.GetByIdAsync(101);
             Assert.NotNull(found);
 
             var foundByName = await repo.GetByNameAsync("Bread Factory");
@@ -656,8 +671,8 @@ namespace HotelPOS.Tests
             var exists = await repo.ExistsByNameAsync("Bread Factory");
             Assert.True(exists);
 
-            await repo.DeleteAsync(1);
-            var deleted = await repo.GetByIdAsync(1);
+            await repo.DeleteAsync(101);
+            var deleted = await repo.GetByIdAsync(101);
             Assert.Null(deleted);
         }
 
@@ -665,7 +680,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task TableRepository_Integration()
         {
-            using var context = GetContext("TableRepoDb");
+            var context = Context;
             var repo = new TableRepository(context);
 
             var table = new Table { Id = 1, Number = 5, Capacity = 4, IsDeleted = false };
@@ -689,7 +704,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task UserRepository_Integration()
         {
-            using var context = GetContext("UserRepoDb");
+            var context = Context;
             var repo = new UserRepository(context);
 
             var user = new User { Id = 1, Username = "john", Role = RoleNames.Cashier, IsActive = true, PasswordHash = "hash", Salt = "salt" };
@@ -716,8 +731,14 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task RefreshTokenRepository_RevokeFamilyAsync_RevokesOnlyMatchingUnrevokedTokens()
         {
-            using var context = GetContext("RefreshTokenRepoDb");
+            var context = Context;
             var repo = new RefreshTokenRepository(context);
+
+            // RefreshToken.UserId is a required FK.
+            context.Users.AddRange(
+                new User { Id = 1, Username = "reftok-user1", Role = RoleNames.Cashier, PasswordHash = "hash", Salt = "salt" },
+                new User { Id = 2, Username = "reftok-user2", Role = RoleNames.Cashier, PasswordHash = "hash", Salt = "salt" });
+            await context.SaveChangesAsync();
 
             var familyId = Guid.NewGuid();
             var otherFamilyId = Guid.NewGuid();
@@ -740,7 +761,7 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task LoginLockoutRepository_Integration()
         {
-            using var context = GetContext("LoginLockoutRepoDb");
+            var context = Context;
             var repo = new LoginLockoutRepository(context);
 
             var lockout = new LoginLockout
@@ -760,7 +781,7 @@ namespace HotelPOS.Tests
             // Update existing
             lockout.FailedAttempts = 5;
             await repo.SaveAsync(lockout);
-            
+
             retrieved = await repo.GetAsync("ADMIN");
             Assert.Equal(5, retrieved!.FailedAttempts);
 
@@ -769,10 +790,23 @@ namespace HotelPOS.Tests
             Assert.Null(retrieved);
         }
 
+        // Exercises OrderRepository's own Begin/Commit/Rollback transaction pass-through, which
+        // would conflict with the shared fixture's per-test ambient transaction (SQLite only
+        // supports one active transaction per connection at a time) - so this test keeps its own
+        // private, unwrapped context instead of the inherited Context.
+        private static HotelDbContext GetIsolatedContext(string dbName)
+        {
+            var options = new DbContextOptionsBuilder<HotelDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+                .Options;
+            return new HotelDbContext(options);
+        }
+
         [Fact]
         public async Task OrderRepository_Integration_Extended()
         {
-            using var context = GetContext("OrderRepoExtendedDb");
+            using var context = GetIsolatedContext(nameof(OrderRepository_Integration_Extended));
             var repo = new OrderRepository(context);
 
             var order = new Order
@@ -819,4 +853,3 @@ namespace HotelPOS.Tests
         }
     }
 }
-

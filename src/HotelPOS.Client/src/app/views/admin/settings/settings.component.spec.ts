@@ -1,3 +1,4 @@
+import { MOCK_SETTINGS } from '../../../testing/test-data';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { of, throwError } from 'rxjs';
@@ -10,27 +11,7 @@ describe('SettingsComponent', () => {
   let fixture: ComponentFixture<SettingsComponent>;
   let settingsServiceSpy: jasmine.SpyObj<SettingsService>;
 
-  const mockSettings: SystemSettings = {
-    hotelName: 'Hotel POS Resto',
-    hotelAddress: '123 Main St',
-    hotelPhone: '9876543210',
-    hotelGst: '29ABCDE1234F1Z5',
-    defaultPrinter: 'Thermal Printer',
-    showPrintPreview: true,
-    receiptFormat: 'Standard',
-    showGstBreakdown: true,
-    showItemsOnBill: true,
-    showDiscountLine: true,
-    showPhoneOnReceipt: true,
-    showThankYouFooter: true,
-    enableRoundOff: true,
-    isCompositionScheme: false,
-    enableAutomatedBackups: false,
-    idleTimeoutMinutes: 30,
-    smtpPort: 587,
-    smtpPasswordSet: true,
-    smtpUseSsl: true
-  };
+  const mockSettings = MOCK_SETTINGS;
 
   beforeEach(async () => {
     settingsServiceSpy = jasmine.createSpyObj('SettingsService', ['getSettings', 'saveSettings']);

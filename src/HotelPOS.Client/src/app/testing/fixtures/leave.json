@@ -1,0 +1,24 @@
+{
+  "mockLeaveTypes": [
+    {
+      "id": 1,
+      "code": "CL",
+      "name": "Casual Leave",
+      "annualQuota": 12,
+      "isPaid": true,
+      "carryForwardAllowed": false
+    }
+  ],
+  "mockBalances": [
+    {
+      "id": 1,
+      "employeeId": 5,
+      "leaveTypeId": 1,
+      "year": 2026,
+      "entitledDays": 12,
+      "usedDays": 2,
+      "pendingDays": 0,
+      "availableDays": 10
+    }
+  ]
+}

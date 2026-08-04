@@ -1,3 +1,4 @@
+import { MOCK_SUPPLIERS, MOCK_SUPPLIER } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,10 +28,7 @@ describe('SupplierService', () => {
 
   describe('getSuppliers', () => {
     it('should retrieve all suppliers', () => {
-      const dummySuppliers: Supplier[] = [
-        { id: 1, name: 'Supplier A', contactPerson: 'Alice', phone: '1234567890', email: 'a@example.com', openingBalance: 0, creditLimit: 10000 },
-        { id: 2, name: 'Supplier B', contactPerson: 'Bob', phone: '0987654321', email: 'b@example.com', openingBalance: 500, creditLimit: 20000 }
-      ];
+      const dummySuppliers = MOCK_SUPPLIERS;
 
       service.getSuppliers().subscribe(suppliers => {
         expect(suppliers).toHaveSize(2);
@@ -45,15 +43,7 @@ describe('SupplierService', () => {
 
   describe('getSupplier', () => {
     it('should retrieve a single supplier by id', () => {
-      const dummySupplier: Supplier = {
-        id: 1,
-        name: 'Supplier A',
-        contactPerson: 'Alice',
-        phone: '1234567890',
-        email: 'a@example.com',
-        openingBalance: 0,
-        creditLimit: 10000
-      };
+      const dummySupplier = MOCK_SUPPLIER;
 
       service.getSupplier(1).subscribe(supplier => {
         expect(supplier).toEqual(dummySupplier);

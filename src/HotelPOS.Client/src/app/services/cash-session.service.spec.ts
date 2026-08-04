@@ -1,3 +1,4 @@
+import { MOCK_CASH_SESSION, MOCK_CASH_HISTORY } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,9 +28,7 @@ describe('CashSessionService', () => {
 
   describe('getCurrentSession', () => {
     it('should retrieve the current open session', () => {
-      const dummySession: CashSession = {
-        sNo: 1, id: 1, openedAt: '2026-07-22T09:00:00', openingBalance: 1000, openedBy: 'admin', status: 'Open'
-      };
+      const dummySession = MOCK_CASH_SESSION;
 
       service.getCurrentSession().subscribe(session => {
         expect(session).toEqual(dummySession);
@@ -62,9 +61,7 @@ describe('CashSessionService', () => {
 
   describe('getHistory', () => {
     it('should retrieve session history with default count', () => {
-      const dummyHistory: CashSession[] = [
-        { sNo: 1, id: 1, openedAt: '2026-07-21T09:00:00', closedAt: '2026-07-21T21:00:00', openingBalance: 1000, closingBalance: 5000, openedBy: 'admin', closedBy: 'admin', status: 'Closed' }
-      ];
+      const dummyHistory = MOCK_CASH_HISTORY;
 
       service.getHistory().subscribe(history => {
         expect(history).toEqual(dummyHistory);

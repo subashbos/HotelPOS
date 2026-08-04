@@ -1,3 +1,4 @@
+import { MOCK_ROLES, MOCK_ROLE } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,10 +28,7 @@ describe('RoleService', () => {
 
   describe('getRoles', () => {
     it('should retrieve all roles', () => {
-      const dummyRoles: Role[] = [
-        { id: 1, name: 'Admin', description: 'Full access', permissions: [] },
-        { id: 2, name: 'Cashier', description: 'POS access only', permissions: [] }
-      ];
+      const dummyRoles = MOCK_ROLES;
 
       service.getRoles().subscribe(roles => {
         expect(roles).toHaveSize(2);
@@ -45,7 +43,7 @@ describe('RoleService', () => {
 
   describe('getRole', () => {
     it('should retrieve a single role by id', () => {
-      const dummyRole: Role = { id: 1, name: 'Admin', description: 'Full access', permissions: [] };
+      const dummyRole = MOCK_ROLE;
 
       service.getRole(1).subscribe(role => {
         expect(role).toEqual(dummyRole);

@@ -1,0 +1,7 @@
+[
+  { "Id": 1, "Code": "CL", "Name": "Casual Leave", "AnnualQuota": 12, "IsPaid": true, "CarryForwardAllowed": false },
+  { "Id": 2, "Code": "SL", "Name": "Sick Leave", "AnnualQuota": 12, "IsPaid": true, "CarryForwardAllowed": false },
+  { "Id": 3, "Code": "EL", "Name": "Earned / Privilege Leave", "AnnualQuota": 15, "IsPaid": true, "CarryForwardAllowed": true },
+  { "Id": 4, "Code": "ML", "Name": "Maternity Leave", "AnnualQuota": 182, "IsPaid": true, "CarryForwardAllowed": false },
+  { "Id": 5, "Code": "LWP", "Name": "Leave Without Pay", "AnnualQuota": 0, "IsPaid": false, "CarryForwardAllowed": false }
+]

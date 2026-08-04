@@ -1,0 +1,26 @@
+{
+  "mockCategories": [
+    {
+      "id": 1,
+      "name": "Beverages",
+      "displayOrder": 1
+    },
+    {
+      "id": 2,
+      "name": "Food",
+      "displayOrder": 2
+    }
+  ],
+  "mockCategory": {
+    "id": 1,
+    "name": "Beverages",
+    "displayOrder": 1
+  },
+  "mockSingleCategoryList": [
+    {
+      "id": 1,
+      "name": "Main Course",
+      "displayOrder": 1
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+[
+  { "Id": 1, "Title": "Front Desk Executive", "DepartmentId": 1 },
+  { "Id": 2, "Title": "Housekeeping Supervisor", "DepartmentId": 2 },
+  { "Id": 3, "Title": "Waiter", "DepartmentId": 3 },
+  { "Id": 4, "Title": "Chef", "DepartmentId": 4 },
+  { "Id": 5, "Title": "General Manager", "DepartmentId": 5 }
+]

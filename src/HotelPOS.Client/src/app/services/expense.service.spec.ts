@@ -1,3 +1,4 @@
+import { MOCK_EXPENSES } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,9 +28,7 @@ describe('ExpenseService', () => {
 
   describe('getExpenses', () => {
     it('should retrieve all expenses with no date filters', () => {
-      const dummyExpenses: Expense[] = [
-        { sNo: 1, id: 1, date: '2026-07-01', title: 'Electricity Bill', amount: 500, category: 'Utilities' }
-      ];
+      const dummyExpenses = MOCK_EXPENSES;
 
       service.getExpenses().subscribe(expenses => {
         expect(expenses).toEqual(dummyExpenses);

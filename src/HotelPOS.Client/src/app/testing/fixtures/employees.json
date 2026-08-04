@@ -1,0 +1,71 @@
+{
+  "mockEmployees": [
+    {
+      "id": 1,
+      "employeeCode": "EMP001",
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john@example.com",
+      "phone": "1234567890",
+      "departmentId": 1,
+      "designationId": 1,
+      "dateOfJoining": "2025-01-01",
+      "employmentType": "Permanent",
+      "status": "Active"
+    },
+    {
+      "id": 2,
+      "employeeCode": "EMP002",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "email": "jane@example.com",
+      "phone": "0987654321",
+      "departmentId": 1,
+      "designationId": 2,
+      "dateOfJoining": "2025-02-01",
+      "employmentType": "Permanent",
+      "status": "Active"
+    }
+  ],
+  "mockEmployee": {
+    "id": 1,
+    "employeeCode": "EMP001",
+    "firstName": "John",
+    "lastName": "Doe",
+    "gender": "Male",
+    "dateOfJoining": "2026-01-01",
+    "employmentType": "FullTime",
+    "status": "Active"
+  },
+  "mockDepartments": [
+    {
+      "id": 1,
+      "name": "Kitchen"
+    },
+    {
+      "id": 2,
+      "name": "Front Office"
+    },
+    {
+      "id": 3,
+      "name": "Management"
+    }
+  ],
+  "mockDesignations": [
+    {
+      "id": 1,
+      "title": "Chef",
+      "departmentId": 1
+    },
+    {
+      "id": 2,
+      "title": "Waiter",
+      "departmentId": 2
+    },
+    {
+      "id": 3,
+      "title": "Manager",
+      "departmentId": 3
+    }
+  ]
+}

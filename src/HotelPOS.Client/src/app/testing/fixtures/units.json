@@ -1,0 +1,14 @@
+{
+  "mockUnits": [
+    {
+      "id": 1,
+      "name": "kg",
+      "displayOrder": 1
+    },
+    {
+      "id": 2,
+      "name": "litre",
+      "displayOrder": 2
+    }
+  ]
+}

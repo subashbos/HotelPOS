@@ -1,3 +1,4 @@
+import { MOCK_CUSTOMERS, MOCK_CUSTOMER } from '../testing/test-data';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -27,10 +28,7 @@ describe('CustomerService', () => {
 
   describe('getCustomers', () => {
     it('should retrieve all customers with default includeInactive=false', () => {
-      const dummyCustomers: Customer[] = [
-        { id: 1, name: 'John Doe', email: 'john@example.com', phone: '1234567890', isActive: true, createdAt: '2026-01-01' },
-        { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '0987654321', isActive: true, createdAt: '2026-01-02' }
-      ];
+      const dummyCustomers = MOCK_CUSTOMERS;
 
       service.getCustomers().subscribe(customers => {
         expect(customers).toHaveSize(2);
@@ -61,14 +59,7 @@ describe('CustomerService', () => {
 
   describe('getCustomer', () => {
     it('should retrieve a single customer by id', () => {
-      const dummyCustomer: Customer = {
-        id: 1,
-        name: 'John Doe',
-        email: 'john@example.com',
-        phone: '1234567890',
-        isActive: true,
-        createdAt: '2026-01-01'
-      };
+      const dummyCustomer = MOCK_CUSTOMER;
 
       service.getCustomer(1).subscribe(customer => {
         expect(customer).toEqual(dummyCustomer);

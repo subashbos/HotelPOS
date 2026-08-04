@@ -1,0 +1,22 @@
+{
+  "mockUsers": [
+    {
+      "sNo": 1,
+      "id": 1,
+      "username": "admin",
+      "role": "Admin",
+      "roleId": 1,
+      "isActive": true,
+      "mustChangePassword": false
+    },
+    {
+      "sNo": 2,
+      "id": 2,
+      "username": "cashier",
+      "role": "Cashier",
+      "roleId": 2,
+      "isActive": true,
+      "mustChangePassword": true
+    }
+  ]
+}

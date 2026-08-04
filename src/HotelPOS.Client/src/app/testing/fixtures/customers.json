@@ -1,0 +1,36 @@
+{
+  "mockCustomers": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "1234567890",
+      "isActive": true,
+      "createdAt": "2026-01-01"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "phone": "0987654321",
+      "isActive": true,
+      "createdAt": "2026-01-02"
+    }
+  ],
+  "mockSingleCustomerList": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "phone": "1234567890",
+      "isActive": true,
+      "createdAt": "2026-01-01"
+    }
+  ],
+  "mockCustomer": {
+    "id": 1,
+    "name": "John Doe",
+    "phone": "1234567890",
+    "isActive": true,
+    "createdAt": "2026-01-01"
+  }
+}
