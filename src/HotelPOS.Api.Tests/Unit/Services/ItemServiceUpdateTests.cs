@@ -95,6 +95,29 @@ namespace HotelPOS.Tests
             _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
         }
 
+        // ========== UpdateItemAsync — invalid DTO parity with AddItemAsync ===========
+
+        [Fact]
+        public async Task UpdateItemAsync_ZeroPrice_ThrowsArgumentExceptionLikeAddItemAsync()
+        {
+            var dto = new CreateItemDto { Name = "Item", Price = 0, UnitId = 1 };
+
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateItemAsync(1, dto));
+
+            _repoMock.Verify(r => r.GetByIdAsync(It.IsAny<int>()), Times.Never);
+            _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateItemAsync_NegativeTaxPercentage_ThrowsArgumentExceptionLikeAddItemAsync()
+        {
+            var dto = new CreateItemDto { Name = "Item", Price = 100, TaxPercentage = -1, UnitId = 1 };
+
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateItemAsync(1, dto));
+
+            _repoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
+        }
+
         // ========== UpdateItemAsync — stock tracking toggle ===========
 
         [Fact]

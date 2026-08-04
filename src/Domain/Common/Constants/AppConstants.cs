@@ -208,7 +208,12 @@ namespace HotelPOS.Domain.Common.Constants
         public const int MinPasswordLength = 10;
         public const int MinPhoneLength = 10;
         public const int MaxPhoneLength = 15;
-        public const int Pbkdf2Iterations = 100000;
+        public const int Pbkdf2Iterations = 600000;
+
+        /// <summary>Iteration count used by password hashes written before <see cref="Pbkdf2Iterations"/>
+        /// was raised and before the hash format encoded its own iteration count. Needed to keep
+        /// verifying those legacy rows - see <see cref="HotelPOS.Domain.Common.PasswordHasher"/>.</summary>
+        public const int Pbkdf2LegacyIterations = 100000;
         public const int SaltByteSize = 16;
         public const int HashByteSize = 32;
     }

@@ -135,12 +135,6 @@ namespace HotelPOS.Application.UseCases
         private static string HashCode(string code) =>
             Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(code)));
 
-        private static (string Hash, string Salt) HashPassword(string password)
-        {
-            var saltBytes = RandomNumberGenerator.GetBytes(ValidationLimits.SaltByteSize);
-            var hashBytes = Rfc2898DeriveBytes.Pbkdf2(
-                password, saltBytes, ValidationLimits.Pbkdf2Iterations, HashAlgorithmName.SHA256, ValidationLimits.HashByteSize);
-            return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
-        }
+        private static (string Hash, string Salt) HashPassword(string password) => PasswordHasher.Hash(password);
     }
 }

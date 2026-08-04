@@ -1,6 +1,6 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common;
 using MediatR;
-using System.Security.Cryptography;
 
 namespace HotelPOS.Application.UseCases.Users.Commands
 {
@@ -10,9 +10,6 @@ namespace HotelPOS.Application.UseCases.Users.Commands
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserContext _userContext;
-        private const int Iterations = 100000;
-        private const int KeySize = 32;
-        private const int SaltSize = 16;
 
         public ResetPasswordCommandHandler(IUserRepository userRepository, IUserContext userContext)
         {
@@ -46,21 +43,8 @@ namespace HotelPOS.Application.UseCases.Users.Commands
             return (true, string.Empty);
         }
 
-        private static (string Hash, string Salt) HashPassword(string password)
-        {
-            var saltBytes = new byte[SaltSize];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(saltBytes);
-            var hashBytes = Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, Iterations, HashAlgorithmName.SHA256, KeySize);
-            return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
-        }
+        private static (string Hash, string Salt) HashPassword(string password) => PasswordHasher.Hash(password);
 
-        private static bool VerifyPassword(string password, string hash, string salt)
-        {
-            var saltBytes = Convert.FromBase64String(salt);
-            var expectedHash = Convert.FromBase64String(hash);
-            var actualHash = Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, Iterations, HashAlgorithmName.SHA256, KeySize);
-            return actualHash.Length == expectedHash.Length && CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
-        }
+        private static bool VerifyPassword(string password, string hash, string salt) => PasswordHasher.Verify(password, hash, salt);
     }
 }

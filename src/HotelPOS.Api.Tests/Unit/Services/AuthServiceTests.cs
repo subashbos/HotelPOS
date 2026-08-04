@@ -1,9 +1,11 @@
 using HotelPOS.Application;
 using HotelPOS.Application.UseCases;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Tests.TestHelpers;
 using Moq;
+using System.Security.Cryptography;
 using Xunit;
 
 namespace HotelPOS.Tests
@@ -92,6 +94,43 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task AuthenticateAsync_LegacyPasswordHash_VerifiesAndTransparentlyRehashesToCurrentIterationCount()
+        {
+            // Arrange - simulate a user row written before the PBKDF2 iteration count was raised:
+            // a bare base64 hash (no "iterations:" prefix), computed at the old fixed count.
+            var username = "legacy_hash_test_" + Guid.NewGuid();
+            var saltBytes = RandomNumberGenerator.GetBytes(ValidationLimits.SaltByteSize);
+            var legacyHashBytes = Rfc2898DeriveBytes.Pbkdf2(
+                "correct", saltBytes, ValidationLimits.Pbkdf2LegacyIterations, HashAlgorithmName.SHA256, ValidationLimits.HashByteSize);
+            var legacyHash = Convert.ToBase64String(legacyHashBytes);
+
+            var user = new User
+            {
+                Id = 42,
+                Username = username,
+                PasswordHash = legacyHash,
+                Salt = Convert.ToBase64String(saltBytes),
+                IsActive = true
+            };
+            _userRepoMock.Setup(r => r.GetUserByUsernameAsync(username)).ReturnsAsync(user);
+
+            // Act
+            var result = await _service.AuthenticateAsync(username, "correct");
+
+            // Assert - authenticates successfully against the legacy hash...
+            Assert.NotNull(result);
+
+            // ...and the stored hash is transparently upgraded to the current iteration count,
+            // so it's never re-derived at the weaker legacy count again.
+            Assert.StartsWith(ValidationLimits.Pbkdf2Iterations + ":", user.PasswordHash);
+            Assert.NotEqual(legacyHash, user.PasswordHash);
+            _userRepoMock.Verify(r => r.UpdateAsync(user), Times.Once);
+
+            // The upgraded hash still verifies the same password going forward.
+            Assert.True(HotelPOS.Domain.Common.PasswordHasher.Verify("correct", user.PasswordHash, user.Salt));
+        }
+
+        [Fact]
         public async Task AuthenticateAsync_LockoutWindowExpired_ResetsLockoutAndAllowsLogin()
         {
             // Arrange
@@ -121,6 +160,22 @@ namespace HotelPOS.Tests
             var afterExpiryResult = await _service.AuthenticateAsync(username, "wrong_password");
             Assert.Null(afterExpiryResult);
             _userRepoMock.Verify(r => r.GetUserByUsernameAsync(username), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public async Task AuthService_AuthenticateAsync_NullOrWhitespaceUsername_DoesNotThrow(string? username)
+        {
+            // Act
+            var ex = await Record.ExceptionAsync(() => _service.AuthenticateAsync(username!, "any_password"));
+
+            // Assert
+            Assert.Null(ex);
+            var result = await _service.AuthenticateAsync(username!, "any_password");
+            Assert.Null(result);
+            _userRepoMock.Verify(r => r.GetUserByUsernameAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
