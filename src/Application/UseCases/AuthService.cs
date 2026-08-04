@@ -1,8 +1,8 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
 using MediatR;
 using HotelPOS.Application.UseCases.Auth.Commands;
 
@@ -15,10 +15,6 @@ namespace HotelPOS.Application.UseCases
         private readonly IMediator? _mediator;
         private readonly IAuditService? _auditService;
 
-        // PBKDF2 Configurations
-        private const int Iterations = ValidationLimits.Pbkdf2Iterations;
-        private const int KeySize = ValidationLimits.HashByteSize;
-        private const int SaltSize = ValidationLimits.SaltByteSize;
         private const int MaxFailedAttempts = SecurityDefaults.MaxFailedLoginAttempts;
         private static readonly TimeSpan LockoutWindow = TimeSpan.FromMinutes(SecurityDefaults.LockoutWindowMinutes);
 
@@ -74,16 +70,22 @@ namespace HotelPOS.Application.UseCases
 
             try
             {
-                var salt = Convert.FromBase64String(user.Salt);
-                var expectedHash = Convert.FromBase64String(user.PasswordHash);
-                var hashBytes = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, HashAlgorithmName.SHA256, KeySize);
-
-                var success = expectedHash.Length == hashBytes.Length &&
-                              CryptographicOperations.FixedTimeEquals(hashBytes, expectedHash);
+                var success = PasswordHasher.Verify(password, user.PasswordHash, user.Salt);
                 if (success)
                 {
                     await _lockoutRepository.ClearAsync(lockoutKey);
                     user.LastLoginUtc = DateTime.UtcNow;
+
+                    // Transparently upgrade hashes written under an older (weaker) iteration count -
+                    // we already have the plaintext right here, from the password the user just proved
+                    // they know, so this is the only place that can ever do this without a forced reset.
+                    if (PasswordHasher.NeedsRehash(user.PasswordHash))
+                    {
+                        var (hash, salt) = PasswordHasher.Hash(password);
+                        user.PasswordHash = hash;
+                        user.Salt = salt;
+                    }
+
                     await _userRepository.UpdateAsync(user);
                     await LogAuditAsync(user.Id, user.Username, AuditActions.LoginSuccess, null);
                     return user;
@@ -117,18 +119,7 @@ namespace HotelPOS.Application.UseCases
         private static string TwoFactorLockoutKey(string username) =>
             "2fa:" + (username?.Trim().ToLowerInvariant() ?? string.Empty);
 
-        public (string Hash, string Salt) HashPassword(string password)
-        {
-            var saltBytes = new byte[SaltSize];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(saltBytes);
-            }
-
-            var hashBytes = Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, Iterations, HashAlgorithmName.SHA256, KeySize);
-
-            return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
-        }
+        public (string Hash, string Salt) HashPassword(string password) => PasswordHasher.Hash(password);
 
         private static SemaphoreSlim GetGate(string lockoutKey) =>
             LockoutGates.GetOrAdd(lockoutKey, _ => new SemaphoreSlim(1, 1));

@@ -1,7 +1,7 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Entities;
 using MediatR;
-using System.Security.Cryptography;
 using AutoMapper;
 
 namespace HotelPOS.Application.UseCases.Users.Commands
@@ -17,9 +17,6 @@ namespace HotelPOS.Application.UseCases.Users.Commands
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
-        private const int Iterations = 100000;
-        private const int KeySize = 32;
-        private const int SaltSize = 16;
 
         public AddUserCommandHandler(IUserRepository userRepository, IMapper mapper)
         {
@@ -42,13 +39,6 @@ namespace HotelPOS.Application.UseCases.Users.Commands
             return (true, string.Empty);
         }
 
-        private static (string Hash, string Salt) HashPassword(string password)
-        {
-            var saltBytes = new byte[SaltSize];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(saltBytes);
-            var hashBytes = Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, Iterations, HashAlgorithmName.SHA256, KeySize);
-            return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
-        }
+        private static (string Hash, string Salt) HashPassword(string password) => PasswordHasher.Hash(password);
     }
 }

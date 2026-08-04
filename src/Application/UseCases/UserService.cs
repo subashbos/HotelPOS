@@ -77,22 +77,9 @@ namespace HotelPOS.Application.UseCases
             return (true, string.Empty);
         }
 
-        private static (string Hash, string Salt) HashPassword(string password)
-        {
-            var saltBytes = new byte[ValidationLimits.SaltByteSize];
-            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
-            rng.GetBytes(saltBytes);
-            var hashBytes = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, ValidationLimits.Pbkdf2Iterations, System.Security.Cryptography.HashAlgorithmName.SHA256, ValidationLimits.HashByteSize);
-            return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
-        }
+        private static (string Hash, string Salt) HashPassword(string password) => HotelPOS.Domain.Common.PasswordHasher.Hash(password);
 
-        private static bool VerifyPassword(string password, string hash, string salt)
-        {
-            var saltBytes = Convert.FromBase64String(salt);
-            var expectedHash = Convert.FromBase64String(hash);
-            var actualHash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(password, saltBytes, ValidationLimits.Pbkdf2Iterations, System.Security.Cryptography.HashAlgorithmName.SHA256, ValidationLimits.HashByteSize);
-            return actualHash.Length == expectedHash.Length && System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
-        }
+        private static bool VerifyPassword(string password, string hash, string salt) => HotelPOS.Domain.Common.PasswordHasher.Verify(password, hash, salt);
 
         public async Task ToggleActiveAsync(int userId, bool isActive)
         {

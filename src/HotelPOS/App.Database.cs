@@ -401,19 +401,7 @@ namespace HotelPOS
             return sb.ToString();
         }
 
-        private static (string Hash, string Salt) HashPassword(string password)
-        {
-            var saltBytes = new byte[HotelPOS.Domain.Common.Constants.ValidationLimits.SaltByteSize];
-            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
-            rng.GetBytes(saltBytes);
-            var hashBytes = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2(
-                password,
-                saltBytes,
-                HotelPOS.Domain.Common.Constants.ValidationLimits.Pbkdf2Iterations,
-                System.Security.Cryptography.HashAlgorithmName.SHA256,
-                HotelPOS.Domain.Common.Constants.ValidationLimits.HashByteSize);
-            return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
-        }
+        private static (string Hash, string Salt) HashPassword(string password) => HotelPOS.Domain.Common.PasswordHasher.Hash(password);
 
         internal static string GetInitialAdminCredentialPath() => Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
