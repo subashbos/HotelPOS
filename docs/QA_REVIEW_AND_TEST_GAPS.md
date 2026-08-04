@@ -90,4 +90,5 @@ Add these first because they cover money, security, and data integrity:
 4. ~~Add transactional order save/update with stock reconciliation.~~ DONE
 5. ~~Add invoice uniqueness and concurrency tests.~~ DONE (`HotelDbContextModelSnapshot`/`HotelDbContext` enforce a unique index; see "Missing High-Value Test Cases" above for remaining concurrency-specific test coverage.)
 6. ~~Enforce a coverage gate on the API/backend test step in CI.~~ DONE (see "CI Coverage Gate" above) — follow-up: raise the threshold once real numbers are observed.
-7. Remaining: add the data integrity documentation section (item 4 above).
+7. ~~Add UserService/SettingService coverage for the previously-untested legacy code paths.~~ DONE (2026-08-04) — `UserServiceContactSettingsTests.cs` covers `SetTwoFactorAsync`/`SetEmailAsync` (not-found, mutation, disable-clears-secret, authorization); `SettingServiceAuthorizationTests.cs` covers `SaveSettingsAsync` authorization enforcement on both constructor paths and the previously-untested `GetSettingsAsync` mediator-DI path.
+8. Remaining: add the data integrity documentation section (item 4 above).
