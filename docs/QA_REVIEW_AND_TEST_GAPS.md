@@ -75,6 +75,13 @@ Add these first because they cover money, security, and data integrity:
    - Clarify whether negative stock is allowed.
    - Status: still open.
 
+## CI Coverage Gate
+
+- The WPF test step (`dotnet.yml` → `Test (WPF)`) has enforced `-p:Threshold=80` (line coverage) for a while, but the `Test (API/backend)` step — covering `Application`, `Infrastructure`, and `API`, the most business-critical layer — collected coverage without ever gating the build on it.
+- Root cause of why a naive threshold couldn't just be copied over: `HotelPOS.Infrastructure.Persistence.Migrations` is ~71k lines of EF Core-generated scaffolding (vs. ~3.1k lines of hand-written `Persistence` code), and it's essentially 0% exercised by tests since nothing runs migration `Up`/`Down` methods directly. That dragged the unweighted `Infrastructure` module down to ~1.7% line coverage and the overall `Test (API/backend)` total down to ~8.5%, even though `API` (~82%), `Application` (~79%), and `Domain` (~90%) were already healthy.
+- Fix (2026-08-04): excluded the `Migrations` namespace from Coverlet instrumentation (`-p:Exclude="[HotelPOS.Infrastructure]HotelPOS.Infrastructure.Persistence.Migrations.*"`) so coverage reflects hand-written code, and added `-p:Threshold=60 -p:ThresholdType=line -p:ThresholdStat=total` as a real gate.
+- The 60% starting value is intentionally conservative — it was estimated from the known per-module numbers above rather than measured directly (no .NET toolchain was available to run `dotnet test` locally when this was written). Once a CI run reports the real post-exclusion total, ratchet this threshold up over time toward the WPF project's 80% bar.
+
 ## Suggested Improvement Order
 
 1. ~~Fix the isolated failing backup test.~~ DONE
@@ -82,4 +89,5 @@ Add these first because they cover money, security, and data integrity:
 3. ~~Define and enforce stock policy.~~ DONE
 4. ~~Add transactional order save/update with stock reconciliation.~~ DONE
 5. ~~Add invoice uniqueness and concurrency tests.~~ DONE (`HotelDbContextModelSnapshot`/`HotelDbContext` enforce a unique index; see "Missing High-Value Test Cases" above for remaining concurrency-specific test coverage.)
-6. Remaining: add the data integrity documentation section (item 4 above).
+6. ~~Enforce a coverage gate on the API/backend test step in CI.~~ DONE (see "CI Coverage Gate" above) — follow-up: raise the threshold once real numbers are observed.
+7. Remaining: add the data integrity documentation section (item 4 above).
