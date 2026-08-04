@@ -38,14 +38,23 @@ namespace HotelPOS.Tests.Integration
             return client;
         }
 
-        private async Task<int> SeedEmployeeLinkedToUserAsync(string employeeCode, int userId)
+        /// <summary>
+        /// Employee.UserId is a real required FK to Users, so this seeds an actual User row first
+        /// and returns its generated ID for both the Employee link and the caller's JWT "sub" —
+        /// an arbitrary int (e.g. 500001) violates the FK the moment the Employee is saved.
+        /// </summary>
+        private async Task<(int EmployeeId, int UserId)> SeedEmployeeWithLinkedUserAsync(string employeeCode, string username)
         {
             using var scope = _factory.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
-            var employee = new Employee { EmployeeCode = employeeCode, FirstName = "Test", DateOfJoining = System.DateTime.UtcNow.Date, UserId = userId };
+            var user = new User { Username = username, PasswordHash = "test-hash", Salt = "test-salt", Role = RoleNames.Cashier };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            var employee = new Employee { EmployeeCode = employeeCode, FirstName = "Test", DateOfJoining = System.DateTime.UtcNow.Date, UserId = user.Id };
             context.Employees.Add(employee);
             await context.SaveChangesAsync();
-            return employee.Id;
+            return (employee.Id, user.Id);
         }
 
         [Fact]
@@ -71,8 +80,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task GetProfile_ResolvesOwnEmployeeFromCurrentUserId()
         {
-            const int userId = 500002;
-            await SeedEmployeeLinkedToUserAsync("EMP-ESS-1", userId);
+            var (_, userId) = await SeedEmployeeWithLinkedUserAsync("EMP-ESS-1", "ess.self");
             var client = CreateClient(RoleNames.Cashier, "ess.self", userId);
 
             var response = await client.GetAsync("/api/ess/profile");
@@ -85,8 +93,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task UpdateProfile_OnlyMutatesAllowedFields()
         {
-            const int userId = 500003;
-            await SeedEmployeeLinkedToUserAsync("EMP-ESS-2", userId);
+            var (_, userId) = await SeedEmployeeWithLinkedUserAsync("EMP-ESS-2", "ess.update-self");
             var client = CreateClient(RoleNames.Cashier, "ess.update-self", userId);
 
             var response = await client.PutAsJsonAsync("/api/ess/profile", new
@@ -109,8 +116,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task GetLeaveBalances_PassesResolvedEmployeeId_NotAnyClientSuppliedValue()
         {
-            const int userId = 500004;
-            var employeeId = await SeedEmployeeLinkedToUserAsync("EMP-ESS-3", userId);
+            var (employeeId, userId) = await SeedEmployeeWithLinkedUserAsync("EMP-ESS-3", "ess.balances-self");
             using (var scope = _factory.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
@@ -132,9 +138,8 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task ApplyLeave_IgnoresClientSuppliedEmployeeId_UsesOwnResolvedEmployeeId()
         {
-            const int userId = 500005;
             const int impersonatedEmployeeId = 999999; // does not exist, and must never be used
-            var employeeId = await SeedEmployeeLinkedToUserAsync("EMP-ESS-4", userId);
+            var (employeeId, userId) = await SeedEmployeeWithLinkedUserAsync("EMP-ESS-4", "ess.apply-self");
             int leaveTypeId;
             using (var scope = _factory.Services.CreateScope())
             {
@@ -163,10 +168,8 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task CancelLeave_NotOwnRequest_ReturnsForbidden()
         {
-            const int ownerUserId = 500006;
-            const int otherUserId = 500007;
-            var ownerEmployeeId = await SeedEmployeeLinkedToUserAsync("EMP-ESS-5", ownerUserId);
-            await SeedEmployeeLinkedToUserAsync("EMP-ESS-6", otherUserId);
+            var (ownerEmployeeId, ownerUserId) = await SeedEmployeeWithLinkedUserAsync("EMP-ESS-5", "ess.cancel-owner");
+            var (_, otherUserId) = await SeedEmployeeWithLinkedUserAsync("EMP-ESS-6", "ess.cancel-other");
             int leaveTypeId;
             using (var scope = _factory.Services.CreateScope())
             {
