@@ -69,7 +69,7 @@ namespace HotelPOS.Tests.Integration
         {
             var client = CreateClient(RoleNames.Admin, "units.admin-create");
 
-            var response = await client.PostAsJsonAsync("/api/unitofmeasurements", new { Name = "Dozen", DisplayOrder = 5 });
+            var response = await client.PostAsJsonAsync("/api/unitofmeasurements", new { Name = "Sachet", DisplayOrder = 5 });
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }
@@ -77,11 +77,14 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task CreateUnitOfMeasurement_DuplicateName_ReturnsConflict()
         {
+            // "Sack" is not part of the seeded default unit list (Pcs, Kg, Gram, Litre, Ml,
+            // Plate, Box, Packet, Bottle, Dozen) — using a seeded name here would make this test
+            // fail on its own first POST rather than exercising the intended duplicate check.
             var client = CreateClient(RoleNames.Admin, "units.admin-dupe");
-            var first = await client.PostAsJsonAsync("/api/unitofmeasurements", new { Name = "Box" });
+            var first = await client.PostAsJsonAsync("/api/unitofmeasurements", new { Name = "Sack" });
             Assert.Equal(HttpStatusCode.Created, first.StatusCode);
 
-            var second = await client.PostAsJsonAsync("/api/unitofmeasurements", new { Name = "Box" });
+            var second = await client.PostAsJsonAsync("/api/unitofmeasurements", new { Name = "Sack" });
 
             Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
         }
