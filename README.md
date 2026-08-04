@@ -14,6 +14,8 @@ For in-depth explanations of the system's design and features, refer to the dedi
    *Comprehensive layout of the Clean Architecture implementation and design patterns (CQRS, MediatR).*
 3. **[Technical Reference & Deep Dives](docs/TechnicalReference.md)**  
    *Detailed documentation of thread safety, printing, tax calculation engines, and database synchronization.*
+4. **[Project Estimation](docs/PROJECT_ESTIMATION.md)**  
+   *Development process breakdown and man-hour estimates by module and team size.*
 
 ---
 
