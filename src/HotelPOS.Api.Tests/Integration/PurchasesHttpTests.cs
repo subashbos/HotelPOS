@@ -125,8 +125,7 @@ namespace HotelPOS.Tests.Integration
                 Items = new[] { new { ItemId = itemId, ItemName = "X", Quantity = 1, UnitPrice = 10m, TaxPercentage = 0m, Discount = 0m } }
             });
 
-            var body = await response.Content.ReadAsStringAsync();
-            Assert.True(response.StatusCode == HttpStatusCode.BadRequest, $"Expected BadRequest but got {response.StatusCode}: {body}");
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
         [Fact]
