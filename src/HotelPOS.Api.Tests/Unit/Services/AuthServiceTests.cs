@@ -123,6 +123,22 @@ namespace HotelPOS.Tests
             _userRepoMock.Verify(r => r.GetUserByUsernameAsync(username), Times.Once);
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public async Task AuthService_AuthenticateAsync_NullOrWhitespaceUsername_DoesNotThrow(string? username)
+        {
+            // Act
+            var ex = await Record.ExceptionAsync(() => _service.AuthenticateAsync(username!, "any_password"));
+
+            // Assert
+            Assert.Null(ex);
+            var result = await _service.AuthenticateAsync(username!, "any_password");
+            Assert.Null(result);
+            _userRepoMock.Verify(r => r.GetUserByUsernameAsync(It.IsAny<string>()), Times.Never);
+        }
+
         [Fact]
         public async Task AuthenticateAsync_ConcurrentFailedLogins_HandlesConcurrencyGracefully()
         {

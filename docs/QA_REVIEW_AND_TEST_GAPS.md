@@ -42,21 +42,21 @@ Scope: Fast review of core POS risk areas: authentication, billing, orders, stoc
 
 Add these first because they cover money, security, and data integrity:
 
-- `OrderService_SaveOrderAsync_WhenStockDeductionFails_DoesNotPersistPartialOrder`
-- `OrderRepository_GetNextInvoiceNumberAsync_ConcurrentOrders_DoNotDuplicateInvoiceNumber`
-- `HotelDbContext_HasUniqueInvoiceIndex_PerFiscalYear`
-- `ItemService_DeductStockAsync_WhenInsufficientStock_RejectsOrAppliesDocumentedPolicy`
-- `ItemService_UpdateItemAsync_InvalidDto_ThrowsLikeAddItemAsync`
-- `OrderService_SaveOrderAsync_NegativeDiscount_Throws`
-- `OrderService_SaveOrderAsync_InvalidPaymentMode_Throws`
-- `OrderService_SaveOrderAsync_ZeroOrNegativeQuantity_Throws`
-- `OrderService_UpdateOrderAsync_WhenNewStockDeductionFails_RollsBackOldStockReturn`
-- `AuthService_AuthenticateAsync_NullOrWhitespaceUsername_DoesNotThrow`
-- `UserService_ResetPasswordAsync_NullOrShortPassword_ReturnsValidationError`
-- `CashService_OpenSessionAsync_NegativeOpeningBalance_ThrowsAtServiceLayer`
-- `CashService_CloseSessionAsync_NegativeActualCash_Throws`
-- `BackupService_CreateBackupAsync_UsesIsolatedBackupDirectory`
-- `PrintPreview_DefaultPrinterMissing_FallsBackToDialogOrReportsCleanly`
+- `OrderService_SaveOrderAsync_WhenStockDeductionFails_DoesNotPersistPartialOrder` — DONE (`OrderServiceTests.cs`).
+- `OrderRepository_GetNextInvoiceNumberAsync_ConcurrentOrders_DoNotDuplicateInvoiceNumber` — DONE (`ConcurrencyAndUniquenessTests.cs`).
+- `HotelDbContext_HasUniqueInvoiceIndex_PerFiscalYear` — still open.
+- `ItemService_DeductStockAsync_WhenInsufficientStock_RejectsOrAppliesDocumentedPolicy` — DONE (`DeductStockAsync_InsufficientStock_ThrowsInvalidOperationException` in `ItemServiceLoopholeTests.cs`).
+- `ItemService_UpdateItemAsync_InvalidDto_ThrowsLikeAddItemAsync` — DONE (`ItemServiceUpdateTests.cs`: zero price and negative tax percentage both throw `ArgumentException` without touching the repository, mirroring `AddItemAsync`).
+- `OrderService_SaveOrderAsync_NegativeDiscount_Throws` — DONE (`OrderServiceLoopholeTests.cs`).
+- `OrderService_SaveOrderAsync_InvalidPaymentMode_Throws` — DONE (`OrderServiceLoopholeTests.cs`).
+- `OrderService_SaveOrderAsync_ZeroOrNegativeQuantity_Throws` — still open.
+- `OrderService_UpdateOrderAsync_WhenNewStockDeductionFails_RollsBackOldStockReturn` — still open.
+- `AuthService_AuthenticateAsync_NullOrWhitespaceUsername_DoesNotThrow` — DONE (`AuthServiceTests.cs`: verifies null/empty/whitespace usernames return `null` without throwing and without querying the user repository).
+- `UserService_ResetPasswordAsync_NullOrShortPassword_ReturnsValidationError` — mostly covered (`UserServiceLoopholeTests.cs` covers null/empty); a below-minimum-length non-empty password case is still open.
+- `CashService_OpenSessionAsync_NegativeOpeningBalance_ThrowsAtServiceLayer` — DONE (`CashServiceTests.cs`).
+- `CashService_CloseSessionAsync_NegativeActualCash_Throws` — DONE (`CashServiceTests.cs`).
+- `BackupService_CreateBackupAsync_UsesIsolatedBackupDirectory` — DONE (covered by the isolated-directory fix noted above).
+- `PrintPreview_DefaultPrinterMissing_FallsBackToDialogOrReportsCleanly` — DONE (`WpfServicesTests.cs`).
 
 ## Documentation Improvements
 
