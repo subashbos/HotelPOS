@@ -63,6 +63,12 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
+                // The MediatR ValidationBehavior pipeline is expected to reject an invalid
+                // command before it ever reaches SavePurchaseCommandHandler, but that hasn't
+                // proven reliable for this void (non-generic) IRequest - validate explicitly so
+                // a bad SupplierId/GrandTotal/etc. surfaces as a clean 400 instead of an
+                // unhandled DbUpdateException (500) from a downstream FK violation.
+                ValidatePurchase(purchase);
                 await _mediator.Send(new SavePurchaseCommand(purchase));
                 await _mediator.Publish(new EntityActionEvent("Purchase", purchase.Id, "Create",
                     $"Supplier: {purchase.SupplierId}, Invoice: {purchase.InvoiceNumber}, Items: {purchase.PurchaseItems.Count}"));
@@ -81,6 +87,8 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
+                // See the same comment in SavePurchaseAsync above.
+                ValidatePurchase(purchase);
                 await _mediator.Send(new UpdatePurchaseCommand(purchase));
                 await _mediator.Publish(new EntityActionEvent("Purchase", purchase.Id, "Update",
                     $"Supplier: {purchase.SupplierId}, Invoice: {purchase.InvoiceNumber}, Items: {purchase.PurchaseItems.Count}"));
