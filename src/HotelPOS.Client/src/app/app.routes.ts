@@ -35,6 +35,7 @@ import { AuditComponent } from "./views/admin/audit/audit.component";
 import { AccountComponent } from "./views/admin/account/account.component";
 import { CustomersComponent } from "./views/admin/customers/customers.component";
 import { EstimationsComponent } from "./views/admin/estimations/estimations.component";
+import { ReservationsComponent } from "./views/admin/reservations/reservations.component";
 import { RawMaterialsComponent } from "./views/admin/raw-materials/raw-materials.component";
 import { BomComponent } from "./views/admin/bom/bom.component";
 import { BiAnalyticsComponent } from "./views/admin/bi-analytics/bi-analytics.component";
@@ -68,6 +69,7 @@ export const routes: Routes = [
       { path: "suppliers", component: SuppliersComponent, canActivate: [permissionGuard], data: { modules: ["Purchase"] } },
       { path: "purchases", component: PurchasesComponent, canActivate: [permissionGuard], data: { modules: ["Purchase"] } },
       { path: "estimations", component: EstimationsComponent, canActivate: [permissionGuard], data: { modules: ["Estimation"] } },
+      { path: "reservations", component: ReservationsComponent, canActivate: [permissionGuard], data: { modules: ["Reservation"] } },
       { path: "session", component: ShiftSessionComponent, canActivate: [permissionGuard], data: { modules: ["Shift"] } },
       { path: "expenses", component: ExpensesComponent, canActivate: [permissionGuard], data: { modules: ["Expenses"] } },
       { path: "employees", component: EmployeesComponent, canActivate: [permissionGuard], data: { modules: ["HrEmployees"] } },

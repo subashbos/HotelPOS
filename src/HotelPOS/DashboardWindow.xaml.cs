@@ -39,6 +39,7 @@ namespace HotelPOS
         private SupplierView? _cachedSuppliers;
         private RawMaterialView? _cachedRawMaterials;
         private EstimationView? _cachedEstimation;
+        private ReservationView? _cachedReservation;
         private BomView? _cachedBom;
         private EmployeeView? _cachedEmployees;
         private AttendanceView? _cachedAttendance;
@@ -249,6 +250,7 @@ namespace HotelPOS
             NavExpenses.Visibility = Vis(HasPermission(PermissionModules.Expenses));
             NavCustomers.Visibility = Vis(HasPermission(PermissionModules.Customers));
             NavEstimation.Visibility = Vis(HasPermission(PermissionModules.Estimation));
+            NavReservation.Visibility = Vis(HasPermission(PermissionModules.Reservation));
 
             NavMenu.Visibility = Vis(HasPermission("Items"));
             NavTables.Visibility = Vis(HasPermission("Tables"));
@@ -521,12 +523,19 @@ namespace HotelPOS
             SetActive(NavEstimation);
         }
 
+        private void NavReservation_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedReservation ??= _serviceProvider.GetRequiredService<ReservationView>();
+            MainContentArea.Content = _cachedReservation;
+            SetActive(NavReservation);
+        }
+
         private void SetActive(Button active)
         {
             // 1. Enable all navigation buttons
             var allButtons = new[]
             {
-                NavBilling, NavShift, NavExpenses, NavCustomers, NavEstimation,
+                NavBilling, NavShift, NavExpenses, NavCustomers, NavEstimation, NavReservation,
                 NavMenu, NavCats, NavUnits, NavTables, NavPurchase, NavSuppliers, NavRawMaterials, NavBom,
                 NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
                 NavEmployees, NavDeptDesig, NavAttendance, NavLeave, NavPayroll, NavSalaryStructure,

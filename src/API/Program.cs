@@ -46,6 +46,7 @@ builder.Services.AddScoped<ITableService>(provider => new TableService(provider.
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<IEstimationService>(provider => new EstimationService(provider.GetRequiredService<IMediator>()));
+builder.Services.AddScoped<IReservationService>(provider => new ReservationService(provider.GetRequiredService<IMediator>()));
 builder.Services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();

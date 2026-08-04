@@ -1,0 +1,185 @@
+<UserControl x:Class="HotelPOS.Views.ReservationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="900" d:DesignWidth="1400">
+
+    <UserControl.Resources>
+        <Style x:Key="FieldLabel" TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}"/>
+
+        <Style x:Key="InputField" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Height"          Value="40"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin"          Value="0,0,0,16"/>
+        </Style>
+
+        <Style x:Key="RowActionBtn" TargetType="Button" BasedOn="{StaticResource SecondaryBtn}">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Margin" Value="2,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header -->
+            <RowDefinition Height="*"/>     <!-- Scrollable content -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER ══ -->
+        <Border Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="📅  Table Reservations" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                    <TextBlock Text="Book dining tables for future dates/times, separate from live Billing table status."
+                               Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Date:" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
+                    <DatePicker SelectedDate="{Binding SelectedDate}" Height="36" VerticalContentAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Grid Margin="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>  <!-- Left Form (30%) -->
+                    <ColumnDefinition Width="7*"/>  <!-- Right list (70%) -->
+                </Grid.ColumnDefinitions>
+
+                <!-- ── LEFT: BOOKING FORM ── -->
+                <Border Grid.Column="0" Margin="0,0,16,0" Style="{StaticResource PremiumCard}">
+                    <StackPanel Margin="0,4,0,4">
+                        <TextBlock Text="NEW RESERVATION" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Table *" Style="{StaticResource FieldLabel}"/>
+                        <ComboBox ItemsSource="{Binding Tables}"
+                                  SelectedItem="{Binding FormTable}"
+                                  DisplayMemberPath="Name"
+                                  Height="40"
+                                  VerticalContentAlignment="Center"
+                                  Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Party Size *" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding FormPartySize, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}"/>
+
+                        <TextBlock Text="Reservation Date" Style="{StaticResource FieldLabel}"/>
+                        <DatePicker SelectedDate="{Binding FormDate}" Height="40" VerticalContentAlignment="Center" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Start Time * (HH:mm)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox x:Name="StartTimeTextBox" Text="{Binding FormStartTimeText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" ToolTip="e.g. 19:30"/>
+
+                        <TextBlock Text="End Time * (HH:mm)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding FormEndTimeText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}" ToolTip="e.g. 21:00"/>
+
+                        <TextBlock Text="Customer (Optional)" Style="{StaticResource FieldLabel}"/>
+                        <ComboBox ItemsSource="{Binding Customers}"
+                                  SelectedItem="{Binding FormCustomer}"
+                                  DisplayMemberPath="Name"
+                                  IsEditable="True"
+                                  IsTextSearchEnabled="True"
+                                  Height="40"
+                                  VerticalContentAlignment="Center"
+                                  Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Customer Name (if not a saved profile)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding FormCustomerName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}"/>
+
+                        <TextBlock Text="Customer Phone" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding FormCustomerPhone, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputField}"/>
+
+                        <TextBlock Text="Notes (Optional)" Style="{StaticResource FieldLabel}"/>
+                        <TextBox Text="{Binding FormNotes, UpdateSourceTrigger=PropertyChanged}"
+                                 Height="70" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                 VerticalContentAlignment="Top" Padding="12,8"
+                                 Style="{StaticResource InputField}"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                            <Button Content="❌  Reset"
+                                    Command="{Binding OpenFormCommand}"
+                                    Style="{StaticResource SecondaryBtn}"
+                                    Padding="20,10" FontSize="13" Margin="0,0,16,0"/>
+                            <Button Command="{Binding SaveReservationCommand}"
+                                    Style="{StaticResource PrimaryBtn}" Content="📅  Book Table" Padding="24,10"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- ── RIGHT: RESERVATIONS FOR SELECTED DATE ── -->
+                <Border Grid.Column="1" Margin="16,0,0,0" Style="{StaticResource PremiumCard}" Padding="20">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0" Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="Reservations for Selected Date" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
+                                <TextBlock Text="Check in, complete, cancel, or mark a no-show as the day progresses." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="🔄  Refresh"
+                                    Command="{Binding RefreshReservationsCommand}"
+                                    Style="{StaticResource SecondaryBtn}" Padding="16,8"/>
+                        </Grid>
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding Reservations}"
+                                  Style="{StaticResource PremiumGrid}"
+                                  SelectionMode="Single"
+                                  SelectionUnit="FullRow"
+                                  IsReadOnly="True"
+                                  RowHeight="48"
+                                  Height="600"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Auto">
+
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="START" Binding="{Binding StartTime, StringFormat='hh\:mm'}" Width="70" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="END" Binding="{Binding EndTime, StringFormat='hh\:mm'}" Width="70" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TABLE" Binding="{Binding Table.Name}" Width="90"/>
+                                <DataGridTextColumn Header="CUSTOMER" Binding="{Binding CustomerName}" Width="130"/>
+                                <DataGridTextColumn Header="PARTY" Binding="{Binding PartySize}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="90" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+
+                                <DataGridTemplateColumn Header="ACTIONS" Width="*">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <Button Content="Check In" Style="{StaticResource RowActionBtn}"
+                                                        Command="{Binding DataContext.MarkCheckedInCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+                                                <Button Content="Complete" Style="{StaticResource RowActionBtn}"
+                                                        Command="{Binding DataContext.MarkCompletedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+                                                <Button Content="No-Show" Style="{StaticResource RowActionBtn}"
+                                                        Command="{Binding DataContext.MarkNoShowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+                                                <Button Content="Cancel" Style="{StaticResource RowActionBtn}"
+                                                        Command="{Binding DataContext.MarkCancelledCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+                                                <Button Content="🗑️" Style="{StaticResource RowActionBtn}"
+                                                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

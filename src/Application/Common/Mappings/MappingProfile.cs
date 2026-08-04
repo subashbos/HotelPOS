@@ -10,6 +10,7 @@ using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.DTOs.Leave;
 using HotelPOS.Application.DTOs.Payroll;
 using HotelPOS.Application.DTOs.Purchase;
+using HotelPOS.Application.DTOs.Reservation;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application.DTOs.UnitOfMeasurement;
@@ -29,6 +30,7 @@ namespace HotelPOS.Application.Common.Mappings
             CreateLeaveAndPayrollMaps();
             CreatePurchaseMaps();
             CreateEstimationMaps();
+            CreateReservationMaps();
         }
 
         private void CreateCatalogMaps()
@@ -160,6 +162,13 @@ namespace HotelPOS.Application.Common.Mappings
             CreateMap<Estimation, EstimationDto>()
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.EstimationItems));
             CreateMap<EstimationItem, EstimationItemDto>();
+        }
+
+        private void CreateReservationMaps()
+        {
+            // ── Reservations ──────────────────────────────────────────────────
+            CreateMap<Reservation, ReservationDto>()
+                .ForMember(dest => dest.TableName, opt => opt.MapFrom(src => src.Table != null ? src.Table.Name : null));
         }
     }
 }

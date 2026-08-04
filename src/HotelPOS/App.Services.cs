@@ -113,6 +113,7 @@ namespace HotelPOS
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<IEstimationService>(provider => new EstimationService(provider.GetRequiredService<IMediator>()));
+            services.AddScoped<IReservationService>(provider => new ReservationService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
             services.AddScoped<IExpenseService>(provider => new ExpenseService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
             services.AddScoped<IBomService, Services.BomService>();
@@ -134,6 +135,7 @@ namespace HotelPOS
             services.AddTransient<SessionViewModel>();
             services.AddTransient<PurchaseEntryViewModel>();
             services.AddTransient<EstimationViewModel>();
+            services.AddTransient<ReservationViewModel>();
             services.AddTransient<SupplierViewModel>();
             services.AddTransient<SupplierEntryViewModel>();
             services.AddTransient<PurchaseReportViewModel>();
@@ -166,6 +168,7 @@ namespace HotelPOS
             services.AddTransient<AuditView>();
             services.AddTransient<PurchaseEntryView>();
             services.AddTransient<EstimationView>();
+            services.AddTransient<ReservationView>();
             services.AddTransient<BillingView>();
             services.AddTransient<SupplierView>();
             services.AddTransient<SalesReportView>();

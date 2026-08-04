@@ -211,6 +211,10 @@
                                 <Path Data="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14H8v-2h8v2zm0-4H8v-2h8v2zm-1-5V3.5L18.5 9H15c-.55 0-1-.45-1-1z"
                                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
                             </Button>
+                            <Button x:Name="NavReservation" Style="{StaticResource NavBtn}" Click="NavReservation_Click" Tag="Reservations" ToolTip="Table Reservations">
+                                <Path Data="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
+                            </Button>
                         </StackPanel>
 
                         <!-- INVENTORY -->

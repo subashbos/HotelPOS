@@ -46,6 +46,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public DbSet<TdsConfig> TdsConfigs { get; set; }
         public DbSet<Estimation> Estimations { get; set; }
         public DbSet<EstimationItem> EstimationItems { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -290,6 +291,17 @@ namespace HotelPOS.Infrastructure.Persistence
 
             // EstimationItem -> Item and EstimationItem -> Estimation relationships are left to
             // convention (required FK => Cascade), same as PurchaseItem's equivalent relationships.
+
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.Customer)
+                .WithMany()
+                .HasForeignKey(r => r.CustomerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Reservation>()
+                .HasIndex(r => new { r.TableId, r.ReservationDate });
+
+            // Reservation -> Table is left to convention (required FK => Cascade).
 
             // ── Seed data (loaded from embedded JSON resources) ─────────────
             SeedData.SeedDataLoader.ApplySeedData(modelBuilder);
