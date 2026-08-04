@@ -66,6 +66,7 @@ namespace HotelPOS.Application.UseCases
                 var isNew = expense.Id == 0;
                 var dto = _mapper.Map<SaveExpenseDto>(expense);
                 var id = await _mediator.Send(new SaveExpenseCommand(dto));
+                expense.Id = id;
                 await _mediator.Publish(new EntityActionEvent(
                     ExpenseEntityType, id, isNew ? "Create" : "Update",
                     $"Title: {dto.Title}, Amount: {dto.Amount:N2}"));

@@ -4,6 +4,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using HotelPOS.Domain.Common.Constants;
+using HotelPOS.Domain.Entities;
+using HotelPOS.Infrastructure.Persistence;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace HotelPOS.Tests.Integration
@@ -12,7 +15,9 @@ namespace HotelPOS.Tests.Integration
     /// Exercises PurchasesController through the real HTTP pipeline (routing, model binding, JWT
     /// auth/RBAC, and the mediator-backed PurchaseService) — previously only reachable via
     /// mocked-service controller tests. SupplierId=1 references the seeded "Metro Wholesalers"
-    /// supplier; PurchaseItem.ItemId has no real FK constraint so an arbitrary value is safe.
+    /// supplier. PurchaseItem.ItemId is a real required FK to Items (via the Item? Item
+    /// navigation property) enforced by SQLite, and the Items table starts empty, so every
+    /// purchase-creating test seeds a real Item first rather than using an arbitrary ItemId.
     /// </summary>
     public class PurchasesHttpTests : IClassFixture<CustomWebApplicationFactory>
     {
@@ -34,7 +39,17 @@ namespace HotelPOS.Tests.Integration
             return client;
         }
 
-        private static object ValidPurchasePayload(string invoiceNumber) => new
+        private async Task<int> SeedItemAsync(string name)
+        {
+            using var scope = _factory.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
+            var item = new Item { Name = name, Price = 20m, UnitId = 1 };
+            context.Items.Add(item);
+            await context.SaveChangesAsync();
+            return item.Id;
+        }
+
+        private static object ValidPurchasePayload(string invoiceNumber, int itemId) => new
         {
             SupplierId = 1,
             InvoiceNumber = invoiceNumber,
@@ -42,7 +57,7 @@ namespace HotelPOS.Tests.Integration
             PaymentType = PaymentModes.Cash,
             Items = new[]
             {
-                new { ItemId = 1, ItemName = "Test Ingredient", Quantity = 10, UnitPrice = 20m, TaxPercentage = 5m, Discount = 0m }
+                new { ItemId = itemId, ItemName = "Test Ingredient", Quantity = 10, UnitPrice = 20m, TaxPercentage = 5m, Discount = 0m }
             }
         };
 
@@ -59,9 +74,10 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task CreatePurchase_CashierToken_ReturnsForbidden()
         {
+            var itemId = await SeedItemAsync("Cashier Test Ingredient");
             var client = CreateClient(RoleNames.Cashier, "purchases.cashier-create");
 
-            var response = await client.PostAsJsonAsync("/api/purchases", ValidPurchasePayload("INV-CASHIER-1"));
+            var response = await client.PostAsJsonAsync("/api/purchases", ValidPurchasePayload("INV-CASHIER-1", itemId));
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -69,9 +85,10 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task CreatePurchase_AdminToken_ReturnsCreated()
         {
+            var itemId = await SeedItemAsync("Admin Test Ingredient");
             var client = CreateClient(RoleNames.Admin, "purchases.admin-create");
 
-            var response = await client.PostAsJsonAsync("/api/purchases", ValidPurchasePayload("INV-ADMIN-1"));
+            var response = await client.PostAsJsonAsync("/api/purchases", ValidPurchasePayload("INV-ADMIN-1", itemId));
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }
@@ -96,6 +113,7 @@ namespace HotelPOS.Tests.Integration
         [Fact]
         public async Task CreatePurchase_InvalidSupplierId_ReturnsBadRequest()
         {
+            var itemId = await SeedItemAsync("Invalid Supplier Test Ingredient");
             var client = CreateClient(RoleNames.Admin, "purchases.admin-invalid-supplier");
 
             var response = await client.PostAsJsonAsync("/api/purchases", new
@@ -104,7 +122,7 @@ namespace HotelPOS.Tests.Integration
                 InvoiceNumber = "INV-NO-SUPPLIER",
                 PurchaseDate = System.DateTime.UtcNow,
                 PaymentType = PaymentModes.Cash,
-                Items = new[] { new { ItemId = 1, ItemName = "X", Quantity = 1, UnitPrice = 10m, TaxPercentage = 0m, Discount = 0m } }
+                Items = new[] { new { ItemId = itemId, ItemName = "X", Quantity = 1, UnitPrice = 10m, TaxPercentage = 0m, Discount = 0m } }
             });
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -125,7 +143,9 @@ namespace HotelPOS.Tests.Integration
         {
             var client = CreateClient(RoleNames.Admin, "purchases.admin-update-missing");
 
-            var response = await client.PutAsJsonAsync("/api/purchases/999999", ValidPurchasePayload("INV-UPDATE-MISSING"));
+            // UpdatePurchaseCommandHandler checks purchase existence before touching any items,
+            // so this itemId is never dereferenced - no need to seed a real Item for this case.
+            var response = await client.PutAsJsonAsync("/api/purchases/999999", ValidPurchasePayload("INV-UPDATE-MISSING", itemId: 1));
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
