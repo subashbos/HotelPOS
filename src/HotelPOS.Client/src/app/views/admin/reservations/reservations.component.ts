@@ -71,7 +71,7 @@ export class ReservationsComponent implements OnInit {
     this.loadError = '';
     this.reservationService.getReservations(this.selectedDate).subscribe({
       next: (reservations) => {
-        this.reservations = reservations.sort((a, b) => (a.startTime < b.startTime ? -1 : 1));
+        this.reservations = reservations.sort((a, b) => a.startTime.localeCompare(b.startTime));
         this.isLoading = false;
       },
       error: (err) => {

@@ -82,7 +82,7 @@ export class EstimationsComponent implements OnInit {
     this.loadError = '';
     this.estimationService.getEstimations().subscribe({
       next: (estimations) => {
-        this.estimations = estimations.sort((a, b) => (a.estimationDate < b.estimationDate ? 1 : -1));
+        this.estimations = estimations.sort((a, b) => b.estimationDate.localeCompare(a.estimationDate));
         this.isLoading = false;
       },
       error: (err) => {
