@@ -169,6 +169,24 @@ namespace HotelPOS.Tests.Unit.ViewModels
         }
 
         [Fact]
+        public async Task MarkAsSentCommand_ServiceThrows_DoesNotMutateBoundEstimationStatus()
+        {
+            // Regression test: the estimation object passed in is the same instance bound to the
+            // Estimations grid. ChangeStatusAsync must send a copy with the new status to the
+            // service, never mutate this shared instance directly - otherwise a failed update
+            // would leave the UI showing a status the server never actually accepted.
+            await _vm.InitializationTask;
+            var estimation = new Estimation { Id = 8, EstimationNumber = "EST-8", Status = EstimationStatuses.Draft };
+            _mockEstimationService.Setup(s => s.UpdateEstimationAsync(It.IsAny<Estimation>()))
+                .ThrowsAsync(new InvalidOperationException("Server rejected the update."));
+
+            await _vm.MarkAsSentCommand.ExecuteAsync(estimation);
+
+            Assert.Equal(EstimationStatuses.Draft, estimation.Status);
+            _mockNotif.Verify(n => n.ShowError(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
         public async Task ConvertToOrderCommand_ServiceThrows_ShowsError()
         {
             await _vm.InitializationTask;

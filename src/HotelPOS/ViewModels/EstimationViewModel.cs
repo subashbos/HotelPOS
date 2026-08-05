@@ -262,12 +262,34 @@ namespace HotelPOS.ViewModels
             IsBusy = true;
             try
             {
-                estimation.Status = newStatus;
+                // Send a copy with the new status rather than mutating the shared instance
+                // still bound to the Estimations grid - if UpdateEstimationAsync throws, the
+                // bound object (and therefore the UI) must keep showing the last-confirmed
+                // status, not one the server never actually accepted.
+                var request = new Estimation
+                {
+                    Id = estimation.Id,
+                    EstimationNumber = estimation.EstimationNumber,
+                    EstimationDate = estimation.EstimationDate,
+                    ValidUntil = estimation.ValidUntil,
+                    CustomerId = estimation.CustomerId,
+                    CustomerName = estimation.CustomerName,
+                    CustomerPhone = estimation.CustomerPhone,
+                    Status = newStatus,
+                    Notes = estimation.Notes,
+                    Subtotal = estimation.Subtotal,
+                    TotalTax = estimation.TotalTax,
+                    TotalDiscount = estimation.TotalDiscount,
+                    GrandTotal = estimation.GrandTotal,
+                    ConvertedOrderId = estimation.ConvertedOrderId,
+                    EstimationItems = estimation.EstimationItems
+                };
+
                 using (var scope = App.CreateDbScope())
                 {
                     var estimationService = scope.ServiceProvider.GetRequiredService<IEstimationService>();
-                    await estimationService.UpdateEstimationAsync(estimation);
-                    await RefreshEstimationsAsync(estimationService);
+                    await estimationService.UpdateEstimationAsync(request);
+                    await RefreshEstimationsAsync(estimationService); // repopulates Estimations with confirmed server state
                 }
                 _notificationService.ShowSuccess($"Estimation '{estimation.EstimationNumber}' marked as {newStatus}.");
             }
