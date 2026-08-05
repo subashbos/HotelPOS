@@ -95,6 +95,22 @@ namespace HotelPOS.Tests
             Assert.Null(ex);
         }
 
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task SaveOrderAsync_ZeroOrNegativeQuantity_ThrowsArgumentException(int quantity)
+        {
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Tea", Quantity = quantity, Price = 100, TaxPercentage = 0, Total = 100 }
+            };
+
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => _service.SaveOrderAsync(new SaveOrderRequest(items, 1)));
+
+            _repo.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Never);
+        }
+
         // ── SaveOrderAsync — discount > subtotal is now a hard error ────────
 
         [Fact]
