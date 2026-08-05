@@ -18,6 +18,8 @@ For in-depth explanations of the system's design and features, refer to the dedi
    *Development process breakdown and man-hour estimates by module and team size.*
 5. **[Remaining Work Estimation](docs/REMAINING_WORK_ESTIMATION.md)**  
    *Man-hour estimate for the open items already tracked in the QA and knowledge-transfer docs.*
+6. **[New Modules Verification Checklist](docs/NEW_MODULES_VERIFICATION_CHECKLIST.md)**  
+   *What to check first when building the Estimation and Reservation modules for the first time.*
 
 ---
 
