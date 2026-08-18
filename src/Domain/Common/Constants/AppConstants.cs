@@ -84,14 +84,54 @@ namespace HotelPOS.Domain.Common.Constants
         public const string OrderManagement = "OrderManagement";
         /// <summary>Deleting a customer record — a more sensitive action than <see cref="Customers"/>'s create/update/view access, which Cashiers also hold.</summary>
         public const string CustomerManagement = "CustomerManagement";
+        /// <summary>Customer quotations/cost estimates and converting them into real orders.</summary>
+        public const string Estimation = "Estimation";
+        /// <summary>Future-dated table booking/scheduling, distinct from live Billing table status.</summary>
+        public const string Reservation = "Reservation";
 
         public static readonly string[] All =
         {
             Dashboard, Billing, Items, Categories, Tables,
             Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport,
             HrEmployees, HrAttendance, HrLeave, HrPayroll, HrPayrollRun, Expenses, Customers, Units,
-            Purchase, Tds, OrderManagement, CustomerManagement
+            Purchase, Tds, OrderManagement, CustomerManagement, Estimation, Reservation
         };
+    }
+
+    public static class EstimationStatuses
+    {
+        public const string Draft = "Draft";
+        public const string Sent = "Sent";
+        public const string Accepted = "Accepted";
+        public const string Rejected = "Rejected";
+        public const string Converted = "Converted";
+        public const string Expired = "Expired";
+
+        public static readonly string[] All = { Draft, Sent, Accepted, Rejected, Converted, Expired };
+    }
+
+    public static class ReservationStatuses
+    {
+        public const string Reserved = "Reserved";
+        public const string CheckedIn = "CheckedIn";
+        public const string Completed = "Completed";
+        public const string Cancelled = "Cancelled";
+        public const string NoShow = "NoShow";
+
+        public static readonly string[] All = { Reserved, CheckedIn, Completed, Cancelled, NoShow };
+
+        /// <summary>Valid forward transitions per status, enforced by
+        /// <c>ChangeReservationStatusCommandHandler</c> so a client can't skip the workflow
+        /// (e.g. Reserved -&gt; Completed directly).</summary>
+        public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string[]> NextStatuses =
+            new(new System.Collections.Generic.Dictionary<string, string[]>
+            {
+                [Reserved] = new[] { CheckedIn, Cancelled, NoShow },
+                [CheckedIn] = new[] { Completed, Cancelled },
+                [Completed] = System.Array.Empty<string>(),
+                [Cancelled] = System.Array.Empty<string>(),
+                [NoShow] = System.Array.Empty<string>()
+            });
     }
 
     public static class ExpenseCategories

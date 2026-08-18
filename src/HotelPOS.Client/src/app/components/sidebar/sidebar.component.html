@@ -252,6 +252,54 @@
             Purchase Entry
           </a>
         </li>
+        <li class="items-center" *ngIf="has('Estimation')">
+          <a
+            [routerLink]="['/admin/estimations']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminEstimations="routerLinkActive"
+            [ngClass]="
+              adminEstimations.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <svg
+              class="w-4 h-4 mr-2 inline-block fill-current align-middle"
+              [ngClass]="
+                adminEstimations.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+              viewBox="0 0 24 24"
+            >
+              <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14H8v-2h8v2zm0-4H8v-2h8v2zm-1-5V3.5L18.5 9H15c-.55 0-1-.45-1-1z"/>
+            </svg>
+            Estimations
+          </a>
+        </li>
+        <li class="items-center" *ngIf="has('Reservation')">
+          <a
+            [routerLink]="['/admin/reservations']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminReservations="routerLinkActive"
+            [ngClass]="
+              adminReservations.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <svg
+              class="w-4 h-4 mr-2 inline-block fill-current align-middle"
+              [ngClass]="
+                adminReservations.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+              viewBox="0 0 24 24"
+            >
+              <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+            </svg>
+            Reservations
+          </a>
+        </li>
         <li class="items-center" *ngIf="has('Customers')">
           <a
             [routerLink]="['/admin/customers']"
