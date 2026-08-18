@@ -19,6 +19,10 @@ namespace HotelPOS.Infrastructure.Persistence
             await _context.SaveChangesAsync();
         }
 
+        // Left tracked: callers (AuthController, RememberMeService) mutate the returned token in
+        // place and persist via UpdateAsync's blind _context.RefreshTokens.Update(), which throws
+        // if this fetch is untracked but the same row is already tracked elsewhere in the
+        // DbContext (e.g. from a prior AddAsync in the same scope).
         public async Task<RefreshToken?> GetByHashAsync(string tokenHash)
         {
             return await _context.RefreshTokens.FirstOrDefaultAsync(t => t.TokenHash == tokenHash);

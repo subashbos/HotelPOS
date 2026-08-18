@@ -24,8 +24,8 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
-            var query = _context.Orders.AsQueryable();
-            var expQuery = _context.Expenses.AsQueryable();
+            var query = _context.Orders.AsNoTracking().AsQueryable();
+            var expQuery = _context.Expenses.AsNoTracking().AsQueryable();
 
             if (from.HasValue)
             {
@@ -47,7 +47,7 @@ namespace HotelPOS.Infrastructure.Persistence
             decimal totalCogs = 0;
 
             // Load all items to get cost prices
-            var itemsMap = await _context.Items.ToDictionaryAsync(i => i.Id, i => i);
+            var itemsMap = await _context.Items.AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
 
             foreach (var order in orders)
             {
@@ -82,7 +82,7 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
-            var query = _context.Orders.AsQueryable();
+            var query = _context.Orders.AsNoTracking().AsQueryable();
             if (from.HasValue)
             {
                 var utcFrom = from.Value.ToUniversalTime();
@@ -95,7 +95,7 @@ namespace HotelPOS.Infrastructure.Persistence
             }
 
             var orders = await query.Include(o => o.Items).ToListAsync();
-            var itemsMap = await _context.Items.Include(i => i.Category).ToDictionaryAsync(i => i.Id, i => i);
+            var itemsMap = await _context.Items.AsNoTracking().Include(i => i.Category).ToDictionaryAsync(i => i.Id, i => i);
 
             var grouped = orders.SelectMany(o => o.Items)
                 .GroupBy(oi => oi.ItemId)
@@ -156,7 +156,7 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
-            var query = _context.WastageEntries.Include(w => w.Item).AsQueryable();
+            var query = _context.WastageEntries.AsNoTracking().Include(w => w.Item).AsQueryable();
 
             if (from.HasValue)
             {
@@ -239,11 +239,12 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
-            var items = await _context.Items.Where(i => i.TrackInventory).ToListAsync();
+            var items = await _context.Items.AsNoTracking().Where(i => i.TrackInventory).ToListAsync();
 
             // Load orders from last 30 days to calculate rate
             var last30Days = DateTime.UtcNow.AddDays(-ReportingLimits.TrailingSalesDays);
             var orders = await _context.Orders
+                .AsNoTracking()
                 .Include(o => o.Items)
                 .Where(o => o.CreatedAt >= last30Days)
                 .ToListAsync();
@@ -318,15 +319,16 @@ namespace HotelPOS.Infrastructure.Persistence
             var startDateLocal = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Local).AddMonths(-(ReportingLimits.TrailingHistoryMonths - 1));
             var startDateUtc = startDateLocal.ToUniversalTime();
 
-            var orders = await _context.Orders.Include(o => o.Items)
+            var orders = await _context.Orders.AsNoTracking().Include(o => o.Items)
                 .Where(o => o.CreatedAt >= startDateUtc)
                 .ToListAsync();
 
             var expenses = await _context.Expenses
+                .AsNoTracking()
                 .Where(e => e.Date >= startDateUtc)
                 .ToListAsync();
 
-            var itemsMap = await _context.Items.ToDictionaryAsync(i => i.Id, i => i);
+            var itemsMap = await _context.Items.AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
 
             var result = new List<MonthlyTrendDto>();
 
@@ -372,13 +374,14 @@ namespace HotelPOS.Infrastructure.Persistence
             CashSession? session = null;
             if (sessionId.HasValue)
             {
-                session = await _context.CashSessions.FirstOrDefaultAsync(s => s.Id == sessionId.Value);
+                session = await _context.CashSessions.AsNoTracking().FirstOrDefaultAsync(s => s.Id == sessionId.Value);
             }
             else if (date.HasValue)
             {
                 var utcStart = date.Value.Date.ToUniversalTime();
                 var utcEnd = date.Value.Date.AddDays(1).ToUniversalTime();
                 session = await _context.CashSessions
+                    .AsNoTracking()
                     .Where(s => s.OpenedAt >= utcStart && s.OpenedAt < utcEnd)
                     .OrderByDescending(s => s.OpenedAt)
                     .FirstOrDefaultAsync();
@@ -387,6 +390,7 @@ namespace HotelPOS.Infrastructure.Persistence
             if (session == null)
             {
                 session = await _context.CashSessions
+                    .AsNoTracking()
                     .OrderByDescending(s => s.OpenedAt)
                     .FirstOrDefaultAsync();
             }
@@ -404,6 +408,7 @@ namespace HotelPOS.Infrastructure.Persistence
             var windowEnd = session.ClosedAt ?? DateTime.UtcNow;
 
             var sessionOrders = await _context.Orders
+                .AsNoTracking()
                 .Where(o => o.CreatedAt >= windowStart && o.CreatedAt <= windowEnd && !o.IsDeleted && o.Status != OrderStatuses.Void)
                 .ToListAsync();
 
@@ -441,7 +446,7 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
-            var query = _context.Orders.AsQueryable();
+            var query = _context.Orders.AsNoTracking().AsQueryable();
 
             if (from.HasValue)
             {
@@ -479,8 +484,8 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
-            var employees = await _context.Employees.Include(e => e.Designation).ToListAsync();
-            var ordersQuery = _context.Orders.Where(o => !o.IsDeleted && o.Status != OrderStatuses.Void).AsQueryable();
+            var employees = await _context.Employees.AsNoTracking().Include(e => e.Designation).ToListAsync();
+            var ordersQuery = _context.Orders.AsNoTracking().Where(o => !o.IsDeleted && o.Status != OrderStatuses.Void).AsQueryable();
 
             if (from.HasValue)
             {
@@ -563,8 +568,8 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
-            var items = await _context.Items.Include(i => i.Category).ToListAsync();
-            var orders = await _context.Orders.Include(o => o.Items).Where(o => !o.IsDeleted && o.Status != OrderStatuses.Void).ToListAsync();
+            var items = await _context.Items.AsNoTracking().Include(i => i.Category).ToListAsync();
+            var orders = await _context.Orders.AsNoTracking().Include(o => o.Items).Where(o => !o.IsDeleted && o.Status != OrderStatuses.Void).ToListAsync();
 
             var salesByItem = orders.SelectMany(o => o.Items)
                 .GroupBy(oi => oi.ItemId)
@@ -648,15 +653,17 @@ namespace HotelPOS.Infrastructure.Persistence
             var utcTo = periodTo.ToUniversalTime();
 
             var orders = await _context.Orders
+                .AsNoTracking()
                 .Include(o => o.Items)
                 .Where(o => o.CreatedAt >= utcFrom && o.CreatedAt < utcTo && !o.IsDeleted && o.Status != OrderStatuses.Void)
                 .ToListAsync();
 
             var expenses = await _context.Expenses
+                .AsNoTracking()
                 .Where(e => e.Date >= utcFrom && e.Date < utcTo)
                 .ToListAsync();
 
-            var itemsMap = await _context.Items.ToDictionaryAsync(i => i.Id, i => i);
+            var itemsMap = await _context.Items.AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
 
             decimal totalSalesRevenue = orders.Sum(o => o.TotalAmount);
             decimal totalCogs = 0;

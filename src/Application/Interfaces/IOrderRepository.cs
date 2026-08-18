@@ -14,6 +14,12 @@ namespace HotelPOS.Application.Interfaces
         Task<(List<Order> Items, int TotalCount)> GetPagedWithItemsAsync(int pageNumber, int pageSize,
             OrderQueryFilter? filter = null, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Returns per-item sales totals for the date range, aggregated in SQL rather than
+        /// loading every matching order+item row into memory - used by the Item Report.
+        /// </summary>
+        Task<List<ItemSalesAggregate>> GetItemSalesAggregateAsync(DateTime? from, DateTime? to);
+
         Task UpdateAsync(Order order);
         Task<Order?> GetByIdWithItemsAsync(int id);
         Task DeleteAsync(int id);
@@ -35,4 +41,7 @@ namespace HotelPOS.Application.Interfaces
         int? CategoryId = null,
         int? CustomerId = null
     );
+
+    /// <summary>One row of <see cref="IOrderRepository.GetItemSalesAggregateAsync"/>'s SQL-side aggregation.</summary>
+    public record ItemSalesAggregate(string ItemName, int TotalQtySold, decimal TotalRevenue, decimal AverageUnitPrice);
 }

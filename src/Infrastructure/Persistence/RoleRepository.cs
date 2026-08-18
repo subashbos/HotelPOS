@@ -18,9 +18,13 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Role>> GetAllRolesAsync()
         {
-            return await _context.Roles.Include(r => r.Permissions).ToListAsync();
+            return await _context.Roles.AsNoTracking().Include(r => r.Permissions).ToListAsync();
         }
 
+        // Left tracked: callers may mutate the returned role in place and persist via
+        // UpdateRoleAsync's blind _context.Roles.Update(), which throws if this fetch is untracked
+        // but the same row is already tracked elsewhere in the DbContext (e.g. from a prior
+        // AddRoleAsync in the same scope).
         public async Task<Role?> GetRoleByIdAsync(int id)
         {
             return await _context.Roles.Include(r => r.Permissions)
@@ -58,6 +62,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<RolePermission>> GetPermissionsByRoleIdAsync(int roleId)
         {
             return await _context.RolePermissions
+                .AsNoTracking()
                 .Where(p => p.RoleId == roleId)
                 .ToListAsync();
         }

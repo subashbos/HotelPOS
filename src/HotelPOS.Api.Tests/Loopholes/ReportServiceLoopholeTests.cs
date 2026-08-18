@@ -144,10 +144,14 @@ namespace HotelPOS.Tests
 
         // ── GetItemReportAsync ───────────────────────────────────────────────
 
+        private void SetupItemSalesAggregate(List<ItemSalesAggregate> aggregates) =>
+            _orderRepo.Setup(r => r.GetItemSalesAggregateAsync(It.IsAny<DateTime?>(), It.IsAny<DateTime?>()))
+            .ReturnsAsync(aggregates);
+
         [Fact]
         public async Task GetItemReportAsync_NoOrders_ReturnsEmptyList()
         {
-            SetupEmptyOrders();
+            SetupItemSalesAggregate(new List<ItemSalesAggregate>());
 
             var result = await _service.GetItemReportAsync();
 
@@ -158,26 +162,13 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task GetItemReportAsync_AggregatesQuantityAndRevenue()
         {
-            var orders = new List<Order>
+            // Aggregation itself now happens in the repository (GetItemSalesAggregateAsync, SQL
+            // GROUP BY) - this test just verifies ReportService maps the aggregate rows through
+            // correctly, mirroring what SQL would produce for two orders selling "Burger".
+            SetupItemSalesAggregate(new List<ItemSalesAggregate>
             {
-                new Order
-                {
-                    Id = 1, TotalAmount = 200, CreatedAt = DateTime.UtcNow,
-                    Items = new List<OrderItem>
-                    {
-                        new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 2, Price = 100, Total = 200 }
-                    }
-                },
-                new Order
-                {
-                    Id = 2, TotalAmount = 100, CreatedAt = DateTime.UtcNow,
-                    Items = new List<OrderItem>
-                    {
-                        new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 1, Price = 100, Total = 100 }
-                    }
-                }
-            };
-            SetupOrders(orders);
+                new("Burger", 3, 300m, 100m)
+            });
 
             var result = await _service.GetItemReportAsync();
 
@@ -190,19 +181,11 @@ namespace HotelPOS.Tests
         [Fact]
         public async Task GetItemReportAsync_SNoIsSequential()
         {
-            var orders = new List<Order>
+            SetupItemSalesAggregate(new List<ItemSalesAggregate>
             {
-                new Order
-                {
-                    Id = 1, TotalAmount = 300, CreatedAt = DateTime.UtcNow,
-                    Items = new List<OrderItem>
-                    {
-                        new OrderItem { ItemId = 1, ItemName = "Burger", Quantity = 3, Price = 100, Total = 300 },
-                        new OrderItem { ItemId = 2, ItemName = "Tea",    Quantity = 1, Price = 30,  Total = 30  }
-                    }
-                }
-            };
-            SetupOrders(orders);
+                new("Burger", 3, 300m, 100m),
+                new("Tea", 1, 30m, 30m)
+            });
 
             var result = await _service.GetItemReportAsync();
 

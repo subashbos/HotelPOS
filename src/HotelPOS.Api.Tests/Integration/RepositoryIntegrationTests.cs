@@ -440,6 +440,69 @@ namespace HotelPOS.Tests
             Assert.Null(deleted);
         }
 
+        // Proves GetItemSalesAggregateAsync's GroupBy/Sum/Average projection actually translates
+        // to valid SQL under a real relational provider - the ReportService unit tests mock
+        // IOrderRepository entirely, so they'd never catch a translation failure here.
+        [Fact]
+        public async Task OrderRepository_GetItemSalesAggregateAsync_AggregatesFiltersAndExcludesDeleted()
+        {
+            var context = Context;
+            var repo = new OrderRepository(context);
+
+            var inRange = DateTime.UtcNow.AddDays(-1);
+            var outOfRange = DateTime.UtcNow.AddDays(-30);
+
+            context.Orders.Add(new Order
+            {
+                Id = 1,
+                CreatedAt = inRange,
+                IsDeleted = false,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemName = "Burger", Quantity = 2, Price = 100, Total = 200 }
+                }
+            });
+            context.Orders.Add(new Order
+            {
+                Id = 2,
+                CreatedAt = inRange,
+                IsDeleted = false,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemName = "Burger", Quantity = 1, Price = 100, Total = 100 }
+                }
+            });
+            context.Orders.Add(new Order
+            {
+                Id = 3,
+                CreatedAt = outOfRange, // outside the queried date range
+                IsDeleted = false,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemName = "Burger", Quantity = 5, Price = 100, Total = 500 }
+                }
+            });
+            context.Orders.Add(new Order
+            {
+                Id = 4,
+                CreatedAt = inRange,
+                IsDeleted = true, // soft-deleted
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemName = "Burger", Quantity = 9, Price = 100, Total = 900 }
+                }
+            });
+            await context.SaveChangesAsync();
+
+            var result = await repo.GetItemSalesAggregateAsync(DateTime.UtcNow.AddDays(-2), DateTime.UtcNow);
+
+            var burger = Assert.Single(result);
+            Assert.Equal("Burger", burger.ItemName);
+            Assert.Equal(3, burger.TotalQtySold);
+            Assert.Equal(300m, burger.TotalRevenue);
+            Assert.Equal(100m, burger.AverageUnitPrice);
+        }
+
         // 6. PurchaseRepository Tests
         [Fact]
         public async Task PurchaseRepository_Integration()

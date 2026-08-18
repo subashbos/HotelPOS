@@ -24,13 +24,17 @@ namespace HotelPOS.Infrastructure.Persistence
                 .ToListAsync();
         }
 
+        // TdsService only reads this rule set (SaveRuleSetAsync/DeleteRuleSetAsync do their own
+        // separate tracked fetch to mutate), so it's safe to hand back untracked instances.
         public async Task<TdsRuleSet?> GetRuleSetAsync(int financialYearStart)
         {
             var config = await _context.TdsConfigs
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.FinancialYearStart == financialYearStart);
             if (config == null) return null;
 
             var slabs = await _context.TdsSlabs
+                .AsNoTracking()
                 .Where(s => s.FinancialYearStart == financialYearStart)
                 .OrderBy(s => s.DisplayOrder)
                 .ToListAsync();

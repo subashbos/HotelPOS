@@ -66,8 +66,22 @@ namespace HotelPOS.Infrastructure.Persistence
                 .HasIndex(o => new { o.FiscalYear, o.InvoiceNumber })
                 .IsUnique();
 
+            // Filtered on directly in BI report aggregations (shift closure, staff performance,
+            // stock valuation, P&L) and by ApplyBasicFilters for table-scoped order lookups.
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.Status);
+
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.TableNumber);
+
             modelBuilder.Entity<AuditLog>()
                 .HasIndex(a => a.Timestamp);
+
+            modelBuilder.Entity<WastageEntry>()
+                .HasIndex(w => w.WastedAt);
+
+            modelBuilder.Entity<Purchase>()
+                .HasIndex(p => p.PurchaseDate);
 
             // Prevent deleting a unit of measurement that's still referenced by menu items
             // (the application layer also blocks this, but this is a DB-level backstop).
@@ -141,6 +155,10 @@ namespace HotelPOS.Infrastructure.Persistence
                 .HasIndex(s => s.Status)
                 .IsUnique()
                 .HasFilter("[Status] = 'Open'");
+
+            // Date-range filtered in GetShiftClosureReportAsync.
+            modelBuilder.Entity<CashSession>()
+                .HasIndex(s => s.OpenedAt);
 
             // ── Human Resources Relationships ─────────────────────────────────
             modelBuilder.Entity<Designation>()

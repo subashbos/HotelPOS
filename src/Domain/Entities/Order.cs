@@ -40,6 +40,10 @@ namespace HotelPOS.Domain.Entities
         public decimal TotalAmount { get; set; }
         public string PaymentMode { get; set; } = PaymentModes.Cash;
 
+        // Bounded (rather than the default nvarchar(max)) so IX_Orders_Status is actually
+        // indexable in SQL Server; 50 chars gives generous headroom over the longest
+        // OrderStatuses constant ("PartiallyRefunded", 18 chars).
+        [MaxLength(50)]
         public string Status { get; set; } = OrderStatuses.Paid;
         public decimal AmountPaid { get; set; }
         public decimal CashPaid { get; set; }

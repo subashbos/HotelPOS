@@ -106,19 +106,19 @@ namespace HotelPOS.Application.UseCases
             var utcFrom = from?.ToUniversalTime();
             var utcTo = to?.ToUniversalTime();
 
-            var (orders, _) = await _orderRepo.GetPagedWithItemsAsync(1, -1, new OrderQueryFilter(utcFrom, utcTo));
+            // Aggregated in SQL (GROUP BY ItemName) rather than loading every matching
+            // order+item row into memory just to group it in C#.
+            var aggregates = await _orderRepo.GetItemSalesAggregateAsync(utcFrom, utcTo);
 
-            var result = orders
-                .SelectMany(o => o.Items)
-                .GroupBy(i => i.ItemName)
-                .Select(g => new ItemReportRowDto
+            var result = aggregates
+                .OrderByDescending(a => a.TotalRevenue)
+                .Select(a => new ItemReportRowDto
                 {
-                    ItemName = g.Key,
-                    TotalQtySold = g.Sum(i => i.Quantity),
-                    TotalRevenue = g.Sum(i => i.Total),
-                    UnitPrice = g.Any() ? g.Average(i => i.Price) : 0
+                    ItemName = a.ItemName,
+                    TotalQtySold = a.TotalQtySold,
+                    TotalRevenue = a.TotalRevenue,
+                    UnitPrice = a.AverageUnitPrice
                 })
-                .OrderByDescending(x => x.TotalRevenue)
                 .ToList();
 
             for (int i = 0; i < result.Count; i++) result[i].SNo = i + 1;

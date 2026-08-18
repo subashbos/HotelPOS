@@ -4,6 +4,7 @@ using HotelPOS.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelPOS.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731163807_AddReportFilterIndexes")]
+    partial class AddReportFilterIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -481,123 +484,6 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("HotelPOS.Domain.Entities.Estimation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ConvertedOrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CustomerName")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("CustomerPhone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("EstimationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("EstimationNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<decimal>("GrandTotal")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalDiscount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("TotalTax")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("ValidUntil")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConvertedOrderId");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("EstimationNumber")
-                        .IsUnique();
-
-                    b.ToTable("Estimations");
-                });
-
-            modelBuilder.Entity("HotelPOS.Domain.Entities.EstimationItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Discount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("EstimationId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ItemId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ItemName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TaxPercentage")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Total")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EstimationId");
-
-                    b.HasIndex("ItemId");
-
-                    b.ToTable("EstimationItems");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.Expense", b =>
@@ -1446,61 +1332,6 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RememberMeTokens");
-                });
-
-            modelBuilder.Entity("HotelPOS.Domain.Entities.Reservation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("CustomerId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CustomerName")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("CustomerPhone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("time");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("PartySize")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ReservationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("time");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("TableId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("TableId", "ReservationDate");
-
-                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.Role", b =>
@@ -2727,42 +2558,6 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("HotelPOS.Domain.Entities.Estimation", b =>
-                {
-                    b.HasOne("HotelPOS.Domain.Entities.Order", "ConvertedOrder")
-                        .WithMany()
-                        .HasForeignKey("ConvertedOrderId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("HotelPOS.Domain.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ConvertedOrder");
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("HotelPOS.Domain.Entities.EstimationItem", b =>
-                {
-                    b.HasOne("HotelPOS.Domain.Entities.Estimation", "Estimation")
-                        .WithMany("EstimationItems")
-                        .HasForeignKey("EstimationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HotelPOS.Domain.Entities.Item", "Item")
-                        .WithMany()
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Estimation");
-
-                    b.Navigation("Item");
-                });
-
             modelBuilder.Entity("HotelPOS.Domain.Entities.Expense", b =>
                 {
                     b.HasOne("HotelPOS.Domain.Entities.User", "User")
@@ -2937,24 +2732,6 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("HotelPOS.Domain.Entities.Reservation", b =>
-                {
-                    b.HasOne("HotelPOS.Domain.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("HotelPOS.Domain.Entities.Table", "Table")
-                        .WithMany()
-                        .HasForeignKey("TableId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Table");
-                });
-
             modelBuilder.Entity("HotelPOS.Domain.Entities.RolePermission", b =>
                 {
                     b.HasOne("HotelPOS.Domain.Entities.Role", null)
@@ -2993,11 +2770,6 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Item");
-                });
-
-            modelBuilder.Entity("HotelPOS.Domain.Entities.Estimation", b =>
-                {
-                    b.Navigation("EstimationItems");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.Order", b =>

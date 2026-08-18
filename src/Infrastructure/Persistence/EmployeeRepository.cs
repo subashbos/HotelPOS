@@ -16,6 +16,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<Employee>> GetAllAsync()
         {
             return await _context.Employees
+                .AsNoTracking()
                 .Include(e => e.Department)
                 .Include(e => e.Designation)
                 .Include(e => e.ReportingManager)
@@ -74,7 +75,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Department>> GetDepartmentsAsync()
         {
-            return await _context.Departments.OrderBy(d => d.Name).ToListAsync();
+            return await _context.Departments.AsNoTracking().OrderBy(d => d.Name).ToListAsync();
         }
 
         public async Task SaveDepartmentAsync(Department department)
@@ -98,7 +99,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Designation>> GetDesignationsAsync()
         {
-            return await _context.Designations.Include(d => d.Department).OrderBy(d => d.Title).ToListAsync();
+            return await _context.Designations.AsNoTracking().Include(d => d.Department).OrderBy(d => d.Title).ToListAsync();
         }
 
         public async Task SaveDesignationAsync(Designation designation)
