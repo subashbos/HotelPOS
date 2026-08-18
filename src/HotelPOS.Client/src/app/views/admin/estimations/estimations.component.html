@@ -47,8 +47,10 @@
                         'bg-red-200 text-red-700': estimation.status === 'Rejected' || estimation.status === 'Expired'
                       }">{{ estimation.status }}</span>
                     <select *ngIf="nextStatuses(estimation).length > 0" #statusSelect
+                      [id]="'estimationStatus-' + estimation.id"
                       [disabled]="statusUpdatingId === estimation.id"
                       (change)="changeStatus(estimation, statusSelect.value); statusSelect.value = ''"
+                      aria-label="Change estimation status"
                       class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-xs shadow focus:outline-none focus:ring">
                       <option value="">Mark as…</option>
                       <option *ngFor="let s of nextStatuses(estimation)" [value]="s">{{ s }}</option>

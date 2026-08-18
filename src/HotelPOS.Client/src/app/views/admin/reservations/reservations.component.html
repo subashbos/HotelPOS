@@ -9,7 +9,8 @@
             <i class="fas fa-calendar-alt text-blueGray-400 mr-2"></i> Table Reservations
           </h3>
           <div class="flex items-center gap-3">
-            <input type="date" [(ngModel)]="selectedDate" (ngModelChange)="onDateChanged()" name="selectedDate"
+            <input id="reservationDate" type="date" [(ngModel)]="selectedDate" (ngModelChange)="onDateChanged()" name="selectedDate"
+              aria-label="Reservation date"
               class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
             <button (click)="openForm()"
               class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow">
@@ -56,8 +57,10 @@
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">
                   <div class="flex items-center gap-2">
                     <select *ngIf="nextStatuses(reservation).length > 0" #statusSelect
+                      [id]="'reservationStatus-' + reservation.id"
                       [disabled]="statusUpdatingId === reservation.id"
                       (change)="changeStatus(reservation, statusSelect.value); statusSelect.value = ''"
+                      aria-label="Change reservation status"
                       class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-xs shadow focus:outline-none focus:ring">
                       <option value="">Mark as…</option>
                       <option *ngFor="let s of nextStatuses(reservation)" [value]="s">{{ s }}</option>

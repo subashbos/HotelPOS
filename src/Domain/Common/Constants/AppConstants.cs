@@ -123,14 +123,15 @@ namespace HotelPOS.Domain.Common.Constants
         /// <summary>Valid forward transitions per status, enforced by
         /// <c>ChangeReservationStatusCommandHandler</c> so a client can't skip the workflow
         /// (e.g. Reserved -&gt; Completed directly).</summary>
-        public static readonly System.Collections.Generic.Dictionary<string, string[]> NextStatuses = new()
-        {
-            [Reserved] = new[] { CheckedIn, Cancelled, NoShow },
-            [CheckedIn] = new[] { Completed, Cancelled },
-            [Completed] = System.Array.Empty<string>(),
-            [Cancelled] = System.Array.Empty<string>(),
-            [NoShow] = System.Array.Empty<string>()
-        };
+        public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string[]> NextStatuses =
+            new(new System.Collections.Generic.Dictionary<string, string[]>
+            {
+                [Reserved] = new[] { CheckedIn, Cancelled, NoShow },
+                [CheckedIn] = new[] { Completed, Cancelled },
+                [Completed] = System.Array.Empty<string>(),
+                [Cancelled] = System.Array.Empty<string>(),
+                [NoShow] = System.Array.Empty<string>()
+            });
     }
 
     public static class ExpenseCategories
