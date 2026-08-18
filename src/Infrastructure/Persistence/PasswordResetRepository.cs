@@ -19,6 +19,9 @@ namespace HotelPOS.Infrastructure.Persistence
             await _context.SaveChangesAsync();
         }
 
+        // Left tracked: PasswordResetService mutates the returned request in place and persists
+        // via UpdateAsync's blind _context.PasswordResetRequests.Update(), which throws if this
+        // fetch is untracked but the same row is already tracked elsewhere in the DbContext.
         public async Task<PasswordResetRequest?> GetLatestActiveAsync(int userId)
         {
             return await _context.PasswordResetRequests

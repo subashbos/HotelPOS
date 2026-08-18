@@ -27,7 +27,10 @@ builder.Services.AddDbContext<HotelDbContext>(options =>
 
 // ── Dependency Injection ──────────────────────────────────────────────────
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<IUserContext, ApiUserContext>();
+// Registered as itself (not just IUserContext) so PermissionsPreloadMiddleware can inject the
+// concrete type and call EnsurePermissionsLoadedAsync() - both resolve to the same scoped instance.
+builder.Services.AddScoped<ApiUserContext>();
+builder.Services.AddScoped<IUserContext>(sp => sp.GetRequiredService<ApiUserContext>());
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddInfrastructure();
@@ -177,6 +180,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAuthentication();   // MUST come before UseAuthorization
+app.UseMiddleware<PermissionsPreloadMiddleware>(); // needs context.User from UseAuthentication above
 app.UseAuthorization();
 app.MapControllers();
 

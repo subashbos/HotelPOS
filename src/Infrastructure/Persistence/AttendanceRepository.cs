@@ -16,6 +16,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<Attendance>> GetByEmployeeAsync(int employeeId, DateTime fromDate, DateTime toDate)
         {
             return await _context.Attendances
+                .AsNoTracking()
                 .Where(a => a.EmployeeId == employeeId && a.Date >= fromDate.Date && a.Date <= toDate.Date)
                 .OrderBy(a => a.Date)
                 .ToListAsync();
@@ -24,12 +25,17 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<Attendance>> GetByDateRangeAsync(DateTime fromDate, DateTime toDate)
         {
             return await _context.Attendances
+                .AsNoTracking()
                 .Include(a => a.Employee)
                 .Where(a => a.Date >= fromDate.Date && a.Date <= toDate.Date)
                 .OrderBy(a => a.Date)
                 .ToListAsync();
         }
 
+        // Left tracked: callers (AttendanceService.UpsertAttendanceAsync) mutate the returned
+        // instance in place and persist via UpdateAsync's blind _context.Attendances.Update(),
+        // which throws if this fetch is untracked but the same row is already tracked elsewhere
+        // in the DbContext (e.g. from a prior AddAsync in the same scope).
         public async Task<Attendance?> GetByEmployeeAndDateAsync(int employeeId, DateTime date)
         {
             return await _context.Attendances.FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.Date == date.Date);

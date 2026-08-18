@@ -17,12 +17,13 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Supplier>> GetSuppliersAsync()
         {
-            return await _context.Suppliers.ToListAsync();
+            return await _context.Suppliers.AsNoTracking().ToListAsync();
         }
 
         public async Task<List<Purchase>> GetPurchasesAsync()
         {
             return await _context.Purchases
+                .AsNoTracking()
                 .Include(p => p.Supplier)
                 .Include(p => p.PurchaseItems)
                 .ToListAsync();
@@ -34,6 +35,7 @@ namespace HotelPOS.Infrastructure.Persistence
             filter ??= new PurchaseQueryFilter();
 
             var query = _context.Purchases
+                .AsNoTracking()
                 .Include(p => p.Supplier)
                 .Include(p => p.PurchaseItems)
                 .AsQueryable();

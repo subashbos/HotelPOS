@@ -18,7 +18,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Expense>> GetAllAsync(DateTime? from, DateTime? to)
         {
-            var query = _context.Expenses.AsQueryable();
+            var query = _context.Expenses.AsNoTracking().AsQueryable();
 
             if (from.HasValue)
                 query = query.Where(e => e.Date >= from.Value);

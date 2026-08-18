@@ -15,7 +15,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public override async Task<List<UnitOfMeasurement>> GetAllAsync()
         {
-            return await _dbSet.OrderBy(u => u.DisplayOrder).ThenBy(u => u.Name).ToListAsync();
+            return await _dbSet.AsNoTracking().OrderBy(u => u.DisplayOrder).ThenBy(u => u.Name).ToListAsync();
         }
     }
 }

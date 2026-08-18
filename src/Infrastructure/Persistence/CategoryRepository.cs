@@ -15,7 +15,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public override async Task<List<Category>> GetAllAsync()
         {
-            return await _dbSet.OrderBy(c => c.Name).ToListAsync();
+            return await _dbSet.AsNoTracking().OrderBy(c => c.Name).ToListAsync();
         }
     }
 }

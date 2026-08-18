@@ -41,18 +41,34 @@ namespace HotelPOS.Api
         {
             get
             {
+                // PermissionsPreloadMiddleware awaits EnsurePermissionsLoadedAsync() early in the
+                // pipeline for every authenticated request, so this synchronous path is normally
+                // already-cached data. The blocking fallback only exists for callers outside the
+                // HTTP pipeline (e.g. constructing this type directly in a test).
                 if (!_permissionsLoaded)
                 {
-                    var username = CurrentUsername;
-                    if (!string.IsNullOrEmpty(username))
-                    {
-                        var user = Task.Run(async () => await _userRepository.GetUserByUsernameAsync(username)).GetAwaiter().GetResult();
-                        _cachedPermissions = user?.RoleDetails?.Permissions;
-                    }
-                    _permissionsLoaded = true;
+                    EnsurePermissionsLoadedAsync().GetAwaiter().GetResult();
                 }
                 return _cachedPermissions;
             }
+        }
+
+        /// <summary>
+        /// Loads and caches the current user's permissions. Idempotent - safe to call once per
+        /// request from PermissionsPreloadMiddleware regardless of whether anything has already
+        /// read <see cref="Permissions"/>.
+        /// </summary>
+        public async Task EnsurePermissionsLoadedAsync()
+        {
+            if (_permissionsLoaded) return;
+
+            var username = CurrentUsername;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var user = await _userRepository.GetUserByUsernameAsync(username);
+                _cachedPermissions = user?.RoleDetails?.Permissions;
+            }
+            _permissionsLoaded = true;
         }
     }
 }
