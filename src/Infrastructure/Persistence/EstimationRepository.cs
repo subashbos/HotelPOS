@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -75,6 +76,16 @@ namespace HotelPOS.Infrastructure.Persistence
 
             _context.Estimations.Remove(existing);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> TryMarkConvertedAsync(int id, int orderId)
+        {
+            var rows = await _context.Estimations
+                .Where(e => e.Id == id && e.Status == EstimationStatuses.Accepted)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(e => e.Status, EstimationStatuses.Converted)
+                    .SetProperty(e => e.ConvertedOrderId, orderId));
+            return rows > 0;
         }
     }
 }

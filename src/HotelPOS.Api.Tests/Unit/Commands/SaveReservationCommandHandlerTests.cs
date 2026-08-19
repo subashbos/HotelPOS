@@ -123,6 +123,51 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task Handle_NoConflict_LocksTableDateAndCommitsTransaction()
+        {
+            var reservation = new Reservation
+            {
+                TableId = 1,
+                PartySize = 2,
+                ReservationDate = new DateTime(2026, 8, 10),
+                StartTime = TimeSpan.FromHours(19),
+                EndTime = TimeSpan.FromHours(20)
+            };
+
+            await _handler.Handle(new SaveReservationCommand(reservation), CancellationToken.None);
+
+            _reservationRepoMock.Verify(r => r.BeginTransactionAsync(), Times.Once);
+            _reservationRepoMock.Verify(r => r.AcquireTableDateLockAsync(1, new DateTime(2026, 8, 10)), Times.Once);
+            _reservationRepoMock.Verify(r => r.CommitTransactionAsync(), Times.Once);
+            _reservationRepoMock.Verify(r => r.RollbackTransactionAsync(), Times.Never);
+        }
+
+        [Fact]
+        public async Task Handle_OverlappingTimeSlot_RollsBackTransaction()
+        {
+            _reservationRepoMock.Setup(r => r.GetActiveReservationsForTableAsync(1, new DateTime(2026, 8, 10), null))
+                .ReturnsAsync(new List<Reservation>
+                {
+                    new Reservation { TableId = 1, StartTime = TimeSpan.FromHours(19), EndTime = TimeSpan.FromHours(20) }
+                });
+
+            var reservation = new Reservation
+            {
+                TableId = 1,
+                PartySize = 2,
+                ReservationDate = new DateTime(2026, 8, 10),
+                StartTime = TimeSpan.FromHours(19.5),
+                EndTime = TimeSpan.FromHours(21)
+            };
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => _handler.Handle(new SaveReservationCommand(reservation), CancellationToken.None));
+
+            _reservationRepoMock.Verify(r => r.RollbackTransactionAsync(), Times.Once);
+            _reservationRepoMock.Verify(r => r.CommitTransactionAsync(), Times.Never);
+        }
+
+        [Fact]
         public async Task Handle_WithoutPermission_ThrowsAndDoesNotAdd()
         {
             var handler = new SaveReservationCommandHandler(_reservationRepoMock.Object, _tableRepoMock.Object, TestAuthorization.DenyAll().Object);
