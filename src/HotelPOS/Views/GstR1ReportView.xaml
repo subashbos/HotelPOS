@@ -30,15 +30,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Header Banner -->
             <RowDefinition Height="Auto"/> <!-- Filters -->
-            <RowDefinition Height="Auto"/> <!-- Summary strip -->
-            <RowDefinition Height="*"/>    <!-- DataGrid -->
+            <RowDefinition Height="*"/>    <!-- Tabs -->
         </Grid.RowDefinitions>
 
         <!-- ══ HEADER BANNER ══ -->
         <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
             <StackPanel>
                 <TextBlock Text="🧾  GSTR-1 Report" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
-                <TextBlock Text="B2B invoice-wise details of outward supplies to registered customers (GSTIN on file)" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
+                <TextBlock Text="Outward supplies to registered (B2B) and unregistered (B2C) customers" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8" Margin="0,4,0,0"/>
             </StackPanel>
         </Border>
 
@@ -78,53 +77,124 @@
             </Grid>
         </Border>
 
-        <!-- Summary strip -->
-        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,16">
-            <UniformGrid Columns="5">
-                <StackPanel>
-                    <TextBlock x:Name="RecipientsBadge" Text="0" Style="{StaticResource SummaryValue}"/>
-                    <TextBlock Text="No. of Recipients" Style="{StaticResource SummaryLabel}"/>
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock x:Name="InvoicesBadge" Text="0" Style="{StaticResource SummaryValue}"/>
-                    <TextBlock Text="No. of Invoices" Style="{StaticResource SummaryLabel}"/>
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock x:Name="TaxableValueBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource PrimaryBrush}"/>
-                    <TextBlock Text="Total Taxable Value" Style="{StaticResource SummaryLabel}"/>
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock x:Name="TaxAmountBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource TaxAccentBrush}"/>
-                    <TextBlock Text="Total Tax Amount" Style="{StaticResource SummaryLabel}"/>
-                </StackPanel>
-                <StackPanel>
-                    <TextBlock x:Name="TotalValueBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource SuccessBrush}"/>
-                    <TextBlock Text="Total Value" Style="{StaticResource SummaryLabel}"/>
-                </StackPanel>
-            </UniformGrid>
-        </Border>
+        <!-- ══ TABS ══ -->
+        <TabControl Grid.Row="2" Background="Transparent" BorderThickness="0">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="HeaderTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <ContentPresenter Content="{Binding}" Margin="12,6"/>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </Style>
+            </TabControl.Resources>
 
-        <!-- Main Content (Grid) -->
-        <Border Grid.Row="3" Padding="32,24">
-            <DataGrid x:Name="ReportGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True" ScrollViewer.ScrollChanged="ReportGrid_ScrollChanged">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                    <DataGridTextColumn Header="GSTIN" Binding="{Binding Gstin}" Width="130" ElementStyle="{StaticResource LeftCell}"/>
-                    <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="110" ElementStyle="{StaticResource LeftCell}"/>
-                    <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd-MM-yyyy}" Width="100" ElementStyle="{StaticResource LeftCell}"/>
-                    <DataGridTextColumn Header="INVOICE VALUE" Binding="{Binding InvoiceValue, StringFormat=Rs. {0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                    <DataGridTextColumn Header="POS" Binding="{Binding Pos}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                    <DataGridTextColumn Header="REV. CHARGE" Binding="{Binding ReverseCharge}" Width="90" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                    <DataGridTextColumn Header="TYPE" Binding="{Binding InvoiceType}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                    <DataGridTextColumn Header="CUSTOMER" Binding="{Binding CustomerName}" Width="*" MinWidth="130" ElementStyle="{StaticResource LeftCell}"/>
-                    <DataGridTextColumn Header="TAXABLE VALUE" Binding="{Binding TaxableValue, StringFormat=Rs. {0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                    <DataGridTextColumn Header="ITEM TOTAL" Binding="{Binding ItemTotal, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                    <DataGridTextColumn Header="RATE" Binding="{Binding Rate, StringFormat={}{0}%}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                    <DataGridTextColumn Header="IGST" Binding="{Binding Igst, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                    <DataGridTextColumn Header="CGST" Binding="{Binding Cgst, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                    <DataGridTextColumn Header="SGST" Binding="{Binding Sgst, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Border>
+            <!-- ── B2B INVOICE-WISE TAB ── -->
+            <TabItem Header="B2B Invoices">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Summary strip -->
+                        <RowDefinition Height="*"/>    <!-- DataGrid -->
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,16">
+                        <UniformGrid Columns="5">
+                            <StackPanel>
+                                <TextBlock x:Name="RecipientsBadge" Text="0" Style="{StaticResource SummaryValue}"/>
+                                <TextBlock Text="No. of Recipients" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock x:Name="InvoicesBadge" Text="0" Style="{StaticResource SummaryValue}"/>
+                                <TextBlock Text="No. of Invoices" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock x:Name="TaxableValueBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource PrimaryBrush}"/>
+                                <TextBlock Text="Total Taxable Value" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock x:Name="TaxAmountBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource TaxAccentBrush}"/>
+                                <TextBlock Text="Total Tax Amount" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock x:Name="TotalValueBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource SuccessBrush}"/>
+                                <TextBlock Text="Total Value" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                        </UniformGrid>
+                    </Border>
+
+                    <Border Grid.Row="1" Padding="32,24">
+                        <DataGrid x:Name="ReportGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True" ScrollViewer.ScrollChanged="ReportGrid_ScrollChanged">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="GSTIN" Binding="{Binding Gstin}" Width="130" ElementStyle="{StaticResource LeftCell}"/>
+                                <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="110" ElementStyle="{StaticResource LeftCell}"/>
+                                <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd-MM-yyyy}" Width="100" ElementStyle="{StaticResource LeftCell}"/>
+                                <DataGridTextColumn Header="INVOICE VALUE" Binding="{Binding InvoiceValue, StringFormat=Rs. {0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="POS" Binding="{Binding Pos}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="REV. CHARGE" Binding="{Binding ReverseCharge}" Width="90" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TYPE" Binding="{Binding InvoiceType}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="CUSTOMER" Binding="{Binding CustomerName}" Width="*" MinWidth="130" ElementStyle="{StaticResource LeftCell}"/>
+                                <DataGridTextColumn Header="TAXABLE VALUE" Binding="{Binding TaxableValue, StringFormat=Rs. {0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="ITEM TOTAL" Binding="{Binding ItemTotal, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="RATE" Binding="{Binding Rate, StringFormat={}{0}%}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="IGST" Binding="{Binding Igst, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="CGST" Binding="{Binding Cgst, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="SGST" Binding="{Binding Sgst, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ── B2C(SMALL) SUMMARY TAB ── -->
+            <TabItem Header="B2C Summary">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Summary strip -->
+                        <RowDefinition Height="*"/>    <!-- DataGrid -->
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="32,16">
+                        <UniformGrid Columns="4">
+                            <StackPanel>
+                                <TextBlock x:Name="B2cInvoicesBadge" Text="0" Style="{StaticResource SummaryValue}"/>
+                                <TextBlock Text="No. of Invoices" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock x:Name="B2cTaxableValueBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource PrimaryBrush}"/>
+                                <TextBlock Text="Total Taxable Value" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock x:Name="B2cTaxAmountBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource TaxAccentBrush}"/>
+                                <TextBlock Text="Total Tax Amount" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock x:Name="B2cTotalValueBadge" Text="Rs. 0.00" Style="{StaticResource SummaryValue}" Foreground="{DynamicResource SuccessBrush}"/>
+                                <TextBlock Text="Total Value" Style="{StaticResource SummaryLabel}"/>
+                            </StackPanel>
+                        </UniformGrid>
+                    </Border>
+
+                    <Border Grid.Row="1" Padding="32,24">
+                        <DataGrid x:Name="B2cSummaryGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="RATE" Binding="{Binding Rate, StringFormat={}{0}%}" Width="80" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="NO. OF INVOICES" Binding="{Binding InvoiceCount}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TAXABLE VALUE" Binding="{Binding TaxableValue, StringFormat=Rs. {0:N2}}" Width="150" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="CGST" Binding="{Binding Cgst, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="SGST" Binding="{Binding Sgst, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="IGST" Binding="{Binding Igst, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="TOTAL TAX" Binding="{Binding TotalTax, StringFormat=Rs. {0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="TOTAL VALUE" Binding="{Binding TotalValue, StringFormat=Rs. {0:N2}}" Width="*" MinWidth="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

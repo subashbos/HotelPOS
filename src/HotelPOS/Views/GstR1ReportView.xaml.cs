@@ -15,6 +15,7 @@ namespace HotelPOS.Views
         private readonly INotificationService _notificationService;
         private readonly ObservableCollection<GstR1RowDto> _items = new();
         private List<GstR1RowDto> _allRows = new();
+        private List<GstR1B2cSummaryDto> _b2cSummary = new();
         private int _currentPage = 1;
         private const int PageSize = 20;
         private bool _isLoading;
@@ -48,9 +49,9 @@ namespace HotelPOS.Views
         private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadDataAsync();
 
         /// <summary>
-        /// Loads B2B (customer has a GSTIN on file) invoices in the selected date range and expands
-        /// each into one row per distinct tax rate present on that order, matching the GSTR-1 B2B
-        /// invoice-wise filing format (one line per invoice/rate combination).
+        /// Loads orders in the selected date range and splits them into the B2B invoice-wise grid
+        /// (customer has a GSTIN on file) and the B2C(Small) rate-wise summary (no GSTIN), matching
+        /// the corresponding GSTR-1 filing tables.
         /// </summary>
         public async Task LoadDataAsync()
         {
@@ -69,23 +70,20 @@ namespace HotelPOS.Views
                     allOrders = await orderService.GetAllOrdersWithItemsAsync();
                 }
 
-                // B2B only: the customer must have a GSTIN on file (GSTR-1 tables 4A/4B/4C/6B/6C -
-                // invoice-wise details of supplies to registered persons). Walk-in/retail sales
-                // without a GSTIN belong in the B2C summary, not here.
-                var b2bOrders = allOrders.Where(o =>
-                    !o.IsDeleted && !string.IsNullOrWhiteSpace(o.CustomerGstin));
-
+                var dateFiltered = allOrders.Where(o => !o.IsDeleted);
                 if (from != null)
-                    b2bOrders = b2bOrders.Where(o => o.CreatedAt.ToLocalTime() >= from.Value);
+                    dateFiltered = dateFiltered.Where(o => o.CreatedAt.ToLocalTime() >= from.Value);
                 if (to != null)
-                    b2bOrders = b2bOrders.Where(o => o.CreatedAt.ToLocalTime() < to.Value);
+                    dateFiltered = dateFiltered.Where(o => o.CreatedAt.ToLocalTime() < to.Value);
+                var dateFilteredList = dateFiltered.ToList();
+
+                // B2B: the customer must have a GSTIN on file (GSTR-1 tables 4A/4B/4C/6B/6C -
+                // invoice-wise details of supplies to registered persons).
+                var b2bOrders = dateFilteredList.Where(o => !string.IsNullOrWhiteSpace(o.CustomerGstin));
 
                 // One row per (invoice, tax rate) - an invoice with items at multiple GST rates
                 // produces multiple rows, exactly as the official GSTR-1 B2B format requires.
-                var rows = b2bOrders
-                    .SelectMany(o => o.Items
-                        .GroupBy(i => i.TaxPercentage)
-                        .Select(rateGroup => GstR1RowBuilder.BuildRow(o, rateGroup.Key, rateGroup.ToList())))
+                var rows = GstR1RowBuilder.BuildRows(b2bOrders)
                     .OrderBy(r => r.Date)
                     .ThenBy(r => r.InvoiceNumber)
                     .ToList();
@@ -99,6 +97,13 @@ namespace HotelPOS.Views
                 LoadMore();
 
                 UpdateSummary(rows);
+
+                // B2C(Small): walk-in/retail sales without a customer GSTIN, summarized by tax rate
+                // (GSTR-1 table 7) rather than shown invoice-wise.
+                var b2cOrders = dateFilteredList.Where(o => string.IsNullOrWhiteSpace(o.CustomerGstin));
+                _b2cSummary = GstR1RowBuilder.BuildB2cSummary(b2cOrders);
+                B2cSummaryGrid.ItemsSource = _b2cSummary;
+                UpdateB2cSummary(_b2cSummary);
             }
             catch (Exception ex)
             {
@@ -124,6 +129,14 @@ namespace HotelPOS.Views
             TotalValueBadge.Text = $"Rs. {distinctInvoices.Sum(r => r.InvoiceValue):N2}";
         }
 
+        private void UpdateB2cSummary(List<GstR1B2cSummaryDto> summary)
+        {
+            B2cInvoicesBadge.Text = summary.Sum(s => s.InvoiceCount).ToString();
+            B2cTaxableValueBadge.Text = $"Rs. {summary.Sum(s => s.TaxableValue):N2}";
+            B2cTaxAmountBadge.Text = $"Rs. {summary.Sum(s => s.TotalTax):N2}";
+            B2cTotalValueBadge.Text = $"Rs. {summary.Sum(s => s.TotalValue):N2}";
+        }
+
         private void LoadMore()
         {
             var itemsToLoad = _allRows.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
@@ -146,7 +159,7 @@ namespace HotelPOS.Views
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            if (_allRows.Count == 0)
+            if (_allRows.Count == 0 && _b2cSummary.Count == 0)
             {
                 _notificationService.ShowWarning("No data to export.");
                 return;
@@ -163,7 +176,8 @@ namespace HotelPOS.Views
             try
             {
                 using var wb = new XLWorkbook();
-                var ws = wb.Worksheets.Add("GSTR-1 B2B");
+
+                var ws = wb.Worksheets.Add("B2B Invoices");
 
                 string[] headers =
                 {
@@ -201,6 +215,37 @@ namespace HotelPOS.Views
                 }
 
                 ws.Columns().AdjustToContents();
+
+                var wsB2c = wb.Worksheets.Add("B2C Summary");
+                string[] b2cHeaders =
+                {
+                    "Rate", "No. of Invoices", "Taxable Value", "CGST", "SGST", "IGST",
+                    "Total Tax", "Total Value"
+                };
+                for (int c = 0; c < b2cHeaders.Length; c++)
+                    wsB2c.Cell(1, c + 1).Value = b2cHeaders[c];
+
+                var b2cHeaderRow = wsB2c.Row(1);
+                b2cHeaderRow.Style.Font.Bold = true;
+                b2cHeaderRow.Style.Fill.BackgroundColor = XLColor.FromHtml("#173F5F");
+                b2cHeaderRow.Style.Font.FontColor = XLColor.White;
+
+                int b2cRow = 2;
+                foreach (var s in _b2cSummary)
+                {
+                    wsB2c.Cell(b2cRow, 1).Value = (double)s.Rate;
+                    wsB2c.Cell(b2cRow, 2).Value = s.InvoiceCount;
+                    wsB2c.Cell(b2cRow, 3).Value = (double)s.TaxableValue;
+                    wsB2c.Cell(b2cRow, 4).Value = (double)s.Cgst;
+                    wsB2c.Cell(b2cRow, 5).Value = (double)s.Sgst;
+                    wsB2c.Cell(b2cRow, 6).Value = (double)s.Igst;
+                    wsB2c.Cell(b2cRow, 7).Value = (double)s.TotalTax;
+                    wsB2c.Cell(b2cRow, 8).Value = (double)s.TotalValue;
+                    b2cRow++;
+                }
+
+                wsB2c.Columns().AdjustToContents();
+
                 wb.SaveAs(dlg.FileName);
                 _notificationService.ShowSuccess("GSTR-1 report exported successfully.");
             }
@@ -216,6 +261,35 @@ namespace HotelPOS.Views
     /// UserControl or database.</summary>
     public static class GstR1RowBuilder
     {
+        /// <summary>Expands each order into one row per distinct tax rate present on it, matching
+        /// the GSTR-1 invoice-wise filing format (one line per invoice/rate combination). Shared by
+        /// the B2B invoice-wise view and the B2C(Small) summary, which aggregates these same rows
+        /// by rate so its figures always agree with what each invoice actually charged.</summary>
+        public static List<GstR1RowDto> BuildRows(IEnumerable<Order> orders) =>
+            orders
+                .SelectMany(o => o.Items
+                    .GroupBy(i => i.TaxPercentage)
+                    .Select(rateGroup => BuildRow(o, rateGroup.Key, rateGroup.ToList())))
+                .ToList();
+
+        /// <summary>Aggregates B2C (no customer GSTIN) invoices into one row per tax rate, matching
+        /// GSTR-1 table 7 (B2C Small). Built from the same per-invoice/rate rows as the B2B view so
+        /// the taxable value/CGST/SGST here always reconcile with individual receipts.</summary>
+        public static List<GstR1B2cSummaryDto> BuildB2cSummary(IEnumerable<Order> orders) =>
+            BuildRows(orders)
+                .GroupBy(r => r.Rate)
+                .Select(g => new GstR1B2cSummaryDto
+                {
+                    Rate = g.Key,
+                    InvoiceCount = g.Count(),
+                    TaxableValue = g.Sum(r => r.TaxableValue),
+                    Cgst = g.Sum(r => r.Cgst),
+                    Sgst = g.Sum(r => r.Sgst),
+                    Igst = g.Sum(r => r.Igst)
+                })
+                .OrderBy(s => s.Rate)
+                .ToList();
+
         public static GstR1RowDto BuildRow(Order order, decimal rate, List<OrderItem> items)
         {
             var taxableValue = items.Sum(x => x.Total);
@@ -273,5 +347,19 @@ namespace HotelPOS.Views
         public decimal Cgst { get; set; }
         public decimal Sgst { get; set; }
         public decimal Igst { get; set; }
+    }
+
+    /// <summary>One row per tax rate, aggregating all B2C (no customer GSTIN) invoices in the
+    /// period - matches the GSTR-1 table 7 (B2C Small) summary format.</summary>
+    public class GstR1B2cSummaryDto
+    {
+        public decimal Rate { get; set; }
+        public int InvoiceCount { get; set; }
+        public decimal TaxableValue { get; set; }
+        public decimal Cgst { get; set; }
+        public decimal Sgst { get; set; }
+        public decimal Igst { get; set; }
+        public decimal TotalTax => Cgst + Sgst + Igst;
+        public decimal TotalValue => TaxableValue + TotalTax;
     }
 }

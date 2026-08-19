@@ -113,5 +113,59 @@ namespace HotelPOS.Tests
         {
             Assert.Equal(string.Empty, GstR1RowBuilder.DerivePlaceOfSupply(gstin));
         }
+
+        [Fact]
+        public void BuildRows_ExpandsEachOrderIntoOneRowPerDistinctTaxRate()
+        {
+            var order = MakeOrder();
+            order.Items =
+            [
+                new() { Price = 100, Quantity = 1, TaxPercentage = 5, Total = 100 },
+                new() { Price = 200, Quantity = 1, TaxPercentage = 18, Total = 200 }
+            ];
+
+            var rows = GstR1RowBuilder.BuildRows([order]);
+
+            Assert.Equal(2, rows.Count);
+            Assert.Contains(rows, r => r.Rate == 5m && r.TaxableValue == 100m);
+            Assert.Contains(rows, r => r.Rate == 18m && r.TaxableValue == 200m);
+        }
+
+        [Fact]
+        public void BuildB2cSummary_AggregatesTaxableValueAndTaxAcrossOrdersSharingARate()
+        {
+            var order1 = MakeOrder(invoiceNumber: "INV1");
+            order1.Items = [new() { Price = 6300, Quantity = 1, TaxPercentage = 5, Total = 6300 }];
+
+            var order2 = MakeOrder(invoiceNumber: "INV2");
+            order2.Items = [new() { Price = 1000, Quantity = 1, TaxPercentage = 5, Total = 1000 }];
+
+            var summary = GstR1RowBuilder.BuildB2cSummary([order1, order2]);
+
+            var bucket = Assert.Single(summary);
+            Assert.Equal(5m, bucket.Rate);
+            Assert.Equal(2, bucket.InvoiceCount);
+            Assert.Equal(7300m, bucket.TaxableValue);
+            Assert.Equal(365m, bucket.TotalTax); // 7300 * 5%
+            Assert.Equal(7665m, bucket.TotalValue);
+            Assert.Equal(0m, bucket.Igst);
+        }
+
+        [Fact]
+        public void BuildB2cSummary_SeparatesRatesIntoDistinctRowsOrderedByRate()
+        {
+            var order = MakeOrder();
+            order.Items =
+            [
+                new() { Price = 100, Quantity = 1, TaxPercentage = 18, Total = 100 },
+                new() { Price = 200, Quantity = 1, TaxPercentage = 5, Total = 200 }
+            ];
+
+            var summary = GstR1RowBuilder.BuildB2cSummary([order]);
+
+            Assert.Equal(2, summary.Count);
+            Assert.Equal(5m, summary[0].Rate);
+            Assert.Equal(18m, summary[1].Rate);
+        }
     }
 }
