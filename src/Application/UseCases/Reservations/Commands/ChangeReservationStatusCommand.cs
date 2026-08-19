@@ -19,7 +19,7 @@ namespace HotelPOS.Application.UseCases.Reservations.Commands
 
         public async Task Handle(ChangeReservationStatusCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Reservation);
+            _authorization.EnsureEditPermission(PermissionModules.Reservation);
 
             if (!ReservationStatuses.All.Contains(request.NewStatus))
                 throw new ArgumentException($"'{request.NewStatus}' is not a valid reservation status.");

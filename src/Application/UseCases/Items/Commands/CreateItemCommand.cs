@@ -35,7 +35,7 @@ namespace HotelPOS.Application.UseCases.Items.Commands
 
         public async Task<Item> Handle(CreateItemCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Items);
+            _authorization.EnsureEditPermission(PermissionModules.Items);
 
             if (string.IsNullOrWhiteSpace(request.Name))
                 throw new ArgumentException("Item name cannot be empty or whitespace.", nameof(request));

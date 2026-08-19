@@ -19,7 +19,7 @@ namespace HotelPOS.Application.UseCases.Expenses.Commands
 
         public async Task Handle(DeleteExpenseCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Expenses);
+            _authorization.EnsureDeletePermission(PermissionModules.Expenses);
 
             _ = await _repository.GetByIdAsync(request.Id)
                 ?? throw new KeyNotFoundException($"Expense #{request.Id} not found.");

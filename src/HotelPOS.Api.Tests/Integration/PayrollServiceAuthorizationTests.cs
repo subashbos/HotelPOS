@@ -200,7 +200,7 @@ namespace HotelPOS.Tests
 
             await service.SaveSalaryStructureAsync(structure);
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.HrPayrollRun), Times.Once);
             _payrollRepo.Verify(r => r.AddSalaryStructureAsync(structure), Times.Once);
         }
 
@@ -227,7 +227,7 @@ namespace HotelPOS.Tests
 
             await service.RunPayrollAsync(1, 2025, null);
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.HrPayrollRun), Times.Once);
             _payrollRepo.Verify(r => r.AddRunAsync(It.IsAny<PayrollRun>()), Times.Once);
         }
 
@@ -287,7 +287,7 @@ namespace HotelPOS.Tests
 
             await service.MarkRunAsPaidAsync(1);
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.HrPayrollRun), Times.Once);
             Assert.Equal(PayrollRunStatuses.Paid, run.Status);
         }
 
@@ -314,7 +314,7 @@ namespace HotelPOS.Tests
 
             await service.VoidRunAsync(1, "Correction");
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.HrPayrollRun), Times.Once);
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.HrPayrollRun), Times.Once);
             Assert.Equal(PayrollRunStatuses.Voided, run.Status);
         }
     }

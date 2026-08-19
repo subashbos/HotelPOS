@@ -20,7 +20,7 @@ namespace HotelPOS.Application.UseCases.Estimations.Commands
 
         public async Task Handle(UpdateEstimationCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Estimation);
+            _authorization.EnsureEditPermission(PermissionModules.Estimation);
 
             var existing = await _estimationRepository.GetByIdAsync(request.Estimation.Id)
                 ?? throw new KeyNotFoundException($"Estimation #{request.Estimation.Id} not found.");

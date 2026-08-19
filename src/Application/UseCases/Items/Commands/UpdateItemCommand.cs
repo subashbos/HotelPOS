@@ -36,7 +36,7 @@ namespace HotelPOS.Application.UseCases.Items.Commands
 
         public async Task<Item> Handle(UpdateItemCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Items);
+            _authorization.EnsureEditPermission(PermissionModules.Items);
 
             if (request.Id <= 0)
                 throw new ArgumentException("Invalid item ID.", nameof(request));

@@ -31,7 +31,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<Attendance> MarkAttendanceAsync(Attendance attendance)
         {
-            _authorization.EnsurePermission(PermissionModules.HrAttendance);
+            _authorization.EnsureEditPermission(PermissionModules.HrAttendance);
 
             if (attendance == null) throw new ArgumentNullException(nameof(attendance));
             if (attendance.EmployeeId <= 0) throw new ArgumentException("A valid employee is required.");
@@ -65,7 +65,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteAttendanceAsync(int id)
         {
-            _authorization.EnsurePermission(PermissionModules.HrAttendance);
+            _authorization.EnsureDeletePermission(PermissionModules.HrAttendance);
 
             _ = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Attendance record #{id} not found.");

@@ -25,7 +25,7 @@ namespace HotelPOS.Application.UseCases.Categories.Commands
 
         public async Task<int> Handle(CreateCategoryCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Categories);
+            _authorization.EnsureEditPermission(PermissionModules.Categories);
 
             var existing = await _repo.GetAllAsync() ?? new List<Category>();
             if (existing.Any(c => c.Name.Trim().Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase)))

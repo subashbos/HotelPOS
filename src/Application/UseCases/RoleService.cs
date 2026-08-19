@@ -51,7 +51,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<bool> AddRoleAsync(string name, string description)
         {
-            _authorization.EnsurePermission(PermissionModules.Roles);
+            _authorization.EnsureEditPermission(PermissionModules.Roles);
 
             if (_mediator != null)
                 return await _mediator.Send(new AddRoleCommand(name, description));
@@ -73,7 +73,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task UpdateRolePermissionsAsync(int roleId, List<RolePermission> permissions)
         {
-            _authorization.EnsurePermission(PermissionModules.Roles);
+            _authorization.EnsureEditPermission(PermissionModules.Roles);
 
             if (_mediator != null)
             {
@@ -86,7 +86,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteRoleAsync(int id)
         {
-            _authorization.EnsurePermission(PermissionModules.Roles);
+            _authorization.EnsureDeletePermission(PermissionModules.Roles);
 
             if (_mediator != null)
             {

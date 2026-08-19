@@ -25,7 +25,7 @@ namespace HotelPOS.Application.UseCases.Categories.Commands
 
         public async Task Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Categories);
+            _authorization.EnsureEditPermission(PermissionModules.Categories);
 
             var all = await _repo.GetAllAsync() ?? new List<Category>();
             if (all.Any(c => c.Id != request.Id && c.Name.Trim().Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase)))

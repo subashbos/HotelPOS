@@ -22,7 +22,7 @@ namespace HotelPOS.Application.UseCases.Purchases.Commands
 
         public async Task Handle(UpdatePurchaseCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Purchase);
+            _authorization.EnsureEditPermission(PermissionModules.Purchase);
 
             var purchase = request.Purchase;
 

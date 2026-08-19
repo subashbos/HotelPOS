@@ -25,7 +25,7 @@ namespace HotelPOS.Application.UseCases.UnitOfMeasurements.Commands
 
         public async Task<int> Handle(CreateUnitOfMeasurementCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Units);
+            _authorization.EnsureEditPermission(PermissionModules.Units);
 
             var existing = await _repo.GetAllAsync() ?? new List<UnitOfMeasurement>();
             if (existing.Any(u => u.Name.Trim().Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase)))

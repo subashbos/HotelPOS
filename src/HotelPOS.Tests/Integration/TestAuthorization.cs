@@ -18,6 +18,10 @@ namespace HotelPOS.Tests
             mock.Setup(a => a.HasPermission(It.IsAny<string>())).Returns(false);
             mock.Setup(a => a.EnsurePermission(It.IsAny<string>()))
                 .Throws(new UnauthorizedAccessException("Access denied."));
+            mock.Setup(a => a.EnsureEditPermission(It.IsAny<string>()))
+                .Throws(new UnauthorizedAccessException("Access denied."));
+            mock.Setup(a => a.EnsureDeletePermission(It.IsAny<string>()))
+                .Throws(new UnauthorizedAccessException("Access denied."));
             mock.Setup(a => a.EnsureSelfOrPermission(It.IsAny<int>(), It.IsAny<string>()))
                 .Throws(new UnauthorizedAccessException("Access denied."));
             return mock;

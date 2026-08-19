@@ -19,7 +19,7 @@ namespace HotelPOS.Application.UseCases.Suppliers.Commands
 
         public async Task Handle(DeleteSupplierCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Purchase);
+            _authorization.EnsureDeletePermission(PermissionModules.Purchase);
 
             _ = await _repository.GetByIdAsync(request.Id)
                 ?? throw new KeyNotFoundException($"Supplier #{request.Id} not found.");

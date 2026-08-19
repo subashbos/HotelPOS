@@ -20,7 +20,7 @@ namespace HotelPOS.Application.UseCases.Estimations.Commands
 
         public async Task Handle(SaveEstimationCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Estimation);
+            _authorization.EnsureEditPermission(PermissionModules.Estimation);
 
             await _estimationRepository.AddAsync(request.Estimation);
         }

@@ -54,7 +54,7 @@ namespace HotelPOS.Tests
 
             await service.SaveSettingsAsync(new SystemSetting { HotelName = "Test" });
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.Settings), Times.Once);
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.Settings), Times.Once);
         }
 
         [Fact]

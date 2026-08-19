@@ -19,7 +19,7 @@ namespace HotelPOS.Application.UseCases.Estimations.Commands
 
         public async Task Handle(DeleteEstimationCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Estimation);
+            _authorization.EnsureDeletePermission(PermissionModules.Estimation);
 
             // Idempotent delete, same convention as OrderService.DeleteOrderInternalAsync /
             // DeletePurchaseCommandHandler.

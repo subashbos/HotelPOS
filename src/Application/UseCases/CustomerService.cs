@@ -40,7 +40,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveCustomerAsync(Customer customer)
         {
-            _authorization.EnsurePermission(PermissionModules.Customers);
+            _authorization.EnsureEditPermission(PermissionModules.Customers);
 
             if (customer == null) throw new ArgumentNullException(nameof(customer));
 
@@ -81,7 +81,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteCustomerAsync(int id)
         {
-            _authorization.EnsurePermission(PermissionModules.CustomerManagement);
+            _authorization.EnsureDeletePermission(PermissionModules.CustomerManagement);
 
             _ = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Customer #{id} not found.");

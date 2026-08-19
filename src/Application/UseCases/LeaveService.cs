@@ -117,7 +117,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task ApproveLeaveAsync(int requestId, int approverEmployeeId)
         {
-            _authorization.EnsurePermission(PermissionModules.HrLeave);
+            _authorization.EnsureEditPermission(PermissionModules.HrLeave);
 
             var request = await _repository.GetRequestByIdAsync(requestId)
                 ?? throw new KeyNotFoundException($"Leave request #{requestId} not found.");
@@ -154,7 +154,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task RejectLeaveAsync(int requestId, int approverEmployeeId, string reason)
         {
-            _authorization.EnsurePermission(PermissionModules.HrLeave);
+            _authorization.EnsureEditPermission(PermissionModules.HrLeave);
 
             var request = await _repository.GetRequestByIdAsync(requestId)
                 ?? throw new KeyNotFoundException($"Leave request #{requestId} not found.");

@@ -212,7 +212,7 @@ namespace HotelPOS.Tests.Integration
 
             await handler.Handle(new SavePurchaseCommand(new Purchase { PurchaseItems = new List<PurchaseItem>() }), CancellationToken.None);
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.Purchase), Times.Once);
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.Purchase), Times.Once);
         }
 
         // ---------- Items ----------
@@ -284,15 +284,15 @@ namespace HotelPOS.Tests.Integration
             // specifically, or a Cashier would silently gain void rights through Billing alone.
             var orderService = new Mock<IOrderService>();
             var auth = new Mock<IAuthorizationService>();
-            auth.Setup(a => a.EnsurePermission(PermissionModules.Billing));
-            auth.Setup(a => a.EnsurePermission(PermissionModules.OrderManagement))
+            auth.Setup(a => a.EnsureEditPermission(PermissionModules.Billing));
+            auth.Setup(a => a.EnsureEditPermission(PermissionModules.OrderManagement))
                 .Throws(new UnauthorizedAccessException("Access denied."));
             var handler = new VoidOrderCommandHandler(orderService.Object, auth.Object);
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
                 handler.Handle(new VoidOrderCommand(1, "reason", "user"), CancellationToken.None));
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.OrderManagement), Times.Once);
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.OrderManagement), Times.Once);
         }
 
         // ---------- OrderService itself: the WPF desktop client calls IOrderService directly
@@ -360,8 +360,55 @@ namespace HotelPOS.Tests.Integration
 
             await service.VoidOrderAsync(1, "reason", "user");
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.OrderManagement), Times.Once);
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.OrderManagement), Times.Once);
             Assert.Equal(OrderStatuses.Void, order.Status);
+        }
+
+        [Fact]
+        public async Task OrderServiceSaveOrder_WhenUnauthorized_ThrowsAndDoesNotPersist()
+        {
+            var repo = new Mock<IOrderRepository>();
+            var itemService = new Mock<IItemService>();
+            var service = new OrderService(repo.Object, null, itemService.Object, TestCashService.WithOpenSession().Object, TestAuthorization.DenyAll().Object);
+            var request = new SaveOrderRequest(
+                new List<OrderItem> { new() { ItemId = 1, Quantity = 1 } }, 1);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.SaveOrderAsync(request));
+
+            itemService.Verify(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()), Times.Never);
+            repo.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task OrderServiceProcessPartialPayment_WhenUnauthorized_ThrowsAndDoesNotPay()
+        {
+            var repo = new Mock<IOrderRepository>();
+            var service = new OrderService(repo.Object, null, new Mock<IItemService>().Object, TestCashService.WithOpenSession().Object, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+                service.ProcessPartialPaymentAsync(1, 10, 0, 0));
+
+            repo.Verify(r => r.GetByIdWithItemsAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task OrderServiceSaveOrder_WhenGrantedBilling_Saves()
+        {
+            var repo = new Mock<IOrderRepository>();
+            repo.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
+            repo.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(1);
+            var itemService = new Mock<IItemService>();
+            itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Coffee", Price = 50m }).ToList());
+            var auth = new Mock<IAuthorizationService>();
+            var service = new OrderService(repo.Object, null, itemService.Object, TestCashService.WithOpenSession().Object, auth.Object);
+            var request = new SaveOrderRequest(
+                new List<OrderItem> { new() { ItemId = 1, Quantity = 1 } }, 1);
+
+            await service.SaveOrderAsync(request);
+
+            auth.Verify(a => a.EnsureEditPermission(PermissionModules.Billing), Times.Once);
         }
 
         // ---------- Customers: CustomerManagement (delete) distinct from Customers (view/save) ----------
@@ -387,14 +434,14 @@ namespace HotelPOS.Tests.Integration
             var repo = new Mock<ICustomerRepository>();
             var orderRepo = new Mock<IOrderRepository>();
             var auth = new Mock<IAuthorizationService>();
-            auth.Setup(a => a.EnsurePermission(PermissionModules.Customers));
-            auth.Setup(a => a.EnsurePermission(PermissionModules.CustomerManagement))
+            auth.Setup(a => a.EnsureEditPermission(PermissionModules.Customers));
+            auth.Setup(a => a.EnsureDeletePermission(PermissionModules.CustomerManagement))
                 .Throws(new UnauthorizedAccessException("Access denied."));
             var service = new CustomerService(repo.Object, orderRepo.Object, auth.Object);
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.DeleteCustomerAsync(1));
 
-            auth.Verify(a => a.EnsurePermission(PermissionModules.CustomerManagement), Times.Once);
+            auth.Verify(a => a.EnsureDeletePermission(PermissionModules.CustomerManagement), Times.Once);
             repo.Verify(r => r.DeactivateAsync(It.IsAny<int>()), Times.Never);
         }
 

@@ -21,7 +21,7 @@ namespace HotelPOS.Application.UseCases.Expenses.Commands
 
         public async Task<int> Handle(SaveExpenseCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Expenses);
+            _authorization.EnsureEditPermission(PermissionModules.Expenses);
 
             var dto = request.Dto;
 
