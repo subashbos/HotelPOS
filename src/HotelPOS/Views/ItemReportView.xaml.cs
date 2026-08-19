@@ -137,6 +137,9 @@ namespace HotelPOS.Views
                     .Select(x =>
                     {
                         var catalogItem = allItems.FirstOrDefault(it => it.Id == x.OrderItem.ItemId);
+                        // Same tax computation as the GSTR-1 report, so the rate/CGST/SGST shown here
+                        // always agree with the invoice-wise GSTR-1 figures for the same line item.
+                        var (cgst, sgst, _) = GstR1RowBuilder.ComputeTaxSplit(x.OrderItem.Total, x.OrderItem.TaxPercentage);
                         return new ItemSalesReportRowDto
                         {
                             InvoiceNumber = x.Order.InvoiceNumber,
@@ -147,7 +150,10 @@ namespace HotelPOS.Views
                             CategoryName = catalogItem?.Category?.Name ?? "General",
                             UnitPrice = x.OrderItem.Price,
                             Quantity = x.OrderItem.Quantity,
-                            LineTotal = x.OrderItem.Total
+                            LineTotal = x.OrderItem.Total,
+                            TaxRate = x.OrderItem.TaxPercentage,
+                            Cgst = cgst,
+                            Sgst = sgst
                         };
                     })
                     .ToList();
@@ -181,6 +187,7 @@ namespace HotelPOS.Views
                 LoadMore();
                 TotalQtySold.Text = rows.Sum(x => x.Quantity).ToString();
                 TotalRevenueSum.Text = $"Rs. {rows.Sum(x => x.LineTotal):N2}";
+                TotalTaxSum.Text = $"Rs. {rows.Sum(x => x.TaxAmount):N2}";
             }
             catch (Exception ex)
             {
@@ -244,6 +251,11 @@ namespace HotelPOS.Views
                     ws.Cell(1, 6).Value = "Unit Price";
                     ws.Cell(1, 7).Value = "Quantity";
                     ws.Cell(1, 8).Value = "Line Total";
+                    ws.Cell(1, 9).Value = "Tax Rate";
+                    ws.Cell(1, 10).Value = "CGST";
+                    ws.Cell(1, 11).Value = "SGST";
+                    ws.Cell(1, 12).Value = "Tax Amount";
+                    ws.Cell(1, 13).Value = "Item Total";
 
                     var headerRow = ws.Row(1);
                     headerRow.Style.Font.Bold = true;
@@ -261,6 +273,11 @@ namespace HotelPOS.Views
                         ws.Cell(row, 6).Value = (double)item.UnitPrice;
                         ws.Cell(row, 7).Value = item.Quantity;
                         ws.Cell(row, 8).Value = (double)item.LineTotal;
+                        ws.Cell(row, 9).Value = (double)item.TaxRate;
+                        ws.Cell(row, 10).Value = (double)item.Cgst;
+                        ws.Cell(row, 11).Value = (double)item.Sgst;
+                        ws.Cell(row, 12).Value = (double)item.TaxAmount;
+                        ws.Cell(row, 13).Value = (double)item.ItemTotal;
                         row++;
                     }
 
@@ -290,5 +307,10 @@ namespace HotelPOS.Views
         public decimal UnitPrice { get; set; }
         public int Quantity { get; set; }
         public decimal LineTotal { get; set; }
+        public decimal TaxRate { get; set; }
+        public decimal Cgst { get; set; }
+        public decimal Sgst { get; set; }
+        public decimal TaxAmount => Cgst + Sgst;
+        public decimal ItemTotal => LineTotal + TaxAmount;
     }
 }

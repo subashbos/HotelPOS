@@ -290,14 +290,23 @@ namespace HotelPOS.Views
                 .OrderBy(s => s.Rate)
                 .ToList();
 
+        /// <summary>Computes the GST tax amount for a taxable value at a given rate, split evenly
+        /// between CGST and SGST - rounding once, matching OrderService.CalculateTotals' own
+        /// convention, so figures always agree with what was actually charged. IGST is never used
+        /// since the app treats every sale as intrastate throughout the codebase. Shared by the
+        /// GSTR-1 report and the Item Report so tax figures reconcile wherever they're shown.</summary>
+        public static (decimal Cgst, decimal Sgst, decimal TaxAmount) ComputeTaxSplit(decimal taxableValue, decimal rate)
+        {
+            var taxAmount = Math.Round(taxableValue * (rate / 100m), 2);
+            var cgst = Math.Round(taxAmount / 2m, 2);
+            var sgst = taxAmount - cgst;
+            return (cgst, sgst, taxAmount);
+        }
+
         public static GstR1RowDto BuildRow(Order order, decimal rate, List<OrderItem> items)
         {
             var taxableValue = items.Sum(x => x.Total);
-            // Matches OrderService.CalculateTotals' own rounding convention (sum item-level tax,
-            // round once) so this report's tax figures always agree with what was actually charged.
-            var taxAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (rate / 100m)), 2);
-            var cgst = Math.Round(taxAmount / 2m, 2);
-            var sgst = taxAmount - cgst;
+            var (cgst, sgst, taxAmount) = ComputeTaxSplit(taxableValue, rate);
 
             return new GstR1RowDto
             {
