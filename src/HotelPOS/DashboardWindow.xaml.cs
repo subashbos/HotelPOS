@@ -546,7 +546,7 @@ namespace HotelPOS
             {
                 NavBilling, NavShift, NavExpenses, NavCustomers, NavEstimation, NavReservation,
                 NavMenu, NavCats, NavUnits, NavTables, NavPurchase, NavSuppliers, NavRawMaterials, NavBom,
-                NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavLedger, NavJournal,
+                NavDash, NavBIReport, NavSales, NavItemReport, NavPurchaseReport, NavGstR1, NavLedger, NavJournal,
                 NavEmployees, NavDeptDesig, NavAttendance, NavLeave, NavPayroll, NavSalaryStructure,
                 NavSettings, NavTds, NavAccount, NavRoles, NavUsers, NavAudit
             };
