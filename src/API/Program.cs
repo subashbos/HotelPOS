@@ -118,6 +118,13 @@ if (string.IsNullOrWhiteSpace(jwtKey))
     throw new InvalidOperationException(
         "JWT Key is not configured. Set Jwt:Key in appsettings or HOTELPOS_JWT_KEY environment variable.");
 
+// The Configure<JwtOptions> binding above only sees Jwt:Key from appsettings, not the
+// HOTELPOS_JWT_KEY fallback resolved just above. Without this, every other consumer of
+// IOptions<JwtOptions> (e.g. AuthController, which signs tokens with _jwtOptions.Key) would see
+// an empty key on any deployment that relies on the env var instead of appsettings, while token
+// *validation* here would use the correct one - signing and validation would disagree.
+builder.Services.PostConfigure<JwtOptions>(options => options.Key = jwtKey);
+
 // ── PII column encryption key ─────────────────────────────────────────────
 var piiKeyBase64 = builder.Configuration["Encryption:PiiKey"];
 if (string.IsNullOrWhiteSpace(piiKeyBase64))
