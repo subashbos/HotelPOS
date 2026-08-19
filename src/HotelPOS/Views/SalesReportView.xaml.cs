@@ -4,6 +4,7 @@ using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
+using HotelPOS.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -355,7 +356,7 @@ namespace HotelPOS.Views
                     {
                         ws.Cell(row, 1).Value = item.CreatedAt.ToString("g");
                         ws.Cell(row, 2).Value = item.InvoiceNumber;
-                        ws.Cell(row, 3).Value = item.CustomerName ?? "N/A";
+                        ws.Cell(row, 3).Value = (item.CustomerName ?? "N/A").ForSpreadsheet();
                         ws.Cell(row, 4).Value = item.OrderType;
                         ws.Cell(row, 5).Value = item.PaymentMode;
                         ws.Cell(row, 6).Value = (double)item.Total;

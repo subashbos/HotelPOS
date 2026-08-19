@@ -5,6 +5,7 @@ using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -219,11 +220,11 @@ namespace HotelPOS.Views
                 for (int i = 0; i < _allItems.Count; i++)
                 {
                     var item = _allItems[i];
-                    ws.Cell(i + 2, 1).Value = item.Name;
+                    ws.Cell(i + 2, 1).Value = item.Name.ForSpreadsheet();
                     ws.Cell(i + 2, 2).Value = item.Price;
                     ws.Cell(i + 2, 3).Value = item.TaxPercentage;
-                    ws.Cell(i + 2, 4).Value = item.Category?.Name ?? "";
-                    ws.Cell(i + 2, 5).Value = item.Unit?.Name ?? "";
+                    ws.Cell(i + 2, 4).Value = (item.Category?.Name ?? "").ForSpreadsheet();
+                    ws.Cell(i + 2, 5).Value = (item.Unit?.Name ?? "").ForSpreadsheet();
                 }
 
                 ws.Columns().AdjustToContents();

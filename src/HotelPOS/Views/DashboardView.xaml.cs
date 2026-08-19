@@ -4,6 +4,7 @@ using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -366,7 +367,7 @@ namespace HotelPOS.Views
                     int r = 2;
                     foreach (var i in LastItemReport)
                     {
-                        ws3.Cell(r, 1).Value = i.ItemName;
+                        ws3.Cell(r, 1).Value = i.ItemName.ForSpreadsheet();
                         ws3.Cell(r, 2).Value = i.TotalQtySold;
                         ws3.Cell(r, 3).Value = (double)i.TotalRevenue;
                         ws3.Cell(r, 4).Value = (double)i.UnitPrice;

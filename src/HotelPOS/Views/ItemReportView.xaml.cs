@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -242,8 +243,8 @@ namespace HotelPOS.Views
                     foreach (var item in items)
                     {
                         ws.Cell(row, 1).Value = item.SNo;
-                        ws.Cell(row, 2).Value = item.ItemName;
-                        ws.Cell(row, 3).Value = item.CategoryName;
+                        ws.Cell(row, 2).Value = item.ItemName.ForSpreadsheet();
+                        ws.Cell(row, 3).Value = item.CategoryName.ForSpreadsheet();
                         ws.Cell(row, 4).Value = (double)item.Price;
                         ws.Cell(row, 5).Value = item.QuantitySold;
                         ws.Cell(row, 6).Value = (double)item.TotalRevenue;
