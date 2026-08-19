@@ -137,9 +137,14 @@ namespace HotelPOS.Views
                     .Select(x =>
                     {
                         var catalogItem = allItems.FirstOrDefault(it => it.Id == x.OrderItem.ItemId);
-                        // Same tax computation as the GSTR-1 report, so the rate/CGST/SGST shown here
-                        // always agree with the invoice-wise GSTR-1 figures for the same line item.
-                        var (cgst, sgst, _) = GstR1RowBuilder.ComputeTaxSplit(x.OrderItem.Total, x.OrderItem.TaxPercentage);
+                        // Taxable value computed fresh as Price * Quantity rather than trusted from
+                        // the stored Total field: orders placed before the 2026-07-23 security fix
+                        // (repricing lines from the item catalog) had Total written as a tax-
+                        // INCLUSIVE figure by the client, so using it directly would double-count
+                        // tax on every pre-fix invoice. Same computation as the GSTR-1 report, so
+                        // the rate/CGST/SGST shown here always agree with it for the same line item.
+                        var lineTotal = x.OrderItem.Price * x.OrderItem.Quantity;
+                        var (cgst, sgst, _) = GstR1RowBuilder.ComputeTaxSplit(lineTotal, x.OrderItem.TaxPercentage);
                         return new ItemSalesReportRowDto
                         {
                             InvoiceNumber = x.Order.InvoiceNumber,
@@ -150,7 +155,7 @@ namespace HotelPOS.Views
                             CategoryName = catalogItem?.Category?.Name ?? "General",
                             UnitPrice = x.OrderItem.Price,
                             Quantity = x.OrderItem.Quantity,
-                            LineTotal = x.OrderItem.Total,
+                            LineTotal = lineTotal,
                             TaxRate = x.OrderItem.TaxPercentage,
                             Cgst = cgst,
                             Sgst = sgst

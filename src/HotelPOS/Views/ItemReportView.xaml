@@ -99,18 +99,18 @@
                 <DataGrid x:Name="ReportGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True" ScrollViewer.ScrollChanged="ReportGrid_ScrollChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                        <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="130" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM yyyy hh:mm tt}" Width="150" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="CATEGORY" Binding="{Binding CategoryName}" Width="150" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="UNIT PRICE" Binding="{Binding UnitPrice, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                        <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" Width="70" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                        <DataGridTextColumn Header="LINE TOTAL" Binding="{Binding LineTotal, StringFormat=Rs. {0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="120" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM hh:mm tt}" Width="130" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="200" MinWidth="150" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="CATEGORY" Binding="{Binding CategoryName}" Width="120" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="UNIT PRICE" Binding="{Binding UnitPrice, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                        <DataGridTextColumn Header="LINE TOTAL" Binding="{Binding LineTotal, StringFormat=Rs. {0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                         <DataGridTextColumn Header="RATE" Binding="{Binding TaxRate, StringFormat={}{0}%}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                        <DataGridTextColumn Header="CGST" Binding="{Binding Cgst, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                        <DataGridTextColumn Header="SGST" Binding="{Binding Sgst, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                        <DataGridTextColumn Header="TAX AMOUNT" Binding="{Binding TaxAmount, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                        <DataGridTextColumn Header="ITEM TOTAL" Binding="{Binding ItemTotal, StringFormat=Rs. {0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="CGST" Binding="{Binding Cgst, StringFormat=Rs. {0:N2}}" Width="90" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="SGST" Binding="{Binding Sgst, StringFormat=Rs. {0:N2}}" Width="90" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="TAX AMOUNT" Binding="{Binding TaxAmount, StringFormat=Rs. {0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="ITEM TOTAL" Binding="{Binding ItemTotal, StringFormat=Rs. {0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

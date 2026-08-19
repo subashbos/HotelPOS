@@ -305,7 +305,11 @@ namespace HotelPOS.Views
 
         public static GstR1RowDto BuildRow(Order order, decimal rate, List<OrderItem> items)
         {
-            var taxableValue = items.Sum(x => x.Total);
+            // Computed fresh as Price * Quantity rather than trusted from the stored Total field:
+            // orders placed before the 2026-07-23 security fix (repricing lines from the item
+            // catalog) had Total written as a tax-INCLUSIVE figure by the client, so summing Total
+            // directly would double-count tax on every pre-fix invoice.
+            var taxableValue = items.Sum(x => x.Price * x.Quantity);
             var (cgst, sgst, taxAmount) = ComputeTaxSplit(taxableValue, rate);
 
             return new GstR1RowDto
