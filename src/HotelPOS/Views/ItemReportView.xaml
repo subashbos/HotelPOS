@@ -98,12 +98,14 @@
 
                 <DataGrid x:Name="ReportGrid" Style="{StaticResource PremiumGrid}" IsReadOnly="True" ScrollViewer.ScrollChanged="ReportGrid_ScrollChanged">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                        <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                        <DataGridTextColumn Header="INVOICE" Binding="{Binding InvoiceNumber}" Width="130" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM yyyy hh:mm tt}" Width="150" ElementStyle="{StaticResource LeftCell}"/>
                         <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="CATEGORY" Binding="{Binding CategoryName}" Width="200" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="PRICE" Binding="{Binding Price, StringFormat=Rs. {0:N2}}" Width="150" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                        <DataGridTextColumn Header="QUANTITY SOLD" Binding="{Binding QuantitySold}" Width="150" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                        <DataGridTextColumn Header="TOTAL REVENUE" Binding="{Binding TotalRevenue, StringFormat=Rs. {0:N2}}" Width="200" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="CATEGORY" Binding="{Binding CategoryName}" Width="150" ElementStyle="{StaticResource LeftCell}"/>
+                        <DataGridTextColumn Header="UNIT PRICE" Binding="{Binding UnitPrice, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" Width="70" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                        <DataGridTextColumn Header="LINE TOTAL" Binding="{Binding LineTotal, StringFormat=Rs. {0:N2}}" Width="150" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
