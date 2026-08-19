@@ -71,17 +71,14 @@ namespace HotelPOS.Tests
             // 1. Verify saved in repo
             _purchaseRepoMock.Verify(r => r.AddAsync(purchase), Times.Once);
 
-            // 2. Verify stock increment for TrackInventory = true
-            Assert.Equal(30, item1.StockQuantity); // 20 + 10 = 30
-            Assert.Equal(10, item2.StockQuantity); // 5 + 5 = 10
-            
-            // 3. Verify stock did NOT increment for TrackInventory = false
-            Assert.Equal(100, item3.StockQuantity); // remains 100
+            // 2. Verify each TrackInventory = true item got its own atomic stock adjustment
+            // (ExecuteUpdateAsync-based, so concurrent purchases for the same item can't lose
+            // one another's stock credit - see ItemRepository.AdjustStockAsync).
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(10, 10), Times.Once);
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(11, 5), Times.Once);
 
-            // 4. Verify the stock updates were batched into a single UpdateRangeAsync call
-            // rather than one UpdateAsync call per item (avoids an N+1 write pattern).
-            _itemRepoMock.Verify(r => r.UpdateRangeAsync(It.Is<List<Item>>(l =>
-                l.Count == 2 && l.Contains(item1) && l.Contains(item2) && !l.Contains(item3))), Times.Once);
+            // 3. Verify stock was NOT adjusted for TrackInventory = false
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(12, It.IsAny<int>()), Times.Never);
             _itemRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
         }
 
@@ -172,14 +169,19 @@ namespace HotelPOS.Tests
 
             await _purchaseService.UpdatePurchaseAsync(updatedPurchase);
 
-            Assert.Equal(35, item1.StockQuantity); // 30 + 5
-            Assert.Equal(5, item2.StockQuantity);  // 10 - 5
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(10, 5), Times.Once);  // Milk: 15 - 10
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(11, -5), Times.Once); // Cheese removed: 0 - 5
             _purchaseRepoMock.Verify(r => r.UpdateAsync(updatedPurchase), Times.Once);
         }
 
         [Fact]
-        public async Task UpdatePurchaseAsync_LegacyPath_ShrinkingBelowZero_ClampsToZero()
+        public async Task UpdatePurchaseAsync_LegacyPath_ShrinkingRequestsNegativeDelta()
         {
+            // The resulting clamp-to-zero-if-negative happens inside AdjustStockAsync's atomic SQL
+            // UPDATE (proven directly against a real SQLite DB by
+            // ItemRepository_AdjustStockAsync_NegativeDeltaBelowZero_ClampsToZero in
+            // RepositoryIntegrationTests.cs) - a mocked IItemRepository can't observe that
+            // server-side computation, so this just verifies the correct delta is requested.
             var item = new Item { Id = 10, Name = "Milk Packet", StockQuantity = 2, TrackInventory = true };
             var oldPurchase = new Purchase
             {
@@ -199,7 +201,7 @@ namespace HotelPOS.Tests
 
             await _purchaseService.UpdatePurchaseAsync(updatedPurchase);
 
-            Assert.Equal(0, item.StockQuantity); // 2 + (1 - 10) = -7, clamped to 0
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(10, -9), Times.Once); // delta = 1 - 10
         }
 
         [Fact]
@@ -226,7 +228,7 @@ namespace HotelPOS.Tests
 
             await _purchaseService.DeletePurchaseAsync(1);
 
-            Assert.Equal(20, item.StockQuantity); // 30 - 10
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(10, -10), Times.Once);
             _purchaseRepoMock.Verify(r => r.DeleteAsync(1), Times.Once);
         }
 
@@ -428,7 +430,7 @@ namespace HotelPOS.Tests
             // Assert
             Assert.Null(exception);
             _purchaseRepoMock.Verify(r => r.AddAsync(purchase), Times.Once);
-            _itemRepoMock.Verify(r => r.UpdateRangeAsync(It.IsAny<List<Item>>()), Times.Never);
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -447,7 +449,7 @@ namespace HotelPOS.Tests
             };
 
             _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item> { catalogItem });
-            _itemRepoMock.Setup(r => r.UpdateRangeAsync(It.IsAny<List<Item>>())).ThrowsAsync(new Exception("Database connection failure"));
+            _itemRepoMock.Setup(r => r.AdjustStockAsync(It.IsAny<int>(), It.IsAny<int>())).ThrowsAsync(new Exception("Database connection failure"));
 
             // Act & Assert
             await Assert.ThrowsAsync<Exception>(() => _purchaseService.SavePurchaseAsync(purchase));

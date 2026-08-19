@@ -29,7 +29,7 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
-        public async Task Handle_ReversesStockForTrackedItemsAndDeletes()
+        public async Task Handle_ReversesStockAtomicallyForTrackedItemsOnlyAndDeletes()
         {
             var item1 = new Item { Id = 10, Name = "Milk", StockQuantity = 20, TrackInventory = true };
             var item2 = new Item { Id = 11, Name = "Cups", StockQuantity = 100, TrackInventory = false };
@@ -47,28 +47,10 @@ namespace HotelPOS.Tests
 
             await _handler.Handle(new DeletePurchaseCommand(1), CancellationToken.None);
 
-            Assert.Equal(15, item1.StockQuantity); // 20 - 5, TrackInventory = true
-            Assert.Equal(100, item2.StockQuantity); // unchanged, TrackInventory = false
-            _itemRepoMock.Verify(r => r.UpdateRangeAsync(It.Is<List<Item>>(l => l.Count == 1 && l[0] == item1)), Times.Once);
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(10, -5), Times.Once);
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(11, It.IsAny<int>()), Times.Never); // TrackInventory = false
             _purchaseRepoMock.Verify(r => r.DeleteAsync(1), Times.Once);
             _purchaseRepoMock.Verify(r => r.CommitTransactionAsync(), Times.Once);
-        }
-
-        [Fact]
-        public async Task Handle_ReversalWouldGoNegative_ClampsToZero()
-        {
-            var item = new Item { Id = 10, Name = "Milk", StockQuantity = 2, TrackInventory = true };
-            var purchase = new Purchase
-            {
-                Id = 1,
-                PurchaseItems = new List<PurchaseItem> { new PurchaseItem { ItemId = 10, ItemName = "Milk", Quantity = 5, UnitPrice = 40 } }
-            };
-            _purchaseRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(purchase);
-            _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item> { item });
-
-            await _handler.Handle(new DeletePurchaseCommand(1), CancellationToken.None);
-
-            Assert.Equal(0, item.StockQuantity); // 2 - 5, clamped
         }
 
         [Fact]
@@ -82,7 +64,7 @@ namespace HotelPOS.Tests
             };
             _purchaseRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(purchase);
             _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item> { item });
-            _itemRepoMock.Setup(r => r.UpdateRangeAsync(It.IsAny<List<Item>>())).ThrowsAsync(new Exception("DB failure"));
+            _itemRepoMock.Setup(r => r.AdjustStockAsync(It.IsAny<int>(), It.IsAny<int>())).ThrowsAsync(new Exception("DB failure"));
 
             await Assert.ThrowsAsync<Exception>(() => _handler.Handle(new DeletePurchaseCommand(1), CancellationToken.None));
 
