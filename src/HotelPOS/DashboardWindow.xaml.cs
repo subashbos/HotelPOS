@@ -35,6 +35,7 @@ namespace HotelPOS
         private BIReportView? _cachedBIReport;
         private ItemReportView? _cachedItemReport;
         private PurchaseReportView? _cachedPurchaseReport;
+        private GstR1ReportView? _cachedGstR1Report;
         private PurchaseEntryView? _cachedPurchase;
         private SupplierView? _cachedSuppliers;
         private RawMaterialView? _cachedRawMaterials;
@@ -264,6 +265,7 @@ namespace HotelPOS
 
             NavItemReport.Visibility = Vis(HasPermission(PermissionModules.SalesReport));
             NavPurchaseReport.Visibility = Vis(HasPermission(PermissionModules.Purchase) || HasPermission(PermissionModules.SalesReport));
+            NavGstR1.Visibility = Vis(HasPermission(PermissionModules.SalesReport));
             NavLedger.Visibility = Vis(HasPermission("Ledger"));
             NavJournal.Visibility = Vis(HasPermission("Journal"));
 
@@ -409,6 +411,13 @@ namespace HotelPOS
             _cachedPurchaseReport ??= _serviceProvider.GetRequiredService<PurchaseReportView>();
             MainContentArea.Content = _cachedPurchaseReport;
             SetActive(NavPurchaseReport);
+        }
+
+        private void NavGstR1_Click(object sender, RoutedEventArgs e)
+        {
+            _cachedGstR1Report ??= _serviceProvider.GetRequiredService<GstR1ReportView>();
+            MainContentArea.Content = _cachedGstR1Report;
+            SetActive(NavGstR1);
         }
 
         private void NavSettings_Click(object sender, RoutedEventArgs e)
@@ -577,7 +586,7 @@ namespace HotelPOS
                 HeaderInv.Visibility = (NavMenu.Visibility == Visibility.Visible || NavCats.Visibility == Visibility.Visible || NavTables.Visibility == Visibility.Visible || NavPurchase.Visibility == Visibility.Visible || NavSuppliers.Visibility == Visibility.Visible || NavRawMaterials.Visibility == Visibility.Visible || NavBom.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
 
-                HeaderStats.Visibility = (NavDash.Visibility == Visibility.Visible || NavSales.Visibility == Visibility.Visible || NavItemReport.Visibility == Visibility.Visible || NavPurchaseReport.Visibility == Visibility.Visible || NavLedger.Visibility == Visibility.Visible || NavJournal.Visibility == Visibility.Visible)
+                HeaderStats.Visibility = (NavDash.Visibility == Visibility.Visible || NavSales.Visibility == Visibility.Visible || NavItemReport.Visibility == Visibility.Visible || NavPurchaseReport.Visibility == Visibility.Visible || NavGstR1.Visibility == Visibility.Visible || NavLedger.Visibility == Visibility.Visible || NavJournal.Visibility == Visibility.Visible)
                     ? Visibility.Visible : Visibility.Collapsed;
 
                 HeaderAdmin.Visibility = (NavSettings.Visibility == Visibility.Visible || NavTds.Visibility == Visibility.Visible || NavAccount.Visibility == Visibility.Visible || NavRoles.Visibility == Visibility.Visible || NavUsers.Visibility == Visibility.Visible || NavAudit.Visibility == Visibility.Visible)

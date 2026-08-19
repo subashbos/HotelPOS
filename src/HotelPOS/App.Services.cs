@@ -174,6 +174,7 @@ namespace HotelPOS
             services.AddTransient<SalesReportView>();
             services.AddTransient<ItemReportView>();
             services.AddTransient<PurchaseReportView>();
+            services.AddTransient<GstR1ReportView>();
             services.AddTransient<BIReportView>();
             services.AddTransient<TableView>();
             services.AddTransient<RolesView>();

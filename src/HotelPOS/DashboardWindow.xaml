@@ -277,6 +277,10 @@
                                 <Path Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"
                                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
                             </Button>
+                            <Button x:Name="NavGstR1" Style="{StaticResource NavBtn}" Click="NavGstR1_Click" Tag="GSTR-1 Report" ToolTip="GSTR-1 Report">
+                                <Path Data="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 12h10v1.5H7V12zm0 3.5h10V17H7v-1.5zm0-7h6V10H7V8.5z"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
+                            </Button>
                             <Button x:Name="NavLedger" Style="{StaticResource NavBtn}" Click="NavLedger_Click" Tag="Ledger" ToolTip="Ledger">
                                 <Path Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 16H6c-.55 0-1-.45-1-1V6c0-.55.45-1 1-1h12c.55 0 1 .45 1 1v12c0 .55-.45 1-1 1zm-4-4H7v-2h7v2zm3-4H7V9h10v2z"
                                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" Stretch="Uniform" Width="24" Height="24"/>
