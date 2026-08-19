@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Common.Constants;
@@ -12,6 +14,7 @@ namespace HotelPOS.Application.UseCases
     {
         private const int CodeLength = 6;
         private const int CodeValidityMinutes = 15;
+        private const string InvalidOrExpiredCodeMessage = "This code is invalid or has expired. Request a new one.";
 
         private readonly IUserRepository _userRepository;
         private readonly IPasswordResetRepository _resetRepository;
@@ -50,7 +53,7 @@ namespace HotelPOS.Application.UseCases
             try
             {
                 await _emailService.SendEmailAsync(
-                    user.Email!,
+                    user.Email,
                     "HotelPOS password reset code",
                     $"Your password reset code is {code}. It expires in {CodeValidityMinutes} minutes. " +
                     "If you didn't request this, you can safely ignore this email.");
@@ -69,19 +72,29 @@ namespace HotelPOS.Application.UseCases
             var user = await _userRepository.GetUserByUsernameAsync(normalized);
             if (user == null)
             {
-                return (false, "This code is invalid or has expired. Request a new one.");
+                return (false, InvalidOrExpiredCodeMessage);
             }
 
             var request = await _resetRepository.GetLatestActiveAsync(user.Id);
             if (request == null || request.ExpiresUtc <= DateTime.UtcNow)
             {
-                return (false, "This code is invalid or has expired. Request a new one.");
+                return (false, InvalidOrExpiredCodeMessage);
+            }
+
+            if (request.AttemptCount >= SecurityDefaults.MaxPasswordResetCodeAttempts)
+            {
+                // Burn the code so a lucky guess after the cap can't still succeed.
+                request.Used = true;
+                await _resetRepository.UpdateAsync(request);
+                return (false, InvalidOrExpiredCodeMessage);
             }
 
             var providedHash = HashCode(code?.Trim() ?? string.Empty);
             if (!FixedTimeHashEquals(providedHash, request.CodeHash))
             {
-                return (false, "This code is invalid or has expired. Request a new one.");
+                request.AttemptCount += 1;
+                await _resetRepository.UpdateAsync(request);
+                return (false, InvalidOrExpiredCodeMessage);
             }
 
             if (string.IsNullOrEmpty(newPassword) ||
@@ -122,12 +135,6 @@ namespace HotelPOS.Application.UseCases
         private static string HashCode(string code) =>
             Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(code)));
 
-        private static (string Hash, string Salt) HashPassword(string password)
-        {
-            var saltBytes = RandomNumberGenerator.GetBytes(ValidationLimits.SaltByteSize);
-            var hashBytes = Rfc2898DeriveBytes.Pbkdf2(
-                password, saltBytes, ValidationLimits.Pbkdf2Iterations, HashAlgorithmName.SHA256, ValidationLimits.HashByteSize);
-            return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
-        }
+        private static (string Hash, string Salt) HashPassword(string password) => PasswordHasher.Hash(password);
     }
 }

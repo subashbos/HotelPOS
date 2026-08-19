@@ -1,0 +1,42 @@
+<div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+  <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+    <h3 class="font-semibold text-lg text-blueGray-700">
+      <i class="fas fa-file-invoice-dollar text-blueGray-400 mr-2"></i> My Payslips
+    </h3>
+  </div>
+
+  <div class="px-6 py-4">
+    <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+    <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading...</p>
+
+    <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+      <table class="items-center w-full bg-transparent border-collapse">
+        <thead>
+          <tr>
+            <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Gross Earnings</th>
+            <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">PF</th>
+            <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">ESI</th>
+            <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Prof. Tax</th>
+            <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">TDS</th>
+            <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-right">Net Pay</th>
+            <th class="px-3 bg-blueGray-50 text-blueGray-500 border border-solid border-blueGray-100 py-2 text-xs uppercase text-left">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let payslip of payslips; trackBy: trackByPayslipId">
+            <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ payslip.grossEarnings | number:'1.2-2' }}</td>
+            <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ payslip.pfEmployee | number:'1.2-2' }}</td>
+            <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ payslip.esiEmployee | number:'1.2-2' }}</td>
+            <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ payslip.professionalTax | number:'1.2-2' }}</td>
+            <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right">{{ payslip.tds | number:'1.2-2' }}</td>
+            <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3 text-right font-semibold">{{ payslip.netPay | number:'1.2-2' }}</td>
+            <td class="border-t-0 px-3 align-middle border-l-0 border-r-0 text-xs p-3">{{ payslip.paymentStatus }}</td>
+          </tr>
+          <tr *ngIf="payslips.length === 0">
+            <td colspan="7" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">No payslips yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

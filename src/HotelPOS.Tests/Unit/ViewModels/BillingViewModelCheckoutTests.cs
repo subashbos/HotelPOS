@@ -44,6 +44,25 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task SaveOrderAsync_DineInWithoutTable_ShowsErrorAndDoesNotSave()
+        {
+            BillingViewModel.RegisterTestServices(
+                _itemService.Object, _orderService.Object, _categoryService.Object,
+                _cashService.Object, _tableService.Object);
+            var vm = new BillingViewModel(
+                _cartService.Object, _settingService.Object, _notificationService.Object);
+
+            var items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1, Price = 50 } };
+            _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(items);
+            vm.TableNumber = 0;
+
+            await vm.SaveOrderCommand.ExecuteAsync(null);
+
+            _notificationService.Verify(n => n.ShowError(It.Is<string>(s => s.Contains("table"))), Times.Once);
+            _orderService.Verify(s => s.SaveOrderAsync(It.IsAny<SaveOrderRequest>()), Times.Never);
+        }
+
+        [Fact]
         public async Task SaveOrderAsync_DialogConfirmed_SavesOrderSuccessfully()
         {
             var mockDialogService = new Mock<IDialogService>();

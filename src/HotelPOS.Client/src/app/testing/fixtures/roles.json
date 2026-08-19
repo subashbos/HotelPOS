@@ -1,0 +1,22 @@
+{
+  "mockRoles": [
+    {
+      "id": 1,
+      "name": "Admin",
+      "description": "Full access",
+      "permissions": []
+    },
+    {
+      "id": 2,
+      "name": "Cashier",
+      "description": "POS access only",
+      "permissions": []
+    }
+  ],
+  "mockRole": {
+    "id": 1,
+    "name": "Manager",
+    "description": "Store manager",
+    "permissions": []
+  }
+}

@@ -17,7 +17,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Supplier>> GetAllAsync()
         {
-            return await _context.Suppliers.ToListAsync();
+            return await _context.Suppliers.AsNoTracking().ToListAsync();
         }
 
         public async Task<Supplier?> GetByIdAsync(int id)
@@ -27,7 +27,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<Supplier?> GetByNameAsync(string name)
         {
-            return await _context.Suppliers.FirstOrDefaultAsync(s => s.Name.ToLower() == name.ToLower());
+            return await _context.Suppliers.AsNoTracking().FirstOrDefaultAsync(s => s.Name.ToLower() == name.ToLower());
         }
 
         public async Task AddAsync(Supplier supplier)

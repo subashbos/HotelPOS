@@ -28,12 +28,12 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Item>> GetAllAsync()
         {
-            return await _context.Items.AsNoTracking().Include(i => i.Category).ToListAsync();
+            return await _context.Items.AsNoTracking().Include(i => i.Category).Include(i => i.Unit).ToListAsync();
         }
 
         public async Task<Item?> GetByIdAsync(int id)
         {
-            return await _context.Items.Include(i => i.Category).FirstOrDefaultAsync(i => i.Id == id);
+            return await _context.Items.Include(i => i.Category).Include(i => i.Unit).FirstOrDefaultAsync(i => i.Id == id);
         }
 
         public async Task<List<Item>> GetByIdsAsync(List<int> ids)
@@ -45,6 +45,14 @@ namespace HotelPOS.Infrastructure.Persistence
         {
             _context.Items.Update(item);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> TryDeductStockAsync(int itemId, int quantity)
+        {
+            var rows = await _context.Items
+                .Where(i => i.Id == itemId && (quantity <= 0 || i.StockQuantity >= quantity))
+                .ExecuteUpdateAsync(setters => setters.SetProperty(i => i.StockQuantity, i => i.StockQuantity - quantity));
+            return rows > 0;
         }
 
         public async Task UpdateRangeAsync(List<Item> items)

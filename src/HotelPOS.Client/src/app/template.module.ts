@@ -21,6 +21,7 @@ import { UserDropdownComponent } from './components/dropdowns/user-dropdown/user
 // Layouts
 import { AdminComponent } from './layouts/admin/admin.component';
 import { AuthComponent } from './layouts/auth/auth.component';
+import { EssComponent } from './layouts/ess/ess.component';
 
 // Views
 import { DashboardComponent } from './views/admin/dashboard/dashboard.component';
@@ -30,15 +31,19 @@ import { LoginComponent } from './views/auth/login/login.component';
 import { RegisterComponent } from './views/auth/register/register.component';
 import { BillingComponent } from './views/admin/billing/billing.component';
 import { CategoriesComponent } from './views/admin/categories/categories.component';
+import { UnitsComponent } from './views/admin/units/units.component';
 import { ItemsComponent } from './views/admin/items/items.component';
 import { SuppliersComponent } from './views/admin/suppliers/suppliers.component';
 import { PurchasesComponent } from './views/admin/purchases/purchases.component';
+import { EstimationsComponent } from './views/admin/estimations/estimations.component';
+import { ReservationsComponent } from './views/admin/reservations/reservations.component';
 import { ShiftSessionComponent } from './views/admin/shift-session/shift-session.component';
 import { ExpensesComponent } from './views/admin/expenses/expenses.component';
 import { EmployeesComponent } from './views/admin/employees/employees.component';
 import { AttendanceComponent } from './views/admin/attendance/attendance.component';
 import { LeaveComponent } from './views/admin/leave/leave.component';
 import { PayrollComponent } from './views/admin/payroll/payroll.component';
+import { TdsComponent } from './views/admin/tds/tds.component';
 import { SalesReportComponent } from './views/admin/sales-report/sales-report.component';
 import { ItemReportComponent } from './views/admin/item-report/item-report.component';
 import { PurchaseReportComponent } from './views/admin/purchase-report/purchase-report.component';
@@ -50,6 +55,15 @@ import { AuditComponent } from './views/admin/audit/audit.component';
 import { ForgotPasswordComponent } from './views/auth/forgot-password/forgot-password.component';
 import { AccountComponent } from './views/admin/account/account.component';
 import { CustomersComponent } from './views/admin/customers/customers.component';
+import { RawMaterialsComponent } from './views/admin/raw-materials/raw-materials.component';
+import { BomComponent } from './views/admin/bom/bom.component';
+import { BiAnalyticsComponent } from './views/admin/bi-analytics/bi-analytics.component';
+import { AccessDeniedComponent } from './views/admin/access-denied/access-denied.component';
+import { ReceiptComponent } from './components/print/receipt/receipt.component';
+import { KotComponent } from './components/print/kot/kot.component';
+import { EssLeaveComponent } from './views/ess/leave/ess-leave.component';
+import { EssPayslipsComponent } from './views/ess/payslips/ess-payslips.component';
+import { EssProfileComponent } from './views/ess/profile/ess-profile.component';
 
 @NgModule({
   declarations: [
@@ -75,15 +89,19 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
     RegisterComponent,
     BillingComponent,
     CategoriesComponent,
+    UnitsComponent,
     ItemsComponent,
     SuppliersComponent,
     PurchasesComponent,
+    EstimationsComponent,
+    ReservationsComponent,
     ShiftSessionComponent,
     ExpensesComponent,
     EmployeesComponent,
     AttendanceComponent,
     LeaveComponent,
     PayrollComponent,
+    TdsComponent,
     SalesReportComponent,
     ItemReportComponent,
     PurchaseReportComponent,
@@ -94,7 +112,17 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
     AuditComponent,
     ForgotPasswordComponent,
     AccountComponent,
-    CustomersComponent
+    CustomersComponent,
+    RawMaterialsComponent,
+    BomComponent,
+    BiAnalyticsComponent,
+    AccessDeniedComponent,
+    ReceiptComponent,
+    KotComponent,
+    EssComponent,
+    EssLeaveComponent,
+    EssPayslipsComponent,
+    EssProfileComponent
   ],
   imports: [
     CommonModule,
@@ -125,15 +153,19 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
     RegisterComponent,
     BillingComponent,
     CategoriesComponent,
+    UnitsComponent,
     ItemsComponent,
     SuppliersComponent,
     PurchasesComponent,
+    EstimationsComponent,
+    ReservationsComponent,
     ShiftSessionComponent,
     ExpensesComponent,
     EmployeesComponent,
     AttendanceComponent,
     LeaveComponent,
     PayrollComponent,
+    TdsComponent,
     SalesReportComponent,
     ItemReportComponent,
     PurchaseReportComponent,
@@ -144,7 +176,15 @@ import { CustomersComponent } from './views/admin/customers/customers.component'
     AuditComponent,
     ForgotPasswordComponent,
     AccountComponent,
-    CustomersComponent
+    CustomersComponent,
+    RawMaterialsComponent,
+    BomComponent,
+    BiAnalyticsComponent,
+    AccessDeniedComponent,
+    EssComponent,
+    EssLeaveComponent,
+    EssPayslipsComponent,
+    EssProfileComponent
   ]
 })
 export class TemplateModule { }

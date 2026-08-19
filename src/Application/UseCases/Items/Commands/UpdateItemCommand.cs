@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
 using HotelPOS.Application.Interfaces;
@@ -18,20 +19,25 @@ namespace HotelPOS.Application.UseCases.Items.Commands
         string? HsnCode,
         string? Barcode,
         int StockQuantity,
-        bool TrackInventory
+        bool TrackInventory,
+        int UnitId
     ) : IRequest<Item>;
 
     public class UpdateItemCommandHandler : IRequestHandler<UpdateItemCommand, Item>
     {
         private readonly IItemRepository _itemRepository;
+        private readonly IAuthorizationService _authorization;
 
-        public UpdateItemCommandHandler(IItemRepository itemRepository)
+        public UpdateItemCommandHandler(IItemRepository itemRepository, IAuthorizationService authorization)
         {
             _itemRepository = itemRepository;
+            _authorization = authorization;
         }
 
         public async Task<Item> Handle(UpdateItemCommand request, CancellationToken cancellationToken)
         {
+            _authorization.EnsurePermission(PermissionModules.Items);
+
             if (request.Id <= 0)
                 throw new ArgumentException("Invalid item ID.", nameof(request));
 
@@ -66,6 +72,7 @@ namespace HotelPOS.Application.UseCases.Items.Commands
             item.Barcode = request.Barcode;
             item.StockQuantity = request.StockQuantity;
             item.TrackInventory = request.TrackInventory;
+            item.UnitId = request.UnitId;
 
             await _itemRepository.UpdateAsync(item);
             return item;

@@ -13,8 +13,12 @@ HotelPOS is a WPF-based point-of-sale app for hotel/restaurant billing with:
 - Audit logging
 - Settings-managed receipt rendering and printing
 - Unified Premium UI (Global DataGrid styling and consistent aesthetics)
+- Human Resources module (Employees, Attendance, Leave, Payroll) — see [HUMAN_RESOURCES_DEEP_DIVE.md](HUMAN_RESOURCES_DEEP_DIVE.md)
 
-Primary startup flow:
+A JWT-secured REST API (`src/API`) exposes the same Application layer, and an Angular
+web client (`src/HotelPOS.Client`) consumes it, including HR screens (added 2026-07-18).
+
+Primary startup flow (WPF desktop app):
 
 1. App bootstraps dependency injection and logging (`App.xaml.cs`)
 2. Login window opens
@@ -23,14 +27,16 @@ Primary startup flow:
 
 ## 2) Architecture Overview
 
-The solution follows a strict **Clean Architecture** with **CQRS** and **MVVM** patterns:
+The solution follows a strict **Clean Architecture** with **CQRS** and **MVVM** patterns.
+All projects live under `src/`:
 
-- `HotelPOS/`: WPF presentation (MVVM ViewModels, UI XAML, and DI composition root)
-- `HotelPOS.Domain/`: Core entities (`Item`, `Order`) and repository contracts
-- `HotelPOS.Application/`: Business services, MediatR Commands/Queries, and Data Transfer Objects (DTOs)
-- `HotelPOS.Persistence/`: EF Core `DbContext`, `GenericRepository<T>`, and specific repository implementations
-- `HotelPOS.Infrastructure/`: Cross-cutting utilities (theme, notifications, backup)
-- `HotelPOS.Tests/`: Unit, integration, and loophole-focused tests
+- `src/HotelPOS/` (`HotelPOS.WPF`): WPF presentation (MVVM ViewModels, UI XAML, DI composition root) plus WPF-specific utilities (`Services/BackupService.cs`, `Services/ThemeService.cs`, notifications)
+- `src/Domain/`: Core entities (`Item`, `Order`, HR entities, etc.) and repository contracts (namespace `HotelPOS.Domain`)
+- `src/Application/`: Business services, MediatR Commands/Queries, and Data Transfer Objects (DTOs) (namespace `HotelPOS.Application`)
+- `src/Infrastructure/`: EF Core `DbContext`, `GenericRepository<T>`, and repository implementations (`Infrastructure/Persistence/`) — this absorbed the former standalone `HotelPOS.Persistence` project
+- `src/API/` (`HotelPOS.Api`): JWT-secured ASP.NET Core REST API over the same Application layer
+- `src/HotelPOS.Client/`: Angular web client
+- `src/HotelPOS.Tests/` and `src/HotelPOS.Api.Tests/`: Unit, integration, and loophole-focused tests
 
 Dependency direction and Data Flow:
 
@@ -43,7 +49,7 @@ Dependency direction and Data Flow:
 
 ### Dependency Injection and Lifetimes
 
-Defined in `HotelPOS/App.xaml.cs`.
+Defined in `src/HotelPOS/App.xaml.cs` (and `src/HotelPOS/App.Services.cs`).
 
 - `DbContext` is scoped (one per DI scope)
 - Repositories and core services are mostly scoped
@@ -66,7 +72,7 @@ The `Category` entity includes a `DisplayOrder` property (integer).
 
 ### Authentication
 
-Implemented in `HotelPOS.Application/AuthService.cs`.
+Implemented in `src/Application/UseCases/AuthService.cs`.
 
 - PBKDF2 password verification
 - In-memory failed login lockout tracking (`5` failed attempts, `5` minute lock window)
@@ -74,7 +80,7 @@ Implemented in `HotelPOS.Application/AuthService.cs`.
 
 ### Ordering and Stock
 
-Implemented in `HotelPOS.Application/OrderService.cs`.
+Implemented in `src/Application/UseCases/OrderService.cs`.
 
 - Creates fiscal-year invoice numbers (`INV/YYYY-YY/####`)
 - Calculates subtotal/GST/CGST/SGST/discount/final total
@@ -85,7 +91,7 @@ Implemented in `HotelPOS.Application/OrderService.cs`.
 
 ### Data Access
 
-Core data context is in `HotelPOS.Persistence/HotelDbContext.cs`.
+Core data context is in `src/Infrastructure/Persistence/HotelDbContext.cs`.
 
 - Tables include orders, order items, items, categories, users, system settings, audit logs, cash sessions
 - Global decimal precision configured to `(18,2)`
@@ -94,28 +100,30 @@ Core data context is in `HotelPOS.Persistence/HotelDbContext.cs`.
 
 ### Receipt + Printing
 
-- Print UI: `HotelPOS/PrintPreviewWindow.xaml.cs`
-- Receipt generation: `HotelPOS/ReceiptGenerator.cs`
+- Print UI: `src/HotelPOS/PrintPreviewWindow.xaml.cs`
+- Receipt generation: `src/HotelPOS/ReceiptGenerator.cs`
 - Supports thermal and A4 formats
 - Uses runtime system settings for branding and tax display behavior
 - All DataGrids are standardized using the `PremiumGrid` style defined in `Themes/GlobalStyles.xaml`.
 
 ## 4) Database and Configuration
 
-Main configuration file: `HotelPOS/appsettings.json`
+Main configuration file: `src/HotelPOS/appsettings.json`
 
 - Required key: `ConnectionStrings:DefaultConnection`
-- Current development sample points to SQL Server
+- Both the WPF app and the API register `UseSqlServer` at startup — SQL Server is the only
+  runtime provider today (see Risk 1 below, now mitigated).
 
 Important operational note:
 
-- `BackupService` currently uses `SqliteConnection` APIs and depends on database file paths.
-- With SQL Server connection strings, this backup logic will typically no-op (or not function as expected).
-- Treat automated backup behavior as environment-sensitive; verify and adjust before production rollout.
+- `BackupService` (`src/HotelPOS/Services/BackupService.cs`) is provider-aware: it branches
+  on `db.Database.ProviderName` and uses T-SQL `BACKUP DATABASE` for SQL Server or
+  `SqliteConnection` APIs for SQLite. Since the app only registers the SQL Server provider,
+  the SQLite branch is currently unreachable in production but is exercised by tests.
 
 ## 5) Session and Role Behavior
 
-Session state is tracked in `HotelPOS/AppSession.cs`.
+Session state is tracked in `src/HotelPOS/AppSession.cs`.
 
 - `IsAdmin` and `IsManager` flags control visibility/navigation access in dashboard
 - Cashier-like users have admin modules hidden and default to billing screen
@@ -126,10 +134,10 @@ Session state is tracked in `HotelPOS/AppSession.cs`.
 From repository root:
 
 ```powershell
-dotnet restore .\HotelPOS\HotelPOS.slnx
-dotnet build .\HotelPOS\HotelPOS.slnx
-dotnet run --project .\HotelPOS\HotelPOS.csproj
-dotnet test .\HotelPOS.Tests\HotelPOS.Tests.csproj
+dotnet restore .\HotelPOS.sln
+dotnet build .\HotelPOS.sln
+dotnet run --project .\src\HotelPOS\HotelPOS.WPF.csproj
+dotnet test .\HotelPOS.sln
 ```
 
 Smoke-test checklist for new owner:
@@ -145,16 +153,18 @@ Smoke-test checklist for new owner:
 
 Most likely files to modify during feature work:
 
-- DI registrations and startup behavior: `HotelPOS/App.xaml.cs`
-- Billing UX and keyboard shortcuts: `HotelPOS/MainWindow.xaml.cs`, `HotelPOS/Views/BillingView.xaml*`
-- Business rules: `HotelPOS.Application/*Service.cs`
-- Data shape and migrations: `HotelPOS.Persistence/HotelDbContext.cs`, `HotelPOS.Persistence/Migrations/*`
-- Receipt format and compliance details: `HotelPOS/ReceiptGenerator.cs`
+- DI registrations and startup behavior: `src/HotelPOS/App.xaml.cs`, `src/HotelPOS/App.Services.cs`
+- Billing UX and keyboard shortcuts: `src/HotelPOS/MainWindow.xaml.cs`, `src/HotelPOS/Views/BillingView.xaml*`
+- Business rules: `src/Application/UseCases/*Service.cs`
+- Data shape and migrations: `src/Infrastructure/Persistence/HotelDbContext.cs`, `src/Infrastructure/Persistence/Migrations/*`
+- Receipt format and compliance details: `src/HotelPOS/ReceiptGenerator.cs`
+- REST API surface: `src/API/Controllers/*`
+- Web client screens: `src/HotelPOS.Client/src/app/views/admin/*`
 
 ## 8) Known Risks / Follow-Up Recommendations
 
 This section is now an execution plan you can track.
-Last reviewed: `2026-04-27`
+Last reviewed: `2026-07-23`
 
 Status legend: `Open` | `In Progress` | `Mitigated` | `Closed`
 
@@ -172,18 +182,24 @@ Status legend: `Open` | `In Progress` | `Mitigated` | `Closed`
   4. Perform periodic restore drills to verify `.bak` and `.db` file integrity.
 - **Done criteria:** Verified restore drill from latest backup in a non-dev environment.
 
-### Risk 2: Sensitive config in source-controlled `appsettings.json`
+### Risk 2: Sensitive config in source-controlled `appsettings.json` (MITIGATED)
 
 - **Risk:** Connection strings and secrets can leak or be reused insecurely.
 - **Impact:** Security and compliance exposure.
 - **Priority:** `P0`
-- **Status:** `In Progress`
+- **Status:** `Mitigated` — see [README.md](../README.md#-configuration--secrets) for the current
+  documented workflow.
 - **Owner:** DevOps + App owner
 - **Actions:**
   1. [DONE] Replace concrete connection values with placeholders in tracked config (Default config uses LocalDB).
-  2. Add environment-specific config (`appsettings.Development.json`, secure prod source).
-  3. Use environment variables or secure secret storage for production.
-  4. [DONE] Add `.gitignore`/deployment docs for local secret files (`appsettings.Development.json` and `secrets.json` excluded).
+  2. [DONE] Add environment-specific config: `src/API/appsettings.json` ships empty/production-safe
+     defaults, `appsettings.Development.json` layers in local dev values, and
+     `appsettings.Production.json` (not tracked) supplies real CORS origins etc.
+  3. [DONE] JWT signing key is never checked in — local dev uses `dotnet user-secrets set "Jwt:Key" ...`
+     (the API project has `UserSecretsId` configured); production reads the `HOTELPOS_JWT_KEY`
+     environment variable, and `Program.cs` throws a startup error if neither is set.
+  4. [DONE] `.gitignore` excludes `appsettings.Local.json` and `secrets.json`. Note:
+     `appsettings.Development.json` is intentionally tracked as a secret-free template, not excluded.
 - **Done criteria:** No production secrets in repo; deployment docs include secure configuration steps.
 
 ### Risk 3: Service lifetime mismatch (singletons vs scoped dependencies)
@@ -257,12 +273,14 @@ Status legend: `Open` | `In Progress` | `Mitigated` | `Closed`
 
 ## 10) Quick Reference
 
-- Startup + DI: `HotelPOS/App.xaml.cs`
-- Login/session scope: `HotelPOS/LoginWindow.xaml.cs`
-- Dashboard navigation: `HotelPOS/DashboardWindow.xaml.cs`
-- Billing workflow: `HotelPOS/MainWindow.xaml.cs`
-- Order business logic: `HotelPOS.Application/OrderService.cs`
-- Auth logic: `HotelPOS.Application/AuthService.cs`
-- Data context: `HotelPOS.Persistence/HotelDbContext.cs`
-- Receipt rendering: `HotelPOS/ReceiptGenerator.cs`
+- Startup + DI: `src/HotelPOS/App.xaml.cs`, `src/HotelPOS/App.Services.cs`
+- Login/session scope: `src/HotelPOS/LoginWindow.xaml.cs`
+- Dashboard navigation: `src/HotelPOS/DashboardWindow.xaml.cs`
+- Billing workflow: `src/HotelPOS/MainWindow.xaml.cs`
+- Order business logic: `src/Application/UseCases/OrderService.cs`
+- Auth logic: `src/Application/UseCases/AuthService.cs`
+- Data context: `src/Infrastructure/Persistence/HotelDbContext.cs`
+- Receipt rendering: `src/HotelPOS/ReceiptGenerator.cs`
+- REST API entry point: `src/API/Program.cs`
+- Web client entry point: `src/HotelPOS.Client/src/app/app.routes.ts`
 

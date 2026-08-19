@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Suppliers.Commands;

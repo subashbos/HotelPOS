@@ -1,13 +1,12 @@
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelPOS.Api.Controllers
 {
-    /// <summary>Roles and their module permissions — requires a valid JWT token on all endpoints.</summary>
-    [Authorize(Roles = RoleNames.Admin)]
+    /// <summary>Roles and their module permissions — requires a valid JWT token; permission enforced per-action by RoleService.</summary>
+    [Authorize]
     public class RolesController : BaseApiController
     {
         private readonly IRoleService _roleService;

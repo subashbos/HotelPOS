@@ -17,7 +17,7 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -174,6 +174,12 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OpenedAt");
+
+                    b.HasIndex("Status")
+                        .IsUnique()
+                        .HasFilter("[Status] = 'Open'");
 
                     b.ToTable("CashSessions");
                 });
@@ -365,20 +371,20 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Aadhaar")
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Address")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("BankAccountNumber")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("BankIfsc")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("BankName")
                         .HasMaxLength(100)
@@ -422,8 +428,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("EsicNumber")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -439,8 +445,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Pan")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(20)
@@ -455,8 +461,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Uan")
-                        .HasMaxLength(22)
-                        .HasColumnType("nvarchar(22)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
@@ -475,6 +481,123 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.Estimation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ConvertedOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CustomerName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CustomerPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("EstimationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EstimationNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("GrandTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalDiscount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalTax")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ValidUntil")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConvertedOrderId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("EstimationNumber")
+                        .IsUnique();
+
+                    b.ToTable("Estimations");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.EstimationItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("EstimationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TaxPercentage")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EstimationId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("EstimationItems");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.Expense", b =>
@@ -569,9 +692,14 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Property<bool>("TrackInventory")
                         .HasColumnType("bit");
 
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
+
+                    b.HasIndex("UnitId");
 
                     b.ToTable("Items");
                 });
@@ -856,7 +984,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("Subtotal")
                         .HasPrecision(18, 2)
@@ -890,6 +1019,10 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("IsDeleted");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TableNumber");
 
                     b.HasIndex("FiscalYear", "InvoiceNumber")
                         .IsUnique()
@@ -947,6 +1080,9 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
                     b.Property<string>("CodeHash")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -997,6 +1133,10 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("VoidReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("Year")
                         .HasColumnType("int");
@@ -1135,6 +1275,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PurchaseDate");
+
                     b.HasIndex("SupplierId");
 
                     b.ToTable("Purchases");
@@ -1243,6 +1385,9 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("ExpiresUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("FamilyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("ReplacedByTokenHash")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
@@ -1301,6 +1446,61 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RememberMeTokens");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.Reservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CustomerName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CustomerPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("PartySize")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReservationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("TableId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("TableId", "ReservationDate");
+
+                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.Role", b =>
@@ -1535,6 +1735,60 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
+                            Id = 39,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Customers",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 41,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Units",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 43,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrPayrollRun",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 45,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Tds",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 47,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "OrderManagement",
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 49,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "CustomerManagement",
+                            RoleId = 1
+                        },
+                        new
+                        {
                             Id = 11,
                             CanAccess = false,
                             CanDelete = true,
@@ -1693,6 +1947,60 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             CanDelete = true,
                             CanEdit = true,
                             ModuleName = "HrPayroll",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 40,
+                            CanAccess = true,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Customers",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 42,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Units",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 44,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "HrPayrollRun",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 46,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "Tds",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 48,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "OrderManagement",
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 50,
+                            CanAccess = false,
+                            CanDelete = true,
+                            CanEdit = true,
+                            ModuleName = "CustomerManagement",
                             RoleId = 2
                         });
                 });
@@ -1916,6 +2224,14 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Property<string>("OffsiteBackupPath")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("ProfessionalTaxAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ProfessionalTaxThreshold")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("ReceiptFormat")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1973,6 +2289,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                             HotelPhone = "",
                             IdleTimeoutMinutes = 15,
                             IsCompositionScheme = false,
+                            ProfessionalTaxAmount = 200m,
+                            ProfessionalTaxThreshold = 15000m,
                             ReceiptFormat = "Thermal",
                             ShowDiscountLine = false,
                             ShowGstBreakdown = true,
@@ -2016,6 +2334,226 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("Tables");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.TdsConfig", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CessRatePercent")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("FinancialYearStart")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("RebateIncomeLimit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("StandardDeduction")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialYearStart")
+                        .IsUnique();
+
+                    b.ToTable("TdsConfigs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CessRatePercent = 4m,
+                            FinancialYearStart = 2025,
+                            RebateIncomeLimit = 1200000m,
+                            StandardDeduction = 75000m
+                        });
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.TdsSlab", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FinancialYearStart")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("IncomeFrom")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("IncomeTo")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("RatePercent")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinancialYearStart", "DisplayOrder")
+                        .IsUnique();
+
+                    b.ToTable("TdsSlabs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DisplayOrder = 1,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 0m,
+                            IncomeTo = 400000m,
+                            RatePercent = 0m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DisplayOrder = 2,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 400000m,
+                            IncomeTo = 800000m,
+                            RatePercent = 5m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DisplayOrder = 3,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 800000m,
+                            IncomeTo = 1200000m,
+                            RatePercent = 10m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DisplayOrder = 4,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 1200000m,
+                            IncomeTo = 1600000m,
+                            RatePercent = 15m
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DisplayOrder = 5,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 1600000m,
+                            IncomeTo = 2000000m,
+                            RatePercent = 20m
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DisplayOrder = 6,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 2000000m,
+                            IncomeTo = 2400000m,
+                            RatePercent = 25m
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DisplayOrder = 7,
+                            FinancialYearStart = 2025,
+                            IncomeFrom = 2400000m,
+                            RatePercent = 30m
+                        });
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.UnitOfMeasurement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UnitOfMeasurements");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DisplayOrder = 0,
+                            Name = "Pcs"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DisplayOrder = 1,
+                            Name = "Kg"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DisplayOrder = 2,
+                            Name = "Gram"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DisplayOrder = 3,
+                            Name = "Litre"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DisplayOrder = 4,
+                            Name = "Ml"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DisplayOrder = 5,
+                            Name = "Plate"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DisplayOrder = 6,
+                            Name = "Box"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            DisplayOrder = 7,
+                            Name = "Packet"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            DisplayOrder = 8,
+                            Name = "Bottle"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            DisplayOrder = 9,
+                            Name = "Dozen"
+                        });
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.User", b =>
@@ -2112,6 +2650,8 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ItemId");
 
+                    b.HasIndex("WastedAt");
+
                     b.ToTable("WastageEntries");
                 });
 
@@ -2187,6 +2727,42 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.Estimation", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Entities.Order", "ConvertedOrder")
+                        .WithMany()
+                        .HasForeignKey("ConvertedOrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("HotelPOS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ConvertedOrder");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.EstimationItem", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Entities.Estimation", "Estimation")
+                        .WithMany("EstimationItems")
+                        .HasForeignKey("EstimationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelPOS.Domain.Entities.Item", "Item")
+                        .WithMany()
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Estimation");
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.Expense", b =>
                 {
                     b.HasOne("HotelPOS.Domain.Entities.User", "User")
@@ -2202,7 +2778,15 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId");
 
+                    b.HasOne("HotelPOS.Domain.Entities.UnitOfMeasurement", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Category");
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.LeaveBalance", b =>
@@ -2248,6 +2832,16 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Navigation("Employee");
 
                     b.Navigation("LeaveType");
+                });
+
+            modelBuilder.Entity("HotelPOS.Domain.Entities.Order", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("HotelPOS.Domain.Entities.OrderItem", b =>
@@ -2343,6 +2937,24 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.Reservation", b =>
+                {
+                    b.HasOne("HotelPOS.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("HotelPOS.Domain.Entities.Table", "Table")
+                        .WithMany()
+                        .HasForeignKey("TableId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Table");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.RolePermission", b =>
                 {
                     b.HasOne("HotelPOS.Domain.Entities.Role", null)
@@ -2383,15 +2995,13 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                     b.Navigation("Item");
                 });
 
+            modelBuilder.Entity("HotelPOS.Domain.Entities.Estimation", b =>
+                {
+                    b.Navigation("EstimationItems");
+                });
+
             modelBuilder.Entity("HotelPOS.Domain.Entities.Order", b =>
                 {
-                    b.HasOne("HotelPOS.Domain.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Customer");
-
                     b.Navigation("Items");
                 });
 

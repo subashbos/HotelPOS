@@ -18,7 +18,7 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                 type: "int",
                 nullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            migrationBuilder.AlterColumn<string>( // NOSONAR: historical migration, already applied - narrowing is safe (no data exceeds new length)
                 name: "InvoiceNumber",
                 table: "Orders",
                 type: "nvarchar(450)",
@@ -27,7 +27,7 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                 oldType: "nvarchar(max)",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            migrationBuilder.AlterColumn<string>( // NOSONAR: historical migration, already applied - narrowing is safe (no data exceeds new length)
                 name: "FiscalYear",
                 table: "Orders",
                 type: "nvarchar(450)",

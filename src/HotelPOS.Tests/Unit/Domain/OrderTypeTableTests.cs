@@ -27,7 +27,9 @@ namespace HotelPOS.Tests
 
         public OrderTypeTableTests()
         {
-            _service = new OrderService(_repo.Object, _mediator.Object, _itemService.Object);
+            _itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync((List<int> ids) => ids.Select(id => new Item { Id = id, Name = "Tea", Price = 50m, TaxPercentage = 0m }).ToList());
+            _service = new OrderService(_repo.Object, _mediator.Object, _itemService.Object, TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object);
         }
 
         private static List<OrderItem> OneItem() =>
@@ -355,6 +357,8 @@ namespace HotelPOS.Tests
             {
                 new OrderItem { ItemId = 1, ItemName = "Biryani", Quantity = 2, Price = 150, TaxPercentage = 5, Total = 300 }
             };
+            _itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync(new List<Item> { new Item { Id = 1, Name = "Biryani", Price = 150m, TaxPercentage = 5m } });
 
             await _service.SaveOrderAsync(new SaveOrderRequest(items, 0, OrderType: OrderTypes.Takeaway));
 
@@ -375,6 +379,8 @@ namespace HotelPOS.Tests
             {
                 new OrderItem { ItemId = 1, ItemName = "Pasta", Quantity = 1, Price = 200, TaxPercentage = 0, Total = 200 }
             };
+            _itemService.Setup(s => s.GetItemsByIdsAsync(It.IsAny<List<int>>()))
+                .ReturnsAsync(new List<Item> { new Item { Id = 1, Name = "Pasta", Price = 200m, TaxPercentage = 0m } });
 
             await _service.SaveOrderAsync(new SaveOrderRequest(items, 0, Discount: 20m, OrderType: OrderTypes.Online));
 
@@ -649,6 +655,24 @@ namespace HotelPOS.Tests
             await vm.SaveOrderCommand.ExecuteAsync(null);
 
             // After reset to DineIn, TableNumber should be 1
+            Assert.Equal(1, vm.TableNumber);
+        }
+
+        [Fact]
+        public async Task AfterSave_DineIn_TableNumberResetsTo1()
+        {
+            var (vm, _, cartSvc) = BuildVm(OrderTypes.DineIn);
+            vm.TableNumber = 5;
+
+            cartSvc.Setup(s => s.GetItems(5)).Returns(new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Fried Rice", Quantity = 1, Price = 200, Total = 200 }
+            });
+            cartSvc.Setup(s => s.GetSubtotal(5)).Returns(200m);
+
+            await vm.SaveOrderCommand.ExecuteAsync(null);
+
+            // After reset, TableNumber should default back to 1
             Assert.Equal(1, vm.TableNumber);
         }
 

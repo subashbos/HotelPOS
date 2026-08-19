@@ -1,59 +1,91 @@
 using FluentValidation;
+using HotelPOS.Application.Common.Models;
 using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
+using MediatR;
 
 namespace HotelPOS.Application.UseCases
 {
     /// <summary>
     /// Computes monthly payroll using Indian statutory parameters (EPF, ESI) with Professional
-    /// Tax and TDS handled as documented approximations — see <see cref="IndianStatutoryDefaults"/>.
+    /// Tax handled as a documented approximation — see <see cref="IndianStatutoryDefaults"/>.
+    /// Income-tax TDS is computed via <see cref="TdsCalculator"/> against the admin-configured
+    /// slab structure for the run's financial year.
     /// </summary>
     public class PayrollService : IPayrollService
     {
+        private const string SalaryStructureEntityType = "SalaryStructure";
+        private const string PayrollRunEntityType = "PayrollRun";
+
         private readonly IPayrollRepository _payrollRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IAttendanceRepository _attendanceRepository;
+        private readonly IAuthorizationService _authorization;
         private readonly IValidator<SalaryStructure> _validator;
+        private readonly IMediator? _mediator;
+        private readonly ISettingService? _settingService;
 
         public PayrollService(
             IPayrollRepository payrollRepository,
             IEmployeeRepository employeeRepository,
             IAttendanceRepository attendanceRepository,
-            IValidator<SalaryStructure>? validator = null)
+            IAuthorizationService authorization,
+            IValidator<SalaryStructure>? validator = null,
+            IMediator? mediator = null,
+            ISettingService? settingService = null)
         {
             _payrollRepository = payrollRepository;
             _employeeRepository = employeeRepository;
             _attendanceRepository = attendanceRepository;
+            _authorization = authorization;
             _validator = validator ?? new SalaryStructureValidator();
+            _mediator = mediator;
+            _settingService = settingService;
         }
 
         public async Task<List<SalaryStructure>> GetSalaryStructuresAsync(int employeeId)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetSalaryStructuresAsync(employeeId);
         }
 
         public async Task SaveSalaryStructureAsync(SalaryStructure structure)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+
             if (structure == null) throw new ArgumentNullException(nameof(structure));
 
             var result = _validator.Validate(structure);
             if (!result.IsValid)
                 throw new ArgumentException(result.Errors[0].ErrorMessage);
 
-            if (structure.Id == 0)
+            var isNew = structure.Id == 0;
+            if (isNew)
                 await _payrollRepository.AddSalaryStructureAsync(structure);
             else
                 await _payrollRepository.UpdateSalaryStructureAsync(structure);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    SalaryStructureEntityType, structure.Id, isNew ? "Create" : "Update",
+                    $"Employee: {structure.EmployeeId}, Gross: {structure.GrossMonthly:N2}"));
+            }
         }
 
         public async Task<PayrollRun> RunPayrollAsync(int month, int year, int? processedByUserId)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+
             if (month < 1 || month > 12) throw new ArgumentException("Month must be between 1 and 12.");
 
             var existingRun = await _payrollRepository.GetRunAsync(month, year);
-            if (existingRun != null)
+            // A voided run doesn't block a re-run - voiding an erroneous run and running again
+            // is how a correction happens, rather than editing computed payslips in place.
+            if (existingRun != null && existingRun.Status != PayrollRunStatuses.Voided)
                 throw new InvalidOperationException($"Payroll for {month:D2}/{year} has already been run.");
 
             var monthStart = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -69,6 +101,15 @@ namespace HotelPOS.Application.UseCases
                 ProcessedOn = DateTime.UtcNow,
                 ProcessedByUserId = processedByUserId
             };
+
+            // Indian financial year runs April-March, so a January payslip falls in the FY that
+            // started the previous April.
+            var financialYearStart = month >= 4 ? year : year - 1;
+            var tdsRuleSet = await _payrollRepository.GetTdsRuleSetAsync(financialYearStart);
+
+            var settings = _settingService != null ? await _settingService.GetSettingsAsync() : null;
+            var professionalTaxThreshold = settings?.ProfessionalTaxThreshold ?? IndianStatutoryDefaults.ProfessionalTaxThreshold;
+            var professionalTaxAmount = settings?.ProfessionalTaxAmount ?? IndianStatutoryDefaults.ProfessionalTaxAmount;
 
             foreach (var employee in employees.Where(e => e.Status == EmployeeStatuses.Active))
             {
@@ -88,7 +129,7 @@ namespace HotelPOS.Application.UseCases
                 var lopDays = absentDays + (halfDays * 0.5m);
                 var paidDays = Math.Max(0, workingDays - lopDays);
 
-                var payslip = CalculatePayslip(structure, workingDays, paidDays);
+                var payslip = CalculatePayslip(structure, workingDays, paidDays, tdsRuleSet, professionalTaxThreshold, professionalTaxAmount);
                 payslip.PayrollRunId = run.Id;
                 payslip.EmployeeId = employee.Id;
                 payslip.Employee = employee;
@@ -96,11 +137,21 @@ namespace HotelPOS.Application.UseCases
             }
 
             await _payrollRepository.AddRunAsync(run);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    PayrollRunEntityType, run.Id, "Create",
+                    $"Month: {month:D2}/{year}, Payslips: {run.Payslips.Count}"));
+            }
+
             return run;
         }
 
         public async Task MarkRunAsPaidAsync(int runId)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+
             var run = await _payrollRepository.GetRunByIdAsync(runId)
                 ?? throw new KeyNotFoundException($"Payroll run #{runId} not found.");
 
@@ -117,24 +168,68 @@ namespace HotelPOS.Application.UseCases
             }
 
             await _payrollRepository.UpdateRunAsync(run);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    PayrollRunEntityType, run.Id, "Update",
+                    $"Status: {PayrollRunStatuses.Paid}, Payslips: {run.Payslips.Count}"));
+            }
+        }
+
+        public async Task VoidRunAsync(int runId, string reason)
+        {
+            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+
+            var run = await _payrollRepository.GetRunByIdAsync(runId)
+                ?? throw new KeyNotFoundException($"Payroll run #{runId} not found.");
+
+            if (run.Status == PayrollRunStatuses.Voided)
+                throw new InvalidOperationException("Payroll run is already voided.");
+            if (run.Status == PayrollRunStatuses.Paid)
+                throw new InvalidOperationException("Cannot void a payroll run that has already been paid.");
+
+            run.Status = PayrollRunStatuses.Voided;
+            run.VoidReason = reason;
+
+            await _payrollRepository.UpdateRunAsync(run);
+
+            if (_mediator != null)
+            {
+                await _mediator.Publish(new EntityActionEvent(
+                    PayrollRunEntityType, run.Id, "Void", $"Month: {run.Month:D2}/{run.Year}. Reason: {reason}"));
+            }
         }
 
         public async Task<List<PayrollRun>> GetRunsAsync()
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetRunsAsync();
         }
 
         public async Task<PayrollRun?> GetRunByIdAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.HrPayroll);
             return await _payrollRepository.GetRunByIdAsync(id);
         }
 
         public async Task<List<Payslip>> GetPayslipsByEmployeeAsync(int employeeId)
         {
+            // A missing linked login account (UserId null) can never match a real CurrentUserId,
+            // so this correctly falls through to the HrPayroll permission check for such employees.
+            var targetUserId = (await _employeeRepository.GetByIdAsync(employeeId))?.UserId ?? -1;
+            _authorization.EnsureSelfOrPermission(targetUserId, PermissionModules.HrPayroll);
+
             return await _payrollRepository.GetPayslipsByEmployeeAsync(employeeId);
         }
 
-        public Payslip CalculatePayslip(SalaryStructure structure, decimal workingDays, decimal paidDays)
+        public Payslip CalculatePayslip(
+            SalaryStructure structure,
+            decimal workingDays,
+            decimal paidDays,
+            TdsRuleSet? tdsRuleSet = null,
+            decimal professionalTaxThreshold = IndianStatutoryDefaults.ProfessionalTaxThreshold,
+            decimal professionalTaxAmount = IndianStatutoryDefaults.ProfessionalTaxAmount)
         {
             if (structure == null) throw new ArgumentNullException(nameof(structure));
             if (workingDays <= 0) throw new ArgumentException("Working days must be greater than zero.");
@@ -162,12 +257,12 @@ namespace HotelPOS.Application.UseCases
             }
 
             decimal professionalTax = 0;
-            if (structure.ProfessionalTaxApplicable && grossEarnings > IndianStatutoryDefaults.ProfessionalTaxThreshold)
+            if (structure.ProfessionalTaxApplicable && grossEarnings > professionalTaxThreshold)
             {
-                professionalTax = IndianStatutoryDefaults.ProfessionalTaxAmount;
+                professionalTax = professionalTaxAmount;
             }
 
-            const decimal tds = 0; // manual/statutory override — not auto-computed
+            var tds = TdsCalculator.CalculateMonthlyTds(grossMonthly, tdsRuleSet);
 
             var netPay = Math.Round(grossEarnings - pfEmployee - esiEmployee - professionalTax - tds, 2);
 

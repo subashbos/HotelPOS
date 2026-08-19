@@ -21,7 +21,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<AuditLog>> GetLogsAsync(DateTime? from, DateTime? to)
         {
-            var query = _context.AuditLogs.AsQueryable();
+            var query = _context.AuditLogs.AsNoTracking().AsQueryable();
 
             if (from.HasValue) query = query.Where(l => l.Timestamp >= from.Value.ToUniversalTime());
             if (to.HasValue) query = query.Where(l => l.Timestamp <= to.Value.ToUniversalTime());

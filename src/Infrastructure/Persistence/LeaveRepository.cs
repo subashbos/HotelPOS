@@ -15,7 +15,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<LeaveType>> GetLeaveTypesAsync()
         {
-            return await _context.LeaveTypes.OrderBy(t => t.Name).ToListAsync();
+            return await _context.LeaveTypes.AsNoTracking().OrderBy(t => t.Name).ToListAsync();
         }
 
         public async Task<LeaveType?> GetLeaveTypeByIdAsync(int id)
@@ -26,11 +26,15 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<LeaveBalance>> GetBalancesAsync(int employeeId, int year)
         {
             return await _context.LeaveBalances
+                .AsNoTracking()
                 .Include(b => b.LeaveType)
                 .Where(b => b.EmployeeId == employeeId && b.Year == year)
                 .ToListAsync();
         }
 
+        // Left tracked: LeaveService mutates the returned balance in place and persists via
+        // UpdateBalanceAsync's blind _context.LeaveBalances.Update(), which throws if this fetch
+        // is untracked but the same row is already tracked elsewhere in the DbContext.
         public async Task<LeaveBalance?> GetBalanceAsync(int employeeId, int leaveTypeId, int year)
         {
             return await _context.LeaveBalances
@@ -53,6 +57,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<LeaveRequest>> GetRequestsAsync(int? employeeId = null, string? status = null)
         {
             var query = _context.LeaveRequests
+                .AsNoTracking()
                 .Include(r => r.Employee)
                 .Include(r => r.LeaveType)
                 .AsQueryable();
@@ -66,6 +71,10 @@ namespace HotelPOS.Infrastructure.Persistence
             return await query.OrderByDescending(r => r.AppliedOn).ToListAsync();
         }
 
+        // Left tracked: LeaveService.ApproveLeaveAsync/RejectLeaveAsync/CancelLeaveAsync mutate the
+        // returned request in place and persist via UpdateRequestAsync's blind
+        // _context.LeaveRequests.Update(), which throws if this fetch is untracked but the same
+        // row is already tracked elsewhere in the DbContext.
         public async Task<LeaveRequest?> GetRequestByIdAsync(int id)
         {
             return await _context.LeaveRequests

@@ -1,8 +1,11 @@
+#nullable enable
+
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Expenses.Commands;
 using HotelPOS.Application.UseCases.Expenses.Queries;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Domain.Events;
 using MediatR;
 using AutoMapper;
 
@@ -10,6 +13,8 @@ namespace HotelPOS.Application.UseCases
 {
     public class ExpenseService : IExpenseService
     {
+        private const string ExpenseEntityType = "Expense";
+
         private readonly IMediator? _mediator;
         private readonly IExpenseRepository? _expenseRepository;
         private readonly IMapper _mapper;
@@ -58,8 +63,13 @@ namespace HotelPOS.Application.UseCases
 
             if (_mediator != null)
             {
+                var isNew = expense.Id == 0;
                 var dto = _mapper.Map<SaveExpenseDto>(expense);
-                await _mediator.Send(new SaveExpenseCommand(dto));
+                var id = await _mediator.Send(new SaveExpenseCommand(dto));
+                expense.Id = id;
+                await _mediator.Publish(new EntityActionEvent(
+                    ExpenseEntityType, id, isNew ? "Create" : "Update",
+                    $"Title: {dto.Title}, Amount: {dto.Amount:N2}"));
                 return;
             }
 
@@ -85,6 +95,7 @@ namespace HotelPOS.Application.UseCases
             if (_mediator != null)
             {
                 await _mediator.Send(new DeleteExpenseCommand(id));
+                await _mediator.Publish(new EntityActionEvent(ExpenseEntityType, id, "Delete"));
                 return;
             }
 

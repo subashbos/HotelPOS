@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:ctrl="clr-namespace:HotelPOS.Controls"
              xmlns:behaviors="clr-namespace:HotelPOS.Behaviors"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d" d:DesignHeight="900" d:DesignWidth="1400">
@@ -47,7 +46,7 @@
                 <Button Content="📤  Export Excel" Click="Export_Click"
                         Style="{StaticResource PrimaryBtn}" Background="{DynamicResource SuccessBrush}" Padding="16,8" Margin="10,0,0,0"/>
                 <Button Content="📄  GST Report" Click="ExportGst_Click"
-                        Style="{StaticResource PrimaryBtn}" Background="#E67E22" Padding="16,8" Margin="10,0,0,0"/>
+                        Style="{StaticResource PrimaryBtn}" Background="{DynamicResource TaxAccentBrush}" Padding="16,8" Margin="10,0,0,0"/>
                 <TextBlock x:Name="RowCountText" Text="{Binding RowCountText}" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}"
                            VerticalAlignment="Center" Margin="20,0,0,0"/>
             </StackPanel>
@@ -98,7 +97,7 @@
                                                     <TextBlock Text="{Binding ItemName}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                                     <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat=×{0}}" Foreground="{DynamicResource TextMuted}"/>
                                                     <TextBlock Grid.Column="2" Text="{Binding Price, StringFormat=Rs.{0:N2}}" Foreground="{DynamicResource TextMuted}"/>
-                                                    <TextBlock Grid.Column="3" Text="{Binding TaxPercentage, StringFormat={}{0}%}" Foreground="#E67E22" HorizontalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="3" Text="{Binding TaxPercentage, StringFormat={}{0}%}" Foreground="{DynamicResource TaxAccentBrush}" HorizontalAlignment="Center"/>
                                                     <TextBlock Grid.Column="4" Text="{Binding Total, StringFormat=Rs.{0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" TextAlignment="Right"/>
                                                 </Grid>
                                             </DataTemplate>

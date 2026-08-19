@@ -14,6 +14,12 @@ For in-depth explanations of the system's design and features, refer to the dedi
    *Comprehensive layout of the Clean Architecture implementation and design patterns (CQRS, MediatR).*
 3. **[Technical Reference & Deep Dives](docs/TechnicalReference.md)**  
    *Detailed documentation of thread safety, printing, tax calculation engines, and database synchronization.*
+4. **[Project Estimation](docs/PROJECT_ESTIMATION.md)**  
+   *Development process breakdown and man-hour estimates by module and team size.*
+5. **[Remaining Work Estimation](docs/REMAINING_WORK_ESTIMATION.md)**  
+   *Man-hour estimate for the open items already tracked in the QA and knowledge-transfer docs.*
+6. **[New Modules Verification Checklist](docs/NEW_MODULES_VERIFICATION_CHECKLIST.md)**  
+   *What to check first when building the Estimation and Reservation modules for the first time.*
 
 ---
 
@@ -22,7 +28,7 @@ For in-depth explanations of the system's design and features, refer to the dedi
 ### 🏛️ Clean Architecture & Scalability
 - **Domain-Driven Design (DDD)**: Business entities and rules are kept completely decoupled from outer persistence layers.
 - **Refactored DTO Organization**: Organized all request/response models into modular domain namespaces under `HotelPOS.Application/DTOs/` (Item, Order, Table, Report), separating application logic from serialization structures.
-- **Repository Pattern**: Strict decoupling of data persistence layers (`HotelPOS.Persistence`) using Entity Framework Core.
+- **Repository Pattern**: Strict decoupling of data persistence layers (`HotelPOS.Infrastructure.Persistence`) using Entity Framework Core.
 
 ### 💳 Advanced Sales & Billing Operations
 - **Split & Partial Payments**: Supports accepting multi-mode payments (Cash, Card, UPI) on the same transaction and tracking outstanding balances.
@@ -42,14 +48,14 @@ For in-depth explanations of the system's design and features, refer to the dedi
 - **Safe Cart Synchronization**: Core billing operations (`CartService`) utilize robust concurrency models to guarantee thread safety during fast checkout operations.
 
 ### 🧪 Robust Test Coverage
-- **100% Green Suite**: Anchored by **593 comprehensive integration and unit tests** covering checkout calculations, tax validations, cashier shifts, and billing edge cases.
+- **100% Green Suite**: Anchored by **1,196 comprehensive integration and unit tests** (423 core/WPF + 773 API) covering checkout calculations, tax validations, cashier shifts, and billing edge cases.
 
 ---
 
 ## 🛠️ Technology Stack
-- **Presentation**: Windows Presentation Foundation (WPF) with XAML & CommunityToolkit MVVM
+- **Presentation**: Windows Presentation Foundation (WPF) with XAML & CommunityToolkit MVVM, plus a companion Angular web client (`src/HotelPOS.Client`) served by a JWT-secured REST API (`src/API`)
 - **Runtime & Orchestration**: .NET 10, MediatR (CQRS Pattern)
-- **Database / ORM**: Entity Framework Core 10 (Microsoft SQL Server / SQLite)
+- **Database / ORM**: Entity Framework Core 10 (Microsoft SQL Server — the only provider both the WPF app and API register at runtime; SQLite is supported by `BackupService` for backup/restore interop and used in test projects)
 - **Compliance**: Indian GST engine (Tax Invoice & Bill of Supply modes ready)
 - **Exporting**: ClosedXML for premium Excel report generation
 
@@ -60,7 +66,8 @@ For in-depth explanations of the system's design and features, refer to the dedi
 ### Prerequisites
 - **IDEs**: [Visual Studio 2022](https://visualstudio.microsoft.com/) (version 17.10 or higher with the **.NET Desktop Development** workload) or JetBrains Rider.
 - **SDK**: [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
-- **Database**: SQL Server Express / LocalDB (or SQLite as a fallback or configured option).
+- **Database**: SQL Server Express / LocalDB.
+- **Web client (optional)**: Node.js + Angular CLI, only needed if you're building/running `src/HotelPOS.Client`.
 
 ### Build via Command Line
 Run the following commands in the root of the project repository:
@@ -73,7 +80,7 @@ dotnet build --configuration Release
 ```
 
 ### Build via Visual Studio
-1. Open the solution file `HotelPOS.sln` or `HotelPOS/HotelPOS.slnx` in Visual Studio.
+1. Open the solution file `HotelPOS.sln` (or `src/HotelPOS/HotelPOS.slnx`) in Visual Studio.
 2. Select the **Release** configuration and **Any CPU** platform.
 3. Right-click the solution in Solution Explorer and click **Build Solution**.
 
@@ -99,7 +106,7 @@ On the very first launch, the system automatically bootstraps the database schem
 ### 1. Launching & Logging In
 1. Set the **HotelPOS** project as the startup project.
 2. Press `F5` to start debugging or `Ctrl+F5` to run.
-3. Log in with the configured cashier or administrator credentials (standard credentials are provided upon setup).
+3. On first launch against a fresh database (no `admin` user yet), you'll be prompted with a **"Create Administrator Account"** screen — choose the initial admin username and password there, then log in normally.
 
 ### 2. Standard Billing Workflow (Keyboard Optimized)
 - **Search Item**: Press `F1` or `F3` to focus the search box. Type the item name or scan a barcode.
@@ -112,8 +119,3 @@ On the very first launch, the system automatically bootstraps the database schem
 - Switch to the **Wastage Tracking** sub-tab.
 - Select the item, enter the quantity wasted, choose the wastage reason (e.g., *Spoilage*, *Damage*), and click **Log Wastage Entry**. If the item's raw cost price is not configured, the system automatically falls back to its base selling price to compute the lost value.
 
----
-
-## 📦 Developer Utilities
-All active diagnostic tools and developer scripts have been cleanly organized under the `/tools` directory:
-- `tools/Database/check_db.cs`: Safe DB schema validation diagnostic tool.

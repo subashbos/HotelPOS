@@ -1,0 +1,92 @@
+<UserControl x:Class="HotelPOS.Views.AccountView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="760" d:DesignWidth="1150">
+
+    <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="👤  My Account &amp; Profile Settings" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Manage your user profile details, email notification address, account password, and security authentication."
+                           Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ══ LEFT COLUMN: PROFILE CARD & EMAIL ══ -->
+                <StackPanel Grid.Column="0">
+                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24" Margin="0,0,0,20">
+                        <StackPanel>
+                            <StackPanel HorizontalAlignment="Center" Margin="0,0,0,16">
+                                <Border Width="72" Height="72" CornerRadius="36" Background="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center">
+                                    <TextBlock Text="👤" FontSize="36" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="{Binding Username}" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" Margin="0,12,0,2"/>
+                                <TextBlock Text="{Binding Role}" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Separator Background="{DynamicResource BorderBrush}" Margin="0,8,0,16"/>
+
+                            <TextBlock Text="EMAIL ADDRESS" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,8"/>
+                            <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                            <Button Content="📧 Save Email Address" Command="{Binding UpdateEmailCommand}"
+                                    Style="{StaticResource PrimaryBtn}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- TWO FACTOR AUTH CARD -->
+                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="TWO-FACTOR AUTHENTICATION (2FA)" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,8"/>
+                            <TextBlock Text="Enhance your account security by requiring an authentication token upon login."
+                                       Style="{StaticResource CaptionTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                                <TextBlock Text="Status: " Style="{StaticResource BodySmallTextBlockStyle}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding IsTwoFactorEnabled}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Content="🛡️ Toggle Two-Factor Auth" Command="{Binding ToggleTwoFactorCommand}"
+                                    Style="{StaticResource SecondaryBtn}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- ══ RIGHT COLUMN: CHANGE PASSWORD ══ -->
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24" VerticalAlignment="Top">
+                    <StackPanel>
+                        <TextBlock Text="CHANGE PASSWORD" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Current Password" Style="{StaticResource FieldLabel}"/>
+                        <PasswordBox x:Name="CurrentPasswordBox" PasswordChanged="CurrentPasswordBox_PasswordChanged" Margin="0,0,0,14"/>
+
+                        <TextBlock Text="New Password" Style="{StaticResource FieldLabel}"/>
+                        <PasswordBox x:Name="NewPasswordBox" PasswordChanged="NewPasswordBox_PasswordChanged" Margin="0,0,0,14"/>
+
+                        <TextBlock Text="Confirm New Password" Style="{StaticResource FieldLabel}"/>
+                        <PasswordBox x:Name="ConfirmPasswordBox" PasswordChanged="ConfirmPasswordBox_PasswordChanged" Margin="0,0,0,24"/>
+
+                        <Button Content="🔒 Change Password" Command="{Binding ChangePasswordCommand}"
+                                Style="{StaticResource PrimaryBtn}"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

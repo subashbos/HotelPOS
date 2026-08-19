@@ -4,13 +4,16 @@ using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.DTOs.Category;
 using HotelPOS.Application.DTOs.Customer;
 using HotelPOS.Application.DTOs.Employee;
+using HotelPOS.Application.DTOs.Estimation;
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.DTOs.Leave;
 using HotelPOS.Application.DTOs.Payroll;
 using HotelPOS.Application.DTOs.Purchase;
+using HotelPOS.Application.DTOs.Reservation;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.DTOs.Table;
+using HotelPOS.Application.DTOs.UnitOfMeasurement;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Users.Commands;
 using HotelPOS.Domain.Entities;
@@ -26,6 +29,8 @@ namespace HotelPOS.Application.Common.Mappings
             CreateEmployeeAndAttendanceMaps();
             CreateLeaveAndPayrollMaps();
             CreatePurchaseMaps();
+            CreateEstimationMaps();
+            CreateReservationMaps();
         }
 
         private void CreateCatalogMaps()
@@ -41,11 +46,17 @@ namespace HotelPOS.Application.Common.Mappings
             // ── Table ─────────────────────────────────────────────────────────
             CreateMap<CreateTableDto, Table>();
             CreateMap<Table, TableDto>().ReverseMap();
+            CreateMap<CreateTableDto, TableDto>();
 
             // ── Category ─────────────────────────────────────────────────────
             CreateMap<SaveCategoryDto, Category>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()));
             CreateMap<Category, CategoryDto>().ReverseMap();
+
+            // ── Unit of Measurement ─────────────────────────────────────────────
+            CreateMap<SaveUnitOfMeasurementDto, HotelPOS.Domain.Entities.UnitOfMeasurement>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()));
+            CreateMap<HotelPOS.Domain.Entities.UnitOfMeasurement, UnitOfMeasurementDto>().ReverseMap();
 
             // ── Supplier ──────────────────────────────────────────────────────
             CreateMap<SaveSupplierDto, Supplier>()
@@ -143,6 +154,21 @@ namespace HotelPOS.Application.Common.Mappings
                 .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : null))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.PurchaseItems));
             CreateMap<PurchaseItem, PurchaseItemDto>();
+        }
+
+        private void CreateEstimationMaps()
+        {
+            // ── Estimations ───────────────────────────────────────────────────
+            CreateMap<Estimation, EstimationDto>()
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.EstimationItems));
+            CreateMap<EstimationItem, EstimationItemDto>();
+        }
+
+        private void CreateReservationMaps()
+        {
+            // ── Reservations ──────────────────────────────────────────────────
+            CreateMap<Reservation, ReservationDto>()
+                .ForMember(dest => dest.TableName, opt => opt.MapFrom(src => src.Table != null ? src.Table.Name : null));
         }
     }
 }

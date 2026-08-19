@@ -14,6 +14,9 @@ namespace HotelPOS.Infrastructure.Persistence
             _context = context;
         }
 
+        // Left tracked: CashService/CloseSessionCommand mutate the returned session in place and
+        // persist via UpdateAsync's blind _context.CashSessions.Update(), which throws if this
+        // fetch is untracked but the same row is already tracked elsewhere in the DbContext.
         public async Task<CashSession?> GetCurrentSessionAsync()
         {
             return await _context.CashSessions
@@ -25,7 +28,14 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task AddAsync(CashSession session)
         {
             _context.CashSessions.Add(session);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                throw new InvalidOperationException("A session is already open.");
+            }
         }
 
         public async Task UpdateAsync(CashSession session)
@@ -37,6 +47,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<CashSession>> GetHistoryAsync(int count)
         {
             return await _context.CashSessions
+                .AsNoTracking()
                 .OrderByDescending(s => s.OpenedAt)
                 .Take(count)
                 .ToListAsync();

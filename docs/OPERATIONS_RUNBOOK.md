@@ -5,11 +5,11 @@ This document provides essential information for system administrators and manag
 ## 1. Initial Setup & Credentials
 
 - **Default Admin Account**:
-  - Username: `admin`
-  - Password: `admin` (You will be prompted to change this on first login).
+  - On a genuinely fresh database (no `admin` user yet), the app shows an in-app **"Create Administrator Account"** screen on first launch — the operator picks the initial admin username and password directly; nothing is auto-generated.
+  - Exception: if an existing database is detected with one of the historical hardcoded seed password hashes, the app instead treats that as a security remediation — it resets that account to a randomly generated one-time password written to `%LOCALAPPDATA%\HotelPOS\initial-admin-password.txt` and forces a password change on next login. The file is deleted automatically once that change succeeds.
 - **Database**:
-  - By default, the system uses **SQLite** (`HotelPOS.db`) for local standalone installations.
-  - For multi-terminal setups, configure **MS SQL Server** in the connection string.
+  - The system runs on **Microsoft SQL Server** (LocalDB or a full instance) — both the WPF app and the API register `UseSqlServer` at startup, configured via the `DefaultConnection` connection string in `appsettings.json`.
+  - SQLite is not a supported runtime provider; it is only used by `BackupService` for backup/restore file interop and by automated tests.
 
 ## 2. Backup & Restore
 
@@ -20,8 +20,8 @@ This document provides essential information for system administrators and manag
 
 ### Manual Restore
 1. Close all running instances of HotelPOS.
-2. Locate the most recent `.db` (SQLite) or `.bak` (SQL Server) file.
-3. Replace the current `HotelPOS.db` with the backup file (rename it back to `HotelPOS.db`).
+2. Locate the most recent `.bak` (SQL Server) file in the backup directory.
+3. Restore it via SQL Server Management Studio (or `RESTORE DATABASE`) to the configured database name.
 
 ## 3. Printer Configuration
 

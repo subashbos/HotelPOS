@@ -1,0 +1,18 @@
+{
+  "mockAttendanceList": [
+    {
+      "id": 1,
+      "employeeId": 5,
+      "date": "2026-07-01",
+      "status": "Present",
+      "workedHours": 8
+    },
+    {
+      "id": 2,
+      "employeeId": 5,
+      "date": "2026-07-02",
+      "status": "Absent",
+      "workedHours": 0
+    }
+  ]
+}

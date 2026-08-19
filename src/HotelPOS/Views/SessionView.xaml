@@ -11,9 +11,16 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Shift Management (Cash Register)" Style="{StaticResource H2TextBlockStyle}" Margin="20,20,20,10" Foreground="{DynamicResource TextPrimary}"/>
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="💰  Shift Management (Cash Register)" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Open and close shifts, and reconcile cash in the drawer."
+                           Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
 
-        <Grid Grid.Row="1" Margin="20,0,20,20">
+        <Grid Grid.Row="1" Margin="24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="400"/>
                 <ColumnDefinition Width="20"/>
@@ -21,8 +28,9 @@
             </Grid.ColumnDefinitions>
 
             <!-- Active Session Card -->
-            <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="12" Padding="20" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
-                <StackPanel>
+            <Border Background="{DynamicResource SurfaceBrush}" CornerRadius="12" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20">
                     <TextBlock Text="Current Status" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,15"/>
 
                     <!-- Not Open State -->
@@ -38,7 +46,7 @@
                         <Border Background="{DynamicResource PrimaryBrush}" Padding="10" CornerRadius="8" Margin="0,0,0,20">
                             <TextBlock Text="SHIFT ACTIVE" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center"/>
                         </Border>
-                        
+
                         <Grid Margin="0,0,0,10">
                             <TextBlock Text="Opened At:" Foreground="{DynamicResource TextMuted}"/>
                             <TextBlock Text="{Binding CurrentSession.OpenedAt, StringFormat=dd-MMM hh:mm tt}" HorizontalAlignment="Right" FontWeight="SemiBold"/>
@@ -53,7 +61,7 @@
                         </Grid>
 
                         <Separator Margin="0,0,0,20"/>
-                        
+
                         <TextBlock Text="Close Shift" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,10"/>
                         <TextBlock Text="Actual Cash in Drawer:" Style="{StaticResource FieldLabel}"/>
                         <TextBox Text="{Binding ActualCash, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
@@ -62,6 +70,7 @@
                         <Button Content="Close Shift &amp; Reconcile" Command="{Binding CloseSessionCommand}" Style="{StaticResource DangerBtn}" Padding="12,12" HorizontalAlignment="Stretch"/>
                     </StackPanel>
                 </StackPanel>
+                </ScrollViewer>
             </Border>
 
             <!-- History -->

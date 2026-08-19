@@ -4,6 +4,12 @@ export interface Category {
   displayOrder: number;
 }
 
+export interface UnitOfMeasurement {
+  id: number;
+  name: string;
+  displayOrder: number;
+}
+
 export interface Item {
   id: number;
   name: string;
@@ -15,4 +21,5 @@ export interface Item {
   trackInventory: boolean;
   hsnCode?: string;
   barcode?: string;
+  unitId: number;
 }

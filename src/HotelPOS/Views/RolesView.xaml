@@ -7,6 +7,22 @@
 
 
     <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header Banner -->
+            <RowDefinition Height="*"/>     <!-- Content -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="🔐  Roles &amp; Permissions" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Define access levels and control module permissions for your team."
+                           Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ══ MAIN CONTENT ══ -->
+        <Grid Grid.Row="1" Margin="24">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="20"/>
@@ -77,7 +93,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="12"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="12"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
@@ -99,27 +116,64 @@
                         </Grid>
                     </Border>
 
+                    <!-- Column Headers -->
+                    <Grid Grid.Row="4" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="56"/>
+                            <ColumnDefinition Width="56"/>
+                            <ColumnDefinition Width="56"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="2" Text="ACCESS" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{DynamicResource TextMuted}"/>
+                        <TextBlock Grid.Column="3" Text="EDIT" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{DynamicResource TextMuted}"/>
+                        <TextBlock Grid.Column="4" Text="DELETE" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{DynamicResource TextMuted}"/>
+                    </Grid>
+
                     <!-- Permissions List -->
-                    <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="PermissionsList">
+                            <ItemsControl.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Bold"
+                                                       Foreground="{DynamicResource TextMuted}"
+                                                       Margin="0,16,0,4"/>
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </ItemsControl.GroupStyle>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1" Padding="0,10">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="30"/>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="56"/>
+                                                <ColumnDefinition Width="56"/>
+                                                <ColumnDefinition Width="56"/>
                                             </Grid.ColumnDefinitions>
                                             <!-- Module icon -->
-                                            <TextBlock Text="{Binding Icon}" FontSize="18" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Grid.Column="0" Text="{Binding Icon}" FontSize="18" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                                                 <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="Medium" Foreground="{DynamicResource TextPrimary}"/>
                                                 <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextMuted}"/>
                                             </StackPanel>
-                                            <CheckBox Grid.Column="2" IsChecked="{Binding CanAccess}" VerticalAlignment="Center">
+                                            <CheckBox Grid.Column="2" IsChecked="{Binding CanAccess}" HorizontalAlignment="Center" VerticalAlignment="Center">
                                                 <CheckBox.LayoutTransform>
-                                                    <ScaleTransform ScaleX="1.3" ScaleY="1.3"/>
+                                                    <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                                                </CheckBox.LayoutTransform>
+                                            </CheckBox>
+                                            <CheckBox Grid.Column="3" IsChecked="{Binding CanEdit}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <CheckBox.LayoutTransform>
+                                                    <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                                                </CheckBox.LayoutTransform>
+                                            </CheckBox>
+                                            <CheckBox Grid.Column="4" IsChecked="{Binding CanDelete}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <CheckBox.LayoutTransform>
+                                                    <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
                                                 </CheckBox.LayoutTransform>
                                             </CheckBox>
                                         </Grid>
@@ -130,12 +184,13 @@
                     </ScrollViewer>
 
                     <!-- Action Buttons -->
-                    <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                    <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                         <Button Content="💾  Save Permissions" Style="{StaticResource PrimaryBtn}" Click="SavePermissions_Click" Margin="0,0,12,0"/>
                         <Button x:Name="DeleteRoleBtn" Content="🗑  Delete Role" Style="{StaticResource DangerBtn}" Click="DeleteRole_Click"/>
                     </StackPanel>
                 </Grid>
             </Grid>
         </Border>
+        </Grid>
     </Grid>
 </UserControl>

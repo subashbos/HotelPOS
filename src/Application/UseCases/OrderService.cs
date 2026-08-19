@@ -11,18 +11,23 @@ namespace HotelPOS.Application.UseCases
     public class OrderService : IOrderService
     {
         private const string OrderEntityType = "Order";
+        private const string RollbackAlsoFailedMessage = "Transaction failed and rollback also failed.";
 
         private readonly IOrderRepository _repo;
         private readonly IMediator? _mediator;
         private readonly IItemService _itemService;
+        private readonly ICashService _cashService;
+        private readonly IAuthorizationService _authorization;
         private readonly IValidator<CreateOrderCommand> _validator;
         private readonly IBomService? _bomService;
 
-        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null)
+        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, ICashService cashService, IAuthorizationService authorization, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null)
         {
             _repo = repo;
             _mediator = mediator;
             _itemService = itemService;
+            _cashService = cashService;
+            _authorization = authorization;
             _validator = validator ?? new CreateOrderCommandValidator();
             _bomService = bomService;
         }
@@ -52,28 +57,27 @@ namespace HotelPOS.Application.UseCases
                 throw new ArgumentException(error.ErrorMessage);
             }
 
+            // The WPF client already blocks checkout with no open shift, but that's a UI-layer
+            // convenience, not a security boundary - enforce it here too so the API can't be used
+            // to create untracked orders while the till is closed.
+            var currentSession = await _cashService.GetCurrentSessionAsync();
+            if (currentSession == null)
+                throw new InvalidOperationException("No cash session is open. Please open a shift before creating an order.");
+
             // DineIn requires a real table; Takeaway/Online use virtual table 0
             bool requiresTable = orderType == OrderTypes.DineIn;
 
             // For Takeaway/Online, normalise to 0 regardless of what was passed
             int effectiveTableNumber = requiresTable ? tableNumber : 0;
 
-            var orderItems = items
-                .Select(x =>
-                {
-                    if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
+            // Price/tax are never trusted from the caller: every line is repriced from the
+            // authoritative item catalog so a tampered request can't under-pay for real items
+            // or inject a phantom item that doesn't exist in the catalog.
+            var orderItems = await BuildPricedOrderItemsAsync(items);
 
-                    return new OrderItem
-                    {
-                        ItemId = x.ItemId,
-                        ItemName = x.ItemName,
-                        Quantity = x.Quantity,
-                        Price = x.Price,
-                        TaxPercentage = x.TaxPercentage,
-                        Total = x.Total
-                    };
-                })
-                .ToList();
+            var realSubtotal = orderItems.Sum(x => x.Total);
+            if (discount > realSubtotal)
+                throw new ArgumentException("Discount cannot exceed order subtotal.");
 
             await _repo.BeginTransactionAsync();
             try
@@ -122,11 +126,48 @@ namespace HotelPOS.Application.UseCases
                 }
                 return orderId;
             }
-            catch
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
-                await _repo.RollbackTransactionAsync();
+                Serilog.Log.Error(ex, "Transaction failed in OrderService");
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed in OrderService");
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
+                }
                 throw;
             }
+        }
+
+        private async Task<List<OrderItem>> BuildPricedOrderItemsAsync(List<OrderItem> items)
+        {
+            var itemIds = items.Select(x => x.ItemId).Distinct().ToList();
+            var catalogItems = (await _itemService.GetItemsByIdsAsync(itemIds))
+                .ToDictionary(i => i.Id);
+
+            var orderItems = new List<OrderItem>();
+            foreach (var x in items)
+            {
+                if (x.Quantity <= 0) throw new ArgumentException($"Item '{x.ItemName}' must have a quantity of at least 1.");
+
+                if (!catalogItems.TryGetValue(x.ItemId, out var catalogItem))
+                    throw new ArgumentException($"Item '{x.ItemName}' (ID {x.ItemId}) does not exist.");
+
+                var price = catalogItem.Price;
+                orderItems.Add(new OrderItem
+                {
+                    ItemId = catalogItem.Id,
+                    ItemName = catalogItem.Name,
+                    Quantity = x.Quantity,
+                    Price = price,
+                    TaxPercentage = catalogItem.TaxPercentage,
+                    Total = Math.Round(price * x.Quantity, MoneyPrecision.CurrencyDecimals)
+                });
+            }
+            return orderItems;
         }
 
         private static void CalculateTotals(Order order, List<OrderItem> items)
@@ -161,11 +202,19 @@ namespace HotelPOS.Application.UseCases
 
         public async Task UpdateOrderInternalAsync(Order order)
         {
+            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+
             if (order.Items == null || order.Items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.");
 
             var oldOrder = await _repo.GetByIdWithItemsAsync(order.Id);
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
+
+            // Void/refunded orders are terminal: re-saving one would let a tampered request
+            // resurrect it with new items/prices instead of going through Void/Refund's own
+            // audited flow.
+            if (oldOrder.Status == OrderStatuses.Void || oldOrder.Status == OrderStatuses.Refunded || oldOrder.Status == OrderStatuses.PartiallyRefunded)
+                throw new InvalidOperationException($"Cannot edit an order with status '{oldOrder.Status}'.");
 
             // Normalise table number: Takeaway/Online always store 0
             if (order.OrderType == OrderTypes.Takeaway || order.OrderType == OrderTypes.Online)
@@ -178,21 +227,16 @@ namespace HotelPOS.Application.UseCases
                 var oldMap = oldOrder.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
                 var newMap = order.Items.GroupBy(i => i.ItemId).ToDictionary(g => g.Key, g => g.Sum(i => i.Quantity));
 
-                // Return all old stock first (using negative to indicate return)
-                foreach (var kvp in oldMap)
-                {
-                    await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
-                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, -kvp.Value);
-                }
-
-                // Deduct all new stock
-                foreach (var kvp in newMap)
-                {
-                    await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
-                    if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, kvp.Value);
-                }
+                await ReconcileOrderStockAsync(oldMap, newMap);
 
                 var oldTotal = oldOrder.TotalAmount;
+
+                // Price/tax are never trusted from the caller here either: reprice every line from
+                // the authoritative item catalog, same as SaveOrderInternalAsync, so a tampered
+                // update request can't under-pay for real items or inject a phantom item. This only
+                // matters now that Update is reachable via the API (OrdersController) — the WPF
+                // caller's items already come from the same catalog, so behavior is unchanged there.
+                order.Items = await BuildPricedOrderItemsAsync(order.Items);
 
                 CalculateTotals(order, order.Items);
                 order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
@@ -204,10 +248,36 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Update", $"Old Total: {oldTotal:N2} -> New Total: {order.TotalAmount:N2}"));
                 }
             }
-            catch
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
-                await _repo.RollbackTransactionAsync();
+                Serilog.Log.Error(ex, "Transaction failed while updating order");
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while updating order");
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
+                }
                 throw;
+            }
+        }
+
+        private async Task ReconcileOrderStockAsync(Dictionary<int, int> oldMap, Dictionary<int, int> newMap)
+        {
+            // Return all old stock first (using negative to indicate return)
+            foreach (var kvp in oldMap)
+            {
+                await _itemService.DeductStockAsync(kvp.Key, -kvp.Value);
+                if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, -kvp.Value);
+            }
+
+            // Deduct all new stock
+            foreach (var kvp in newMap)
+            {
+                await _itemService.DeductStockAsync(kvp.Key, kvp.Value);
+                if (_bomService != null) await _bomService.DeductIngredientStockAsync(kvp.Key, kvp.Value);
             }
         }
 
@@ -215,6 +285,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteOrderInternalAsync(int orderId)
         {
+            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+
             var existing = await _repo.GetByIdWithItemsAsync(orderId);
             if (existing != null)
             {
@@ -236,6 +308,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task VoidOrderInternalAsync(int orderId, string reason, string authorizedUser)
         {
+            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
             if (order.Status == OrderStatuses.Void) throw new InvalidOperationException("Order is already void.");
@@ -270,9 +344,18 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Void", $"Voided by {authorizedUser}. Reason: {reason}"));
                 }
             }
-            catch
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
-                await _repo.RollbackTransactionAsync();
+                Serilog.Log.Error(ex, "Transaction failed while voiding order");
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while voiding order");
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
+                }
                 throw;
             }
         }
@@ -281,6 +364,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task RefundOrderInternalAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason)
         {
+            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+
             if (itemsToRefund == null || itemsToRefund.Count == 0)
                 throw new ArgumentException("No items specified for refund.", nameof(itemsToRefund));
 
@@ -315,9 +400,18 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Refund", $"Refund amount: {refundTotal:N2}. Reason: {reason}"));
                 }
             }
-            catch
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
-                await _repo.RollbackTransactionAsync();
+                Serilog.Log.Error(ex, "Transaction failed while refunding order");
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while refunding order");
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
+                }
                 throw;
             }
         }
@@ -402,9 +496,18 @@ namespace HotelPOS.Application.UseCases
                     await _mediator.Publish(new EntityActionEvent(OrderEntityType, order.Id, "Payment", $"Payment added: Cash: {cash:N2}, Card: {card:N2}, UPI: {upi:N2}. Paid total: {order.AmountPaid:N2}"));
                 }
             }
-            catch
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
             {
-                await _repo.RollbackTransactionAsync();
+                Serilog.Log.Error(ex, "Transaction failed while processing partial payment");
+                try
+                {
+                    await _repo.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while processing partial payment");
+                    throw new AggregateException(RollbackAlsoFailedMessage, ex, rollbackEx);
+                }
                 throw;
             }
         }

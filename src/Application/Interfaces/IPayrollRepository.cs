@@ -1,3 +1,4 @@
+using HotelPOS.Application.Common.Models;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.Interfaces
@@ -16,5 +17,11 @@ namespace HotelPOS.Application.Interfaces
         Task UpdateRunAsync(PayrollRun run);
 
         Task<List<Payslip>> GetPayslipsByEmployeeAsync(int employeeId);
+
+        /// <summary>
+        /// Resolves the TDS config + slabs for a financial year, falling back to the closest
+        /// earlier configured year if the exact year hasn't been set up yet, or null if none exist.
+        /// </summary>
+        Task<TdsRuleSet?> GetTdsRuleSetAsync(int financialYearStart);
     }
 }

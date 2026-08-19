@@ -1,0 +1,87 @@
+<div class="receipt" [class.receipt-thermal]="isThermal" [class.receipt-a4]="!isThermal">
+  <div class="receipt-header">
+    <div class="receipt-title">{{ settings.hotelName?.toUpperCase() }}</div>
+    <div class="receipt-small">{{ settings.hotelAddress }}</div>
+    <div class="receipt-small" *ngIf="settings.showPhoneOnReceipt && settings.hotelPhone">Ph: {{ settings.hotelPhone }}</div>
+    <div class="receipt-small receipt-bold" *ngIf="settings.hotelGst">GSTIN: {{ settings.hotelGst }}</div>
+
+    <div class="receipt-sep">{{ separator }}</div>
+    <div class="receipt-small">Date  : {{ data.createdAt | date:'dd-MMM-yyyy  hh:mm a' }}</div>
+    <div class="receipt-small">Receipt #: {{ data.orderId }}</div>
+    <div class="receipt-head">{{ receiptTitle }}</div>
+
+    <ng-container *ngIf="hasCustomer">
+      <div class="receipt-sep">{{ separator }}</div>
+      <div class="receipt-small receipt-bold">BILLED TO:</div>
+      <div class="receipt-small" *ngIf="data.customerName">{{ data.customerName.toUpperCase() }}</div>
+      <div class="receipt-small" *ngIf="data.customerPhone">Ph: {{ data.customerPhone }}</div>
+      <div class="receipt-small receipt-bold" *ngIf="data.customerGstin">GSTIN: {{ data.customerGstin }}</div>
+    </ng-container>
+  </div>
+
+  <div class="receipt-sep">{{ separator }}</div>
+
+  <table class="receipt-table">
+    <thead>
+      <tr>
+        <th class="al">#</th>
+        <th class="al">ITEM</th>
+        <th class="ar">RATE</th>
+        <th class="ac">QTY</th>
+        <th class="ar">TOTAL</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of data.items; let i = index">
+        <td class="al">{{ i + 1 }}</td>
+        <td class="al">{{ item.itemName }}</td>
+        <td class="ar">{{ item.price | number:'1.0-2' }}</td>
+        <td class="ac">{{ item.quantity }}</td>
+        <td class="ar">{{ item.total | number:'1.0-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="receipt-sep">{{ separator }}</div>
+
+  <table class="receipt-totals">
+    <tbody>
+      <tr *ngIf="showGstBreakdown">
+        <th class="ar" scope="row">Subtotal:</th>
+        <td class="ar">{{ data.subtotal | number:'1.2-2' }}</td>
+      </tr>
+      <ng-container *ngIf="showGstBreakdown">
+        <tr *ngFor="let g of taxGroups">
+          <th class="ar" scope="row">CGST ({{ g.halfRate }}%):</th>
+          <td class="ar">{{ g.halfTax | number:'1.2-2' }}</td>
+        </tr>
+        <tr *ngFor="let g of taxGroups">
+          <th class="ar" scope="row">SGST ({{ g.halfRate }}%):</th>
+          <td class="ar">{{ g.halfTax | number:'1.2-2' }}</td>
+        </tr>
+      </ng-container>
+      <tr *ngIf="data.discountAmount > 0">
+        <th class="ar" scope="row">Discount:</th>
+        <td class="ar">-{{ data.discountAmount | number:'1.2-2' }}</td>
+      </tr>
+      <tr *ngIf="settings.enableRoundOff && roundOffDiff !== 0">
+        <th class="ar" scope="row">Round Off:</th>
+        <td class="ar">{{ roundOffDiff >= 0 ? '+' : '' }}{{ roundOffDiff | number:'1.2-2' }}</td>
+      </tr>
+      <tr class="receipt-bold receipt-grand">
+        <th class="ar" scope="row">Grand Total:</th>
+        <td class="ar">{{ grandTotal | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <th class="ar receipt-small" scope="row">Payment Mode:</th>
+        <td class="ar receipt-small">{{ data.paymentMode }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="receipt-footer" *ngIf="settings.showThankYouFooter">
+    <div class="receipt-sep">{{ separator }}</div>
+    <div class="receipt-italic">Thank you for dining with us!</div>
+    <div class="receipt-small">Please visit again</div>
+  </div>
+</div>

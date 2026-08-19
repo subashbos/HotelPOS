@@ -1,0 +1,43 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Shared styles for the borderless "create/edit" entry dialogs
+         (customer, supplier, expense, employee, ...). -->
+
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+    <!-- Field Label Style -->
+    <Style x:Key="FieldLabel" TargetType="TextBlock" BasedOn="{StaticResource FieldLabel}">
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="Margin" Value="0,0,0,4"/>
+    </Style>
+
+    <!-- Section header used above a group of fields -->
+    <Style x:Key="SectionHeader" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+    </Style>
+
+    <!-- Standard spacing wrapper for a label + input pair -->
+    <Style x:Key="FieldStack" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,0,0,10"/>
+    </Style>
+
+    <!-- Multiline TextBox style based on global default. Height is intentionally
+         left unset here since dialogs use different heights (60/70) for their
+         multiline fields; set Height locally on the TextBox where used. -->
+    <Style x:Key="MultilineInputField" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="AcceptsReturn" Value="True"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+    </Style>
+
+    <!-- Right-Aligned Currency Input Style based on global default -->
+    <Style x:Key="CurrencyInputField" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+    </Style>
+
+</ResourceDictionary>

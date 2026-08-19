@@ -1,3 +1,5 @@
+#nullable enable
+
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -39,8 +41,9 @@ namespace HotelPOS.Services
 
                 return (parts[0], parts[1]);
             }
-            catch
+            catch (Exception ex)
             {
+                Serilog.Log.Warning(ex, "Failed to load stored 'Remember Me' credentials");
                 return null;
             }
         }
@@ -51,9 +54,10 @@ namespace HotelPOS.Services
             {
                 if (File.Exists(FilePath)) File.Delete(FilePath);
             }
-            catch
+            catch (Exception ex)
             {
                 // Best-effort cleanup only.
+                Serilog.Log.Warning(ex, "Failed to clear stored 'Remember Me' credentials");
             }
         }
     }

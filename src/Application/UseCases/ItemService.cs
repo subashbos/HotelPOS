@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
@@ -43,7 +45,7 @@ namespace HotelPOS.Application.UseCases
             {
                 var command = new CreateItemCommand(
                     dto.Name, dto.Price, dto.TaxPercentage, dto.CategoryId,
-                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory
+                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory, dto.UnitId
                 );
                 var item = await _mediator.Send(command);
                 return item.Id;
@@ -51,14 +53,14 @@ namespace HotelPOS.Application.UseCases
 
             ValidateDto(dto);
 
-            var existing = await _itemRepository!.GetAllAsync() ?? new List<Item>();
+            var existing = await _itemRepository.GetAllAsync() ?? new List<Item>();
             if (existing.Any(i => i.Name.Trim().Equals(dto.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"An item with the name '{dto.Name}' already exists.");
 
             if (!string.IsNullOrWhiteSpace(dto.Barcode) && existing.Any(i => i.Barcode == dto.Barcode))
                 throw new InvalidOperationException($"Barcode '{dto.Barcode}' is already assigned to another item.");
 
-            var itemEntity = _mapper!.Map<Item>(dto);
+            var itemEntity = _mapper.Map<Item>(dto);
 
             return await _itemRepository.AddAsync(itemEntity);
         }
@@ -68,9 +70,9 @@ namespace HotelPOS.Application.UseCases
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            var command = _mapper!.Map<CreateItemCommand>(dto);
+            var command = _mapper.Map<CreateItemCommand>(dto);
 
-            var result = _validator!.Validate(command);
+            var result = _validator.Validate(command);
             if (!result.IsValid)
             {
                 var firstError = result.Errors[0];
@@ -85,7 +87,13 @@ namespace HotelPOS.Application.UseCases
                 return await _mediator.Send(new GetItemsQuery());
             }
 
-            return await _itemRepository!.GetAllAsync() ?? new List<Item>();
+            return await _itemRepository.GetAllAsync() ?? new List<Item>();
+        }
+
+        public async Task<List<Item>> GetItemsByIdsAsync(List<int> ids)
+        {
+            if (ids == null || ids.Count == 0) return new List<Item>();
+            return await _itemRepository.GetByIdsAsync(ids) ?? new List<Item>();
         }
 
         public async Task UpdateItemAsync(int id, CreateItemDto dto)
@@ -94,7 +102,7 @@ namespace HotelPOS.Application.UseCases
             {
                 var command = new UpdateItemCommand(
                     id, dto.Name, dto.Price, dto.TaxPercentage, dto.CategoryId,
-                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory
+                    dto.HsnCode, dto.Barcode, dto.StockQuantity, dto.TrackInventory, dto.UnitId
                 );
                 await _mediator.Send(command);
                 return;
@@ -102,7 +110,7 @@ namespace HotelPOS.Application.UseCases
 
             ValidateDto(dto);
 
-            var existingAll = await _itemRepository!.GetAllAsync() ?? new List<Item>();
+            var existingAll = await _itemRepository.GetAllAsync() ?? new List<Item>();
             if (existingAll.Any(i => i.Id != id && i.Name.Trim().Equals(dto.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"An item with the name '{dto.Name}' already exists.");
 
@@ -112,7 +120,7 @@ namespace HotelPOS.Application.UseCases
             var item = await _itemRepository.GetByIdAsync(id);
             if (item == null) throw new KeyNotFoundException("Item not found");
 
-            _mapper!.Map(dto, item);
+            _mapper.Map(dto, item);
 
             await _itemRepository.UpdateAsync(item);
         }
@@ -120,15 +128,15 @@ namespace HotelPOS.Application.UseCases
         public async Task DeductStockAsync(int itemId, int quantity)
         {
             var item = await _itemRepository.GetByIdAsync(itemId);
-            if (item != null && item.TrackInventory)
-            {
-                if (quantity > 0 && item.StockQuantity < quantity)
-                {
-                    throw new InvalidOperationException($"Insufficient stock for item: {item.Name}. Required: {quantity}, Available: {item.StockQuantity}");
-                }
+            if (item == null || !item.TrackInventory) return;
 
-                item.StockQuantity -= quantity;
-                await _itemRepository.UpdateAsync(item);
+            // Deduction itself is a single atomic guarded UPDATE (see TryDeductStockAsync) so two
+            // concurrent orders for the last unit can't both pass a stale in-memory stock check.
+            var deducted = await _itemRepository.TryDeductStockAsync(itemId, quantity);
+            if (!deducted && quantity > 0)
+            {
+                var current = await _itemRepository.GetByIdAsync(itemId);
+                throw new InvalidOperationException($"Insufficient stock for item: {item.Name}. Required: {quantity}, Available: {current?.StockQuantity ?? 0}");
             }
         }
 
@@ -175,7 +183,8 @@ namespace HotelPOS.Application.UseCases
                     Price = dto.Price,
                     TaxPercentage = dto.TaxPercentage,
                     CategoryId = dto.CategoryId,
-                    Barcode = dto.Barcode
+                    Barcode = dto.Barcode,
+                    UnitId = dto.UnitId
                 });
                 existingNames.Add(dto.Name.Trim().ToLowerInvariant());
                 if (!string.IsNullOrWhiteSpace(dto.Barcode))

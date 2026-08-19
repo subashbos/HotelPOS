@@ -3,9 +3,11 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Orders.Commands;
 using HotelPOS.Application.UseCases.Orders.Queries;
 using HotelPOS.Domain.Common.Constants;
+using HotelPOS.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace HotelPOS.Api.Controllers
 {
@@ -15,6 +17,8 @@ namespace HotelPOS.Api.Controllers
         private readonly IMediator _mediator;
         private readonly IUserContext _userContext;
         private readonly AutoMapper.IMapper _mapper;
+
+        private const string InvalidOrderIdErrorMessage = "Invalid order ID.";
 
         public OrdersController(IMediator mediator, IUserContext userContext, AutoMapper.IMapper mapper)
         {
@@ -58,15 +62,65 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("{id:int}/void")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> VoidOrder(int id, [FromBody] VoidOrderRequest request)
         {
-            if (id <= 0) return BadRequest("Invalid order ID.");
+            if (id <= 0) return BadRequest(InvalidOrderIdErrorMessage);
             if (string.IsNullOrWhiteSpace(request.Reason)) return BadRequest("Reason for voiding the order is required.");
 
             var currentUser = _userContext.CurrentUsername ?? "API User";
             var command = new VoidOrderCommand(id, request.Reason, currentUser);
             await _mediator.Send(command);
+            return NoContent();
+        }
+
+        // Money-back action - same permission gate as Void.
+        [HttpPost("{id:int}/refund")]
+        public async Task<IActionResult> RefundOrder(int id, [FromBody] RefundOrderRequest request)
+        {
+            if (id <= 0) return BadRequest(InvalidOrderIdErrorMessage);
+            if (request.Items == null || request.Items.Count == 0) return BadRequest("At least one item is required to refund.");
+            if (string.IsNullOrWhiteSpace(request.Reason)) return BadRequest("Reason for the refund is required.");
+
+            var itemsToRefund = request.Items.Select(i => new OrderItemRefundDto(i.ItemId, i.QuantityToRefund)).ToList();
+            var command = new RefundOrderCommand(id, itemsToRefund, request.Reason);
+            await _mediator.Send(command);
+            return NoContent();
+        }
+
+        // Recording money already collected (e.g. completing a split/partial payment) - same
+        // authorization level as creating an order, not restricted to Admin/Manager.
+        [HttpPost("{id:int}/payment")]
+        public async Task<IActionResult> ProcessPartialPayment(int id, [FromBody] ProcessPartialPaymentRequest request)
+        {
+            if (id <= 0) return BadRequest(InvalidOrderIdErrorMessage);
+            if (request.Cash < 0 || request.Card < 0 || request.Upi < 0) return BadRequest("Payment amounts cannot be negative.");
+            if (request.Cash == 0 && request.Card == 0 && request.Upi == 0) return BadRequest("At least one payment amount is required.");
+
+            var command = new ProcessPartialPaymentCommand(id, request.Cash, request.Card, request.Upi);
+            await _mediator.Send(command);
+            return NoContent();
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateOrder(int id, [FromBody] UpdateOrderRequest request)
+        {
+            if (id <= 0) return BadRequest(InvalidOrderIdErrorMessage);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var order = new Order
+            {
+                Id = id,
+                Items = _mapper.Map<List<OrderItem>>(request.Items),
+                TableNumber = request.TableNumber,
+                DiscountAmount = request.Discount,
+                PaymentMode = request.PaymentMode,
+                OrderType = request.OrderType,
+                CustomerName = request.CustomerName,
+                CustomerPhone = request.CustomerPhone,
+                CustomerGstin = request.CustomerGstin
+            };
+
+            await _mediator.Send(new UpdateOrderCommand(order));
             return NoContent();
         }
     }
@@ -104,6 +158,48 @@ namespace HotelPOS.Api.Controllers
     {
         [System.ComponentModel.DataAnnotations.Required]
         public string Reason { get; set; } = string.Empty;
+    }
+
+    public sealed class RefundOrderRequest
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        public List<RefundOrderItemRequest> Items { get; set; } = new();
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Reason { get; set; } = string.Empty;
+    }
+
+    public sealed class RefundOrderItemRequest
+    {
+        public int ItemId { get; set; } // NOSONAR
+        public int QuantityToRefund { get; set; } // NOSONAR
+    }
+
+    public sealed class ProcessPartialPaymentRequest
+    {
+        public decimal Cash { get; set; } // NOSONAR
+        public decimal Card { get; set; } // NOSONAR
+        public decimal Upi { get; set; } // NOSONAR
+    }
+
+    public sealed class UpdateOrderRequest
+    {
+        [System.ComponentModel.DataAnnotations.Required]
+        public List<OrderItemDto> Items { get; set; } = new();
+
+        public int TableNumber { get; set; } // NOSONAR
+
+        public decimal Discount { get; set; } // NOSONAR
+
+        public string PaymentMode { get; set; } = PaymentModes.Cash;
+
+        public string? CustomerName { get; set; }
+
+        public string? CustomerPhone { get; set; }
+
+        public string? CustomerGstin { get; set; }
+
+        public string OrderType { get; set; } = OrderTypes.DineIn;
     }
 
     public sealed class GetOrdersQueryRequest

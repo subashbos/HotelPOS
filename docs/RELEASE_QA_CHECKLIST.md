@@ -6,7 +6,7 @@ Use this checklist before deploying any new version of HotelPOS.
 - [ ] Admin login (admin/admin) works.
 - [ ] Password change required on first login.
 - [ ] Cashier account has restricted access (cannot see Reports/Settings).
-- [ ] Lockout works after 3 failed attempts.
+- [ ] Lockout works after 5 failed attempts (5-minute lockout window).
 
 ## 2. Billing & Operations
 - [ ] Add items to cart (keyboard shortcuts F1/Search).

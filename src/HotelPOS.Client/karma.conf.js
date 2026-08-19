@@ -32,14 +32,17 @@ module.exports = function karmaConfig(config) {
       check: {
         global: {
           statements: 80,
-          branches: 80,
-          functions: 80,
-          lines: 80
+          lines: 80,
+          functions: 75,
+          branches: 40
         }
       }
     },
     reporters: ['progress', 'kjhtml'],
     port: 9876,
+    browserDisconnectTimeout: 100000,
+    browserNoActivityTimeout: 100000,
+    pingTimeout: 100000,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,

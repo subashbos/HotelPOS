@@ -1,0 +1,56 @@
+<Window x:Class="HotelPOS.RegistrationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Create Administrator Account - Hotel POS"
+        Height="620" Width="420"
+        MinHeight="590" MinWidth="400"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource AppBackground}"
+        Icon="/Resources/app_icon.png">
+
+    <Grid>
+        <Border Background="{DynamicResource SurfaceBrush}"
+                CornerRadius="{StaticResource WindowCornerRadius}"
+                BorderBrush="{DynamicResource BorderBrush}"
+                BorderThickness="1"
+                Margin="24" Padding="24">
+
+            <StackPanel VerticalAlignment="Center">
+
+                <!-- Logo / Header -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,24">
+                    <Image Source="/Resources/app_icon.png" Width="80" Height="80" HorizontalAlignment="Center" Margin="0,0,0,8" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock Text="Hotel POS" Style="{StaticResource HeroTextBlockStyle}" Foreground="{DynamicResource HeaderBrush}" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Text="No administrator account was found."
+                           Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource TextMuted}"
+                           HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,4"/>
+                <TextBlock Text="Set up the initial admin account to get started."
+                           Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource TextMuted}"
+                           HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,24"/>
+
+                <!-- Username Form -->
+                <TextBlock Text="Username" Style="{StaticResource FieldLabel}"/>
+                <TextBox x:Name="UsernameBox" Margin="0,0,0,16" KeyDown="Input_KeyDown"/>
+
+                <!-- Password Form -->
+                <TextBlock Text="Password" Style="{StaticResource FieldLabel}"/>
+                <PasswordBox x:Name="PasswordBox" Margin="0,0,0,16" KeyDown="Input_KeyDown"/>
+
+                <!-- Confirm Password Form -->
+                <TextBlock Text="Confirm Password" Style="{StaticResource FieldLabel}"/>
+                <PasswordBox x:Name="ConfirmPasswordBox" Margin="0,0,0,16" KeyDown="Input_KeyDown"/>
+
+                <!-- Error Indicator -->
+                <TextBlock x:Name="ErrorText" Text="Passwords do not match"
+                           Style="{StaticResource BodyTextBlockStyle}" Foreground="{DynamicResource DangerBrush}"
+                           Visibility="Collapsed" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,16"/>
+
+                <!-- Action -->
+                <Button x:Name="CreateButton" Content="Create Account" Style="{DynamicResource PrimaryBtn}" Click="CreateAccount_Click"/>
+
+                <TextBlock Text="This account will have full administrator access" Style="{StaticResource CaptionTextBlockStyle}" HorizontalAlignment="Center" Margin="0,24,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

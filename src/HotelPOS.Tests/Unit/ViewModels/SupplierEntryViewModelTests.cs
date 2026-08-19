@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
 using Moq;
@@ -37,7 +38,7 @@ namespace HotelPOS.Tests.Unit.ViewModels
                 Pincode = "123456",
                 OpeningBalance = 1000m,
                 CreditLimit = 25000m,
-                PaymentTerms = "Credit"
+                PaymentTerms = PaymentModes.Credit
             };
 
             // Act
@@ -56,7 +57,7 @@ namespace HotelPOS.Tests.Unit.ViewModels
             Assert.Equal("123456", _vm.Pincode);
             Assert.Equal(1000m, _vm.OpeningBalance);
             Assert.Equal(25000m, _vm.CreditLimit);
-            Assert.Equal("Credit", _vm.PaymentTerms);
+            Assert.Equal(PaymentModes.Credit, _vm.PaymentTerms);
             Assert.True(_vm.IsEditMode);
             Assert.False(_vm.IsNameInvalid);
             Assert.False(_vm.IsPhoneInvalid);

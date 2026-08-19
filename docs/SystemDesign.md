@@ -1,15 +1,15 @@
 # HotelPOS System Design Document
 
 ## 1. Architectural Overview
-HotelPOS follows **Clean Architecture** principles to ensure strict separation of concerns, testability, decoupling of external dependencies, and maintainability.
+HotelPOS follows **Clean Architecture** principles to ensure strict separation of concerns, testability, decoupling of external dependencies, and maintainability. This document covers the WPF desktop app's layering; a JWT-secured REST API (`src/API`) sits alongside it over the same Application layer — see [HUMAN_RESOURCES_DEEP_DIVE.md](HUMAN_RESOURCES_DEEP_DIVE.md) §4 for its controller surface.
 
 ```mermaid
 graph TD
     UI["HotelPOS Presentation (WPF)"] --> App["HotelPOS.Application"]
-    UI --> Persistence["HotelPOS.Persistence"]
-    Persistence --> App
+    UI --> Infra["HotelPOS.Infrastructure (incl. Persistence)"]
+    Infra --> App
     App --> Domain["HotelPOS.Domain"]
-    Persistence --> Domain
+    Infra --> Domain
 ```
 
 ### Layer Definitions
@@ -17,7 +17,7 @@ graph TD
 | :--- | :--- | :--- |
 | **Domain** | Core Enterprise Business Logic & Entities | `Item`, `Order`, `SystemSetting`, `User`, `Supplier` |
 | **Application** | Business Use Cases & Service Interfaces | `ICartService`, `IOrderService`, `IItemService`, `ISupplierService` |
-| **Persistence** | Data Access & Repositories (EF Core) | `HotelDbContext`, Migrations, SQL Server |
+| **Infrastructure** | Data Access & Repositories (EF Core), under the `HotelPOS.Infrastructure.Persistence` namespace | `HotelDbContext`, Migrations, SQL Server |
 | **Presentation (WPF)** | User Interface (MVVM) & Desktop-Specific Infrastructure | `BillingViewModel`, `LedgerView`, `ThemeService`, `BackupService` |
 
 ---

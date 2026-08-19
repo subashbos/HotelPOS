@@ -1,3 +1,5 @@
+#nullable enable
+
 using Microsoft.Extensions.DependencyInjection;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities; // Domain entities for binding

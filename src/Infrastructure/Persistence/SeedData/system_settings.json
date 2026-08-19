@@ -1,0 +1,17 @@
+[
+  {
+    "Id": 1,
+    "HotelName": "New Hotel",
+    "HotelAddress": "Main Road, City, India",
+    "HotelPhone": "",
+    "HotelGst": "27AAAAA0000A1Z5",
+    "DefaultPrinter": "Microsoft Print to PDF",
+    "ReceiptFormat": "Thermal",
+    "ShowPrintPreview": true,
+    "ShowGstBreakdown": true,
+    "ShowItemsOnBill": true,
+    "ShowDiscountLine": false,
+    "ShowPhoneOnReceipt": true,
+    "ShowThankYouFooter": true
+  }
+]

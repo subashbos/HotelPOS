@@ -1,0 +1,23 @@
+{
+  "mockSettings": {
+    "hotelName": "Hotel POS Resto",
+    "hotelAddress": "123 Main St",
+    "hotelPhone": "9876543210",
+    "hotelGst": "29ABCDE1234F1Z5",
+    "defaultPrinter": "Thermal Printer",
+    "showPrintPreview": true,
+    "receiptFormat": "Standard",
+    "showGstBreakdown": true,
+    "showItemsOnBill": true,
+    "showDiscountLine": true,
+    "showPhoneOnReceipt": true,
+    "showThankYouFooter": true,
+    "enableRoundOff": true,
+    "isCompositionScheme": false,
+    "enableAutomatedBackups": false,
+    "idleTimeoutMinutes": 30,
+    "smtpPort": 587,
+    "smtpPasswordSet": true,
+    "smtpUseSsl": true
+  }
+}

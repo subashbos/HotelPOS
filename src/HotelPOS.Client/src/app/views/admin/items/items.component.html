@@ -26,6 +26,7 @@
               <tr>
                 <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Name</th>
                 <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Category</th>
+                <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Unit</th>
                 <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Price</th>
                 <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Tax %</th>
                 <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Stock</th>
@@ -37,6 +38,7 @@
               <tr *ngFor="let item of items; trackBy: trackByItemId">
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold">{{ item.name }}</td>
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ categoryName(item.categoryId) }}</td>
+                <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ unitName(item.unitId) }}</td>
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ item.price | number:'1.2-2' }}</td>
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ item.taxPercentage }}</td>
                 <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
@@ -50,7 +52,7 @@
                 </td>
               </tr>
               <tr *ngIf="items.length === 0">
-                <td colspan="7" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">
+                <td colspan="8" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">
                   No items yet.
                 </td>
               </tr>
@@ -93,13 +95,22 @@
         </div>
       </div>
 
-      <div>
-        <label for="item-category" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Category</label>
-        <select id="item-category" [(ngModel)]="form.categoryId" name="categoryId"
-          class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
-          <option [ngValue]="null">— None —</option>
-          <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.name }}</option>
-        </select>
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label for="item-category" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Category</label>
+          <select id="item-category" [(ngModel)]="form.categoryId" name="categoryId"
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+            <option [ngValue]="null">— None —</option>
+            <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.name }}</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <label for="item-unit" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Unit</label>
+          <select id="item-unit" [(ngModel)]="form.unitId" name="unitId" required
+            class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow w-full focus:outline-none focus:ring">
+            <option *ngFor="let u of units" [ngValue]="u.id">{{ u.name }}</option>
+          </select>
+        </div>
       </div>
 
       <div class="flex gap-3">
@@ -130,7 +141,7 @@
 
       <div class="flex justify-end gap-3 pt-2">
         <button type="button" (click)="closeForm()" class="text-blueGray-500 text-xs font-bold uppercase px-4 py-2">Cancel</button>
-        <button type="submit" [disabled]="isSaving || !form.name.trim() || form.price <= 0"
+        <button type="submit" [disabled]="isSaving || !form.name.trim() || form.price <= 0 || !form.unitId"
           class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow disabled:opacity-50">
           {{ isSaving ? 'Saving...' : 'Save' }}
         </button>

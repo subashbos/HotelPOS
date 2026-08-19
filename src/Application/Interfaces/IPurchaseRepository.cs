@@ -9,7 +9,10 @@ namespace HotelPOS.Application.Interfaces
         Task<List<Supplier>> GetSuppliersAsync();
         Task<List<Purchase>> GetPurchasesAsync();
         Task<(List<Purchase> purchases, int totalCount)> GetPagedPurchasesAsync(int page, int pageSize, PurchaseQueryFilter? filter = null);
+        Task<Purchase?> GetByIdAsync(int id);
         Task AddAsync(Purchase purchase);
+        Task UpdateAsync(Purchase purchase);
+        Task DeleteAsync(int id);
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();

@@ -1,0 +1,306 @@
+<div class="flex flex-wrap px-4 md:px-6 w-full">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header Banner -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200 bg-blueGray-800 text-white">
+        <div class="flex flex-wrap items-center justify-between">
+          <div>
+            <h3 class="font-bold text-xl text-white">
+              <i class="fas fa-chart-pie text-red-500 mr-2"></i> Reporting & Business Intelligence
+            </h3>
+            <p class="text-xs text-blueGray-300 mt-1">Eliminate blind spots, monitor gross margins, track wastage, and optimize menu profitability</p>
+          </div>
+
+          <!-- Date Filter -->
+          <div class="flex items-center gap-3 mt-3 md:mt-0">
+            <div class="flex items-center bg-blueGray-700 rounded border border-solid border-blueGray-600 px-3 py-1 text-xs">
+              <label for="biFromDate" class="text-blueGray-300 mr-2">Period:</label>
+              <input id="biFromDate" type="date" [(ngModel)]="fromDate" aria-label="From Date" class="bg-transparent text-white border-0 text-xs focus:ring-0" />
+              <label for="biToDate" class="text-blueGray-400 mx-1">to</label>
+              <input id="biToDate" type="date" [(ngModel)]="toDate" aria-label="To Date" class="bg-transparent text-white border-0 text-xs focus:ring-0" />
+            </div>
+            <button
+              (click)="refresh()"
+              class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-3 py-2 rounded shadow hover:shadow-md"
+            >
+              <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="bg-blueGray-100 border-b border-blueGray-200 px-6 py-2 flex flex-wrap gap-2 text-xs font-bold uppercase">
+        <button (click)="setTab('overview')" [class]="activeTab === 'overview' ? 'bg-blueGray-800 text-white px-4 py-2 rounded shadow' : 'bg-white text-blueGray-600 hover:bg-blueGray-200 px-4 py-2 rounded'">
+          <i class="fas fa-chart-line mr-1"></i> Overview
+        </button>
+        <button (click)="setTab('shift')" [class]="activeTab === 'shift' ? 'bg-blueGray-800 text-white px-4 py-2 rounded shadow' : 'bg-white text-blueGray-600 hover:bg-blueGray-200 px-4 py-2 rounded'">
+          <i class="fas fa-cash-register mr-1"></i> Shift Closure (X/Z)
+        </button>
+        <button (click)="setTab('voids')" [class]="activeTab === 'voids' ? 'bg-blueGray-800 text-white px-4 py-2 rounded shadow' : 'bg-white text-blueGray-600 hover:bg-blueGray-200 px-4 py-2 rounded'">
+          <i class="fas fa-ban mr-1"></i> Voids & Discounts
+        </button>
+        <button (click)="setTab('staff')" [class]="activeTab === 'staff' ? 'bg-blueGray-800 text-white px-4 py-2 rounded shadow' : 'bg-white text-blueGray-600 hover:bg-blueGray-200 px-4 py-2 rounded'">
+          <i class="fas fa-user-tie mr-1"></i> Staff Performance
+        </button>
+        <button (click)="setTab('valuation')" [class]="activeTab === 'valuation' ? 'bg-blueGray-800 text-white px-4 py-2 rounded shadow' : 'bg-white text-blueGray-600 hover:bg-blueGray-200 px-4 py-2 rounded'">
+          <i class="fas fa-boxes mr-1"></i> Stock Valuation & ABC
+        </button>
+        <button (click)="setTab('pnl')" [class]="activeTab === 'pnl' ? 'bg-blueGray-800 text-white px-4 py-2 rounded shadow' : 'bg-white text-blueGray-600 hover:bg-blueGray-200 px-4 py-2 rounded'">
+          <i class="fas fa-calculator mr-1"></i> Profit & Loss (P&L)
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div class="p-6">
+
+        <!-- TAB 1: OVERVIEW -->
+        <div *ngIf="activeTab === 'overview'">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded border border-solid border-blueGray-200 p-5 shadow-sm">
+              <div class="text-xs font-semibold text-blueGray-400 uppercase">Gross Revenue</div>
+              <div class="text-2xl font-bold text-blueGray-800 mt-2">₹{{ kpis.totalRevenue | number:'1.2-2' }}</div>
+              <div class="text-[11px] text-blueGray-400 mt-1"><i class="fas fa-arrow-up text-emerald-500 mr-1"></i>Total sales revenue</div>
+            </div>
+            <div class="bg-white rounded border border-solid border-blueGray-200 p-5 shadow-sm border-l-4 border-l-emerald-500">
+              <div class="text-xs font-semibold text-blueGray-400 uppercase">Net Profit</div>
+              <div class="text-2xl font-bold text-emerald-600 mt-2">₹{{ kpis.netProfit | number:'1.2-2' }}</div>
+              <div class="text-[11px] text-blueGray-400 mt-1">Revenue minus COGS & Expenses</div>
+            </div>
+            <div class="bg-white rounded border border-solid border-blueGray-200 p-5 shadow-sm border-l-4 border-l-amber-500">
+              <div class="text-xs font-semibold text-blueGray-400 uppercase">Food Cost %</div>
+              <div class="text-2xl font-bold text-amber-600 mt-2">{{ kpis.foodCostPercentage | number:'1.1-1' }}%</div>
+              <div class="text-[11px] text-blueGray-400 mt-1">Target range: 28% – 35%</div>
+            </div>
+            <div class="bg-white rounded border border-solid border-blueGray-200 p-5 shadow-sm border-l-4 border-l-red-500">
+              <div class="text-xs font-semibold text-blueGray-400 uppercase">Total Wastage Cost</div>
+              <div class="text-2xl font-bold text-red-600 mt-2">₹{{ kpis.totalWastageCost | number:'1.2-2' }}</div>
+              <div class="text-[11px] text-blueGray-400 mt-1">Inventory lost or spoiled</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 bg-blueGray-50 rounded border border-solid border-blueGray-200 p-5">
+              <h4 class="font-bold text-sm text-blueGray-700 uppercase mb-1">Monthly Financial & Profitability Trends</h4>
+              <p class="text-xs text-blueGray-400 mb-6">Comparison of Gross Revenue vs Net Profit over last 6 months</p>
+
+              <div class="h-64 flex items-end justify-between gap-4 px-4 pb-2 border-b border-solid border-blueGray-200">
+                <div *ngFor="let t of monthlyTrends" class="flex-1 flex flex-col items-center h-full justify-end">
+                  <div class="w-full flex items-end justify-center gap-1 h-48">
+                    <div [style.height.%]="getBarHeightPct(t.revenue)" class="w-5 bg-blueGray-700 rounded-t transition-all duration-300 relative group" [title]="'Revenue: ₹' + t.revenue"></div>
+                    <div [style.height.%]="getBarHeightPct(t.profit)" class="w-5 bg-emerald-500 rounded-t transition-all duration-300 relative group" [title]="'Profit: ₹' + t.profit"></div>
+                  </div>
+                  <div class="text-xs font-bold text-blueGray-600 mt-2">{{ t.monthName }}</div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-center gap-6 mt-4 text-xs font-semibold text-blueGray-600">
+                <div class="flex items-center"><span class="w-3 h-3 bg-blueGray-700 rounded inline-block mr-1"></span> Gross Revenue</div>
+                <div class="flex items-center"><span class="w-3 h-3 bg-emerald-500 rounded inline-block mr-1"></span> Net Profit</div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-4 bg-white rounded border border-solid border-blueGray-200 p-5">
+              <h4 class="font-bold text-sm text-blueGray-700 uppercase mb-3">⭐ Top Profit Margin Items</h4>
+              <div class="divide-y divide-blueGray-100">
+                <div *ngFor="let item of topMarginItems" class="py-3 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-bold text-blueGray-700">{{ item.name }}</div>
+                    <div class="text-[10px] text-blueGray-400">Price: ₹{{ item.price }} | Cost: ₹{{ item.foodCost }}</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-xs font-extrabold text-emerald-600">{{ item.marginPct }}%</div>
+                    <div class="text-[10px] text-blueGray-400">Margin</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: SHIFT CLOSURE (X/Z REPORT) -->
+        <div *ngIf="activeTab === 'shift'" class="space-y-6">
+          <div *ngIf="shiftReport" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Opening Balance</div>
+              <div class="text-xl font-extrabold text-blueGray-800">₹{{ shiftReport.openingBalance | number:'1.2-2' }}</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Cash Sales</div>
+              <div class="text-xl font-extrabold text-emerald-600">₹{{ shiftReport.cashSales | number:'1.2-2' }}</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Actual Cash Counted</div>
+              <div class="text-xl font-extrabold text-blue-600">₹{{ shiftReport.actualCashCounted | number:'1.2-2' }}</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Cash Variance</div>
+              <div class="text-xl font-extrabold" [class.text-emerald-600]="shiftReport.cashVariance >= 0" [class.text-red-600]="shiftReport.cashVariance < 0">
+                ₹{{ shiftReport.cashVariance | number:'1.2-2' }}
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded border border-blueGray-200 p-5">
+            <h4 class="font-bold text-sm text-blueGray-700 uppercase mb-4">Shift Tender & Sales Summary</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div class="p-3 bg-blueGray-50 rounded"><strong>Total Orders:</strong> {{ shiftReport?.totalOrdersCount }}</div>
+              <div class="p-3 bg-blueGray-50 rounded"><strong>Card Sales:</strong> ₹{{ shiftReport?.cardSales | number:'1.2-2' }}</div>
+              <div class="p-3 bg-blueGray-50 rounded"><strong>UPI Sales:</strong> ₹{{ shiftReport?.upiSales | number:'1.2-2' }}</div>
+              <div class="p-3 bg-blueGray-50 rounded"><strong>Opened By:</strong> {{ shiftReport?.openedBy }}</div>
+              <div class="p-3 bg-blueGray-50 rounded"><strong>Closed By:</strong> {{ shiftReport?.closedBy || 'Active Shift' }}</div>
+              <div class="p-3 bg-blueGray-50 rounded"><strong>Shift Status:</strong> {{ shiftReport?.status }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: VOIDS & DISCOUNTS AUDIT -->
+        <div *ngIf="activeTab === 'voids'" class="overflow-x-auto">
+          <table class="items-center w-full bg-transparent border-collapse text-left text-xs">
+            <thead>
+              <tr class="bg-blueGray-100 text-blueGray-600 uppercase font-bold">
+                <th class="px-4 py-3">S.No</th>
+                <th class="px-4 py-3">Invoice #</th>
+                <th class="px-4 py-3">Timestamp</th>
+                <th class="px-4 py-3">Subtotal</th>
+                <th class="px-4 py-3">Discount</th>
+                <th class="px-4 py-3">Total</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Audit Reason</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-blueGray-200">
+              <tr *ngFor="let row of voidAudits">
+                <td class="px-4 py-3 font-semibold">{{ row.sNo }}</td>
+                <td class="px-4 py-3 font-bold text-blueGray-700">{{ row.invoiceNumber }}</td>
+                <td class="px-4 py-3 text-blueGray-500">{{ row.timestamp | date:'short' }}</td>
+                <td class="px-4 py-3">₹{{ row.subtotal | number:'1.2-2' }}</td>
+                <td class="px-4 py-3 text-amber-600 font-bold">₹{{ row.discountAmount | number:'1.2-2' }}</td>
+                <td class="px-4 py-3 font-bold">₹{{ row.totalAmount | number:'1.2-2' }}</td>
+                <td class="px-4 py-3"><span class="px-2 py-1 rounded text-[10px] font-bold" [class.bg-red-100]="row.status === 'Void'" [class.text-red-700]="row.status === 'Void'" [class.bg-amber-100]="row.status === 'Refunded'" [class.text-amber-700]="row.status === 'Refunded'">{{ row.status }}</span></td>
+                <td class="px-4 py-3 text-blueGray-600">{{ row.voidReason || row.refundReason || 'Staff Discount' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TAB 4: STAFF PERFORMANCE -->
+        <div *ngIf="activeTab === 'staff'" class="overflow-x-auto">
+          <table class="items-center w-full bg-transparent border-collapse text-left text-xs">
+            <thead>
+              <tr class="bg-blueGray-100 text-blueGray-600 uppercase font-bold">
+                <th class="px-4 py-3">Rank</th>
+                <th class="px-4 py-3">Staff Name</th>
+                <th class="px-4 py-3">Role</th>
+                <th class="px-4 py-3">Orders Processed</th>
+                <th class="px-4 py-3">Total Revenue</th>
+                <th class="px-4 py-3">Average Check</th>
+                <th class="px-4 py-3">Discounts Applied</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-blueGray-200">
+              <tr *ngFor="let staff of staffReports">
+                <td class="px-4 py-3 font-bold">#{{ staff.sNo }}</td>
+                <td class="px-4 py-3 font-bold text-blueGray-800">{{ staff.staffName }}</td>
+                <td class="px-4 py-3 text-blueGray-500">{{ staff.role }}</td>
+                <td class="px-4 py-3 font-semibold">{{ staff.ordersProcessedCount }}</td>
+                <td class="px-4 py-3 font-extrabold text-emerald-600">₹{{ staff.totalRevenueGenerated | number:'1.2-2' }}</td>
+                <td class="px-4 py-3">₹{{ staff.averageBillAmount | number:'1.2-2' }}</td>
+                <td class="px-4 py-3 text-amber-600">₹{{ staff.totalDiscountsGiven | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TAB 5: STOCK VALUATION & ABC ANALYSIS -->
+        <div *ngIf="activeTab === 'valuation'" class="space-y-6">
+          <div *ngIf="stockValuation" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Total Cost Value</div>
+              <div class="text-xl font-extrabold text-blueGray-800">₹{{ stockValuation.totalInventoryCostValue | number:'1.2-2' }}</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Category A (High Value)</div>
+              <div class="text-xl font-extrabold text-emerald-600">{{ stockValuation.highValueCategoryACount }} Items</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Category B (Medium)</div>
+              <div class="text-xl font-extrabold text-amber-600">{{ stockValuation.mediumValueCategoryBCount }} Items</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Category C (Low / Dead)</div>
+              <div class="text-xl font-extrabold text-red-600">{{ stockValuation.lowValueCategoryCCount }} Items</div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="items-center w-full bg-transparent border-collapse text-left text-xs">
+              <thead>
+                <tr class="bg-blueGray-100 text-blueGray-600 uppercase font-bold">
+                  <th class="px-4 py-3">S.No</th>
+                  <th class="px-4 py-3">Item Name</th>
+                  <th class="px-4 py-3">Category</th>
+                  <th class="px-4 py-3">Stock Qty</th>
+                  <th class="px-4 py-3">Cost Price</th>
+                  <th class="px-4 py-3">Retail Price</th>
+                  <th class="px-4 py-3">Stock Value</th>
+                  <th class="px-4 py-3">ABC Rank</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-blueGray-200">
+                <tr *ngFor="let item of stockValuation?.items">
+                  <td class="px-4 py-3 font-semibold">{{ item.sNo }}</td>
+                  <td class="px-4 py-3 font-bold text-blueGray-800">{{ item.itemName }}</td>
+                  <td class="px-4 py-3 text-blueGray-500">{{ item.categoryName }}</td>
+                  <td class="px-4 py-3 font-bold">{{ item.stockQuantity }}</td>
+                  <td class="px-4 py-3">₹{{ item.costPrice | number:'1.2-2' }}</td>
+                  <td class="px-4 py-3">₹{{ item.retailPrice | number:'1.2-2' }}</td>
+                  <td class="px-4 py-3 font-bold text-blueGray-800">₹{{ item.totalCostValue | number:'1.2-2' }}</td>
+                  <td class="px-4 py-3"><span class="px-2 py-1 rounded text-white font-extrabold text-[10px]" [class.bg-emerald-600]="item.abcCategory === 'A'" [class.bg-amber-500]="item.abcCategory === 'B'" [class.bg-red-500]="item.abcCategory === 'C'">Grade {{ item.abcCategory }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 6: PROFIT & LOSS (P&L) STATEMENT -->
+        <div *ngIf="activeTab === 'pnl'" class="space-y-6">
+          <div *ngIf="pnlReport" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Total Revenue</div>
+              <div class="text-xl font-extrabold text-blueGray-800">₹{{ pnlReport.totalSalesRevenue | number:'1.2-2' }}</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">COGS</div>
+              <div class="text-xl font-extrabold text-amber-600">₹{{ pnlReport.totalCostOfGoodsSold | number:'1.2-2' }}</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Operating Expenses</div>
+              <div class="text-xl font-extrabold text-red-600">₹{{ pnlReport.totalExpenses | number:'1.2-2' }}</div>
+            </div>
+            <div class="bg-blueGray-50 p-4 rounded border border-blueGray-200 border-l-4 border-l-emerald-500">
+              <div class="text-xs text-blueGray-500 font-bold uppercase">Net Profit</div>
+              <div class="text-xl font-extrabold text-emerald-600">₹{{ pnlReport.netOperatingProfit | number:'1.2-2' }}</div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded border border-blueGray-200 p-5">
+            <h4 class="font-bold text-sm text-blueGray-700 uppercase mb-4">Operating Expense Breakdown</h4>
+            <div class="divide-y divide-blueGray-200">
+              <div *ngFor="let exp of pnlReport?.expensesByCategory" class="py-3 flex justify-between items-center text-xs">
+                <span class="font-bold text-blueGray-700">{{ exp.category }}</span>
+                <div class="text-right">
+                  <span class="font-extrabold text-blueGray-800 mr-3">₹{{ exp.amount | number:'1.2-2' }}</span>
+                  <span class="text-blueGray-400">({{ exp.percentageOfTotalExpenses }}%)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -112,7 +114,7 @@ namespace HotelPOS
 
                 if (user.MustChangePassword)
                 {
-                    await HandleMustChangePasswordAsync(user);
+                    await HandleMustChangePasswordAsync(user, password);
                     return;
                 }
 
@@ -157,9 +159,11 @@ namespace HotelPOS
         /// ResetPasswordAsync authorizes "resetting your own account" via AppSession — but AppSession isn't set
         /// until after this flow. Establish it temporarily (the primary credentials were already verified by the
         /// caller) so the self-service check passes, then clear it again on every exit path since the user hasn't
-        /// actually completed login yet.
+        /// actually completed login yet. ResetPasswordAsync also now requires proof of the current password for
+        /// self-service changes; the password the user just typed to log in (already verified by AuthenticateAsync
+        /// above) is passed through so this flow doesn't have to ask for it a second time.
         /// </remarks>
-        private async Task HandleMustChangePasswordAsync(User user)
+        private async Task HandleMustChangePasswordAsync(User user, string currentPassword)
         {
             AppSession.CurrentUser = user;
 
@@ -175,7 +179,7 @@ namespace HotelPOS
             using (var pwScope = App.CreateDbScope())
             {
                 var userService = pwScope.ServiceProvider.GetRequiredService<IUserService>();
-                var res = await userService.ResetPasswordAsync(user.Id, dialog.NewPassword);
+                var res = await userService.ResetPasswordAsync(user.Id, dialog.NewPassword, currentPassword);
                 ok = res.Success;
                 err = res.Error;
             }
@@ -187,6 +191,10 @@ namespace HotelPOS
                 _notificationService.ShowError($"Failed to update password: {err}");
                 return;
             }
+
+            if (user.Username == "admin")
+                App.DeleteInitialAdminCredentialFileIfExists();
+
             _notificationService.ShowSuccess("Password updated successfully. You can now log in with your new password.");
             PasswordBox.Clear();
         }
@@ -242,6 +250,15 @@ namespace HotelPOS
 
             var codeDialog = new Views.ResetWithCodeDialog(forgotDialog.Username) { Owner = this };
             codeDialog.ShowDialog();
+        }
+
+        /// <summary>Manual escape hatch to registration, in case the automatic first-run prompt
+        /// (App.ShowRegistrationWindowIfStillOnLogin) didn't fire or was dismissed.</summary>
+        private void RegisterAdmin_Click(object sender, RoutedEventArgs e)
+        {
+            // ShowRegistrationWindow closes this window once the new one is up, which runs the
+            // Closed handler from App.ShowLoginWindow() and disposes this window's login scope normally.
+            ((App)System.Windows.Application.Current).ShowRegistrationWindow(this);
         }
     }
 }

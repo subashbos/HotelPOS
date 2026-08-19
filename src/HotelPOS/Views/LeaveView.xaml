@@ -28,7 +28,8 @@
             </Grid.ColumnDefinitions>
 
             <!-- ══ LEFT: APPLY + BALANCES ══ -->
-            <StackPanel Grid.Column="0">
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
                 <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="APPLY FOR LEAVE" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,10"/>
@@ -104,6 +105,7 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
+            </ScrollViewer>
 
             <!-- ══ RIGHT: REQUESTS ══ -->
             <Grid Grid.Column="2">

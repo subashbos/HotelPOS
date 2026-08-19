@@ -30,7 +30,7 @@ namespace HotelPOS.Application.Common.Behaviors
                     throw new ValidationException(failures);
                 }
             }
-            return await next();
+            return await next(cancellationToken);
         }
     }
 }

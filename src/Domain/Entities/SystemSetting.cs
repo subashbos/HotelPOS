@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using HotelPOS.Domain.Common.Constants;
 
 namespace HotelPOS.Domain.Entities
 {
@@ -44,6 +45,13 @@ namespace HotelPOS.Domain.Entities
         /// <summary>Minutes of inactivity before the WPF session auto-logs-out. 0 disables the timeout.</summary>
         public int IdleTimeoutMinutes { get; set; } = 15;
 
+        // ── Payroll: Professional Tax ────────────────────────────────────────
+        /// <summary>Professional Tax is a STATE subject — several states levy none, and slabs differ
+        /// where they do. These two fields let each install match its own state instead of the
+        /// Karnataka-shaped default baked into <see cref="IndianStatutoryDefaults"/>.</summary>
+        public decimal ProfessionalTaxThreshold { get; set; } = IndianStatutoryDefaults.ProfessionalTaxThreshold;
+        public decimal ProfessionalTaxAmount { get; set; } = IndianStatutoryDefaults.ProfessionalTaxAmount;
+
         // ── Outgoing Email (SMTP) — used for the self-service "forgot password" flow ──
         public string? SmtpHost { get; set; }
         public int SmtpPort { get; set; } = 587;
@@ -72,6 +80,8 @@ namespace HotelPOS.Domain.Entities
             EnableAutomatedBackups = source.EnableAutomatedBackups;
             OffsiteBackupPath = source.OffsiteBackupPath;
             IdleTimeoutMinutes = source.IdleTimeoutMinutes;
+            ProfessionalTaxThreshold = source.ProfessionalTaxThreshold;
+            ProfessionalTaxAmount = source.ProfessionalTaxAmount;
             SmtpHost = source.SmtpHost;
             SmtpPort = source.SmtpPort;
             SmtpUsername = source.SmtpUsername;

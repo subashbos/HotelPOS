@@ -108,9 +108,12 @@ namespace HotelPOS
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<ICashService, CashService>();
             services.AddScoped<ICategoryService>(provider => new CategoryService(provider.GetRequiredService<IMediator>()));
+            services.AddScoped<IUnitOfMeasurementService>(provider => new UnitOfMeasurementService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<ITableService>(provider => new TableService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPurchaseService>(provider => new PurchaseService(provider.GetRequiredService<IMediator>()));
+            services.AddScoped<IEstimationService>(provider => new EstimationService(provider.GetRequiredService<IMediator>()));
+            services.AddScoped<IReservationService>(provider => new ReservationService(provider.GetRequiredService<IMediator>()));
             services.AddScoped<ISupplierService>(provider => new SupplierService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
             services.AddScoped<IExpenseService>(provider => new ExpenseService(provider.GetRequiredService<IMediator>(), provider.GetRequiredService<IMapper>()));
             services.AddScoped<IBomService, Services.BomService>();
@@ -118,6 +121,7 @@ namespace HotelPOS
             services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<ILeaveService, LeaveService>();
             services.AddScoped<IPayrollService, PayrollService>();
+            services.AddScoped<ITdsService, TdsService>();
             services.AddScoped<ICustomerService, CustomerService>();
 
             services.AddSingleton<ICartService, CartService>();
@@ -130,6 +134,8 @@ namespace HotelPOS
             services.AddTransient<BillingViewModel>();
             services.AddTransient<SessionViewModel>();
             services.AddTransient<PurchaseEntryViewModel>();
+            services.AddTransient<EstimationViewModel>();
+            services.AddTransient<ReservationViewModel>();
             services.AddTransient<SupplierViewModel>();
             services.AddTransient<SupplierEntryViewModel>();
             services.AddTransient<PurchaseReportViewModel>();
@@ -140,6 +146,10 @@ namespace HotelPOS
             services.AddTransient<AttendanceViewModel>();
             services.AddTransient<LeaveViewModel>();
             services.AddTransient<PayrollViewModel>();
+            services.AddTransient<TdsViewModel>();
+            services.AddTransient<AccountViewModel>();
+            services.AddTransient<DepartmentDesignationViewModel>();
+            services.AddTransient<SalaryStructureViewModel>();
             services.AddTransient<ExpenseViewModel>();
             services.AddTransient<ExpenseEntryViewModel>();
             services.AddTransient<CustomerViewModel>();
@@ -151,11 +161,14 @@ namespace HotelPOS
             services.AddTransient<DashboardView>();
             services.AddTransient<ItemView>();
             services.AddTransient<CategoryView>();
+            services.AddTransient<UnitOfMeasurementView>();
             services.AddTransient<LedgerView>();
             services.AddTransient<JournalView>();
             services.AddTransient<SettingsView>();
             services.AddTransient<AuditView>();
             services.AddTransient<PurchaseEntryView>();
+            services.AddTransient<EstimationView>();
+            services.AddTransient<ReservationView>();
             services.AddTransient<BillingView>();
             services.AddTransient<SupplierView>();
             services.AddTransient<SalesReportView>();
@@ -171,6 +184,10 @@ namespace HotelPOS
             services.AddTransient<AttendanceView>();
             services.AddTransient<LeaveView>();
             services.AddTransient<PayrollView>();
+            services.AddTransient<TdsView>();
+            services.AddTransient<AccountView>();
+            services.AddTransient<DepartmentDesignationView>();
+            services.AddTransient<SalaryStructureView>();
             services.AddTransient<ExpenseView>();
             services.AddTransient<CustomerView>();
 
@@ -180,6 +197,7 @@ namespace HotelPOS
             // CLEANUP: Redundant individual view registrations were removed here as they are 
             // already registered in the "ViewModels & Views" section above.
             services.AddScoped<LoginWindow>();
+            services.AddScoped<RegistrationWindow>();
             services.AddScoped<DashboardWindow>();
             services.AddTransient<AddItemWindow>();
         }

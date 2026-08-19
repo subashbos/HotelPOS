@@ -2,22 +2,24 @@
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
-using System.Collections.Concurrent;
+
 using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace HotelPOS.Application.UseCases
 {
     public class CartService : ICartService
     {
-        // ConcurrentDictionary for safe outer table-key access across threads
-        private readonly ConcurrentDictionary<int, List<OrderItem>> _tableCarts = new();
+        // Per-table cart storage, guarded by _lock for thread safety
+        private readonly Dictionary<int, List<OrderItem>> _tableCarts = new();
         private readonly Lock _lock = new();
         private readonly IServiceScopeFactory? _scopeFactory;
+        private readonly Microsoft.Extensions.Logging.ILogger<CartService>? _logger;
 
         /// <summary>
         /// Path to the cart persistence file. Overridable for testing.
@@ -27,24 +29,43 @@ namespace HotelPOS.Application.UseCases
 
         /// <summary>
         /// Production constructor: resolves scope factory from DI and uses the
-        /// default carts.json path in the application's base directory.
+        /// default carts.json path under the current user's local application data
+        /// (not the install directory, which is typically read-only for non-admin
+        /// users when installed under Program Files).
         /// </summary>
         public CartService(IServiceScopeFactory? scopeFactory = null)
-            : this(scopeFactory, Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "carts.json"))
+            : this(scopeFactory, GetDefaultCartsFilePath(), null)
         {
         }
 
-        /// <summary>
-        /// Testable constructor: callers can supply a custom file path (or null
-        /// to disable persistence) so test runs never share or pollute each
-        /// other's on-disk state.
-        /// </summary>
+        private static string GetDefaultCartsFilePath() => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "HotelPOS", "carts.json");
+
         internal CartService(IServiceScopeFactory? scopeFactory, string? cartsFilePath)
+            : this(scopeFactory, cartsFilePath, null)
+        {
+        }
+
+        internal CartService(IServiceScopeFactory? scopeFactory, string? cartsFilePath, Microsoft.Extensions.Logging.ILogger<CartService>? logger)
         {
             _scopeFactory = scopeFactory;
             _cartsFilePath = cartsFilePath;
+            _logger = logger;
             RestoreCarts();
             RestoreHeldOrders();
+        }
+
+        private void LogException(Exception ex, string message)
+        {
+            if (_logger != null)
+            {
+                _logger.LogError(ex, "{Message}", message);
+            }
+            else
+            {
+                Serilog.Log.Error(ex, "{Message}", message);
+            }
         }
 
         // ── Persistence helpers ──────────────────────────────────────────────
@@ -54,12 +75,16 @@ namespace HotelPOS.Application.UseCases
             if (_cartsFilePath == null) return;
             try
             {
+                var dir = Path.GetDirectoryName(_cartsFilePath);
+                if (!string.IsNullOrEmpty(dir))
+                    Directory.CreateDirectory(dir);
+
                 var json = JsonSerializer.Serialize(_tableCarts);
                 File.WriteAllText(_cartsFilePath, json);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to save carts: {ex.Message}");
+                LogException(ex, "Failed to save carts");
             }
         }
 
@@ -71,7 +96,7 @@ namespace HotelPOS.Application.UseCases
                 if (File.Exists(_cartsFilePath))
                 {
                     var json = File.ReadAllText(_cartsFilePath);
-                    var data = JsonSerializer.Deserialize<ConcurrentDictionary<int, List<OrderItem>>>(json);
+                    var data = JsonSerializer.Deserialize<Dictionary<int, List<OrderItem>>>(json);
                     if (data != null)
                     {
                         _tableCarts.Clear();
@@ -84,7 +109,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to restore carts: {ex.Message}");
+                LogException(ex, "Failed to restore carts");
             }
         }
 
@@ -102,7 +127,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to save held order to DB: {ex.Message}");
+                LogException(ex, "Failed to save held order to DB");
             }
         }
 
@@ -120,7 +145,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to remove held order from DB: {ex.Message}");
+                LogException(ex, "Failed to remove held order from DB");
             }
         }
 
@@ -138,7 +163,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to clear held orders from DB: {ex.Message}");
+                LogException(ex, "Failed to clear held orders from DB");
             }
         }
 
@@ -165,7 +190,7 @@ namespace HotelPOS.Application.UseCases
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to restore held orders from DB: {ex.Message}");
+                LogException(ex, "Failed to restore held orders from DB");
             }
         }
 
@@ -281,6 +306,12 @@ namespace HotelPOS.Application.UseCases
             lock (_lock)
             {
                 GetOrCreateCart(tableNumber).Clear();
+                var toRemove = _heldOrders.ToList().Where(x => x.TableNumber == tableNumber).ToList();
+                foreach (var h in toRemove)
+                {
+                    _heldOrders.Remove(h);
+                    RemoveHeldOrderFromDb(h.Id);
+                }
                 SaveCarts();
             }
         }
@@ -325,13 +356,25 @@ namespace HotelPOS.Application.UseCases
 
         public decimal GetGrandTotal(int tableNumber)
         {
-            var subtotal = GetSubtotal(tableNumber);
-            return subtotal + GetGstAmount(tableNumber);
+            lock (_lock)
+            {
+                var items = GetOrCreateCart(tableNumber);
+                var subtotal = items.Sum(CalculateLineTotal);
+                var gst = Math.Round(
+                    items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / MoneyPrecision.PercentDivisor)),
+                    MoneyPrecision.CurrencyDecimals);
+                return subtotal + gst;
+            }
         }
 
         private List<OrderItem> GetOrCreateCart(int tableNumber)
         {
-            return _tableCarts.GetOrAdd(tableNumber, _ => new List<OrderItem>());
+            if (!_tableCarts.TryGetValue(tableNumber, out var cart))
+            {
+                cart = new List<OrderItem>();
+                _tableCarts[tableNumber] = cart;
+            }
+            return cart;
         }
 
         public void LoadItems(int tableNumber, List<OrderItem> items)

@@ -1,5 +1,6 @@
 using MediatR;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,14 +15,18 @@ namespace HotelPOS.Application.UseCases.Categories.Commands
     public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand>
     {
         private readonly ICategoryRepository _repo;
+        private readonly IAuthorizationService _authorization;
 
-        public UpdateCategoryCommandHandler(ICategoryRepository repo)
+        public UpdateCategoryCommandHandler(ICategoryRepository repo, IAuthorizationService authorization)
         {
             _repo = repo;
+            _authorization = authorization;
         }
 
         public async Task Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
         {
+            _authorization.EnsurePermission(PermissionModules.Categories);
+
             var all = await _repo.GetAllAsync() ?? new List<Category>();
             if (all.Any(c => c.Id != request.Id && c.Name.Trim().Equals(request.Name.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidOperationException($"Category '{request.Name}' already exists.");

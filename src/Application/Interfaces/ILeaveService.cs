@@ -10,5 +10,8 @@ namespace HotelPOS.Application.Interfaces
         Task ApplyLeaveAsync(LeaveRequest request);
         Task ApproveLeaveAsync(int requestId, int approverEmployeeId);
         Task RejectLeaveAsync(int requestId, int approverEmployeeId, string reason);
+
+        /// <summary>Withdraws the caller's own still-pending request, releasing the reserved balance hold.</summary>
+        Task CancelLeaveAsync(int requestId, int employeeId);
     }
 }

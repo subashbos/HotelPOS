@@ -1,3 +1,5 @@
+#nullable enable
+
 using ClosedXML.Excel;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
@@ -267,7 +269,7 @@ namespace HotelPOS.Views
                         using (var scope = App.CreateDbScope())
                         {
                             var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                            await orderService.VoidOrderAsync(row.OrderId, reason, RoleNames.Manager);
+                            await orderService.VoidOrderAsync(row.OrderId, reason, AppSession.CurrentUser?.Username ?? "System");
                         }
                         _notificationService.ShowSuccess($"Order {row.InvoiceNumber} voided successfully.");
                         await LoadDataAsync();

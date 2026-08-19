@@ -1,8 +1,15 @@
 import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
 import { ItemService } from '../../../services/item.service';
 import { OrderService } from '../../../services/order.service';
-import { Item } from '../../../models/item.model';
+import { TableService } from '../../../services/table.service';
+import { CategoryService } from '../../../services/category.service';
+import { SettingsService } from '../../../services/settings.service';
+import { Item, Category } from '../../../models/item.model';
+import { DiningTable } from '../../../models/table.model';
 import { CreateOrderRequest, ORDER_TYPE_LABELS, PAYMENT_MODES } from '../../../models/order.model';
+import { SystemSettings } from '../../../models/settings.model';
+import { ReceiptData, KotData } from '../../../models/print.model';
 
 interface CartRow {
   sNo: number;
@@ -38,8 +45,23 @@ export class BillingComponent implements OnInit {
 
   // ── Menu Data from API ──
   allItems: Item[] = [];
-  categories: string[] = ['All'];
-  selectedCategory = 'All';
+  categories: Category[] = [{ id: 0, name: 'All', displayOrder: -1 }];
+  selectedCategoryId = 0;
+
+  get selectedCategory(): string {
+    if (this.selectedCategoryId === 0) return 'All';
+    const found = this.categories.find(c => c.id === this.selectedCategoryId);
+    return found ? found.name : 'All';
+  }
+
+  set selectedCategory(val: string) {
+    if (val === 'All' || val === '0') {
+      this.selectedCategoryId = 0;
+    } else {
+      const found = this.categories.find(c => c.name === val);
+      this.selectedCategoryId = found ? found.id : 0;
+    }
+  }
 
   // Cached rather than recomputed via a getter, since filtering the whole
   // catalog on every change-detection cycle gets expensive as the menu grows.
@@ -68,7 +90,11 @@ export class BillingComponent implements OnInit {
   customerName = '';
   customerPhone = '';
   customerGstin = '';
-  tableNumber = '';
+  tableNumber = '1';
+
+  // ── Table Layout (WPF "Select Table" popup parity) ──
+  tables: DiningTable[] = [];
+  isTableLayoutOpen = false;
 
   // ── Discount ──
   discountAmount = 0;
@@ -84,26 +110,68 @@ export class BillingComponent implements OnInit {
   heldOrders: HeldOrder[] = [];
   showHeldOrders = false;
 
-  constructor(private readonly itemService: ItemService, private readonly orderService: OrderService) {}
+  // ── Printing (receipt / KOT) ──
+  settings: SystemSettings | null = null;
+  printMode: 'receipt' | 'kot' | null = null;
+  receiptData: ReceiptData | null = null;
+  kotData: KotData | null = null;
+
+  constructor(
+    private readonly itemService: ItemService,
+    private readonly orderService: OrderService,
+    private readonly tableService: TableService,
+    private readonly settingsService: SettingsService,
+    private readonly categoryService?: CategoryService
+  ) {}
 
   ngOnInit(): void {
     this.loadItems();
+    this.settingsService.getSettings().subscribe({
+      next: (settings) => this.settings = settings,
+      error: (err) => console.error('Settings load error:', err)
+    });
   }
 
   // ── Load Items from API ──
   loadItems(): void {
     this.isLoading = true;
     this.loadError = '';
-    this.itemService.getItems().subscribe({
-      next: (items) => {
+
+    const categories$ = this.categoryService
+      ? this.categoryService.getCategories()
+      : of([]);
+
+    forkJoin({
+      items: this.itemService.getItems(),
+      cats: categories$
+    }).subscribe({
+      next: ({ items, cats }) => {
         this.allItems = items;
-        // Build category list dynamically from API data
-        const cats = [...new Set(
-          items
-            .filter(i => i.category?.name)
-            .map(i => i.category!.name)
-        )];
-        this.categories = ['All', ...cats];
+
+        const orderedCats = [...(cats || [])].sort((a, b) => {
+          const orderA = a.displayOrder ?? 0;
+          const orderB = b.displayOrder ?? 0;
+          if (orderA !== orderB) {
+            return orderA - orderB;
+          }
+          return (a.name || '').localeCompare(b.name || '');
+        });
+
+        // Also add any categories present in items if not in fetched categories (fallback)
+        const catMap = new Map<number, Category>();
+        orderedCats.forEach(c => catMap.set(c.id, c));
+
+        items.forEach(i => {
+          if (i.category && !catMap.has(i.category.id)) {
+            catMap.set(i.category.id, i.category);
+            orderedCats.push(i.category);
+          }
+        });
+
+        this.categories = [
+          { id: 0, name: 'All', displayOrder: -1 },
+          ...orderedCats
+        ];
         this.isLoading = false;
         this.updateFilteredMenuItems();
       },
@@ -141,6 +209,10 @@ export class BillingComponent implements OnInit {
     return item.id;
   }
 
+  trackByCategoryId(_index: number, category: Category): number {
+    return category.id;
+  }
+
   trackByCartItemId(_index: number, row: CartRow): number {
     return row.itemId;
   }
@@ -150,15 +222,25 @@ export class BillingComponent implements OnInit {
   }
 
   // ── Filtered Items (Category + Search) ──
-  selectCategory(cat: string): void {
-    this.selectedCategory = cat;
+  selectCategory(cat: Category | string | number): void {
+    if (typeof cat === 'number') {
+      this.selectedCategoryId = cat;
+    } else if (typeof cat === 'string') {
+      this.selectedCategory = cat;
+    } else if (cat && typeof cat.id === 'number') {
+      this.selectedCategoryId = cat.id;
+    }
     this.updateFilteredMenuItems();
   }
 
   updateFilteredMenuItems(): void {
     this.filteredMenuItems = this.allItems.filter(item => {
-      const matchCat = this.selectedCategory === 'All' ||
-        item.category?.name === this.selectedCategory;
+      let matchCat = true;
+      if (this.selectedCategoryId > 0) {
+        matchCat = item.categoryId === this.selectedCategoryId ||
+                   item.category?.id === this.selectedCategoryId ||
+                   (item.category?.name === this.selectedCategory);
+      }
       const q = this.searchQuery.toLowerCase();
       const matchSearch = !q || item.name.toLowerCase().includes(q);
       // Skip out-of-stock if trackInventory is on
@@ -202,9 +284,15 @@ export class BillingComponent implements OnInit {
   addToCart(item: Item): void {
     const existing = this.cart.find(c => c.itemId === item.id);
     if (existing) {
+      if (item.trackInventory && existing.quantity >= item.stockQuantity) {
+        return;
+      }
       existing.quantity += 1;
       existing.total = this.computeTotal(existing.quantity, existing.price, existing.taxPercentage);
     } else {
+      if (item.trackInventory && item.stockQuantity <= 0) {
+        return;
+      }
       this.cart.push({
         sNo: this.cart.length + 1,
         itemId: item.id,
@@ -223,6 +311,10 @@ export class BillingComponent implements OnInit {
   }
 
   increaseQty(row: CartRow): void {
+    const item = this.allItems.find(i => i.id === row.itemId);
+    if (item && item.trackInventory && row.quantity >= item.stockQuantity) {
+      return;
+    }
     row.quantity += 1;
     this.updateRowTotal(row);
   }
@@ -250,6 +342,17 @@ export class BillingComponent implements OnInit {
     this.selectedCartRow = row;
   }
 
+  selectOrderType(type: string): void {
+    this.orderType = type;
+    if (type === ORDER_TYPE_LABELS[0]) {
+      if (!this.tableNumber || this.tableNumber === '0') {
+        this.tableNumber = '1';
+      }
+    } else {
+      this.tableNumber = '';
+    }
+  }
+
   clearCart(): void {
     this.cart = [];
     this.selectedCartRow = null;
@@ -257,9 +360,56 @@ export class BillingComponent implements OnInit {
     this.customerName = '';
     this.customerPhone = '';
     this.customerGstin = '';
-    this.tableNumber = '';
+    this.tableNumber = '1';
     this.orderType = ORDER_TYPE_LABELS[0];
     this.paymentMode = PAYMENT_MODES.Cash;
+  }
+
+  // ── Table Layout (WPF "Select Table" popup parity) ──
+  openTableLayout(open: boolean): void {
+    if (open) this.loadTables();
+    this.isTableLayoutOpen = open;
+  }
+
+  loadTables(): void {
+    this.tableService.getTables().subscribe({
+      next: (tables) => {
+        this.tables = tables.filter(t => t.isActive).sort((a, b) => a.number - b.number);
+        if (this.tables.length === 0) {
+          // Fallback to a default 20-table layout if none are configured yet (WPF parity)
+          this.tables = Array.from({ length: 20 }, (_, i) => ({
+            id: 0, number: i + 1, name: String(i + 1), capacity: 0, isActive: true, isDeleted: false
+          }));
+        }
+      },
+      error: (err) => console.error('Tables load error:', err)
+    });
+  }
+
+  selectTable(tableNumber: number): void {
+    this.tableNumber = String(tableNumber);
+    this.isTableLayoutOpen = false;
+  }
+
+  isTableOccupied(tableNumber: number): boolean {
+    return this.heldOrders.some(h => Number(h.tableNumber) === tableNumber);
+  }
+
+  isTableCurrent(tableNumber: number): boolean {
+    return Number(this.tableNumber) === tableNumber;
+  }
+
+  get activeTableNumbers(): number[] {
+    const nums = new Set(
+      this.heldOrders.map(h => Number(h.tableNumber)).filter(n => n > 0)
+    );
+    const current = Number(this.tableNumber);
+    if (this.cart.length > 0 && current > 0) nums.add(current);
+    return [...nums].sort((a, b) => a - b);
+  }
+
+  trackByTableNumber(_index: number, t: DiningTable): number {
+    return t.number;
   }
 
   // ── Hold Orders ──
@@ -278,7 +428,31 @@ export class BillingComponent implements OnInit {
       paymentMode: this.paymentMode,
       discountAmount: this.discountAmount
     });
+    const kotTableNumber = Number(this.tableNumber) || 0;
+    const kotItems = this.cart.map(r => ({ itemName: r.itemName, quantity: r.quantity }));
     this.clearCart();
+    this.printKot(kotTableNumber, kotItems);
+  }
+
+  // ── Printing (receipt / KOT) ──
+  // Browsers can't target a specific printer from JS, so window.print() always opens
+  // the OS print dialog — the closest web equivalent of the WPF spooler fallback.
+  printKot(tableNumber: number, items: { itemName: string; quantity: number }[]): void {
+    this.kotData = { tableNumber, items };
+    this.printMode = 'kot';
+    setTimeout(() => {
+      window.print();
+      this.printMode = null;
+    });
+  }
+
+  printReceipt(): void {
+    if (!this.receiptData) return;
+    this.printMode = 'receipt';
+    setTimeout(() => {
+      window.print();
+      this.printMode = null;
+    });
   }
 
   resumeOrder(held: HeldOrder): void {
@@ -326,8 +500,17 @@ export class BillingComponent implements OnInit {
   confirmCheckout(): void {
     if (this.isCheckingOut || this.checkoutConfirmed || this.cart.length === 0) return;
 
+    // Dine In orders must be tied to a table (backend rejects TableNumber <= 0 for DineIn);
+    // catch it here with an actionable message instead of round-tripping to the API.
+    if (this.orderType === ORDER_TYPE_LABELS[0] && (Number(this.tableNumber) || 0) <= 0) {
+      this.checkoutError = 'Please enter a table number for Dine In orders.';
+      return;
+    }
+
     this.isCheckingOut = true;
     this.checkoutError = '';
+
+    const currentTableNum = Number(this.tableNumber) || 0;
 
     const request: CreateOrderRequest = {
       items: this.cart.map(r => ({
@@ -338,7 +521,7 @@ export class BillingComponent implements OnInit {
         taxPercentage: r.taxPercentage,
         total: r.total
       })),
-      tableNumber: Number(this.tableNumber) || 0,
+      tableNumber: currentTableNum,
       discount: this.discountAmount,
       paymentMode: this.paymentMode,
       customerName: this.customerName || undefined,
@@ -353,6 +536,29 @@ export class BillingComponent implements OnInit {
         this.isCheckingOut = false;
         this.checkoutConfirmed = true;
         this.lastInvoiceNumber = `Order #${orderId}`;
+        if (currentTableNum > 0) {
+          this.heldOrders = this.heldOrders.filter(h => Number(h.tableNumber) !== currentTableNum);
+        }
+
+        this.receiptData = {
+          orderId,
+          createdAt: new Date(),
+          items: this.cart.map(r => ({
+            itemName: r.itemName,
+            price: r.price,
+            quantity: r.quantity,
+            total: r.total,
+            taxPercentage: r.taxPercentage
+          })),
+          subtotal: this.subtotal,
+          discountAmount: this.discountAmount,
+          totalAmount: this.totalAmount,
+          paymentMode: this.paymentMode,
+          customerName: this.customerName || undefined,
+          customerPhone: this.customerPhone || undefined,
+          customerGstin: this.customerGstin || undefined
+        };
+        this.printReceipt();
       },
       error: (err) => {
         this.isCheckingOut = false;

@@ -277,6 +277,7 @@ namespace HotelPOS.ViewModels
                             _notificationService.ShowWarning($"Item '{item.Name}' is already added to the purchase.");
                             row.ItemId = 0;
                             row.ItemName = string.Empty;
+                            row.Unit = "Pcs";
                             row.UnitPrice = 0;
                             row.TaxPercentage = 0;
                             row.Discount = 0;
@@ -285,6 +286,7 @@ namespace HotelPOS.ViewModels
                         }
 
                         row.ItemName = item.Name;
+                        row.Unit = item.Unit?.Name ?? "Pcs";
                         row.UnitPrice = item.Price;
                         row.TaxPercentage = item.TaxPercentage;
 

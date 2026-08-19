@@ -56,3 +56,43 @@ export interface LowStockAlert {
   dailyConsumptionRate: number; daysRemaining: number; alertLevel: string;
 }
 export interface MonthlyTrend { monthName: string; revenue: number; grossProfit: number; netProfit: number; }
+
+export interface ShiftClosureReport {
+  sessionId: number; openedAt: string; closedAt?: string; openedBy: string; closedBy?: string;
+  status: string; openingBalance: number; theoreticalClosingBalance: number; actualCashCounted: number;
+  cashVariance: number; totalSales: number; cashSales: number; cardSales: number; upiSales: number;
+  creditSales: number; totalOrdersCount: number;
+}
+
+export interface VoidDiscountAuditRow {
+  sNo: number; orderId: number; invoiceNumber: string; timestamp: string; orderType: string;
+  subtotal: number; discountAmount: number; totalAmount: number; status: string;
+  refundReason?: string; voidReason?: string; customerOrCashierInfo: string;
+}
+
+export interface StaffPerformanceReport {
+  sNo: number; staffId: number; staffName: string; role: string; ordersProcessedCount: number;
+  totalRevenueGenerated: number; averageBillAmount: number; totalDiscountsGiven: number;
+}
+
+export interface StockValuationRow {
+  sNo: number; itemId: number; itemName: string; categoryName: string; stockQuantity: number;
+  costPrice: number; retailPrice: number; totalCostValue: number; totalRetailValue: number; abcCategory: string;
+}
+
+export interface StockValuationSummary {
+  totalInventoryCostValue: number; totalInventoryRetailValue: number; totalTrackedItemsCount: number;
+  highValueCategoryACount: number; mediumValueCategoryBCount: number; lowValueCategoryCCount: number;
+  items: StockValuationRow[];
+}
+
+export interface ExpenseCategoryBreakdown {
+  sNo: number; category: string; amount: number; percentageOfTotalExpenses: number;
+}
+
+export interface ProfitAndLossReport {
+  periodFrom: string; periodTo: string; totalSalesRevenue: number; totalCostOfGoodsSold: number;
+  grossProfit: number; grossProfitMarginPercentage: number; totalExpenses: number;
+  expensesByCategory: ExpenseCategoryBreakdown[]; netOperatingProfit: number; netProfitMarginPercentage: number;
+}
+

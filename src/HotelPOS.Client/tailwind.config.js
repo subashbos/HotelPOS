@@ -7,10 +7,14 @@ module.exports = {
     "./src/**/*.{html,ts}",
   ],
   theme: {
-    colors: {
-      ...colors,
-    },
     extend: {
+      colors: {
+        blueGray: colors.slate,
+        lightBlue: colors.sky,
+        warmGray: colors.stone,
+        trueGray: colors.neutral,
+        coolGray: colors.gray,
+      },
       minHeight: {
         "screen-75": "75vh",
       },

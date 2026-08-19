@@ -15,7 +15,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task<List<Customer>> GetAllAsync(bool includeInactive = false)
         {
-            var query = _context.Customers.AsQueryable();
+            var query = _context.Customers.AsNoTracking().AsQueryable();
             if (!includeInactive)
                 query = query.Where(c => c.IsActive);
 

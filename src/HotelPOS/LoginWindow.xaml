@@ -54,6 +54,10 @@
                 <!-- Action -->
                 <Button x:Name="LoginButton" Content="Log In" Style="{DynamicResource PrimaryBtn}" Click="Login_Click"/>
 
+                <Button x:Name="RegisterAdminButton" Content="First time setup? Register admin account" Click="RegisterAdmin_Click"
+                        Background="Transparent" BorderThickness="0" Padding="0" Cursor="Hand"
+                        Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" Margin="0,12,0,0"/>
+
                 <TextBlock Text="Requires local DB active" Style="{StaticResource CaptionTextBlockStyle}" HorizontalAlignment="Center" Margin="0,24,0,0"/>
             </StackPanel>
         </Border>

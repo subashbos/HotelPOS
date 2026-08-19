@@ -33,5 +33,8 @@ namespace HotelPOS.Domain.Entities
 
         [MaxLength(100)]
         public string? Barcode { get; set; }
+
+        public int UnitId { get; set; }
+        public UnitOfMeasurement? Unit { get; set; }
     }
 }

@@ -18,6 +18,10 @@ namespace HotelPOS.Domain.Common.Constants
         /// <summary>WPF-only mixed-tender mode (cash+card+UPI split); not part of the API-validated set.</summary>
         public const string Split = "Split";
 
+        /// <summary>Purchase/Supplier payment term — the hotel paying a supplier on credit, not a
+        /// customer order tender; not part of the API-validated order payment set.</summary>
+        public const string Credit = "Credit";
+
         public static readonly string[] All = { Cash, Card, Upi };
     }
 
@@ -68,15 +72,66 @@ namespace HotelPOS.Domain.Common.Constants
         public const string HrAttendance = "HrAttendance";
         public const string HrLeave = "HrLeave";
         public const string HrPayroll = "HrPayroll";
+        /// <summary>Salary structures, running/voiding payroll — a finer-grained action distinct from <see cref="HrPayroll"/>'s read/view access.</summary>
+        public const string HrPayrollRun = "HrPayrollRun";
         public const string Expenses = "Expenses";
         public const string Customers = "Customers";
+        public const string Units = "Units";
+        /// <summary>Covers both purchase orders/entries and supplier management — mirrors the WPF nav grouping (Purchase, Suppliers, RawMaterials, BOM all gate on this one module).</summary>
+        public const string Purchase = "Purchase";
+        public const string Tds = "Tds";
+        /// <summary>Voiding/refunding/editing an already-placed order — a more sensitive action than <see cref="Billing"/>'s create/pay flow, which Cashiers also hold.</summary>
+        public const string OrderManagement = "OrderManagement";
+        /// <summary>Deleting a customer record — a more sensitive action than <see cref="Customers"/>'s create/update/view access, which Cashiers also hold.</summary>
+        public const string CustomerManagement = "CustomerManagement";
+        /// <summary>Customer quotations/cost estimates and converting them into real orders.</summary>
+        public const string Estimation = "Estimation";
+        /// <summary>Future-dated table booking/scheduling, distinct from live Billing table status.</summary>
+        public const string Reservation = "Reservation";
 
         public static readonly string[] All =
         {
             Dashboard, Billing, Items, Categories, Tables,
             Ledger, Journal, Settings, Audit, Shift, Roles, SalesReport,
-            HrEmployees, HrAttendance, HrLeave, HrPayroll, Expenses, Customers
+            HrEmployees, HrAttendance, HrLeave, HrPayroll, HrPayrollRun, Expenses, Customers, Units,
+            Purchase, Tds, OrderManagement, CustomerManagement, Estimation, Reservation
         };
+    }
+
+    public static class EstimationStatuses
+    {
+        public const string Draft = "Draft";
+        public const string Sent = "Sent";
+        public const string Accepted = "Accepted";
+        public const string Rejected = "Rejected";
+        public const string Converted = "Converted";
+        public const string Expired = "Expired";
+
+        public static readonly string[] All = { Draft, Sent, Accepted, Rejected, Converted, Expired };
+    }
+
+    public static class ReservationStatuses
+    {
+        public const string Reserved = "Reserved";
+        public const string CheckedIn = "CheckedIn";
+        public const string Completed = "Completed";
+        public const string Cancelled = "Cancelled";
+        public const string NoShow = "NoShow";
+
+        public static readonly string[] All = { Reserved, CheckedIn, Completed, Cancelled, NoShow };
+
+        /// <summary>Valid forward transitions per status, enforced by
+        /// <c>ChangeReservationStatusCommandHandler</c> so a client can't skip the workflow
+        /// (e.g. Reserved -&gt; Completed directly).</summary>
+        public static readonly System.Collections.ObjectModel.ReadOnlyDictionary<string, string[]> NextStatuses =
+            new(new System.Collections.Generic.Dictionary<string, string[]>
+            {
+                [Reserved] = new[] { CheckedIn, Cancelled, NoShow },
+                [CheckedIn] = new[] { Completed, Cancelled },
+                [Completed] = System.Array.Empty<string>(),
+                [Cancelled] = System.Array.Empty<string>(),
+                [NoShow] = System.Array.Empty<string>()
+            });
     }
 
     public static class ExpenseCategories
@@ -154,8 +209,9 @@ namespace HotelPOS.Domain.Common.Constants
         public const string Draft = "Draft";
         public const string Processed = "Processed";
         public const string Paid = "Paid";
+        public const string Voided = "Voided";
 
-        public static readonly string[] All = { Draft, Processed, Paid };
+        public static readonly string[] All = { Draft, Processed, Paid, Voided };
     }
 
     public static class PayslipPaymentStatuses
@@ -169,9 +225,9 @@ namespace HotelPOS.Domain.Common.Constants
     /// (EPF Act 1952, ESI Act 1948) and apply nationwide. Professional Tax is a STATE subject
     /// (Constitution, Article 276) — several states (UP, Haryana, Delhi, Punjab, Rajasthan, ...)
     /// levy none at all. The slab below mirrors a common state (Karnataka) as a configurable
-    /// default; it is not a substitute for state-specific PT compliance. Income-tax TDS is NOT
-    /// computed automatically (slabs, regime choice, and exemptions change every budget) —
-    /// it is captured on the payslip as a manual/override entry.
+    /// default; it is not a substitute for state-specific PT compliance. Income-tax TDS is
+    /// computed separately against the admin-editable TdsSlab/TdsConfig tables (new regime only;
+    /// see TdsCalculator), since slabs change every budget.
     /// </summary>
     public static class IndianStatutoryDefaults
     {
@@ -192,7 +248,12 @@ namespace HotelPOS.Domain.Common.Constants
         public const int MinPasswordLength = 10;
         public const int MinPhoneLength = 10;
         public const int MaxPhoneLength = 15;
-        public const int Pbkdf2Iterations = 100000;
+        public const int Pbkdf2Iterations = 600000;
+
+        /// <summary>Iteration count used by password hashes written before <see cref="Pbkdf2Iterations"/>
+        /// was raised and before the hash format encoded its own iteration count. Needed to keep
+        /// verifying those legacy rows - see <see cref="HotelPOS.Domain.Common.PasswordHasher"/>.</summary>
+        public const int Pbkdf2LegacyIterations = 100000;
         public const int SaltByteSize = 16;
         public const int HashByteSize = 32;
     }
@@ -201,6 +262,7 @@ namespace HotelPOS.Domain.Common.Constants
     {
         public const int MaxFailedLoginAttempts = 5;
         public const int LockoutWindowMinutes = 5;
+        public const int MaxPasswordResetCodeAttempts = 5;
     }
 
     public static class AuditActions

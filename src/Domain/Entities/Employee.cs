@@ -53,29 +53,31 @@ namespace HotelPOS.Domain.Entities
         [MaxLength(300)]
         public string? Address { get; set; }
 
-        /// <summary>Permanent Account Number — 10-character Indian tax ID.</summary>
-        [MaxLength(10)]
+        /// <summary>Permanent Account Number — 10-character Indian tax ID. Encrypted at rest (see <see cref="Infrastructure.Persistence.HotelDbContext"/>); 200 chars leaves headroom for the AES-GCM envelope.</summary>
+        [MaxLength(200)]
         public string? Pan { get; set; }
 
-        /// <summary>12-digit Indian national ID.</summary>
-        [MaxLength(12)]
+        /// <summary>12-digit Indian national ID. Encrypted at rest.</summary>
+        [MaxLength(200)]
         public string? Aadhaar { get; set; }
 
-        /// <summary>EPFO Universal Account Number for Provident Fund.</summary>
-        [MaxLength(22)]
+        /// <summary>EPFO Universal Account Number for Provident Fund. Encrypted at rest.</summary>
+        [MaxLength(200)]
         public string? Uan { get; set; }
 
-        /// <summary>ESIC insurance number, present only when the employee is ESI-covered.</summary>
-        [MaxLength(20)]
+        /// <summary>ESIC insurance number, present only when the employee is ESI-covered. Encrypted at rest.</summary>
+        [MaxLength(200)]
         public string? EsicNumber { get; set; }
 
         [MaxLength(100)]
         public string? BankName { get; set; }
 
-        [MaxLength(30)]
+        /// <summary>Encrypted at rest.</summary>
+        [MaxLength(200)]
         public string? BankAccountNumber { get; set; }
 
-        [MaxLength(15)]
+        /// <summary>Encrypted at rest.</summary>
+        [MaxLength(200)]
         public string? BankIfsc { get; set; }
 
         [MaxLength(100)]

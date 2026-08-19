@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:ctrl="clr-namespace:HotelPOS.Controls"
              mc:Ignorable="d" d:DesignHeight="900" d:DesignWidth="1400">
 
 
@@ -126,6 +125,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="UNIT" Binding="{Binding Unit.Name}" Width="80" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                             <DataGridTemplateColumn Header="PRICE" Width="130" HeaderStyle="{StaticResource RightHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

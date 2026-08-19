@@ -12,17 +12,19 @@ namespace HotelPOS.Api.Controllers
     public class SettingsController : BaseApiController
     {
         private readonly ISettingService _settingService;
+        private readonly Application.Interfaces.IAuthorizationService _authorization;
 
-        public SettingsController(ISettingService settingService)
+        public SettingsController(ISettingService settingService, Application.Interfaces.IAuthorizationService authorization)
         {
             _settingService = settingService;
+            _authorization = authorization;
         }
 
         [HttpGet]
         public async Task<ActionResult<SettingsDto>> GetSettings()
         {
             var settings = await _settingService.GetSettingsAsync();
-            return Ok(new SettingsDto
+            var dto = new SettingsDto
             {
                 HotelName = settings.HotelName,
                 HotelAddress = settings.HotelAddress,
@@ -39,19 +41,30 @@ namespace HotelPOS.Api.Controllers
                 EnableRoundOff = settings.EnableRoundOff,
                 IsCompositionScheme = settings.IsCompositionScheme,
                 EnableAutomatedBackups = settings.EnableAutomatedBackups,
-                OffsiteBackupPath = settings.OffsiteBackupPath,
-                IdleTimeoutMinutes = settings.IdleTimeoutMinutes,
-                SmtpHost = settings.SmtpHost,
-                SmtpPort = settings.SmtpPort,
-                SmtpUsername = settings.SmtpUsername,
-                SmtpPasswordSet = !string.IsNullOrEmpty(settings.SmtpPassword),
-                SmtpUseSsl = settings.SmtpUseSsl,
-                SmtpFromAddress = settings.SmtpFromAddress
-            });
+                IdleTimeoutMinutes = settings.IdleTimeoutMinutes
+            };
+
+            // SMTP credentials, the offsite backup path, and Professional Tax are only needed by
+            // whoever configures them (SaveSettings is Admin-only) — everything above is needed by
+            // any authenticated user for day-to-day billing (receipt/GST/round-off display), so only
+            // these are gated.
+            if (_authorization.HasPermission(PermissionModules.Settings))
+            {
+                dto.OffsiteBackupPath = settings.OffsiteBackupPath;
+                dto.ProfessionalTaxThreshold = settings.ProfessionalTaxThreshold;
+                dto.ProfessionalTaxAmount = settings.ProfessionalTaxAmount;
+                dto.SmtpHost = settings.SmtpHost;
+                dto.SmtpPort = settings.SmtpPort;
+                dto.SmtpUsername = settings.SmtpUsername;
+                dto.SmtpPasswordSet = !string.IsNullOrEmpty(settings.SmtpPassword);
+                dto.SmtpUseSsl = settings.SmtpUseSsl;
+                dto.SmtpFromAddress = settings.SmtpFromAddress;
+            }
+
+            return Ok(dto);
         }
 
         [HttpPut]
-        [Authorize(Roles = RoleNames.Admin)]
         public async Task<IActionResult> SaveSettings([FromBody] SaveSettingsDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -78,6 +91,8 @@ namespace HotelPOS.Api.Controllers
                 EnableAutomatedBackups = request.EnableAutomatedBackups,
                 OffsiteBackupPath = request.OffsiteBackupPath,
                 IdleTimeoutMinutes = request.IdleTimeoutMinutes,
+                ProfessionalTaxThreshold = request.ProfessionalTaxThreshold ?? current.ProfessionalTaxThreshold,
+                ProfessionalTaxAmount = request.ProfessionalTaxAmount ?? current.ProfessionalTaxAmount,
                 SmtpHost = request.SmtpHost,
                 SmtpPort = request.SmtpPort,
                 SmtpUsername = request.SmtpUsername,

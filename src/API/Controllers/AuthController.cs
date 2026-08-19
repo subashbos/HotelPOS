@@ -1,9 +1,11 @@
 using HotelPOS.Api.Configuration;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
@@ -14,12 +16,14 @@ using System.Text;
 
 namespace HotelPOS.Api.Controllers
 {
+    [EnableRateLimiting("AuthPolicy")]
     public class AuthController : BaseApiController
     {
         private readonly IAuthService _authService;
         private readonly IUserRepository _userRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordResetService _passwordResetService;
+        private readonly Application.Interfaces.IAuthorizationService _authorization;
         private readonly JwtOptions _jwtOptions;
 
         private const int RefreshTokenDays = 30;
@@ -30,12 +34,14 @@ namespace HotelPOS.Api.Controllers
             IUserRepository userRepository,
             IRefreshTokenRepository refreshTokenRepository,
             IPasswordResetService passwordResetService,
+            Application.Interfaces.IAuthorizationService authorization,
             IOptions<JwtOptions> jwtOptions)
         {
             _authService = authService;
             _userRepository = userRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _passwordResetService = passwordResetService;
+            _authorization = authorization;
             _jwtOptions = jwtOptions.Value;
         }
 
@@ -51,6 +57,11 @@ namespace HotelPOS.Api.Controllers
 
             if (user.TwoFactorEnabled)
             {
+                if (await _authService.IsTwoFactorLockedOutAsync(user.Username))
+                {
+                    return Unauthorized(new { Message = "Too many failed authentication code attempts. Try again later." });
+                }
+
                 if (string.IsNullOrWhiteSpace(dto.TotpCode))
                 {
                     return Unauthorized(new
@@ -62,8 +73,11 @@ namespace HotelPOS.Api.Controllers
 
                 if (!TotpGenerator.ValidateCode(user.TwoFactorSecret, dto.TotpCode))
                 {
+                    await _authService.RegisterFailedTwoFactorAttemptAsync(user.Username);
                     return Unauthorized(new { Message = "Invalid authentication code." });
                 }
+
+                await _authService.ClearTwoFactorLockoutAsync(user.Username);
             }
 
             if (user.MustChangePassword)
@@ -76,7 +90,7 @@ namespace HotelPOS.Api.Controllers
             }
 
             var accessToken = GenerateJwtToken(user);
-            var refreshToken = await IssueRefreshTokenAsync(user.Id);
+            var refreshToken = await IssueRefreshTokenAsync(user.Id, Guid.NewGuid());
 
             return Ok(new
             {
@@ -94,7 +108,23 @@ namespace HotelPOS.Api.Controllers
             var providedHash = HashToken(dto?.RefreshToken ?? string.Empty);
             var existing = await _refreshTokenRepository.GetByHashAsync(providedHash);
 
-            if (existing == null || existing.RevokedUtc != null || existing.ExpiresUtc <= DateTime.UtcNow)
+            if (existing == null)
+            {
+                return Unauthorized(new { Message = "Invalid or expired refresh token." });
+            }
+
+            if (existing.RevokedUtc != null)
+            {
+                // Rotation always issues the replacement before revoking the token just used, so a
+                // legitimate client never has reason to present an already-revoked token again.
+                // Seeing one here means it was copied/stolen and is being replayed after the real
+                // rotation already happened - revoke the whole family so the thief's copy (and any
+                // further descendants of it) stop working too, forcing a fresh login.
+                await _refreshTokenRepository.RevokeFamilyAsync(existing.FamilyId, DateTime.UtcNow);
+                return Unauthorized(new { Message = "Invalid or expired refresh token." });
+            }
+
+            if (existing.ExpiresUtc <= DateTime.UtcNow)
             {
                 return Unauthorized(new { Message = "Invalid or expired refresh token." });
             }
@@ -106,7 +136,7 @@ namespace HotelPOS.Api.Controllers
             }
 
             // Rotate: issue a new refresh token and revoke the one just used.
-            var newRefreshToken = await IssueRefreshTokenAsync(user.Id);
+            var newRefreshToken = await IssueRefreshTokenAsync(user.Id, existing.FamilyId);
             existing.RevokedUtc = DateTime.UtcNow;
             existing.ReplacedByTokenHash = HashToken(newRefreshToken);
             await _refreshTokenRepository.UpdateAsync(existing);
@@ -179,7 +209,20 @@ namespace HotelPOS.Api.Controllers
             return Ok(new { Valid = isValid });
         }
 
-        private async Task<string> IssueRefreshTokenAsync(int userId)
+        // The current user's own effective access per module - computed via the same
+        // IAuthorizationService.HasPermission used to enforce every API endpoint, so the
+        // frontend's route guards and nav visibility can never drift from what the backend
+        // actually allows. No module-specific permission is required to call this: it only
+        // ever reports the caller's own access, never anyone else's.
+        [Authorize]
+        [HttpGet("permissions")]
+        public IActionResult GetMyPermissions()
+        {
+            var permissions = PermissionModules.All.ToDictionary(m => m, _authorization.HasPermission);
+            return Ok(permissions);
+        }
+
+        private async Task<string> IssueRefreshTokenAsync(int userId, Guid familyId)
         {
             var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 
@@ -187,6 +230,7 @@ namespace HotelPOS.Api.Controllers
             {
                 UserId = userId,
                 TokenHash = HashToken(rawToken),
+                FamilyId = familyId,
                 CreatedUtc = DateTime.UtcNow,
                 ExpiresUtc = DateTime.UtcNow.AddDays(RefreshTokenDays)
             };

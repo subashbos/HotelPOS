@@ -85,6 +85,7 @@ namespace HotelPOS.Infrastructure.Persistence
         public async Task<List<Order>> GetAllWithItemsAsync()
         {
             return await _context.Orders
+                .AsNoTracking()
                 .Include(o => o.Items)
                 .Where(o => !o.IsDeleted)
                 .OrderByDescending(o => o.CreatedAt)
@@ -95,6 +96,7 @@ namespace HotelPOS.Infrastructure.Persistence
             OrderQueryFilter? filter = null, CancellationToken cancellationToken = default)
         {
             var query = _context.Orders
+                .AsNoTracking()
                 .Include(o => o.Items)
                 .Where(o => !o.IsDeleted);
 
@@ -138,6 +140,22 @@ namespace HotelPOS.Infrastructure.Persistence
             }
 
             return query;
+        }
+
+        public async Task<List<ItemSalesAggregate>> GetItemSalesAggregateAsync(DateTime? from, DateTime? to)
+        {
+            var query = _context.OrderItems.AsNoTracking().Where(oi => !oi.Order!.IsDeleted);
+            if (from.HasValue) query = query.Where(oi => oi.Order!.CreatedAt >= from.Value);
+            if (to.HasValue) query = query.Where(oi => oi.Order!.CreatedAt <= to.Value);
+
+            return await query
+                .GroupBy(oi => oi.ItemName)
+                .Select(g => new ItemSalesAggregate(
+                    g.Key,
+                    g.Sum(oi => oi.Quantity),
+                    g.Sum(oi => oi.Total),
+                    g.Average(oi => oi.Price)))
+                .ToListAsync();
         }
 
         private static IQueryable<Order> ApplyBasicFilters(IQueryable<Order> query, OrderQueryFilter filter)
@@ -208,7 +226,12 @@ namespace HotelPOS.Infrastructure.Persistence
         }
         public async Task<Order?> GetByIdWithItemsAsync(int id)
         {
+            // Safe to leave untracked: every mutation flow (Void/Refund/UpdateOrder/partial
+            // payment in OrderService) treats the returned Order as a value source and persists
+            // via UpdateAsync, which does its own separate tracked fetch-and-copy - never by
+            // relying on this instance still being attached to the change tracker.
             return await _context.Orders
+                .AsNoTracking()
                 .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == id && !o.IsDeleted);
         }

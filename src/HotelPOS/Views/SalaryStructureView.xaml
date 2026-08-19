@@ -1,0 +1,141 @@
+<UserControl x:Class="HotelPOS.Views.SalaryStructureView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="760" d:DesignWidth="1150">
+
+    <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="💰  Salary Structures &amp; Compensation Setup" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Configure employee base salary, allowances, statutory PF/ESI/PT applicability, and effective pay dates."
+                           Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ══ LEFT COLUMN: EMPLOYEE SELECTOR & HISTORY ══ -->
+            <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="SELECT EMPLOYEE" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <ComboBox Grid.Row="1" ItemsSource="{Binding Employees}" SelectedItem="{Binding SelectedEmployee}" Margin="0,0,0,16">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} — {1} {2}">
+                                            <Binding Path="EmployeeCode"/>
+                                            <Binding Path="FirstName"/>
+                                            <Binding Path="LastName"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <TextBlock Grid.Row="2" Text="SALARY REVISION HISTORY" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,8"/>
+                    <DataGrid Grid.Row="3" ItemsSource="{Binding Structures}" SelectedItem="{Binding SelectedStructure}" AutoGenerateColumns="False" 
+                              CanUserAddRows="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column" Background="Transparent"
+                              BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Effective From" Binding="{Binding EffectiveFrom, StringFormat={}{0:yyyy-MM-dd}}" Width="110"/>
+                            <DataGridTextColumn Header="Basic (₹)" Binding="{Binding Basic, StringFormat={}{0:N0}}" Width="*"/>
+                            <DataGridTextColumn Header="Gross (₹)" Binding="{Binding GrossMonthly, StringFormat={}{0:N0}}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </Border>
+
+            <!-- ══ RIGHT COLUMN: SALARY BREAKDOWN FORM ══ -->
+            <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,16">
+                            <TextBlock Text="COMPENSATION BREAKDOWN" Style="{StaticResource FieldLabel}" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <Button Content="➕ New Revision" Command="{Binding NewStructureCommand}" Style="{StaticResource SecondaryBtn}" HorizontalAlignment="Right"/>
+                        </Grid>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Basic Salary (₹)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding Basic, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="House Rent Allowance - HRA (₹)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding Hra, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Dearness Allowance - DA (₹)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding Da, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Conveyance Allowance (₹)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding ConveyanceAllowance, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Medical Allowance (₹)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding MedicalAllowance, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+                                <TextBlock Text="Special / Other Allowance (₹)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Text="{Binding SpecialAllowance, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Border Background="{DynamicResource HeaderBrush}" CornerRadius="6" Padding="16,12" Margin="0,0,0,20">
+                            <Grid>
+                                <TextBlock Text="TOTAL GROSS MONTHLY SALARY:" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding GrossMonthly, StringFormat={}{0:C0}}" Style="{StaticResource H2TextBlockStyle}" Foreground="White" HorizontalAlignment="Right"/>
+                            </Grid>
+                        </Border>
+
+                        <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="STATUTORY DEDUCTIONS &amp; DATES" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,12"/>
+
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Grid.Column="0" Content="Provident Fund (PF)" IsChecked="{Binding PfApplicable}"/>
+                            <CheckBox Grid.Column="1" Content="ESI Deductions" IsChecked="{Binding EsiApplicable}"/>
+                            <CheckBox Grid.Column="2" Content="Professional Tax (PT)" IsChecked="{Binding ProfessionalTaxApplicable}"/>
+                        </Grid>
+
+                        <TextBlock Text="Effective From Date" Style="{StaticResource FieldLabel}"/>
+                        <DatePicker SelectedDate="{Binding EffectiveFrom}" Margin="0,0,0,20" Width="200" HorizontalAlignment="Left"/>
+
+                        <Button Content="💾 Save Salary Structure" Command="{Binding SaveStructureCommand}"
+                                Style="{StaticResource PrimaryBtn}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

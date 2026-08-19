@@ -19,6 +19,13 @@ namespace HotelPOS.Domain.Entities
         [MaxLength(64)]
         public string TokenHash { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Groups every token descended (via rotation) from the same original login. Lets a reuse
+        /// of an already-rotated token revoke the whole chain instead of just the one token.
+        /// </summary>
+        [Required]
+        public Guid FamilyId { get; set; }
+
         public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
 
         public DateTime ExpiresUtc { get; set; }

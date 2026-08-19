@@ -24,7 +24,7 @@ namespace HotelPOS.Application.UseCases.Roles.Commands
             var role = new Role { Name = request.Name.Trim(), Description = request.Description };
 
             foreach (var mod in PermissionModules.All)
-                role.Permissions.Add(new RolePermission { ModuleName = mod, CanAccess = false });
+                role.Permissions.Add(new RolePermission { ModuleName = mod, CanAccess = false, CanEdit = false, CanDelete = false });
 
             await _roleRepository.AddRoleAsync(role);
             return true;

@@ -15,6 +15,9 @@ namespace HotelPOS.Application.UseCases.Items.Commands
 
             RuleFor(x => x.TaxPercentage)
                 .GreaterThanOrEqualTo(0).WithMessage("Tax percentage cannot be negative.");
+
+            RuleFor(x => x.UnitId)
+                .GreaterThan(0).WithMessage("Unit is required.");
         }
     }
 }

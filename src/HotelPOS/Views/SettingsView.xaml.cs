@@ -1,3 +1,5 @@
+#nullable enable
+
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,24 +12,17 @@ namespace HotelPOS.Views
     public partial class SettingsView : UserControl
     {
         private readonly INotificationService _notificationService;
-        private readonly UsersView _usersView;
         private SystemSetting? _current;
 
-        public SettingsView(IUserService userService, IRoleService roleService, INotificationService notificationService)
+        public SettingsView(INotificationService notificationService)
         {
             InitializeComponent();
             _notificationService = notificationService;
 
             if (System.Windows.Application.Current == null)
             {
-                App.RegisterTestService(userService);
-                App.RegisterTestService(roleService);
                 App.RegisterTestService(notificationService);
             }
-
-            // Embed UsersView into the Users tab
-            _usersView = new UsersView(userService, roleService);
-            UsersHost.Content = _usersView;
 
             Loaded += async (s, e) =>
             {
@@ -96,6 +91,10 @@ namespace HotelPOS.Views
             SmtpUsernameBox.Text = _current.SmtpUsername;
             SmtpPasswordBox.Password = _current.SmtpPassword ?? string.Empty;
             SmtpFromBox.Text = _current.SmtpFromAddress;
+
+            // Payroll
+            ProfessionalTaxThresholdBox.Text = _current.ProfessionalTaxThreshold.ToString();
+            ProfessionalTaxAmountBox.Text = _current.ProfessionalTaxAmount.ToString();
 
             RefreshTwoFactorUi();
         }
@@ -252,6 +251,29 @@ namespace HotelPOS.Views
             await Save();
         }
 
+        // ── Save Payroll Settings ─────────────────────────────────────────────
+
+        private async void SavePayroll_Click(object sender, RoutedEventArgs e)
+        {
+            if (_current == null) return;
+
+            if (!decimal.TryParse(ProfessionalTaxThresholdBox.Text, out var threshold) || threshold < 0)
+            {
+                _notificationService.ShowError("Professional Tax threshold must be a non-negative number.");
+                return;
+            }
+
+            if (!decimal.TryParse(ProfessionalTaxAmountBox.Text, out var amount) || amount < 0)
+            {
+                _notificationService.ShowError("Professional Tax amount must be a non-negative number.");
+                return;
+            }
+
+            _current.ProfessionalTaxThreshold = threshold;
+            _current.ProfessionalTaxAmount = amount;
+            await Save();
+        }
+
         private async void SendTestEmail_Click(object sender, RoutedEventArgs e)
         {
             var toAddress = TestEmailToBox.Text.Trim();
@@ -332,7 +354,7 @@ namespace HotelPOS.Views
                         var backup = scope.ServiceProvider.GetRequiredService<IBackupService>();
                         await backup.RestoreBackupAsync(dlg.FileName);
                     }
-                    await App.CurrentApp!.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
+                    await App.CurrentApp.ServiceProvider.GetRequiredService<HotelPOS.Application.Interfaces.IDialogService>().ShowMessageAsync(
                         "Database restored successfully!\n\nThe application will now close to reload context. Please restart the application.",
                         "Restore Success",
                         HotelPOS.Application.Interfaces.DialogButton.OK,

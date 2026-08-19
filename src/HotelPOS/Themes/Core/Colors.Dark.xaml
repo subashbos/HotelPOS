@@ -7,6 +7,7 @@
     <Color x:Key="SecondaryColor">#4A6A8E</Color>
     <Color x:Key="HeaderColor">#121418</Color>
     <Color x:Key="SuccessColor">#2ECC71</Color>
+    <Color x:Key="WarningColor">#FBBF24</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="AppBackground" Color="#0F1114"/>
@@ -19,6 +20,38 @@
     <SolidColorBrush x:Key="BorderBrush"    Color="#2E343D"/>
     <SolidColorBrush x:Key="DangerBrush"    Color="#E74C3C"/>
     <SolidColorBrush x:Key="SuccessBrush"   Color="#2ECC71"/>
+    <SolidColorBrush x:Key="WarningBrush"   Color="{StaticResource WarningColor}"/>
+    <SolidColorBrush x:Key="TaxAccentBrush" Color="#F0923D"/>
+    <SolidColorBrush x:Key="DisabledBrush"  Color="#3A3F47"/>
+
+    <!-- Status / Alert Badges (dark tint bg + saturated fg) -->
+    <SolidColorBrush x:Key="BadgeNeutralBg" Color="#2A2F3A"/>
+    <SolidColorBrush x:Key="BadgeNeutralFg" Color="#B8C2CC"/>
+    <SolidColorBrush x:Key="BadgeSuccessBg" Color="#1B3A2A"/>
+    <SolidColorBrush x:Key="BadgeSuccessFg" Color="#4ADE80"/>
+    <SolidColorBrush x:Key="BadgeWarningBg" Color="#3A2E12"/>
+    <SolidColorBrush x:Key="BadgeWarningFg" Color="#FBBF24"/>
+    <SolidColorBrush x:Key="BadgeDangerBg"  Color="#3A1B1E"/>
+    <SolidColorBrush x:Key="BadgeDangerFg"  Color="#F87171"/>
+    <SolidColorBrush x:Key="BadgeInfoBg"    Color="#16324A"/>
+    <SolidColorBrush x:Key="BadgeInfoFg"    Color="#60A5FA"/>
+    <SolidColorBrush x:Key="BadgeTealBg"    Color="#113A3D"/>
+    <SolidColorBrush x:Key="BadgeTealFg"    Color="#5EEAD4"/>
+    <SolidColorBrush x:Key="BadgeSuccessBorder" Color="#2F5C42"/>
+    <SolidColorBrush x:Key="BadgeWarningBorder" Color="#5C4A1E"/>
+    <SolidColorBrush x:Key="BadgeDangerBorder"  Color="#5C2E33"/>
+
+    <!-- Chart accent brushes (stay vivid across themes) -->
+    <SolidColorBrush x:Key="ChartRevenueBarBrush" Color="#4FACFE"/>
+    <SolidColorBrush x:Key="ChartProfitBarBrush"  Color="#2ECC71"/>
+    <SolidColorBrush x:Key="IconBadgeOverlayBrush" Color="#25FFFFFF"/>
+
+    <!-- KPI card shadow/glow accent colors (match Analytics Card Gradients) -->
+    <Color x:Key="RevenueAccentColor">#0083B0</Color>
+    <Color x:Key="OrdersAccentColor">#7028E4</Color>
+    <Color x:Key="AvgTicketAccentColor">#11998E</Color>
+    <Color x:Key="TopItemAccentColor">#EB3349</Color>
+    <Color x:Key="ChartBarAccentColor">#00C6FB</Color>
 
     <!-- Glassmorphism / Transparency effects for Dark Mode -->
     <SolidColorBrush x:Key="GlassSurface" Color="#CC1C1F26"/>

@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:ctrl="clr-namespace:HotelPOS.Controls"
              mc:Ignorable="d" d:DesignHeight="900" d:DesignWidth="1400">
     <UserControl.Resources>
     </UserControl.Resources>
@@ -31,13 +30,13 @@
                     <Border Background="{DynamicResource SecondaryBrush}" CornerRadius="20" Padding="18,10" Margin="0,0,12,0">
                         <StackPanel>
                             <TextBlock x:Name="TotalRevBadge" Text="Rs. 0" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Period Revenue" FontSize="11" Foreground="#BDD5E7" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Period Revenue" FontSize="11" Foreground="White" Opacity="0.8" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <Border Background="{DynamicResource PrimaryBrush}" CornerRadius="20" Padding="18,10">
                         <StackPanel>
                             <TextBlock x:Name="TotalOrdersBadge" Text="0" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Orders" FontSize="11" Foreground="#A0DDD4" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Orders" FontSize="11" Foreground="White" Opacity="0.8" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -97,7 +96,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding GstAmount, StringFormat=Rs.{0:N2}}"
-                                               Foreground="#E67E22"
+                                               Foreground="{DynamicResource TaxAccentBrush}"
                                                Padding="14,0" VerticalAlignment="Center"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

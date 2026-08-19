@@ -1,7 +1,6 @@
 using AutoMapper;
 using HotelPOS.Application.DTOs.Leave;
 using HotelPOS.Application.Interfaces;
-using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,7 +61,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("requests/{id:int}/approve")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> ApproveLeave(int id, [FromQuery] int approverEmployeeId)
         {
             if (id <= 0) return BadRequest("Invalid leave request ID.");
@@ -85,7 +83,6 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpPost("requests/{id:int}/reject")]
-        [Authorize(Roles = $"{RoleNames.Admin},{RoleNames.Manager}")]
         public async Task<IActionResult> RejectLeave(int id, [FromQuery] int approverEmployeeId, [FromBody] RejectLeaveDto request)
         {
             if (id <= 0) return BadRequest("Invalid leave request ID.");

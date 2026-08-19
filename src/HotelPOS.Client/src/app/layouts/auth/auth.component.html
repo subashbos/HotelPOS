@@ -1,5 +1,9 @@
 <div>
   <main>
-    <router-outlet></router-outlet>
+    <section class="relative w-full h-full py-40 min-h-screen bg-blueGray-800">
+      <div class="absolute top-0 w-full h-full bg-blueGray-800 bg-no-repeat bg-full"></div>
+      <router-outlet></router-outlet>
+      <app-footer-small [absolute]="true"></app-footer-small>
+    </section>
   </main>
 </div>

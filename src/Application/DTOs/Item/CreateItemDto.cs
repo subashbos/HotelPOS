@@ -19,5 +19,6 @@ namespace HotelPOS.Application.DTOs.Item
         public int StockQuantity { get; set; }
         public bool TrackInventory { get; set; }
         public string? Barcode { get; set; }
+        public int UnitId { get; set; }
     }
 }

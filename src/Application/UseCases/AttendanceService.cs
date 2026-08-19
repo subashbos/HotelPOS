@@ -7,14 +7,17 @@ namespace HotelPOS.Application.UseCases
     public class AttendanceService : IAttendanceService
     {
         private readonly IAttendanceRepository _repository;
+        private readonly IAuthorizationService _authorization;
 
-        public AttendanceService(IAttendanceRepository repository)
+        public AttendanceService(IAttendanceRepository repository, IAuthorizationService authorization)
         {
             _repository = repository;
+            _authorization = authorization;
         }
 
         public async Task<List<Attendance>> GetAttendanceAsync(int employeeId, DateTime fromDate, DateTime toDate)
         {
+            _authorization.EnsurePermission(PermissionModules.HrAttendance);
             if (employeeId <= 0) throw new ArgumentException("A valid employee is required.");
             if (toDate.Date < fromDate.Date) throw new ArgumentException("To Date cannot be before From Date.");
 
@@ -28,6 +31,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<Attendance> MarkAttendanceAsync(Attendance attendance)
         {
+            _authorization.EnsurePermission(PermissionModules.HrAttendance);
+
             if (attendance == null) throw new ArgumentNullException(nameof(attendance));
             if (attendance.EmployeeId <= 0) throw new ArgumentException("A valid employee is required.");
             if (!AttendanceStatuses.All.Contains(attendance.Status))
@@ -60,6 +65,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteAttendanceAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.HrAttendance);
+
             _ = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Attendance record #{id} not found.");
             await _repository.DeleteAsync(id);

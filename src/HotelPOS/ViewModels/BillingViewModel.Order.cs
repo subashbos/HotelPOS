@@ -1,3 +1,5 @@
+#nullable enable
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
@@ -103,6 +105,21 @@ namespace HotelPOS.ViewModels
         private void ResumeOrder(HeldOrder held)
         {
             if (held == null) return;
+
+            // Held orders only record the table they were held on, not the order type.
+            // A table number > 0 always means DineIn (Takeaway/Online are held under table 0),
+            // so restore both together instead of dumping the held items onto whatever table
+            // happens to be on screen right now.
+            if (held.TableNumber > 0)
+            {
+                OrderType = OrderTypes.DineIn;
+                TableNumber = held.TableNumber;
+            }
+            else
+            {
+                OrderType = OrderTypes.Takeaway;
+            }
+
             _cartService.ResumeHeldOrder(held.Id, TableNumber);
             IsHeldOrdersPopupOpen = false;
             LoadHeldOrders();
@@ -141,6 +158,8 @@ namespace HotelPOS.ViewModels
             _editingOrder = null;
             IsEditMode = false;
             OrderType = OrderTypes.DineIn;   // reset to default
+            TableNumber = 1;                 // reset to default table 1
+            _lastDineInTable = 1;
             UpdateCart();
             StatusMessage = "Ready";
             OrderEditCancelled?.Invoke();
@@ -173,8 +192,14 @@ namespace HotelPOS.ViewModels
 
             try
             {
-                bool saved = await PersistOrderAsync(rawItems, finalPaymentMode, finalCash, finalCard, finalUpi);
+                var (saved, orderId) = await PersistOrderAsync(rawItems, finalPaymentMode, finalCash, finalCard, finalUpi);
                 if (!saved) return;
+
+                // Print receipt for new orders (edits don't trigger printing)
+                if (!IsEditMode && orderId > 0)
+                {
+                    await PrintWithRetryAsync(orderId);
+                }
 
                 var wasEditMode = IsEditMode;
                 ResetAfterSave();
@@ -202,6 +227,15 @@ namespace HotelPOS.ViewModels
             if (string.IsNullOrWhiteSpace(PaymentMode))
             {
                 _notificationService.ShowError("Please select a payment mode before checkout.");
+                return false;
+            }
+
+            // Dine In orders must be tied to a real table (server rejects TableNumber <= 0 for
+            // DineIn); catch it here with an actionable message instead of surfacing the backend
+            // validator's raw "Invalid table number." exception.
+            if (!IsTableless && TableNumber <= 0)
+            {
+                _notificationService.ShowError("Please select a table before checkout.");
                 return false;
             }
 
@@ -252,9 +286,10 @@ namespace HotelPOS.ViewModels
             return (true, finalCash, finalCard, finalUpi, finalPaymentMode);
         }
 
-        // Re-verifies the shift under lock, then updates or creates the order. Returns false if the shift closed
-        // between the pre-check and now (caller should abort silently — the notification was already shown).
-        private async Task<bool> PersistOrderAsync(List<OrderItem> rawItems, string finalPaymentMode, decimal finalCash, decimal finalCard, decimal finalUpi)
+        // Re-verifies the shift under lock, then updates or creates the order.
+        // Returns (false, 0) if the shift closed between the pre-check and now.
+        // For new orders returns the persisted order ID so the caller can trigger printing separately.
+        private async Task<(bool Saved, int OrderId)> PersistOrderAsync(List<OrderItem> rawItems, string finalPaymentMode, decimal finalCash, decimal finalCard, decimal finalUpi)
         {
             using (var scope = App.CreateDbScope())
             {
@@ -265,7 +300,7 @@ namespace HotelPOS.ViewModels
                 if (currentSession == null)
                 {
                     _notificationService.ShowError("Shift is not open. Please open a shift before checkout.");
-                    return false;
+                    return (false, 0);
                 }
 
                 if (IsEditMode && _editingOrder != null)
@@ -284,12 +319,11 @@ namespace HotelPOS.ViewModels
                         orderId = await orderService.SaveOrderAsync(new SaveOrderRequest(rawItems, TableNumber, DiscountAmount, finalPaymentMode, CustomerName, CustomerPhone, CustomerGstin, OrderType, CustomerId));
                     }
 
-                    // Trigger Print
-                    await PrintOrderAsync(orderId);
+                    return (true, orderId);
                 }
             }
 
-            return true;
+            return (true, 0);
         }
 
         private async Task UpdateEditingOrderAsync(IOrderService orderService, List<OrderItem> rawItems, string finalPaymentMode, decimal finalCash, decimal finalCard, decimal finalUpi)
@@ -347,18 +381,19 @@ namespace HotelPOS.ViewModels
         {
             _cartService.Clear(TableNumber);
             DiscountAmount = 0;
-            UpdateCart();
-            CartCleared?.Invoke();
-
             IsEditMode = false;
             _editingOrder = null;
             PaymentMode = PaymentModes.Cash;
             OrderType = OrderTypes.DineIn;
+            TableNumber = 1;
+            _lastDineInTable = 1;
             // CLEANUP: Reset customer details to null to align with property definitions and save memory
             CustomerName = null;
             CustomerPhone = null;
             CustomerGstin = null;
             CustomerId = null;
+            UpdateCart();
+            CartCleared?.Invoke();
         }
 
         // Any manual edit of the phone number invalidates a previously resolved customer link,
@@ -395,12 +430,32 @@ namespace HotelPOS.ViewModels
         }
 
         /// <summary>
+        /// Attempts to print the receipt for a saved order. On failure, offers the user
+        /// a retry dialog so the order isn't silently left without a printed receipt.
+        /// </summary>
+        private async Task PrintWithRetryAsync(int orderId)
+        {
+            bool printed = await PrintOrderAsync(orderId);
+            while (!printed && _dialogService != null)
+            {
+                var retry = await _dialogService.ShowMessageAsync(
+                    $"Receipt printing failed for Order #{orderId}.\n\nThe order has been saved successfully.\nWould you like to retry printing?",
+                    "Print Failed \u2013 Retry?",
+                    DialogButton.YesNo,
+                    DialogIcon.Warning);
+                if (retry != DialogResult.Yes) break;
+                printed = await PrintOrderAsync(orderId);
+            }
+        }
+
+        /// <summary>
         /// Generates a receipt for the specified order and either shows a print preview or sends it to the printer.
+        /// Returns true if printing succeeded, false otherwise.
         /// </summary>
         /// <param name="orderId">The identifier of the order to print if <paramref name="preLoadedOrder"/> is not provided.</param>
         /// <param name="preLoadedOrder">An optional preloaded <see cref="Order"/> to use instead of loading the order by <paramref name="orderId"/>.</param>
         /// <param name="skipPreview">When true, bypasses the print preview even if previewing is enabled in settings and prints directly.</param>
-        private async Task PrintOrderAsync(int orderId, Order? preLoadedOrder = null, bool skipPreview = false)
+        private async Task<bool> PrintOrderAsync(int orderId, Order? preLoadedOrder = null, bool skipPreview = false)
         {
             try
             {
@@ -414,17 +469,20 @@ namespace HotelPOS.ViewModels
                     order = preLoadedOrder ?? await orderService.GetOrderAsync(orderId);
                 }
 
-                if (order == null) return;
+                if (order == null) return false;
 
                 // Execute on UI thread for printing
                 if (System.Windows.Application.Current != null)
                 {
                     System.Windows.Application.Current.Dispatcher.Invoke(() => PrintOrderOnUiThread(order, settings, skipPreview));
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
                 _notificationService.ShowError($"Print failed: {ex.Message}");
+                return false;
             }
         }
 

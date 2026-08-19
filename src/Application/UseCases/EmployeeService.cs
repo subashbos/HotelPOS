@@ -1,6 +1,7 @@
 using FluentValidation;
 using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 
 namespace HotelPOS.Application.UseCases
@@ -8,26 +9,35 @@ namespace HotelPOS.Application.UseCases
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepository _repository;
+        private readonly IAuthorizationService _authorization;
         private readonly IValidator<Employee> _validator;
 
-        public EmployeeService(IEmployeeRepository repository, IValidator<Employee>? validator = null)
+        public EmployeeService(IEmployeeRepository repository, IAuthorizationService authorization, IValidator<Employee>? validator = null)
         {
             _repository = repository;
+            _authorization = authorization;
             _validator = validator ?? new EmployeeValidator();
         }
 
         public async Task<List<Employee>> GetEmployeesAsync()
         {
+            // Full employee records (PAN, Aadhaar, bank details) — gated behind HrEmployees so a
+            // lower-trust Employee Self-Service login can't list every coworker's PII. Viewing
+            // one's own profile goes through EssController instead, which never calls this.
+            _authorization.EnsurePermission(PermissionModules.HrEmployees);
             return await _repository.GetAllAsync() ?? new List<Employee>();
         }
 
         public async Task<Employee?> GetEmployeeByIdAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.HrEmployees);
             return await _repository.GetByIdAsync(id);
         }
 
         public async Task SaveEmployeeAsync(Employee employee)
         {
+            _authorization.EnsurePermission(PermissionModules.HrEmployees);
+
             if (employee == null) throw new ArgumentNullException(nameof(employee));
 
             employee.EmployeeCode = employee.EmployeeCode?.Trim() ?? string.Empty;
@@ -52,6 +62,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteEmployeeAsync(int id)
         {
+            _authorization.EnsurePermission(PermissionModules.HrEmployees);
+
             _ = await _repository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Employee #{id} not found.");
             await _repository.DeleteAsync(id);
@@ -68,9 +80,34 @@ namespace HotelPOS.Application.UseCases
             return await _repository.GetDepartmentsAsync();
         }
 
+        public async Task SaveDepartmentAsync(Department department)
+        {
+            if (department == null) throw new ArgumentNullException(nameof(department));
+            if (string.IsNullOrWhiteSpace(department.Name)) throw new ArgumentException("Department name is required.");
+            await _repository.SaveDepartmentAsync(department);
+        }
+
+        public async Task DeleteDepartmentAsync(int id)
+        {
+            await _repository.DeleteDepartmentAsync(id);
+        }
+
         public async Task<List<Designation>> GetDesignationsAsync()
         {
             return await _repository.GetDesignationsAsync();
+        }
+
+        public async Task SaveDesignationAsync(Designation designation)
+        {
+            if (designation == null) throw new ArgumentNullException(nameof(designation));
+            if (string.IsNullOrWhiteSpace(designation.Title)) throw new ArgumentException("Designation title is required.");
+            if (designation.DepartmentId <= 0) throw new ArgumentException("Please select a valid department.");
+            await _repository.SaveDesignationAsync(designation);
+        }
+
+        public async Task DeleteDesignationAsync(int id)
+        {
+            await _repository.DeleteDesignationAsync(id);
         }
 
         private async Task<string> GenerateNextEmployeeCodeAsync()

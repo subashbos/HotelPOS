@@ -6,6 +6,22 @@
              mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="900">
 
     <Grid Background="{DynamicResource AppBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>  <!-- Header Banner -->
+            <RowDefinition Height="*"/>     <!-- Content -->
+        </Grid.RowDefinitions>
+
+        <!-- ══ HEADER BANNER ══ -->
+        <Border Grid.Row="0" Background="{DynamicResource HeaderBrush}" Padding="32,20">
+            <StackPanel>
+                <TextBlock Text="👤  User Management" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                <TextBlock Text="Manage team accounts, roles and access."
+                           Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ══ MAIN CONTENT ══ -->
+        <Grid Grid.Row="1" Margin="24">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="20"/>
@@ -118,13 +134,13 @@
                     <TextBlock Text="Add New User" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}"/>
                     <TextBlock Text="Create a new team member account." Style="{StaticResource BodySmallTextBlockStyle}" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,20"/>
 
-                    <TextBlock Text="USERNAME" Style="{StaticResource Label}"/>
+                    <TextBlock Text="USERNAME" Style="{StaticResource FieldLabel}"/>
                     <TextBox x:Name="NewUsernameBox" Margin="0,0,0,16"/>
 
-                    <TextBlock Text="PASSWORD" Style="{StaticResource Label}"/>
+                    <TextBlock Text="PASSWORD" Style="{StaticResource FieldLabel}"/>
                     <PasswordBox x:Name="NewPasswordBox" Margin="0,0,0,16"/>
 
-                    <TextBlock Text="ROLE" Style="{StaticResource Label}"/>
+                    <TextBlock Text="ROLE" Style="{StaticResource FieldLabel}"/>
                     <ComboBox x:Name="NewRoleCombo" Margin="0,0,0,24"/>
 
                     <Button Content="➕  Create User" Style="{StaticResource PrimaryBtn}" Click="AddUser_Click" HorizontalAlignment="Stretch"/>
@@ -137,5 +153,6 @@
                 </Border>
             </ScrollViewer>
         </Border>
+        </Grid>
     </Grid>
 </UserControl>

@@ -1,0 +1,129 @@
+<div class="flex flex-wrap px-4 md:px-6 w-full">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+
+      <!-- Header -->
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-lg text-blueGray-700">
+              <i class="fas fa-cubes text-blueGray-400 mr-2"></i> Raw Materials Master
+            </h3>
+            <p class="text-xs text-blueGray-400 mt-1">Manage ingredients and cost per unit for recipe calculations</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="flex items-center bg-blueGray-50 rounded border border-solid border-blueGray-200 px-3 py-2">
+              <i class="fas fa-search text-blueGray-400 mr-2 text-sm"></i>
+              <label for="raw-material-search" class="sr-only">Search raw materials</label>
+              <input
+                id="raw-material-search"
+                type="text"
+                placeholder="Search raw materials..."
+                class="bg-transparent border-0 outline-none text-xs text-blueGray-700 w-64 font-normal focus:ring-0 focus:outline-none"
+                [(ngModel)]="searchQuery"
+                (ngModelChange)="onSearchChanged()"
+              />
+            </div>
+
+            <button
+              (click)="openAddForm()"
+              class="bg-red-600 text-white active:bg-red-700 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none ease-linear transition-all duration-150"
+            >
+              <i class="fas fa-plus mr-1"></i> New Material
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Content -->
+      <div class="block w-full overflow-x-auto">
+        <div *ngIf="isLoading" class="px-6 py-8 text-center text-blueGray-400 text-sm">Loading raw materials...</div>
+        <div *ngIf="loadError" class="px-6 py-4 text-center text-red-600 text-sm">{{ loadError }}</div>
+
+        <table *ngIf="!isLoading" class="items-center w-full bg-transparent border-collapse">
+          <thead>
+            <tr>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500"># ID</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500">Material Name</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-left bg-blueGray-50 text-blueGray-500">Unit</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-right bg-blueGray-50 text-blueGray-500">Cost / Unit (₹)</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-right bg-blueGray-50 text-blueGray-500">Current Stock</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-right bg-blueGray-50 text-blueGray-500">Min Threshold</th>
+              <th class="px-6 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase border-l-0 border-r-0 whitespace-nowrap font-semibold text-right bg-blueGray-50 text-blueGray-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let material of filteredMaterials">
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-bold text-blueGray-400">#{{ material.id }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 font-semibold text-blueGray-700">{{ material.name }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-blueGray-600 uppercase font-medium">{{ material.unit }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right font-semibold text-blueGray-700">₹{{ material.costPerUnit | number:'1.2-2' }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right" [ngClass]="material.currentStock <= material.minStockThreshold ? 'text-red-600 font-bold' : 'text-blueGray-600'">
+                {{ material.currentStock | number:'1.2-2' }} {{ material.unit }}
+              </td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right text-blueGray-500">{{ material.minStockThreshold | number:'1.2-2' }} {{ material.unit }}</td>
+              <td class="border-t-0 px-6 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">
+                <button (click)="openEditForm(material)" class="text-blueGray-500 hover:text-blueGray-700 text-xs font-bold uppercase mr-3"><i class="fas fa-pen mr-1"></i>Edit</button>
+                <button (click)="deleteMaterial(material)" class="text-red-500 hover:text-red-700 text-xs font-bold uppercase"><i class="fas fa-trash mr-1"></i>Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredMaterials.length === 0">
+              <td colspan="7" class="border-t-0 px-6 py-8 text-center text-xs text-blueGray-400">No raw materials found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD / EDIT MODAL ══ -->
+<div *ngIf="showForm" class="fixed inset-0 z-50 flex items-center justify-center bg-blueGray-800 bg-opacity-50">
+  <div class="bg-white w-full max-w-lg mx-4 rounded shadow-lg">
+    <div class="px-6 py-4 border-b border-solid border-blueGray-200 flex items-center justify-between">
+      <h3 class="font-semibold text-lg text-blueGray-700">{{ isEditMode ? 'Edit Raw Material' : 'Add Raw Material' }}</h3>
+      <button (click)="cancelForm()" class="text-blueGray-400 hover:text-blueGray-600"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="px-6 py-4">
+      <div *ngIf="formError" class="mb-4 text-xs text-red-600 font-semibold">{{ formError }}</div>
+
+      <div class="mb-3">
+        <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="material-name">Material Name *</label>
+        <input id="material-name" type="text" [(ngModel)]="form.name" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div>
+          <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="material-unit">Unit</label>
+          <select id="material-unit" [(ngModel)]="form.unit" class="border-0 px-3 py-2 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full">
+            <option *ngFor="let u of unitOptions" [value]="u">{{ u }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="material-cost">Cost per Unit (₹)</label>
+          <input id="material-cost" type="number" [(ngModel)]="form.costPerUnit" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div>
+          <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="material-stock">Current Stock</label>
+          <input id="material-stock" type="number" [(ngModel)]="form.currentStock" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" />
+        </div>
+        <div>
+          <label class="block uppercase text-blueGray-600 text-xs font-bold mb-1" for="material-minstock">Min Stock Threshold</label>
+          <input id="material-minstock" type="number" [(ngModel)]="form.minStockThreshold" class="border-0 px-3 py-2 placeholder-blueGray-300 text-blueGray-600 bg-white rounded text-sm shadow focus:outline-none focus:ring w-full" />
+        </div>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t border-solid border-blueGray-200 flex justify-end gap-3">
+      <button (click)="cancelForm()" class="bg-blueGray-200 text-blueGray-700 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md">Cancel</button>
+      <button (click)="saveRawMaterial()" [disabled]="isSaving" class="bg-red-600 text-white text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md disabled:opacity-50">
+        {{ isSaving ? 'Saving...' : (isEditMode ? 'Update Material' : 'Save Material') }}
+      </button>
+    </div>
+  </div>
+</div>
