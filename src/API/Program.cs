@@ -186,6 +186,18 @@ var app = builder.Build();
 
 // ── Middleware Pipeline ───────────────────────────────────────────────────
 app.UseMiddleware<ExceptionMiddleware>();
+
+// Baseline security headers on every response. Kept deliberately minimal (no CSP) since this
+// API serves JSON to a separately-deployed Angular SPA - the only HTML it renders itself is the
+// dev-only Scalar API reference below, which a strict CSP would likely break.
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    await next();
+});
+
 app.UseCors("AllowAngular");
 app.UseRateLimiter();
 
@@ -193,6 +205,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+}
+else
+{
+    // HSTS forces HTTPS via a browser-cached header, which is painful during local HTTP
+    // development - only enabled outside Development, matching the standard ASP.NET Core template.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
