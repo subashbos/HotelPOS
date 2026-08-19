@@ -16,6 +16,7 @@ namespace HotelPOS.Views
         private readonly ObservableCollection<GstR1RowDto> _items = new();
         private List<GstR1RowDto> _allRows = new();
         private List<GstR1B2cSummaryDto> _b2cSummary = new();
+        private List<HsnSummaryRowDto> _hsnSummary = new();
         private int _currentPage = 1;
         private const int PageSize = 20;
         private bool _isLoading;
@@ -64,11 +65,15 @@ namespace HotelPOS.Views
                 var to = FilterTo.SelectedDate?.AddDays(1);
 
                 List<Order> allOrders;
+                List<Item> allItems;
                 using (var scope = App.CreateDbScope())
                 {
                     var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                    var itemService = scope.ServiceProvider.GetRequiredService<IItemService>();
                     allOrders = await orderService.GetAllOrdersWithItemsAsync();
+                    allItems = await itemService.GetItemsAsync();
                 }
+                var catalogById = allItems.ToDictionary(i => i.Id);
 
                 var dateFiltered = allOrders.Where(o => !o.IsDeleted);
                 if (from != null)
@@ -104,6 +109,12 @@ namespace HotelPOS.Views
                 _b2cSummary = GstR1RowBuilder.BuildB2cSummary(b2cOrders);
                 B2cSummaryGrid.ItemsSource = _b2cSummary;
                 UpdateB2cSummary(_b2cSummary);
+
+                // HSN Summary (table 12): ALL outward supplies in the period, B2B and B2C combined,
+                // grouped by HSN code + rate - unlike the tabs above, this isn't split by customer type.
+                _hsnSummary = GstR1RowBuilder.BuildHsnSummary(dateFilteredList, catalogById);
+                HsnSummaryGrid.ItemsSource = _hsnSummary;
+                UpdateHsnSummary(_hsnSummary);
             }
             catch (Exception ex)
             {
@@ -137,6 +148,14 @@ namespace HotelPOS.Views
             B2cTotalValueBadge.Text = $"Rs. {summary.Sum(s => s.TotalValue):N2}";
         }
 
+        private void UpdateHsnSummary(List<HsnSummaryRowDto> summary)
+        {
+            HsnCodeCountBadge.Text = summary.Select(s => s.HsnCode).Distinct().Count().ToString();
+            HsnQtyBadge.Text = summary.Sum(s => s.TotalQuantity).ToString();
+            HsnTaxableValueBadge.Text = $"Rs. {summary.Sum(s => s.TaxableValue):N2}";
+            HsnTaxAmountBadge.Text = $"Rs. {summary.Sum(s => s.TotalTax):N2}";
+        }
+
         private void LoadMore()
         {
             var itemsToLoad = _allRows.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
@@ -159,7 +178,7 @@ namespace HotelPOS.Views
 
         private void Export_Click(object sender, RoutedEventArgs e)
         {
-            if (_allRows.Count == 0 && _b2cSummary.Count == 0)
+            if (_allRows.Count == 0 && _b2cSummary.Count == 0 && _hsnSummary.Count == 0)
             {
                 _notificationService.ShowWarning("No data to export.");
                 return;
@@ -245,6 +264,39 @@ namespace HotelPOS.Views
                 }
 
                 wsB2c.Columns().AdjustToContents();
+
+                var wsHsn = wb.Worksheets.Add("HSN Summary");
+                string[] hsnHeaders =
+                {
+                    "HSN Code", "Description", "UQC", "Total Quantity", "Taxable Value", "Rate",
+                    "CGST", "SGST", "IGST", "Total Tax", "Total Value"
+                };
+                for (int c = 0; c < hsnHeaders.Length; c++)
+                    wsHsn.Cell(1, c + 1).Value = hsnHeaders[c];
+
+                var hsnHeaderRow = wsHsn.Row(1);
+                hsnHeaderRow.Style.Font.Bold = true;
+                hsnHeaderRow.Style.Fill.BackgroundColor = XLColor.FromHtml("#173F5F");
+                hsnHeaderRow.Style.Font.FontColor = XLColor.White;
+
+                int hsnRow = 2;
+                foreach (var h in _hsnSummary)
+                {
+                    wsHsn.Cell(hsnRow, 1).Value = h.HsnCode.ForSpreadsheet();
+                    wsHsn.Cell(hsnRow, 2).Value = h.Description.ForSpreadsheet();
+                    wsHsn.Cell(hsnRow, 3).Value = h.Uqc.ForSpreadsheet();
+                    wsHsn.Cell(hsnRow, 4).Value = h.TotalQuantity;
+                    wsHsn.Cell(hsnRow, 5).Value = (double)h.TaxableValue;
+                    wsHsn.Cell(hsnRow, 6).Value = (double)h.Rate;
+                    wsHsn.Cell(hsnRow, 7).Value = (double)h.Cgst;
+                    wsHsn.Cell(hsnRow, 8).Value = (double)h.Sgst;
+                    wsHsn.Cell(hsnRow, 9).Value = (double)h.Igst;
+                    wsHsn.Cell(hsnRow, 10).Value = (double)h.TotalTax;
+                    wsHsn.Cell(hsnRow, 11).Value = (double)h.TotalValue;
+                    hsnRow++;
+                }
+
+                wsHsn.Columns().AdjustToContents();
 
                 wb.SaveAs(dlg.FileName);
                 _notificationService.ShowSuccess("GSTR-1 report exported successfully.");
@@ -339,6 +391,45 @@ namespace HotelPOS.Views
         /// what GSTR-1 filing tools show as "Place of Supply" for a B2B row.</summary>
         public static string DerivePlaceOfSupply(string? gstin) =>
             !string.IsNullOrWhiteSpace(gstin) && gstin.Length >= 2 ? gstin[..2] : string.Empty;
+
+        /// <summary>Aggregates ALL outward supplies in the period (B2B and B2C combined, unlike the
+        /// other tabs) into one row per HSN code and tax rate, matching GSTR-1 table 12 (HSN-wise
+        /// summary). Items whose catalog entry has no HSN code set are grouped under "(No HSN)" so
+        /// the gap stays visible in the report rather than being silently dropped.</summary>
+        public static List<HsnSummaryRowDto> BuildHsnSummary(IEnumerable<Order> orders, IReadOnlyDictionary<int, Item> catalogById)
+        {
+            return orders
+                .SelectMany(o => o.Items)
+                .GroupBy(oi =>
+                {
+                    catalogById.TryGetValue(oi.ItemId, out var catalogItem);
+                    var hsn = string.IsNullOrWhiteSpace(catalogItem?.HsnCode) ? "(No HSN)" : catalogItem!.HsnCode!;
+                    return (Hsn: hsn, oi.TaxPercentage);
+                })
+                .Select(g =>
+                {
+                    var taxableValue = g.Sum(oi => oi.Price * oi.Quantity);
+                    var (cgst, sgst, _) = ComputeTaxSplit(taxableValue, g.Key.TaxPercentage);
+                    var representative = g.First();
+                    catalogById.TryGetValue(representative.ItemId, out var catalogItem);
+                    return new HsnSummaryRowDto
+                    {
+                        HsnCode = g.Key.Hsn,
+                        Description = catalogItem?.Name ?? representative.ItemName,
+                        Uqc = catalogItem?.Unit?.Name ?? string.Empty,
+                        TotalQuantity = g.Sum(oi => oi.Quantity),
+                        TaxableValue = taxableValue,
+                        Rate = g.Key.TaxPercentage,
+                        Cgst = cgst,
+                        Sgst = sgst,
+                        // Always intrastate, same rationale as BuildRow above.
+                        Igst = 0m
+                    };
+                })
+                .OrderBy(r => r.HsnCode)
+                .ThenBy(r => r.Rate)
+                .ToList();
+        }
     }
 
     /// <summary>One row = one tax rate present on one B2B invoice, matching the official GSTR-1
@@ -369,6 +460,23 @@ namespace HotelPOS.Views
         public decimal Rate { get; set; }
         public int InvoiceCount { get; set; }
         public decimal TaxableValue { get; set; }
+        public decimal Cgst { get; set; }
+        public decimal Sgst { get; set; }
+        public decimal Igst { get; set; }
+        public decimal TotalTax => Cgst + Sgst + Igst;
+        public decimal TotalValue => TaxableValue + TotalTax;
+    }
+
+    /// <summary>One row per HSN code and tax rate, aggregating ALL outward supplies (B2B and B2C
+    /// combined) in the period - matches the GSTR-1 table 12 (HSN-wise summary) format.</summary>
+    public class HsnSummaryRowDto
+    {
+        public string HsnCode { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Uqc { get; set; } = string.Empty;
+        public int TotalQuantity { get; set; }
+        public decimal TaxableValue { get; set; }
+        public decimal Rate { get; set; }
         public decimal Cgst { get; set; }
         public decimal Sgst { get; set; }
         public decimal Igst { get; set; }

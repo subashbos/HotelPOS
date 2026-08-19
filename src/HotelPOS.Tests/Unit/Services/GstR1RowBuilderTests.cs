@@ -167,5 +167,68 @@ namespace HotelPOS.Tests
             Assert.Equal(5m, summary[0].Rate);
             Assert.Equal(18m, summary[1].Rate);
         }
+
+        [Fact]
+        public void BuildHsnSummary_GroupsByHsnCodeAndRate_AcrossBothB2BAndB2COrders()
+        {
+            var catalog = new Dictionary<int, Item>
+            {
+                [1] = new Item { Id = 1, Name = "Chicken Biriyani", HsnCode = "2106", TaxPercentage = 5, Unit = new UnitOfMeasurement { Name = "Plate" } }
+            };
+            var b2bOrder = MakeOrder(gstin: "33AQZPS2365E1ZE", invoiceNumber: "INV1");
+            b2bOrder.Items = [new() { ItemId = 1, ItemName = "Chicken Biriyani", Price = 100, Quantity = 2, TaxPercentage = 5, Total = 200 }];
+
+            var b2cOrder = MakeOrder(gstin: null, invoiceNumber: "INV2");
+            b2cOrder.Items = [new() { ItemId = 1, ItemName = "Chicken Biriyani", Price = 100, Quantity = 1, TaxPercentage = 5, Total = 100 }];
+
+            var summary = GstR1RowBuilder.BuildHsnSummary([b2bOrder, b2cOrder], catalog);
+
+            var row = Assert.Single(summary);
+            Assert.Equal("2106", row.HsnCode);
+            Assert.Equal("Chicken Biriyani", row.Description);
+            Assert.Equal("Plate", row.Uqc);
+            Assert.Equal(3, row.TotalQuantity);
+            Assert.Equal(300m, row.TaxableValue);
+            Assert.Equal(15m, row.TotalTax); // 300 * 5%
+        }
+
+        [Fact]
+        public void BuildHsnSummary_ItemsWithoutHsnCode_GroupUnderNoHsnPlaceholder()
+        {
+            var catalog = new Dictionary<int, Item>
+            {
+                [1] = new Item { Id = 1, Name = "Mystery Item", HsnCode = null, TaxPercentage = 12 }
+            };
+            var order = MakeOrder();
+            order.Items = [new() { ItemId = 1, ItemName = "Mystery Item", Price = 50, Quantity = 1, TaxPercentage = 12, Total = 50 }];
+
+            var summary = GstR1RowBuilder.BuildHsnSummary([order], catalog);
+
+            var row = Assert.Single(summary);
+            Assert.Equal("(No HSN)", row.HsnCode);
+        }
+
+        [Fact]
+        public void BuildHsnSummary_SeparatesSameHsnCodeAtDifferentRatesIntoDistinctRows()
+        {
+            var catalog = new Dictionary<int, Item>
+            {
+                [1] = new Item { Id = 1, Name = "Item A", HsnCode = "1905" },
+                [2] = new Item { Id = 2, Name = "Item B", HsnCode = "1905" }
+            };
+            var order = MakeOrder();
+            order.Items =
+            [
+                new() { ItemId = 1, ItemName = "Item A", Price = 100, Quantity = 1, TaxPercentage = 5, Total = 100 },
+                new() { ItemId = 2, ItemName = "Item B", Price = 100, Quantity = 1, TaxPercentage = 18, Total = 100 }
+            ];
+
+            var summary = GstR1RowBuilder.BuildHsnSummary([order], catalog);
+
+            Assert.Equal(2, summary.Count);
+            Assert.All(summary, r => Assert.Equal("1905", r.HsnCode));
+            Assert.Equal(5m, summary[0].Rate);
+            Assert.Equal(18m, summary[1].Rate);
+        }
     }
 }
