@@ -53,11 +53,11 @@
                         </Grid>
                         <Grid Margin="0,0,0,10">
                             <TextBlock Text="Opening Balance:" Foreground="{DynamicResource TextMuted}"/>
-                            <TextBlock Text="{Binding CurrentSession.OpeningBalance, StringFormat=Rs. {0:N2}}" HorizontalAlignment="Right" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding CurrentSession.OpeningBalance, StringFormat=₹{0:N2}}" HorizontalAlignment="Right" FontWeight="SemiBold"/>
                         </Grid>
                         <Grid Margin="0,0,0,20">
                             <TextBlock Text="Expected Cash:" Foreground="{DynamicResource TextMuted}"/>
-                            <TextBlock Text="{Binding ExpectedCash, StringFormat=Rs. {0:N2}}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                            <TextBlock Text="{Binding ExpectedCash, StringFormat=₹{0:N2}}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                         </Grid>
 
                         <Separator Margin="0,0,0,20"/>

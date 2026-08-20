@@ -117,7 +117,7 @@
                             <Border Grid.Column="0" Style="{StaticResource MetricCardBorder}">
                                 <StackPanel>
                                     <TextBlock Text="Gross Revenue" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtTotalRevenue" Text="Rs. 0.00" Style="{StaticResource MetricValue}"/>
+                                    <TextBlock x:Name="TxtTotalRevenue" Text="₹0.00" Style="{StaticResource MetricValue}"/>
                                     <TextBlock Text="Sales before costs" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -125,7 +125,7 @@
                             <Border Grid.Column="2" Style="{StaticResource MetricCardBorder}">
                                 <StackPanel>
                                     <TextBlock Text="Net Profit" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtNetProfit" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="{DynamicResource SuccessBrush}"/>
+                                    <TextBlock x:Name="TxtNetProfit" Text="₹0.00" Style="{StaticResource MetricValue}" Foreground="{DynamicResource SuccessBrush}"/>
                                     <TextBlock Text="Revenue minus COGS &amp; Expenses" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -141,7 +141,7 @@
                             <Border Grid.Column="6" Style="{StaticResource MetricCardBorder}">
                                 <StackPanel>
                                     <TextBlock Text="Total Wastage Cost" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtWastageCost" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="{DynamicResource DangerBrush}"/>
+                                    <TextBlock x:Name="TxtWastageCost" Text="₹0.00" Style="{StaticResource MetricValue}" Foreground="{DynamicResource DangerBrush}"/>
                                     <TextBlock Text="Inventory lost or spoiled" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -228,7 +228,7 @@
                                                     <TextBlock Grid.Column="1" Text="{Binding Reason}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                                                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Quantity, StringFormat='{}{0} units'}" Foreground="{DynamicResource TextMuted}" FontSize="12" Margin="0,0,10,0"/>
-                                                        <TextBlock Text="{Binding Cost, StringFormat='Rs. {0:N2}'}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                                        <TextBlock Text="{Binding Cost, StringFormat='₹{0:N2}'}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                                                     </StackPanel>
                                                 </Grid>
                                             </DataTemplate>
@@ -274,10 +274,10 @@
                                 <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="220" ElementStyle="{StaticResource LeftCell}"/>
                                 <DataGridTextColumn Header="CATEGORY" Binding="{Binding CategoryName}" Width="140" ElementStyle="{StaticResource LeftCell}"/>
                                 <DataGridTextColumn Header="QTY SOLD" Binding="{Binding QuantitySold}" Width="100" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="SELL PRICE" Binding="{Binding UnitPrice, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                                <DataGridTextColumn Header="COST PRICE" Binding="{Binding CostPrice, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                                <DataGridTextColumn Header="REVENUE" Binding="{Binding TotalRevenue, StringFormat=Rs. {0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                                <DataGridTextColumn Header="PROFIT" Binding="{Binding Profit, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="SELL PRICE" Binding="{Binding UnitPrice, StringFormat=₹{0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="COST PRICE" Binding="{Binding CostPrice, StringFormat=₹{0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="REVENUE" Binding="{Binding TotalRevenue, StringFormat=₹{0:N2}}" Width="130" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                <DataGridTextColumn Header="PROFIT" Binding="{Binding Profit, StringFormat=₹{0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                                 <DataGridTemplateColumn Header="MARGIN %" Width="110" HeaderStyle="{StaticResource CenterHeader}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -338,7 +338,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Column: Log Wastage Form -->
-                    <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24">
+                    <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="24" FocusManager.IsFocusScope="True">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel>
                                 <TextBlock Text="Log Inventory Wastage" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,4"/>
@@ -365,7 +365,7 @@
                                 <TextBlock Text="Notes / Description" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
                                 <TextBox x:Name="TxtWasteNotes" Height="80" TextWrapping="Wrap" AcceptsReturn="True" VerticalContentAlignment="Top" Padding="8" Margin="0,0,0,24" Tag="Provide brief reason detail..."/>
 
-                                <Button Click="LogWastage_Click" Background="{DynamicResource PrimaryBrush}" Foreground="White" Height="42" Content="Log Wastage Entry" FontWeight="Bold">
+                                <Button Click="LogWastage_Click" IsDefault="True" Background="{DynamicResource PrimaryBrush}" Foreground="White" Height="42" Content="Log Wastage Entry" FontWeight="Bold">
                                     <Button.Resources>
                                         <Style TargetType="Border">
                                             <Setter Property="CornerRadius" Value="8"/>
@@ -393,7 +393,7 @@
                                     <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
                                     <DataGridTextColumn Header="QTY WASTED" Binding="{Binding Quantity}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                     <DataGridTextColumn Header="REASON" Binding="{Binding Reason}" Width="120" ElementStyle="{StaticResource LeftCell}"/>
-                                    <DataGridTextColumn Header="TOTAL COST" Binding="{Binding TotalCost, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                    <DataGridTextColumn Header="TOTAL COST" Binding="{Binding TotalCost, StringFormat=₹{0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                                     <DataGridTextColumn Header="NOTES" Binding="{Binding Notes}" Width="160" ElementStyle="{StaticResource LeftCell}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
@@ -515,25 +515,25 @@
                             <Border Style="{StaticResource MetricCardBorder}" Margin="0,0,8,0">
                                 <StackPanel>
                                     <TextBlock Text="OPENING FLOAT" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtShiftOpening" Text="Rs. 0.00" Style="{StaticResource MetricValue}"/>
+                                    <TextBlock x:Name="TxtShiftOpening" Text="₹0.00" Style="{StaticResource MetricValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
                                 <StackPanel>
                                     <TextBlock Text="CASH SALES" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtShiftCashSales" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#2ecc71"/>
+                                    <TextBlock x:Name="TxtShiftCashSales" Text="₹0.00" Style="{StaticResource MetricValue}" Foreground="#2ecc71"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
                                 <StackPanel>
                                     <TextBlock Text="ACTUAL CASH COUNTED" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtShiftActualCash" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#3498db"/>
+                                    <TextBlock x:Name="TxtShiftActualCash" Text="₹0.00" Style="{StaticResource MetricValue}" Foreground="#3498db"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetricCardBorder}" Margin="8,0,0,0">
                                 <StackPanel>
                                     <TextBlock Text="CASH VARIANCE" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtShiftVariance" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#e74c3c"/>
+                                    <TextBlock x:Name="TxtShiftVariance" Text="₹0.00" Style="{StaticResource MetricValue}" Foreground="#e74c3c"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
@@ -560,9 +560,9 @@
                                 <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                 <DataGridTextColumn Header="INVOICE #" Binding="{Binding InvoiceNumber}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                 <DataGridTextColumn Header="TIMESTAMP" Binding="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="SUBTOTAL" Binding="{Binding Subtotal, StringFormat='{}Rs. {0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="DISCOUNT" Binding="{Binding DiscountAmount, StringFormat='{}Rs. {0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="TOTAL" Binding="{Binding TotalAmount, StringFormat='{}Rs. {0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="SUBTOTAL" Binding="{Binding Subtotal, StringFormat='{}₹{0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="DISCOUNT" Binding="{Binding DiscountAmount, StringFormat='{}₹{0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TOTAL" Binding="{Binding TotalAmount, StringFormat='{}₹{0:N2}'}" Width="110" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                 <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="100" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                 <DataGridTextColumn Header="REASON / INFO" Binding="{Binding VoidReason}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
                             </DataGrid.Columns>
@@ -591,9 +591,9 @@
                                 <DataGridTextColumn Header="STAFF NAME" Binding="{Binding StaffName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
                                 <DataGridTextColumn Header="ROLE" Binding="{Binding Role}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                 <DataGridTextColumn Header="ORDERS PROCESSED" Binding="{Binding OrdersProcessedCount}" Width="150" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="TOTAL REVENUE" Binding="{Binding TotalRevenueGenerated, StringFormat='{}Rs. {0:N2}'}" Width="150" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="AVERAGE CHECK" Binding="{Binding AverageBillAmount, StringFormat='{}Rs. {0:N2}'}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="DISCOUNTS GIVEN" Binding="{Binding TotalDiscountsGiven, StringFormat='{}Rs. {0:N2}'}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TOTAL REVENUE" Binding="{Binding TotalRevenueGenerated, StringFormat='{}₹{0:N2}'}" Width="150" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="AVERAGE CHECK" Binding="{Binding AverageBillAmount, StringFormat='{}₹{0:N2}'}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="DISCOUNTS GIVEN" Binding="{Binding TotalDiscountsGiven, StringFormat='{}₹{0:N2}'}" Width="140" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
@@ -619,7 +619,7 @@
                             <Border Style="{StaticResource MetricCardBorder}" Margin="0,0,8,0">
                                 <StackPanel>
                                     <TextBlock Text="TOTAL STOCK VALUE" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtTotalStockCost" Text="Rs. 0.00" Style="{StaticResource MetricValue}"/>
+                                    <TextBlock x:Name="TxtTotalStockCost" Text="₹0.00" Style="{StaticResource MetricValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
@@ -648,9 +648,9 @@
                                 <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
                                 <DataGridTextColumn Header="CATEGORY" Binding="{Binding CategoryName}" Width="140" ElementStyle="{StaticResource LeftCell}"/>
                                 <DataGridTextColumn Header="STOCK QTY" Binding="{Binding StockQuantity}" Width="100" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="COST PRICE" Binding="{Binding CostPrice, StringFormat='{}Rs. {0:N2}'}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="RETAIL PRICE" Binding="{Binding RetailPrice, StringFormat='{}Rs. {0:N2}'}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                <DataGridTextColumn Header="TOTAL STOCK VALUE" Binding="{Binding TotalCostValue, StringFormat='{}Rs. {0:N2}'}" Width="160" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="COST PRICE" Binding="{Binding CostPrice, StringFormat='{}₹{0:N2}'}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="RETAIL PRICE" Binding="{Binding RetailPrice, StringFormat='{}₹{0:N2}'}" Width="120" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TOTAL STOCK VALUE" Binding="{Binding TotalCostValue, StringFormat='{}₹{0:N2}'}" Width="160" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                 <DataGridTextColumn Header="ABC GRADE" Binding="{Binding AbcCategory}" Width="100" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                             </DataGrid.Columns>
                         </DataGrid>
@@ -677,25 +677,25 @@
                             <Border Style="{StaticResource MetricCardBorder}" Margin="0,0,8,0">
                                 <StackPanel>
                                     <TextBlock Text="GROSS REVENUE" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtPnlRevenue" Text="Rs. 0.00" Style="{StaticResource MetricValue}"/>
+                                    <TextBlock x:Name="TxtPnlRevenue" Text="₹0.00" Style="{StaticResource MetricValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
                                 <StackPanel>
                                     <TextBlock Text="COST OF GOODS SOLD" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtPnlCogs" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#f39c12"/>
+                                    <TextBlock x:Name="TxtPnlCogs" Text="₹0.00" Style="{StaticResource MetricValue}" Foreground="#f39c12"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetricCardBorder}" Margin="4,0,4,0">
                                 <StackPanel>
                                     <TextBlock Text="OPERATING EXPENSES" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtPnlExpenses" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#e74c3c"/>
+                                    <TextBlock x:Name="TxtPnlExpenses" Text="₹0.00" Style="{StaticResource MetricValue}" Foreground="#e74c3c"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetricCardBorder}" Margin="8,0,0,0">
                                 <StackPanel>
                                     <TextBlock Text="NET OPERATING PROFIT" Style="{StaticResource MetricTitle}"/>
-                                    <TextBlock x:Name="TxtPnlNetProfit" Text="Rs. 0.00" Style="{StaticResource MetricValue}" Foreground="#2ecc71"/>
+                                    <TextBlock x:Name="TxtPnlNetProfit" Text="₹0.00" Style="{StaticResource MetricValue}" Foreground="#2ecc71"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
@@ -704,7 +704,7 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                 <DataGridTextColumn Header="EXPENSE CATEGORY" Binding="{Binding Category}" Width="*" ElementStyle="{StaticResource LeftCell}"/>
-                                <DataGridTextColumn Header="TOTAL AMOUNT" Binding="{Binding Amount, StringFormat='{}Rs. {0:N2}'}" Width="180" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                                <DataGridTextColumn Header="TOTAL AMOUNT" Binding="{Binding Amount, StringFormat='{}₹{0:N2}'}" Width="180" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                 <DataGridTextColumn Header="% OF TOTAL EXPENSES" Binding="{Binding PercentageOfTotalExpenses, StringFormat='{}{0:N2}%'}" Width="200" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                             </DataGrid.Columns>
                         </DataGrid>

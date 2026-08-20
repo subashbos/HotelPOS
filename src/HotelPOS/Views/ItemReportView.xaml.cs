@@ -191,8 +191,8 @@ namespace HotelPOS.Views
                 _currentPage = 1;
                 LoadMore();
                 TotalQtySold.Text = rows.Sum(x => x.Quantity).ToString();
-                TotalRevenueSum.Text = $"Rs. {rows.Sum(x => x.LineTotal):N2}";
-                TotalTaxSum.Text = $"Rs. {rows.Sum(x => x.TaxAmount):N2}";
+                TotalRevenueSum.Text = $"₹{rows.Sum(x => x.LineTotal):N2}";
+                TotalTaxSum.Text = $"₹{rows.Sum(x => x.TaxAmount):N2}";
             }
             catch (Exception ex)
             {

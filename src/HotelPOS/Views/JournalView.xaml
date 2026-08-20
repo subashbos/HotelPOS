@@ -96,9 +96,9 @@
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Text="{Binding ItemName}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
                                                     <TextBlock Grid.Column="1" Text="{Binding Quantity, StringFormat=×{0}}" Foreground="{DynamicResource TextMuted}"/>
-                                                    <TextBlock Grid.Column="2" Text="{Binding Price, StringFormat=Rs.{0:N2}}" Foreground="{DynamicResource TextMuted}"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Price, StringFormat=₹{0:N2}}" Foreground="{DynamicResource TextMuted}"/>
                                                     <TextBlock Grid.Column="3" Text="{Binding TaxPercentage, StringFormat={}{0}%}" Foreground="{DynamicResource TaxAccentBrush}" HorizontalAlignment="Center"/>
-                                                    <TextBlock Grid.Column="4" Text="{Binding Total, StringFormat=Rs.{0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" TextAlignment="Right"/>
+                                                    <TextBlock Grid.Column="4" Text="{Binding Total, StringFormat=₹{0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" TextAlignment="Right"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -126,7 +126,7 @@
                         <DataGridTemplateColumn Header="AMOUNT" Width="140">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding TotalAmount, StringFormat=Rs.{0:N2}}" 
+                                    <TextBlock Text="{Binding TotalAmount, StringFormat=₹{0:N2}}" 
                                                FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"
                                                Padding="14,0" VerticalAlignment="Center"/>
                                 </DataTemplate>

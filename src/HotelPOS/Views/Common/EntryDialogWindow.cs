@@ -36,7 +36,7 @@ namespace HotelPOS.Views.Common
 
         private void EntryDialog_KeyDown(object sender, KeyEventArgs e)
         {
-            // Enter -> Move focus to next field
+            // Enter -> Save
             if (e.Key == Key.Enter)
             {
                 // Prevent multi-line TextBox from losing Enter capability
@@ -46,10 +46,9 @@ namespace HotelPOS.Views.Common
                 }
 
                 e.Handled = true;
-                var request = new TraversalRequest(FocusNavigationDirection.Next);
-                if (Keyboard.FocusedElement is UIElement element)
+                if (_viewModel?.SaveCommand.CanExecute(null) == true)
                 {
-                    element.MoveFocus(request);
+                    _viewModel.SaveCommand.Execute(null);
                 }
             }
             // Ctrl + S -> Save

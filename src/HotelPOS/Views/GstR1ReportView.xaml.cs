@@ -135,25 +135,25 @@ namespace HotelPOS.Views
 
             RecipientsBadge.Text = rows.Select(r => r.Gstin).Distinct().Count().ToString();
             InvoicesBadge.Text = distinctInvoices.Count.ToString();
-            TaxableValueBadge.Text = $"Rs. {rows.Sum(r => r.TaxableValue):N2}";
-            TaxAmountBadge.Text = $"Rs. {rows.Sum(r => r.Cgst + r.Sgst + r.Igst):N2}";
-            TotalValueBadge.Text = $"Rs. {distinctInvoices.Sum(r => r.InvoiceValue):N2}";
+            TaxableValueBadge.Text = $"₹{rows.Sum(r => r.TaxableValue):N2}";
+            TaxAmountBadge.Text = $"₹{rows.Sum(r => r.Cgst + r.Sgst + r.Igst):N2}";
+            TotalValueBadge.Text = $"₹{distinctInvoices.Sum(r => r.InvoiceValue):N2}";
         }
 
         private void UpdateB2cSummary(List<GstR1B2cSummaryDto> summary)
         {
             B2cInvoicesBadge.Text = summary.Sum(s => s.InvoiceCount).ToString();
-            B2cTaxableValueBadge.Text = $"Rs. {summary.Sum(s => s.TaxableValue):N2}";
-            B2cTaxAmountBadge.Text = $"Rs. {summary.Sum(s => s.TotalTax):N2}";
-            B2cTotalValueBadge.Text = $"Rs. {summary.Sum(s => s.TotalValue):N2}";
+            B2cTaxableValueBadge.Text = $"₹{summary.Sum(s => s.TaxableValue):N2}";
+            B2cTaxAmountBadge.Text = $"₹{summary.Sum(s => s.TotalTax):N2}";
+            B2cTotalValueBadge.Text = $"₹{summary.Sum(s => s.TotalValue):N2}";
         }
 
         private void UpdateHsnSummary(List<HsnSummaryRowDto> summary)
         {
             HsnCodeCountBadge.Text = summary.Select(s => s.HsnCode).Distinct().Count().ToString();
             HsnQtyBadge.Text = summary.Sum(s => s.TotalQuantity).ToString();
-            HsnTaxableValueBadge.Text = $"Rs. {summary.Sum(s => s.TaxableValue):N2}";
-            HsnTaxAmountBadge.Text = $"Rs. {summary.Sum(s => s.TotalTax):N2}";
+            HsnTaxableValueBadge.Text = $"₹{summary.Sum(s => s.TaxableValue):N2}";
+            HsnTaxAmountBadge.Text = $"₹{summary.Sum(s => s.TotalTax):N2}";
         }
 
         private void LoadMore()

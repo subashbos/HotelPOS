@@ -59,7 +59,7 @@ namespace HotelPOS.Tests.Unit.Services
         [Fact]
         public void CalculatePayslip_PfCappedAtStatutoryWageCeiling()
         {
-            // Basic (20000) exceeds the Rs. 15,000 PF wage ceiling, so PF should be computed on 15000.
+            // Basic (20000) exceeds the ₹15,000 PF wage ceiling, so PF should be computed on 15000.
             var structure = new SalaryStructure
             {
                 Basic = 20000,

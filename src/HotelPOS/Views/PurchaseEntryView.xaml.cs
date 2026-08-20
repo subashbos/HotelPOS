@@ -36,15 +36,19 @@ namespace HotelPOS.Views
                 e.Handled = true;
                 SupplierComboBox.Focus();
             }
-            // 3. Enter key behavior inside standard TextBox to move focus forward
+            // 3. Enter key -> Save (skip multi-line note inputs and data grids)
             else if (e.Key == Key.Enter)
             {
                 var element = Keyboard.FocusedElement as UIElement;
-                // Do not interfere with multi-line note inputs or data grids
-                if (element is TextBox tb && !tb.AcceptsReturn && !IsDescendantOfDataGrid(tb))
+                if (element is TextBox tb && (tb.AcceptsReturn || IsDescendantOfDataGrid(tb)))
                 {
-                    e.Handled = true;
-                    element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                    return;
+                }
+
+                e.Handled = true;
+                if (_viewModel.SavePurchaseCommand.CanExecute(null))
+                {
+                    _viewModel.SavePurchaseCommand.Execute(null);
                 }
             }
         }

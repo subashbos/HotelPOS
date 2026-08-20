@@ -22,7 +22,7 @@ namespace HotelPOS.Views
         public decimal Revenue { get; set; }
         public double BarHeight { get; set; }
         public double X { get; set; }
-        public string ToolTipText => $"{MonthName}: Rs. {Revenue:N0}";
+        public string ToolTipText => $"{MonthName}: ₹{Revenue:N0}";
     }
 
     /// <summary>ViewModel for a pie chart segment.</summary>
@@ -33,7 +33,7 @@ namespace HotelPOS.Views
         public double Percentage { get; set; }
         public string PathData { get; set; } = string.Empty;
         public System.Windows.Media.Brush FillColor { get; set; } = System.Windows.Media.Brushes.Gray;
-        public string ToolTipText => $"{CategoryName}: {Percentage:N1}% (Rs. {Revenue:N0})";
+        public string ToolTipText => $"{CategoryName}: {Percentage:N1}% (₹{Revenue:N0})";
     }
 
     public partial class DashboardView : UserControl
@@ -139,9 +139,9 @@ namespace HotelPOS.Views
                     LastSalesReport = sales;
                     LastItemReport = items;
 
-                    RevenueValueText.Text = $"Rs. {sales.TotalRevenue:N2}";
+                    RevenueValueText.Text = $"₹{sales.TotalRevenue:N2}";
                     OrdersValueText.Text = sales.TotalOrders.ToString("N0");
-                    AvgValueText.Text = $"Rs. {sales.AverageOrderValue:N2}";
+                    AvgValueText.Text = $"₹{sales.AverageOrderValue:N2}";
                     TopItemText.Text = sales.MostPopularItem ?? "—";
 
                     _tablePage = 1;
@@ -155,9 +155,9 @@ namespace HotelPOS.Views
                     PaymentModeGrid.ItemsSource = sales.SalesByPaymentMode;
 
                     // Update Range Totals for the entire filtered period
-                    TableRangeTotalText.Text = $"Rs. {sales.SalesByTable.Sum(x => x.TotalRevenue):N2}";
+                    TableRangeTotalText.Text = $"₹{sales.SalesByTable.Sum(x => x.TotalRevenue):N2}";
 
-                    ItemRangeTotalText.Text = $"Rs. {items.Sum(x => x.TotalRevenue):N2}";
+                    ItemRangeTotalText.Text = $"₹{items.Sum(x => x.TotalRevenue):N2}";
 
                     // Pie Chart Logic
                     RenderPieChart(sales.SalesByCategory);
@@ -226,7 +226,7 @@ namespace HotelPOS.Views
                     .ToList();
 
                 // Calculate total net income for the date-wise range
-                DateRangeTotalText.Text = $"Rs. {LastDailyReport.Sum(x => x.NetIncome):N2}";
+                DateRangeTotalText.Text = $"₹{LastDailyReport.Sum(x => x.NetIncome):N2}";
                 
                 _datePage = 1;
                 _dateItems.Clear();
@@ -243,7 +243,7 @@ namespace HotelPOS.Views
             {
                 foreach (var i in itemsToLoad) _tableItems.Add(i);
                 _tablePage++;
-                TablePageSubtotalText.Text = $"Rs. {_tableItems.Sum(x => x.TotalRevenue):N2}";
+                TablePageSubtotalText.Text = $"₹{_tableItems.Sum(x => x.TotalRevenue):N2}";
             }
         }
 
@@ -265,7 +265,7 @@ namespace HotelPOS.Views
             {
                 foreach (var i in itemsToLoad) _itemItems.Add(i);
                 _itemPage++;
-                ItemPageSubtotalText.Text = $"Rs. {_itemItems.Sum(x => x.TotalRevenue):N2}";
+                ItemPageSubtotalText.Text = $"₹{_itemItems.Sum(x => x.TotalRevenue):N2}";
             }
         }
 
@@ -287,7 +287,7 @@ namespace HotelPOS.Views
             {
                 foreach (var i in itemsToLoad) _dateItems.Add(i);
                 _datePage++;
-                DatePageSubtotalText.Text = $"Rs. {_dateItems.Sum(x => x.NetIncome):N2}";
+                DatePageSubtotalText.Text = $"₹{_dateItems.Sum(x => x.NetIncome):N2}";
             }
         }
 
@@ -345,7 +345,7 @@ namespace HotelPOS.Views
                 {
                     var ws2 = wb.Worksheets.Add("Sales by Table");
                     SetHeader(ws2.Row(1));
-                    ws2.Cell(1, 1).Value = "Table"; ws2.Cell(1, 2).Value = "Orders"; ws2.Cell(1, 3).Value = "Revenue (Rs.)";
+                    ws2.Cell(1, 1).Value = "Table"; ws2.Cell(1, 2).Value = "Orders"; ws2.Cell(1, 3).Value = "Revenue (₹)";
                     int r = 2;
                     foreach (var t in LastSalesReport.SalesByTable)
                     {
@@ -363,7 +363,7 @@ namespace HotelPOS.Views
                     var ws3 = wb.Worksheets.Add("Item Performance");
                     SetHeader(ws3.Row(1));
                     ws3.Cell(1, 1).Value = "Item Name"; ws3.Cell(1, 2).Value = "Qty Sold";
-                    ws3.Cell(1, 3).Value = "Total Revenue (Rs.)"; ws3.Cell(1, 4).Value = "Unit Price (Rs.)";
+                    ws3.Cell(1, 3).Value = "Total Revenue (₹)"; ws3.Cell(1, 4).Value = "Unit Price (₹)";
                     int r = 2;
                     foreach (var i in LastItemReport)
                     {
@@ -382,7 +382,7 @@ namespace HotelPOS.Views
                     var ws4 = wb.Worksheets.Add("Sales by Payment Mode");
                     SetHeader(ws4.Row(1));
                     ws4.Cell(1, 1).Value = "Payment Mode"; ws4.Cell(1, 2).Value = "Orders";
-                    ws4.Cell(1, 3).Value = "Total Revenue (Rs.)"; ws4.Cell(1, 4).Value = "Percentage (%)";
+                    ws4.Cell(1, 3).Value = "Total Revenue (₹)"; ws4.Cell(1, 4).Value = "Percentage (%)";
                     int r = 2;
                     foreach (var p in LastSalesReport.SalesByPaymentMode)
                     {

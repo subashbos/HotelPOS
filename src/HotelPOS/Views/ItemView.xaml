@@ -131,7 +131,7 @@
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Padding="12,5" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="16" Background="{DynamicResource SecondaryBrush}" Margin="0,0,14,0">
-                                            <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="White"/>
+                                            <TextBlock Text="{Binding Price, StringFormat=₹{0:N2}}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="White"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

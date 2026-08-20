@@ -131,7 +131,7 @@
                         <TextBlock Text="Effective From Date" Style="{StaticResource FieldLabel}"/>
                         <DatePicker SelectedDate="{Binding EffectiveFrom}" Margin="0,0,0,20" Width="200" HorizontalAlignment="Left"/>
 
-                        <Button Content="💾 Save Salary Structure" Command="{Binding SaveStructureCommand}"
+                        <Button Content="💾 Save Salary Structure" Command="{Binding SaveStructureCommand}" IsDefault="True"
                                 Style="{StaticResource PrimaryBtn}"/>
                     </StackPanel>
                 </ScrollViewer>

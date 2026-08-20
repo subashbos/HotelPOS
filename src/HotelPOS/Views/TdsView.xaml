@@ -51,7 +51,7 @@
                             <TextBlock Text="Health &amp; Education Cess Rate (%)" Style="{StaticResource FieldLabel}"/>
                             <TextBox Text="{Binding CessRatePercent, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20"/>
 
-                            <Button Content="💾 Save TDS Configuration" Command="{Binding SaveCommand}"
+                            <Button Content="💾 Save TDS Configuration" Command="{Binding SaveCommand}" IsDefault="True"
                                     Style="{StaticResource PrimaryBtn}" Margin="0,0,0,10"/>
 
                             <Button Content="🗑️ Delete Year Config" Command="{Binding DeleteCommand}"

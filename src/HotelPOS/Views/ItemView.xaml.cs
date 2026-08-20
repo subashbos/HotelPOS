@@ -175,7 +175,7 @@ namespace HotelPOS.Views
                 }
 
                 var msg = $"Found {preview.Count} item(s) to import:\n\n" +
-                          string.Join("\n", preview.Take(ReportingLimits.ItemPreviewLimit).Select(p => $"  • {p.Name}  —  Rs. {p.Price:N2}")) +
+                          string.Join("\n", preview.Take(ReportingLimits.ItemPreviewLimit).Select(p => $"  • {p.Name}  —  ₹{p.Price:N2}")) +
                           (preview.Count > ReportingLimits.ItemPreviewLimit ? $"\n  … and {preview.Count - ReportingLimits.ItemPreviewLimit} more" : "") +
                           "\n\nProceed with import?";
 

@@ -92,7 +92,7 @@
                             <TextBox Text="{Binding Remarks, UpdateSourceTrigger=PropertyChanged}" Tag="Optional"/>
                         </StackPanel>
 
-                        <Button Grid.Column="13" Command="{Binding MarkCommand}"
+                        <Button Grid.Column="13" Command="{Binding MarkCommand}" IsDefault="True"
                                 Style="{StaticResource PrimaryBtn}" Padding="18,10" VerticalAlignment="Bottom">
                             <TextBlock Text="✔  Mark"/>
                         </Button>

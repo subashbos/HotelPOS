@@ -16,7 +16,7 @@
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Cancel" Click="Cancel_Click" Style="{StaticResource SecondaryBtn}" Margin="0,0,10,0"/>
-            <Button Content="Verify" Click="Verify_Click" Style="{StaticResource PrimaryBtn}" Padding="16,8"/>
+            <Button Content="Verify" Click="Verify_Click" IsDefault="True" Style="{StaticResource PrimaryBtn}" Padding="16,8"/>
         </StackPanel>
     </StackPanel>
 </Window>

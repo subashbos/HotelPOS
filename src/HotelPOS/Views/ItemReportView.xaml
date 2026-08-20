@@ -103,14 +103,14 @@
                         <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM hh:mm tt}" Width="130" ElementStyle="{StaticResource LeftCell}"/>
                         <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="200" MinWidth="150" ElementStyle="{StaticResource LeftCell}"/>
                         <DataGridTextColumn Header="CATEGORY" Binding="{Binding CategoryName}" Width="120" ElementStyle="{StaticResource LeftCell}"/>
-                        <DataGridTextColumn Header="UNIT PRICE" Binding="{Binding UnitPrice, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="UNIT PRICE" Binding="{Binding UnitPrice, StringFormat=₹{0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                         <DataGridTextColumn Header="QTY" Binding="{Binding Quantity}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                        <DataGridTextColumn Header="LINE TOTAL" Binding="{Binding LineTotal, StringFormat=Rs. {0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="LINE TOTAL" Binding="{Binding LineTotal, StringFormat=₹{0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                         <DataGridTextColumn Header="RATE" Binding="{Binding TaxRate, StringFormat={}{0}%}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                        <DataGridTextColumn Header="CGST" Binding="{Binding Cgst, StringFormat=Rs. {0:N2}}" Width="90" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                        <DataGridTextColumn Header="SGST" Binding="{Binding Sgst, StringFormat=Rs. {0:N2}}" Width="90" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                        <DataGridTextColumn Header="TAX AMOUNT" Binding="{Binding TaxAmount, StringFormat=Rs. {0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                        <DataGridTextColumn Header="ITEM TOTAL" Binding="{Binding ItemTotal, StringFormat=Rs. {0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="CGST" Binding="{Binding Cgst, StringFormat=₹{0:N2}}" Width="90" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="SGST" Binding="{Binding Sgst, StringFormat=₹{0:N2}}" Width="90" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="TAX AMOUNT" Binding="{Binding TaxAmount, StringFormat=₹{0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                        <DataGridTextColumn Header="ITEM TOTAL" Binding="{Binding ItemTotal, StringFormat=₹{0:N2}}" Width="110" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -126,10 +126,10 @@
                             <TextBlock x:Name="TotalQtySold" Text="0" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,24,0"/>
                             
                             <TextBlock Text="Total Revenue:" Foreground="{DynamicResource TextMuted}" FontSize="13"/>
-                            <TextBlock x:Name="TotalRevenueSum" Text="Rs. 0.00" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="8,0,24,0"/>
+                            <TextBlock x:Name="TotalRevenueSum" Text="₹0.00" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="8,0,24,0"/>
 
                             <TextBlock Text="Total Tax:" Foreground="{DynamicResource TextMuted}" FontSize="13"/>
-                            <TextBlock x:Name="TotalTaxSum" Text="Rs. 0.00" FontWeight="Bold" Foreground="{DynamicResource TaxAccentBrush}" Margin="8,0,0,0"/>
+                            <TextBlock x:Name="TotalTaxSum" Text="₹0.00" FontWeight="Bold" Foreground="{DynamicResource TaxAccentBrush}" Margin="8,0,0,0"/>
                         </StackPanel>
 
                         <Button Grid.Column="1" Click="Export_Click" Style="{StaticResource ActionBtn}" Foreground="{DynamicResource PrimaryBrush}">

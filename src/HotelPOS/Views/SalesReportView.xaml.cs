@@ -145,7 +145,7 @@ namespace HotelPOS.Views
                 LoadMore();
 
                 TotalOrdersCount.Text = result.totalCount.ToString();
-                TotalRevenueSum.Text = $"Rs. {reportRows.Sum(x => x.Total):N2}";
+                TotalRevenueSum.Text = $"₹{reportRows.Sum(x => x.Total):N2}";
             }
             catch (Exception ex)
             {
