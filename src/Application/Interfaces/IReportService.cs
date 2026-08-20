@@ -19,6 +19,11 @@ namespace HotelPOS.Application.Interfaces
         Task<List<GstReportRowDto>> GetGstReportAsync(DateTime from, DateTime to);
         Task<List<GstReportRowDto>> GetGstReportInternalAsync(DateTime from, DateTime to);
 
+        /// <summary>Returns the GSTR-1 filing report (B2B invoice-wise, B2C(Small) rate-wise
+        /// summary, and HSN-wise summary) for the given period.</summary>
+        Task<GstR1ReportDto> GetGstR1ReportAsync(DateTime from, DateTime to);
+        Task<GstR1ReportDto> GetGstR1ReportInternalAsync(DateTime from, DateTime to);
+
         /// <summary>Returns monthly sales revenue for the current year.</summary>
         Task<List<MonthlySalesChartDto>> GetMonthlyChartDataAsync();
         Task<List<MonthlySalesChartDto>> GetMonthlyChartDataInternalAsync();

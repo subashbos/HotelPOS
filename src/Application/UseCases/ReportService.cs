@@ -162,6 +162,53 @@ namespace HotelPOS.Application.UseCases
             return result;
         }
 
+        public async Task<GstR1ReportDto> GetGstR1ReportAsync(DateTime from, DateTime to)
+        {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
+            if (_mediator != null)
+            {
+                return await _mediator.Send(new GetGstR1ReportQuery(from, to));
+            }
+
+            return await GetGstR1ReportInternalAsync(from, to);
+        }
+
+        public async Task<GstR1ReportDto> GetGstR1ReportInternalAsync(DateTime from, DateTime to)
+        {
+            var utcFrom = from.ToUniversalTime();
+            var utcTo = to.ToUniversalTime();
+
+            var (orders, _) = await _orderRepo.GetPagedWithItemsAsync(1, -1, new OrderQueryFilter(utcFrom, utcTo));
+            var allItems = await _itemRepo.GetAllAsync();
+            var catalogById = allItems.ToDictionary(i => i.Id);
+
+            // B2B: the customer must have a GSTIN on file (GSTR-1 tables 4A/4B/4C/6B/6C - invoice-wise
+            // details of supplies to registered persons).
+            var b2bOrders = orders.Where(o => !string.IsNullOrWhiteSpace(o.CustomerGstin));
+            var b2bRows = Reports.GstR1RowBuilder.BuildRows(b2bOrders)
+                .OrderBy(r => r.Date)
+                .ThenBy(r => r.InvoiceNumber)
+                .ToList();
+            for (int i = 0; i < b2bRows.Count; i++) b2bRows[i].SNo = i + 1;
+
+            // B2C(Small): walk-in/retail sales without a customer GSTIN, summarized by tax rate
+            // (GSTR-1 table 7) rather than shown invoice-wise.
+            var b2cOrders = orders.Where(o => string.IsNullOrWhiteSpace(o.CustomerGstin));
+            var b2cSummary = Reports.GstR1RowBuilder.BuildB2cSummary(b2cOrders);
+
+            // HSN Summary (table 12): ALL outward supplies in the period, B2B and B2C combined,
+            // grouped by HSN code + rate - unlike the tabs above, this isn't split by customer type.
+            var hsnSummary = Reports.GstR1RowBuilder.BuildHsnSummary(orders, catalogById);
+
+            return new GstR1ReportDto
+            {
+                B2BRows = b2bRows,
+                B2cSummary = b2cSummary,
+                HsnSummary = hsnSummary
+            };
+        }
+
         public async Task<List<MonthlySalesChartDto>> GetMonthlyChartDataAsync()
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);

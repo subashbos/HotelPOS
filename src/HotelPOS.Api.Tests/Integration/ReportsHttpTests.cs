@@ -118,6 +118,26 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task GetGstR1Report_AdminToken_ReturnsOk()
+        {
+            var client = CreateClient(RoleNames.Admin, "reports.admin-gstr1");
+
+            var response = await client.GetAsync("/api/reports/gstr1?from=2026-01-01&to=2026-12-31");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetGstR1Report_CashierFallback_ReturnsForbidden()
+        {
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-gstr1");
+
+            var response = await client.GetAsync("/api/reports/gstr1?from=2026-01-01&to=2026-12-31");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
         public async Task GetMonthlyChart_AdminToken_ReturnsOk()
         {
             var client = CreateClient(RoleNames.Admin, "reports.admin-monthly-chart");

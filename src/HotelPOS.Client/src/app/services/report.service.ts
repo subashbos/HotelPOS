@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
-  GstReportRow, ItemMarginRow, ItemReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
+  GstR1Report, GstReportRow, ItemMarginRow, ItemReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
   PagedPurchaseReport, ProfitAndLossReport, ProfitMarginSummary, SalesReport, ShiftClosureReport, StaffPerformanceReport, StockValuationSummary, VoidDiscountAuditRow, WastageSummary
 } from '../models/report.model';
 import { environment } from '../../environments/environment';
@@ -25,6 +25,10 @@ export class ReportService {
 
   getGstReport(from: string, to: string): Observable<GstReportRow[]> {
     return this.http.get<GstReportRow[]>(`${this.apiUrl}/gst`, { params: { from, to } });
+  }
+
+  getGstR1Report(from: string, to: string): Observable<GstR1Report> {
+    return this.http.get<GstR1Report>(`${this.apiUrl}/gstr1`, { params: { from, to } });
   }
 
   getMonthlyChart(): Observable<MonthlySalesChart[]> {

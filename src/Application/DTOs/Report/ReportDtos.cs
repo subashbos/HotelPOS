@@ -105,4 +105,66 @@ namespace HotelPOS.Application.DTOs.Report
         public decimal TotalAmount { get; set; }
         public string PaymentType { get; set; } = PaymentModes.Cash;
     }
+
+    /// <summary>One row = one tax rate present on one B2B invoice, matching the official GSTR-1
+    /// B2B (4A/4B/4C/6B/6C) invoice-wise filing format.</summary>
+    public class GstR1RowDto
+    {
+        public int SNo { get; set; }
+        public string Gstin { get; set; } = string.Empty;
+        public string InvoiceNumber { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public decimal InvoiceValue { get; set; }
+        public string Pos { get; set; } = string.Empty;
+        public string ReverseCharge { get; set; } = "N";
+        public string InvoiceType { get; set; } = "R";
+        public string CustomerName { get; set; } = string.Empty;
+        public decimal TaxableValue { get; set; }
+        public decimal ItemTotal { get; set; }
+        public decimal Rate { get; set; }
+        public decimal Cgst { get; set; }
+        public decimal Sgst { get; set; }
+        public decimal Igst { get; set; }
+    }
+
+    /// <summary>One row per tax rate, aggregating all B2C (no customer GSTIN) invoices in the
+    /// period - matches the GSTR-1 table 7 (B2C Small) summary format.</summary>
+    public class GstR1B2cSummaryDto
+    {
+        public decimal Rate { get; set; }
+        public int InvoiceCount { get; set; }
+        public decimal TaxableValue { get; set; }
+        public decimal Cgst { get; set; }
+        public decimal Sgst { get; set; }
+        public decimal Igst { get; set; }
+        public decimal TotalTax => Cgst + Sgst + Igst;
+        public decimal TotalValue => TaxableValue + TotalTax;
+    }
+
+    /// <summary>One row per HSN code and tax rate, aggregating ALL outward supplies (B2B and B2C
+    /// combined) in the period - matches the GSTR-1 table 12 (HSN-wise summary) format.</summary>
+    public class HsnSummaryRowDto
+    {
+        public string HsnCode { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Uqc { get; set; } = string.Empty;
+        public int TotalQuantity { get; set; }
+        public decimal TaxableValue { get; set; }
+        public decimal Rate { get; set; }
+        public decimal Cgst { get; set; }
+        public decimal Sgst { get; set; }
+        public decimal Igst { get; set; }
+        public decimal TotalTax => Cgst + Sgst + Igst;
+        public decimal TotalValue => TaxableValue + TotalTax;
+    }
+
+    /// <summary>Composite payload for the GSTR-1 report page: invoice-wise B2B rows, the B2C(Small)
+    /// rate-wise summary, and the HSN-wise summary — the three tables the API exposes together so
+    /// the client can render all three tabs from a single request.</summary>
+    public class GstR1ReportDto
+    {
+        public List<GstR1RowDto> B2BRows { get; set; } = new();
+        public List<GstR1B2cSummaryDto> B2cSummary { get; set; } = new();
+        public List<HsnSummaryRowDto> HsnSummary { get; set; } = new();
+    }
 }

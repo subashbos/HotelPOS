@@ -27,6 +27,7 @@ import { TdsComponent } from "./views/admin/tds/tds.component";
 import { SalesReportComponent } from "./views/admin/sales-report/sales-report.component";
 import { ItemReportComponent } from "./views/admin/item-report/item-report.component";
 import { PurchaseReportComponent } from "./views/admin/purchase-report/purchase-report.component";
+import { Gstr1ReportComponent } from "./views/admin/gstr1-report/gstr1-report.component";
 import { LedgerComponent } from "./views/admin/ledger/ledger.component";
 import { JournalComponent } from "./views/admin/journal/journal.component";
 import { RolesComponent } from "./views/admin/roles/roles.component";
@@ -80,6 +81,7 @@ export const routes: Routes = [
       { path: "sales-report", component: SalesReportComponent, canActivate: [permissionGuard], data: { modules: ["SalesReport"] } },
       { path: "item-report", component: ItemReportComponent, canActivate: [permissionGuard], data: { modules: ["SalesReport"] } },
       { path: "purchase-report", component: PurchaseReportComponent, canActivate: [permissionGuard], data: { modules: ["Purchase", "SalesReport"] } },
+      { path: "gstr1-report", component: Gstr1ReportComponent, canActivate: [permissionGuard], data: { modules: ["SalesReport"] } },
       { path: "ledger", component: LedgerComponent, canActivate: [permissionGuard], data: { modules: ["Ledger"] } },
       { path: "journal", component: JournalComponent, canActivate: [permissionGuard], data: { modules: ["Journal"] } },
       { path: "roles", component: RolesComponent, canActivate: [permissionGuard], data: { modules: ["Roles"] } },

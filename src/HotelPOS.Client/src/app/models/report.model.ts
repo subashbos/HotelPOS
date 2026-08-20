@@ -96,3 +96,22 @@ export interface ProfitAndLossReport {
   expensesByCategory: ExpenseCategoryBreakdown[]; netOperatingProfit: number; netProfitMarginPercentage: number;
 }
 
+export interface GstR1Row {
+  sNo: number; gstin: string; invoiceNumber: string; date: string; invoiceValue: number; pos: string;
+  reverseCharge: string; invoiceType: string; customerName: string; taxableValue: number; itemTotal: number;
+  rate: number; cgst: number; sgst: number; igst: number;
+}
+export interface GstR1B2cSummaryRow {
+  rate: number; invoiceCount: number; taxableValue: number; cgst: number; sgst: number; igst: number;
+  totalTax: number; totalValue: number;
+}
+export interface HsnSummaryRow {
+  hsnCode: string; description: string; uqc: string; totalQuantity: number; taxableValue: number;
+  rate: number; cgst: number; sgst: number; igst: number; totalTax: number; totalValue: number;
+}
+export interface GstR1Report {
+  b2BRows: GstR1Row[];
+  b2cSummary: GstR1B2cSummaryRow[];
+  hsnSummary: HsnSummaryRow[];
+}
+
