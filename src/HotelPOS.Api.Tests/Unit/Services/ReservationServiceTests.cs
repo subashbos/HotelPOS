@@ -87,5 +87,104 @@ namespace HotelPOS.Tests.Unit.Services
                 m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "Reservation" && e.EntityId == 11 && e.Action == "ChangeStatus"), default),
                 Times.Once);
         }
+
+        [Fact]
+        public async Task ChangeStatusAsync_LegacyPath_InvalidStatusString_ThrowsArgumentException()
+        {
+            var reservationRepoMock = new Mock<IReservationRepository>();
+            var tableRepoMock = new Mock<ITableRepository>();
+            var service = new ReservationService(reservationRepoMock.Object, tableRepoMock.Object, TestAuthorization.AllowAll().Object);
+
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.ChangeStatusAsync(1, "NotAStatus"));
+            Assert.Contains("not a valid reservation status", ex.Message);
+        }
+
+        [Fact]
+        public async Task ChangeStatusAsync_LegacyPath_NotFound_ThrowsKeyNotFoundException()
+        {
+            var reservationRepoMock = new Mock<IReservationRepository>();
+            var tableRepoMock = new Mock<ITableRepository>();
+            reservationRepoMock.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Reservation?)null);
+            var service = new ReservationService(reservationRepoMock.Object, tableRepoMock.Object, TestAuthorization.AllowAll().Object);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ChangeStatusAsync(99, ReservationStatuses.CheckedIn));
+        }
+
+        [Fact]
+        public async Task ChangeStatusAsync_LegacyPath_InvalidTransition_ThrowsInvalidOperationException()
+        {
+            // A Completed reservation has no valid forward transitions (NextStatuses[Completed] is empty).
+            var reservationRepoMock = new Mock<IReservationRepository>();
+            var tableRepoMock = new Mock<ITableRepository>();
+            var reservation = new Reservation { Id = 5, Status = ReservationStatuses.Completed };
+            reservationRepoMock.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(reservation);
+            var service = new ReservationService(reservationRepoMock.Object, tableRepoMock.Object, TestAuthorization.AllowAll().Object);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ChangeStatusAsync(5, ReservationStatuses.CheckedIn));
+            Assert.Contains("Cannot move a Completed reservation to CheckedIn", ex.Message);
+            reservationRepoMock.Verify(r => r.UpdateStatusAsync(It.IsAny<int>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task SaveReservationAsync_LegacyPath_TableNotFound_ThrowsArgumentException()
+        {
+            var reservationRepoMock = new Mock<IReservationRepository>();
+            var tableRepoMock = new Mock<ITableRepository>();
+            tableRepoMock.Setup(t => t.GetByIdAsync(3)).ReturnsAsync((Table?)null);
+            var service = new ReservationService(reservationRepoMock.Object, tableRepoMock.Object, TestAuthorization.AllowAll().Object);
+
+            var reservation = new Reservation { TableId = 3, PartySize = 2, ReservationDate = DateTime.Today };
+
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.SaveReservationAsync(reservation));
+            Assert.Contains("does not exist", ex.Message);
+        }
+
+        [Fact]
+        public async Task SaveReservationAsync_LegacyPath_PartySizeExceedsCapacity_ThrowsArgumentException()
+        {
+            var reservationRepoMock = new Mock<IReservationRepository>();
+            var tableRepoMock = new Mock<ITableRepository>();
+            tableRepoMock.Setup(t => t.GetByIdAsync(3)).ReturnsAsync(new Table { Id = 3, Name = "T3", Capacity = 4 });
+            var service = new ReservationService(reservationRepoMock.Object, tableRepoMock.Object, TestAuthorization.AllowAll().Object);
+
+            var reservation = new Reservation { TableId = 3, PartySize = 6, ReservationDate = DateTime.Today };
+
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.SaveReservationAsync(reservation));
+            Assert.Contains("exceeds table", ex.Message);
+        }
+
+        [Fact]
+        public async Task SaveReservationAsync_LegacyPath_OverlappingTimeSlot_ThrowsInvalidOperationException()
+        {
+            var reservationRepoMock = new Mock<IReservationRepository>();
+            var tableRepoMock = new Mock<ITableRepository>();
+            var date = DateTime.Today;
+
+            tableRepoMock.Setup(t => t.GetByIdAsync(3)).ReturnsAsync(new Table { Id = 3, Name = "T3", Capacity = 4 });
+            reservationRepoMock.Setup(r => r.BeginTransactionAsync()).Returns(Task.CompletedTask);
+            reservationRepoMock.Setup(r => r.AcquireTableDateLockAsync(3, date.Date)).Returns(Task.CompletedTask);
+            reservationRepoMock.Setup(r => r.RollbackTransactionAsync()).Returns(Task.CompletedTask);
+            reservationRepoMock
+                .Setup(r => r.GetActiveReservationsForTableAsync(3, date.Date, null))
+                .ReturnsAsync(new List<Reservation>
+                {
+                    new Reservation { TableId = 3, ReservationDate = date, StartTime = TimeSpan.FromHours(18), EndTime = TimeSpan.FromHours(20) }
+                });
+            var service = new ReservationService(reservationRepoMock.Object, tableRepoMock.Object, TestAuthorization.AllowAll().Object);
+
+            var reservation = new Reservation
+            {
+                TableId = 3,
+                PartySize = 2,
+                ReservationDate = date,
+                StartTime = TimeSpan.FromHours(19),
+                EndTime = TimeSpan.FromHours(21)
+            };
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.SaveReservationAsync(reservation));
+            Assert.Contains("already booked", ex.Message);
+            reservationRepoMock.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Never);
+            reservationRepoMock.Verify(r => r.RollbackTransactionAsync(), Times.Once);
+        }
     }
 }

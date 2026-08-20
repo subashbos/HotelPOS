@@ -399,5 +399,296 @@ namespace HotelPOS.Tests.Unit.Commands
             var resGood = validator.TestValidate(new UpdatePurchaseCommand(goodPurchase));
             resGood.ShouldNotHaveAnyValidationErrors();
         }
+
+        // ---------- CustomerValidator ----------
+        [Fact]
+        public void CustomerValidator_Validates_Correctly()
+        {
+            var validator = new CustomerValidator();
+
+            // Invalid fields
+            var badCustomer = new Customer
+            {
+                Name = "",
+                Phone = "123", // too few digits
+                Email = "not-an-email",
+                Gstin = "invalid_gst"
+            };
+            var resBad = validator.TestValidate(badCustomer);
+            resBad.ShouldHaveValidationErrorFor(x => x.Name);
+            resBad.ShouldHaveValidationErrorFor(x => x.Phone);
+            resBad.ShouldHaveValidationErrorFor(x => x.Email);
+            resBad.ShouldHaveValidationErrorFor(x => x.Gstin);
+
+            // Valid fields
+            var goodCustomer = new Customer
+            {
+                Name = "Walk-in Customer",
+                Phone = "9876543210",
+                Email = "customer@test.com",
+                Gstin = "27AABCU9603R1ZX" // Valid Indian GSTIN format
+            };
+            var resGood = validator.TestValidate(goodCustomer);
+            resGood.ShouldNotHaveAnyValidationErrors();
+        }
+
+        // ---------- EmployeeValidator ----------
+        [Fact]
+        public void EmployeeValidator_Validates_Correctly()
+        {
+            var validator = new EmployeeValidator();
+
+            // Invalid fields
+            var badEmployee = new Employee
+            {
+                EmployeeCode = "",
+                FirstName = "",
+                DateOfJoining = default(DateTime),
+                Phone = "12345", // too few digits
+                Email = "bad-email",
+                Pan = "ABCD12345E", // 5th char must be a letter, not a digit
+                Aadhaar = "12345", // not 12 digits
+                BankIfsc = "SBIN1001234" // 5th char must be literal '0'
+            };
+            var resBad = validator.TestValidate(badEmployee);
+            resBad.ShouldHaveValidationErrorFor(x => x.EmployeeCode);
+            resBad.ShouldHaveValidationErrorFor(x => x.FirstName);
+            resBad.ShouldHaveValidationErrorFor(x => x.DateOfJoining);
+            resBad.ShouldHaveValidationErrorFor(x => x.Phone);
+            resBad.ShouldHaveValidationErrorFor(x => x.Email);
+            resBad.ShouldHaveValidationErrorFor(x => x.Pan);
+            resBad.ShouldHaveValidationErrorFor(x => x.Aadhaar);
+            resBad.ShouldHaveValidationErrorFor(x => x.BankIfsc);
+
+            // Valid fields
+            var goodEmployee = new Employee
+            {
+                EmployeeCode = "EMP001",
+                FirstName = "Ravi",
+                DateOfJoining = new DateTime(2024, 1, 1),
+                Phone = "9876543210",
+                Email = "ravi@test.com",
+                Pan = "ABCDE1234F",
+                Aadhaar = "234567890123",
+                BankIfsc = "SBIN0001234"
+            };
+            var resGood = validator.TestValidate(goodEmployee);
+            resGood.ShouldNotHaveAnyValidationErrors();
+        }
+
+        // ---------- EmployeeValidator: DateOfExit boundary ----------
+        [Fact]
+        public void EmployeeValidator_DateOfExitBeforeDateOfJoining_HasError()
+        {
+            var validator = new EmployeeValidator();
+
+            var badEmployee = new Employee
+            {
+                EmployeeCode = "EMP002",
+                FirstName = "Asha",
+                DateOfJoining = new DateTime(2024, 6, 1),
+                DateOfExit = new DateTime(2024, 5, 1) // before DateOfJoining
+            };
+            var resBad = validator.TestValidate(badEmployee);
+            resBad.ShouldHaveValidationErrorFor(x => x.DateOfExit);
+
+            var goodEmployee = new Employee
+            {
+                EmployeeCode = "EMP002",
+                FirstName = "Asha",
+                DateOfJoining = new DateTime(2024, 6, 1),
+                DateOfExit = new DateTime(2024, 6, 1) // equal is allowed (>=)
+            };
+            var resGood = validator.TestValidate(goodEmployee);
+            resGood.ShouldNotHaveValidationErrorFor(x => x.DateOfExit);
+        }
+
+        // ---------- SalaryStructureValidator ----------
+        [Fact]
+        public void SalaryStructureValidator_Validates_Correctly()
+        {
+            var validator = new SalaryStructureValidator();
+
+            // Invalid fields
+            var badSalary = new SalaryStructure
+            {
+                EmployeeId = 0,
+                Basic = 0,
+                Hra = -1,
+                Da = -1,
+                ConveyanceAllowance = -1,
+                MedicalAllowance = -1,
+                SpecialAllowance = -1,
+                EffectiveFrom = new DateTime(2024, 6, 1),
+                EffectiveTo = new DateTime(2024, 5, 1) // before EffectiveFrom
+            };
+            var resBad = validator.TestValidate(badSalary);
+            resBad.ShouldHaveValidationErrorFor(x => x.EmployeeId);
+            resBad.ShouldHaveValidationErrorFor(x => x.Basic);
+            resBad.ShouldHaveValidationErrorFor(x => x.Hra);
+            resBad.ShouldHaveValidationErrorFor(x => x.Da);
+            resBad.ShouldHaveValidationErrorFor(x => x.ConveyanceAllowance);
+            resBad.ShouldHaveValidationErrorFor(x => x.MedicalAllowance);
+            resBad.ShouldHaveValidationErrorFor(x => x.SpecialAllowance);
+            resBad.ShouldHaveValidationErrorFor(x => x.EffectiveTo);
+
+            // Valid fields
+            var goodSalary = new SalaryStructure
+            {
+                EmployeeId = 1,
+                Basic = 15000,
+                Hra = 5000,
+                Da = 2000,
+                ConveyanceAllowance = 1000,
+                MedicalAllowance = 1000,
+                SpecialAllowance = 500,
+                EffectiveFrom = new DateTime(2024, 1, 1),
+                EffectiveTo = new DateTime(2024, 12, 31)
+            };
+            var resGood = validator.TestValidate(goodSalary);
+            resGood.ShouldNotHaveAnyValidationErrors();
+        }
+
+        // ---------- SalaryStructureValidator: EffectiveTo boundary ----------
+        [Fact]
+        public void SalaryStructureValidator_EffectiveToEqualsEffectiveFrom_IsValid()
+        {
+            var validator = new SalaryStructureValidator();
+
+            var salary = new SalaryStructure
+            {
+                EmployeeId = 1,
+                Basic = 15000,
+                EffectiveFrom = new DateTime(2024, 1, 1),
+                EffectiveTo = new DateTime(2024, 1, 1) // equal is allowed (>=)
+            };
+            var res = validator.TestValidate(salary);
+            res.ShouldNotHaveValidationErrorFor(x => x.EffectiveTo);
+        }
+
+        // ---------- LeaveRequestValidator ----------
+        [Fact]
+        public void LeaveRequestValidator_Validates_Correctly()
+        {
+            var validator = new LeaveRequestValidator();
+
+            // Invalid fields
+            var badLeave = new LeaveRequest
+            {
+                EmployeeId = 0,
+                LeaveTypeId = 0,
+                FromDate = new DateTime(2024, 6, 10),
+                ToDate = new DateTime(2024, 6, 9), // before FromDate
+                TotalDays = 0
+            };
+            var resBad = validator.TestValidate(badLeave);
+            resBad.ShouldHaveValidationErrorFor(x => x.EmployeeId);
+            resBad.ShouldHaveValidationErrorFor(x => x.LeaveTypeId);
+            resBad.ShouldHaveValidationErrorFor(x => x.ToDate);
+            resBad.ShouldHaveValidationErrorFor(x => x.TotalDays);
+
+            // Valid fields
+            var goodLeave = new LeaveRequest
+            {
+                EmployeeId = 1,
+                LeaveTypeId = 1,
+                FromDate = new DateTime(2024, 6, 10),
+                ToDate = new DateTime(2024, 6, 12),
+                TotalDays = 3
+            };
+            var resGood = validator.TestValidate(goodLeave);
+            resGood.ShouldNotHaveAnyValidationErrors();
+        }
+
+        // ---------- LeaveRequestValidator: ToDate boundary ----------
+        [Fact]
+        public void LeaveRequestValidator_ToDateEqualsFromDate_IsValid()
+        {
+            var validator = new LeaveRequestValidator();
+
+            var leave = new LeaveRequest
+            {
+                EmployeeId = 1,
+                LeaveTypeId = 1,
+                FromDate = new DateTime(2024, 6, 10),
+                ToDate = new DateTime(2024, 6, 10), // single-day leave, equal is allowed (>=)
+                TotalDays = 1
+            };
+            var res = validator.TestValidate(leave);
+            res.ShouldNotHaveAnyValidationErrors();
+        }
+
+        // ---------- PurchaseValidator ----------
+        [Fact]
+        public void PurchaseValidator_Validates_Correctly()
+        {
+            var validator = new PurchaseValidator();
+
+            // Invalid fields
+            var badPurchase = new Purchase
+            {
+                SupplierId = 0,
+                InvoiceNumber = "",
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    new PurchaseItem { ItemId = 0, ItemName = "Rice", Quantity = 0, UnitPrice = -5 }
+                }
+            };
+            var resBad = validator.TestValidate(badPurchase);
+            resBad.ShouldHaveValidationErrorFor(x => x.SupplierId);
+            resBad.ShouldHaveValidationErrorFor(x => x.InvoiceNumber);
+            resBad.ShouldHaveValidationErrorFor("PurchaseItems[0].ItemId");
+            resBad.ShouldHaveValidationErrorFor("PurchaseItems[0].Quantity");
+            resBad.ShouldHaveValidationErrorFor("PurchaseItems[0].UnitPrice");
+
+            // Valid fields
+            var goodPurchase = new Purchase
+            {
+                SupplierId = 5,
+                InvoiceNumber = "INV-001",
+                PurchaseDate = DateTime.Today,
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    new PurchaseItem { ItemId = 1, ItemName = "Rice", Quantity = 10, UnitPrice = 150 }
+                }
+            };
+            var resGood = validator.TestValidate(goodPurchase);
+            resGood.ShouldNotHaveAnyValidationErrors();
+        }
+
+        // ---------- PurchaseValidator: items boundary ----------
+        [Fact]
+        public void PurchaseValidator_EmptyItems_HasError()
+        {
+            var validator = new PurchaseValidator();
+
+            var purchase = new Purchase
+            {
+                SupplierId = 1,
+                InvoiceNumber = "INV-002",
+                PurchaseItems = new List<PurchaseItem>()
+            };
+            var res = validator.TestValidate(purchase);
+            res.ShouldHaveValidationErrorFor(x => x.PurchaseItems);
+        }
+
+        // ---------- PurchaseValidator: unit price boundary ----------
+        [Fact]
+        public void PurchaseValidator_ZeroUnitPrice_IsValid()
+        {
+            var validator = new PurchaseValidator();
+
+            var purchase = new Purchase
+            {
+                SupplierId = 1,
+                InvoiceNumber = "INV-003",
+                PurchaseItems = new List<PurchaseItem>
+                {
+                    new PurchaseItem { ItemId = 1, ItemName = "Free Sample", Quantity = 1, UnitPrice = 0 }
+                }
+            };
+            var res = validator.TestValidate(purchase);
+            res.ShouldNotHaveAnyValidationErrors();
+        }
     }
 }

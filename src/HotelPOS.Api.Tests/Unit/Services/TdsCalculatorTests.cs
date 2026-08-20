@@ -74,5 +74,41 @@ namespace HotelPOS.Tests.Unit.Services
             // Cess 4% => 663,000. Monthly = 55,250.
             Assert.Equal(55250m, tds);
         }
+
+        [Fact]
+        public void CalculateMonthlyTds_ZeroIncome_ReturnsZero()
+        {
+            // Gross 0 => taxable = Math.Max(0, 0 - 75,000) = 0, at/below the rebate limit.
+            var tds = TdsCalculator.CalculateMonthlyTds(0m, Fy2025RuleSet());
+
+            Assert.Equal(0, tds);
+        }
+
+        [Fact]
+        public void CalculateMonthlyTds_TaxableIncomeJustAboveRebateLimit_IsTaxed()
+        {
+            // Monthly gross 106,251 => annual 1,275,012 - 75,000 deduction = 1,200,012 taxable,
+            // just 12 over the 1,200,000 rebate limit, so it should actually be taxed (unlike the
+            // exactly-at-the-limit case above, which returns zero).
+            // Slab tax: 0-4L@0=0, 4-8L@5%=20,000, 8-12L@10%=40,000, 12L-12,000.12@15% on 12=1.80
+            // => annual tax = 60,001.80. Cess 4% => 62,401.872. Monthly = 5,200.156 => rounds to 5,200.16.
+            var tds = TdsCalculator.CalculateMonthlyTds(106251m, Fy2025RuleSet());
+
+            Assert.Equal(5200.16m, tds);
+        }
+
+        [Fact]
+        public void CalculateMonthlyTds_TaxableIncomeExactlyAtSlabBoundary_ExcludesNextBand()
+        {
+            // Monthly gross 206,250 => annual 2,475,000 - 75,000 deduction = 2,400,000 taxable,
+            // landing exactly on the boundary between the 25% slab (up to 2,400,000) and the
+            // uncapped 30% top slab (from 2,400,000). The loop's "taxableIncome <= slab.IncomeFrom"
+            // break means the boundary value itself is NOT taxed at the higher 30% rate.
+            // Slab tax: 0+20,000+40,000+60,000+80,000+(2,400,000-2,000,000)*25%=100,000 => 300,000.
+            // Cess 4% => 312,000. Monthly = 26,000.
+            var tds = TdsCalculator.CalculateMonthlyTds(206250m, Fy2025RuleSet());
+
+            Assert.Equal(26000m, tds);
+        }
     }
 }

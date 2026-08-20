@@ -103,6 +103,69 @@ namespace HotelPOS.Tests
             Assert.NotNull(result);
             Assert.Empty(result);
         }
+
+        [Fact]
+        public async Task GetCategoriesAsync_ReturnsFromRepository()
+        {
+            // Arrange
+            var categories = new List<Category> { new Category { Id = 1, Name = "Food" } };
+            _catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(categories);
+
+            // Act
+            var result = await _service.GetCategoriesAsync();
+
+            // Assert
+            Assert.Same(categories, result);
+        }
+
+        [Fact]
+        public async Task AddCategoryAsync_ValidName_ShouldAddAndReturnId()
+        {
+            // Arrange
+            _catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category>());
+            _catRepoMock.Setup(r => r.AddAsync(It.IsAny<Category>()))
+                .ReturnsAsync((Category c) => { c.Id = 42; return c; });
+
+            // Act
+            var id = await _service.AddCategoryAsync("Beverages", 3);
+
+            // Assert
+            Assert.Equal(42, id);
+            _catRepoMock.Verify(r => r.AddAsync(It.Is<Category>(c => c.Name == "Beverages" && c.DisplayOrder == 3)), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddCategoryAsync_EmptyName_ThrowsArgumentException()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => _service.AddCategoryAsync("   "));
+            _catRepoMock.Verify(r => r.AddAsync(It.IsAny<Category>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateCategoryAsync_InvalidId_ThrowsArgumentException()
+        {
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _service.UpdateCategoryAsync(0, "Food"));
+            Assert.Contains("Invalid ID", ex.Message);
+        }
+
+        [Fact]
+        public async Task UpdateCategoryAsync_ValidUpdate_ShouldUpdateFields()
+        {
+            // Arrange
+            var existing = new Category { Id = 1, Name = "Food", DisplayOrder = 0 };
+            _catRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Category> { existing });
+            _catRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
+
+            // Act
+            await _service.UpdateCategoryAsync(1, "Snacks", 5);
+
+            // Assert
+            Assert.Equal("Snacks", existing.Name);
+            Assert.Equal(5, existing.DisplayOrder);
+            _catRepoMock.Verify(r => r.UpdateAsync(existing), Times.Once);
+        }
     }
 }
 
