@@ -31,7 +31,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveRuleSetAsync(TdsRuleSet ruleSet)
         {
-            _authorization.EnsurePermission(PermissionModules.Tds);
+            _authorization.EnsureEditPermission(PermissionModules.Tds);
 
             if (ruleSet == null) throw new ArgumentNullException(nameof(ruleSet));
             ValidateConfig(ruleSet);
@@ -44,7 +44,7 @@ namespace HotelPOS.Application.UseCases
 
         public Task DeleteRuleSetAsync(int financialYearStart)
         {
-            _authorization.EnsurePermission(PermissionModules.Tds);
+            _authorization.EnsureDeletePermission(PermissionModules.Tds);
             return _repository.DeleteRuleSetAsync(financialYearStart);
         }
 

@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
+using HotelPOS.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -82,10 +83,17 @@ namespace HotelPOS.Views
         private async void Refresh_Click(object sender, RoutedEventArgs e) => await LoadDataAsync();
 
         /// <summary>
-        /// Loads item sales data using the current date range, category and search filters, aggregates sales per item, and updates the report grid and totals in the view.
+        /// Loads item sales data using the current date range, category and search filters, one row
+        /// per item sold on a single order (so each row carries its own invoice number), and updates
+        /// the report grid and totals in the view.
         /// </summary>
         /// <remarks>
-        /// The method fetches all orders and item catalog entries from a scoped service provider, filters orders by the selected date range and active status, aggregates order items by item id (computing quantity sold and total revenue), applies category and search filters, sorts results by total revenue, assigns sequential row numbers, and binds the resulting rows to the pager and UI totals.
+        /// The method fetches all orders and item catalog entries from a scoped service provider,
+        /// filters orders by the selected date range and active status, projects each order's line
+        /// items into one row per transaction (invoice number, date, item, category, unit price,
+        /// quantity, line total), applies category and search filters, sorts by date descending
+        /// (most recent sale first), assigns sequential row numbers, and binds the resulting rows to
+        /// the pager and UI totals.
         /// </remarks>
         /// <returns>Completes when the report data has been loaded, processed, and bound to the UI.</returns>
         public async Task LoadDataAsync()
@@ -122,23 +130,35 @@ namespace HotelPOS.Views
                     filteredOrders = filteredOrders.Where(o => o.CreatedAt.ToLocalTime() < to.Value);
                 }
 
-                // 3. Extract and group order items
-                var orderItems = filteredOrders.SelectMany(o => o.Items);
-
-                var grouped = orderItems
-                    .GroupBy(i => i.ItemId)
-                    .Select(g =>
+                // 3. One row per order line item, carrying that order's own invoice number/date -
+                // no aggregation, so every row is a real, individually traceable transaction.
+                var rows = filteredOrders
+                    .SelectMany(o => o.Items.Select(oi => new { Order = o, OrderItem = oi }))
+                    .Select(x =>
                     {
-                        var catalogItem = allItems.FirstOrDefault(x => x.Id == g.Key);
+                        var catalogItem = allItems.FirstOrDefault(it => it.Id == x.OrderItem.ItemId);
+                        // Taxable value computed fresh as Price * Quantity rather than trusted from
+                        // the stored Total field: orders placed before the 2026-07-23 security fix
+                        // (repricing lines from the item catalog) had Total written as a tax-
+                        // INCLUSIVE figure by the client, so using it directly would double-count
+                        // tax on every pre-fix invoice. Same computation as the GSTR-1 report, so
+                        // the rate/CGST/SGST shown here always agree with it for the same line item.
+                        var lineTotal = x.OrderItem.Price * x.OrderItem.Quantity;
+                        var (cgst, sgst, _) = GstR1RowBuilder.ComputeTaxSplit(lineTotal, x.OrderItem.TaxPercentage);
                         return new ItemSalesReportRowDto
                         {
-                            ItemId = g.Key,
-                            ItemName = catalogItem?.Name ?? g.First().ItemName,
+                            InvoiceNumber = x.Order.InvoiceNumber,
+                            Date = x.Order.CreatedAt.ToLocalTime(),
+                            ItemId = x.OrderItem.ItemId,
+                            ItemName = catalogItem?.Name ?? x.OrderItem.ItemName,
                             CategoryId = catalogItem?.CategoryId ?? 0,
                             CategoryName = catalogItem?.Category?.Name ?? "General",
-                            Price = catalogItem?.Price ?? g.First().Price,
-                            QuantitySold = g.Sum(x => x.Quantity),
-                            TotalRevenue = g.Sum(x => x.Total)
+                            UnitPrice = x.OrderItem.Price,
+                            Quantity = x.OrderItem.Quantity,
+                            LineTotal = lineTotal,
+                            TaxRate = x.OrderItem.TaxPercentage,
+                            Cgst = cgst,
+                            Sgst = sgst
                         };
                     })
                     .ToList();
@@ -146,31 +166,33 @@ namespace HotelPOS.Views
                 // 4. Apply category filter
                 if (categoryId != null && categoryId > 0)
                 {
-                    grouped = grouped.Where(x => x.CategoryId == categoryId).ToList();
+                    rows = rows.Where(x => x.CategoryId == categoryId).ToList();
                 }
 
                 // 5. Apply search filter
                 if (!string.IsNullOrEmpty(search))
                 {
-                    grouped = grouped.Where(x => x.ItemName.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+                    rows = rows.Where(x => x.ItemName.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
                 }
 
-                // 6. Sort by total revenue descending
-                grouped = grouped.OrderByDescending(x => x.TotalRevenue).ToList();
+                // 6. Sort by date descending - most recent sale first, since this is now a
+                // transaction list rather than a per-item ranking.
+                rows = rows.OrderByDescending(x => x.Date).ToList();
 
                 // 7. Assign SNo
-                for (int i = 0; i < grouped.Count; i++)
+                for (int i = 0; i < rows.Count; i++)
                 {
-                    grouped[i].SNo = i + 1;
+                    rows[i].SNo = i + 1;
                 }
 
                 // 8. Bind and update totals
-                _allRows = grouped;
+                _allRows = rows;
                 _items.Clear();
                 _currentPage = 1;
                 LoadMore();
-                TotalQtySold.Text = grouped.Sum(x => x.QuantitySold).ToString();
-                TotalRevenueSum.Text = $"Rs. {grouped.Sum(x => x.TotalRevenue):N2}";
+                TotalQtySold.Text = rows.Sum(x => x.Quantity).ToString();
+                TotalRevenueSum.Text = $"₹{rows.Sum(x => x.LineTotal):N2}";
+                TotalTaxSum.Text = $"₹{rows.Sum(x => x.TaxAmount):N2}";
             }
             catch (Exception ex)
             {
@@ -227,11 +249,18 @@ namespace HotelPOS.Views
 
                     // Headers
                     ws.Cell(1, 1).Value = "S.No";
-                    ws.Cell(1, 2).Value = "Item Name";
-                    ws.Cell(1, 3).Value = "Category";
-                    ws.Cell(1, 4).Value = "Current Price";
-                    ws.Cell(1, 5).Value = "Quantity Sold";
-                    ws.Cell(1, 6).Value = "Total Revenue";
+                    ws.Cell(1, 2).Value = "Invoice";
+                    ws.Cell(1, 3).Value = "Date";
+                    ws.Cell(1, 4).Value = "Item Name";
+                    ws.Cell(1, 5).Value = "Category";
+                    ws.Cell(1, 6).Value = "Unit Price";
+                    ws.Cell(1, 7).Value = "Quantity";
+                    ws.Cell(1, 8).Value = "Line Total";
+                    ws.Cell(1, 9).Value = "Tax Rate";
+                    ws.Cell(1, 10).Value = "CGST";
+                    ws.Cell(1, 11).Value = "SGST";
+                    ws.Cell(1, 12).Value = "Tax Amount";
+                    ws.Cell(1, 13).Value = "Item Total";
 
                     var headerRow = ws.Row(1);
                     headerRow.Style.Font.Bold = true;
@@ -242,11 +271,18 @@ namespace HotelPOS.Views
                     foreach (var item in items)
                     {
                         ws.Cell(row, 1).Value = item.SNo;
-                        ws.Cell(row, 2).Value = item.ItemName;
-                        ws.Cell(row, 3).Value = item.CategoryName;
-                        ws.Cell(row, 4).Value = (double)item.Price;
-                        ws.Cell(row, 5).Value = item.QuantitySold;
-                        ws.Cell(row, 6).Value = (double)item.TotalRevenue;
+                        ws.Cell(row, 2).Value = (item.InvoiceNumber ?? "").ForSpreadsheet();
+                        ws.Cell(row, 3).Value = item.Date.ToString("dd MMM yyyy hh:mm tt");
+                        ws.Cell(row, 4).Value = item.ItemName.ForSpreadsheet();
+                        ws.Cell(row, 5).Value = item.CategoryName.ForSpreadsheet();
+                        ws.Cell(row, 6).Value = (double)item.UnitPrice;
+                        ws.Cell(row, 7).Value = item.Quantity;
+                        ws.Cell(row, 8).Value = (double)item.LineTotal;
+                        ws.Cell(row, 9).Value = (double)item.TaxRate;
+                        ws.Cell(row, 10).Value = (double)item.Cgst;
+                        ws.Cell(row, 11).Value = (double)item.Sgst;
+                        ws.Cell(row, 12).Value = (double)item.TaxAmount;
+                        ws.Cell(row, 13).Value = (double)item.ItemTotal;
                         row++;
                     }
 
@@ -262,15 +298,24 @@ namespace HotelPOS.Views
         }
     }
 
+    /// <summary>One row = one item sold on one order. Deliberately not aggregated across orders,
+    /// so every row can carry its own invoice number.</summary>
     public class ItemSalesReportRowDto
     {
         public int SNo { get; set; }
+        public string? InvoiceNumber { get; set; }
+        public DateTime Date { get; set; }
         public int ItemId { get; set; }
         public string ItemName { get; set; } = string.Empty;
         public int CategoryId { get; set; }
         public string CategoryName { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public int QuantitySold { get; set; }
-        public decimal TotalRevenue { get; set; }
+        public decimal UnitPrice { get; set; }
+        public int Quantity { get; set; }
+        public decimal LineTotal { get; set; }
+        public decimal TaxRate { get; set; }
+        public decimal Cgst { get; set; }
+        public decimal Sgst { get; set; }
+        public decimal TaxAmount => Cgst + Sgst;
+        public decimal ItemTotal => LineTotal + TaxAmount;
     }
 }

@@ -96,7 +96,7 @@
                             <Button Content="＋  Add Ingredient" Command="{Binding AddIngredientCommand}"
                                     Style="{StaticResource SecondaryBtn}" Padding="12,8" Margin="0,0,8,0"
                                     IsEnabled="{Binding SelectedItem, Converter={StaticResource NullToBoolConverter}}"/>
-                            <Button Content="💾  Save Recipe" Command="{Binding SaveBomCommand}"
+                            <Button Content="💾  Save Recipe" Command="{Binding SaveBomCommand}" IsDefault="True"
                                     Style="{StaticResource PrimaryBtn}" Padding="12,8" Margin="0,0,8,0"
                                     IsEnabled="{Binding SelectedItem, Converter={StaticResource NullToBoolConverter}}"/>
                             <Button Content="🗑  Clear" Command="{Binding ClearBomCommand}"

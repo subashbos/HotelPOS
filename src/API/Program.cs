@@ -118,6 +118,13 @@ if (string.IsNullOrWhiteSpace(jwtKey))
     throw new InvalidOperationException(
         "JWT Key is not configured. Set Jwt:Key in appsettings or HOTELPOS_JWT_KEY environment variable.");
 
+// The Configure<JwtOptions> binding above only sees Jwt:Key from appsettings, not the
+// HOTELPOS_JWT_KEY fallback resolved just above. Without this, every other consumer of
+// IOptions<JwtOptions> (e.g. AuthController, which signs tokens with _jwtOptions.Key) would see
+// an empty key on any deployment that relies on the env var instead of appsettings, while token
+// *validation* here would use the correct one - signing and validation would disagree.
+builder.Services.PostConfigure<JwtOptions>(options => options.Key = jwtKey);
+
 // ── PII column encryption key ─────────────────────────────────────────────
 var piiKeyBase64 = builder.Configuration["Encryption:PiiKey"];
 if (string.IsNullOrWhiteSpace(piiKeyBase64))
@@ -179,6 +186,18 @@ var app = builder.Build();
 
 // ── Middleware Pipeline ───────────────────────────────────────────────────
 app.UseMiddleware<ExceptionMiddleware>();
+
+// Baseline security headers on every response. Kept deliberately minimal (no CSP) since this
+// API serves JSON to a separately-deployed Angular SPA - the only HTML it renders itself is the
+// dev-only Scalar API reference below, which a strict CSP would likely break.
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("X-Frame-Options", "DENY");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    await next();
+});
+
 app.UseCors("AllowAngular");
 app.UseRateLimiter();
 
@@ -186,6 +205,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+}
+else
+{
+    // HSTS forces HTTPS via a browser-cached header, which is painful during local HTTP
+    // development - only enabled outside Development, matching the standard ASP.NET Core template.
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();

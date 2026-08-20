@@ -28,7 +28,7 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
-        public async Task Handle_QuantityIncreased_AppliesPositiveDeltaAndUpdates()
+        public async Task Handle_QuantityIncreased_AppliesPositiveDeltaAtomicallyAndUpdates()
         {
             var item = new Item { Id = 10, Name = "Milk", StockQuantity = 20, TrackInventory = true };
             var oldPurchase = new Purchase
@@ -47,13 +47,13 @@ namespace HotelPOS.Tests
 
             await _handler.Handle(new UpdatePurchaseCommand(updated), CancellationToken.None);
 
-            Assert.Equal(23, item.StockQuantity); // 20 + (8 - 5)
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(10, 3), Times.Once); // delta = 8 - 5
             _purchaseRepoMock.Verify(r => r.UpdateAsync(updated), Times.Once);
             _purchaseRepoMock.Verify(r => r.CommitTransactionAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task Handle_ItemRemovedEntirely_ReversesItsStockContribution()
+        public async Task Handle_ItemRemovedEntirely_ReversesItsStockContributionAtomically()
         {
             var item1 = new Item { Id = 10, Name = "Milk", StockQuantity = 20, TrackInventory = true };
             var item2 = new Item { Id = 11, Name = "Cheese", StockQuantity = 8, TrackInventory = true };
@@ -77,8 +77,8 @@ namespace HotelPOS.Tests
 
             await _handler.Handle(new UpdatePurchaseCommand(updated), CancellationToken.None);
 
-            Assert.Equal(20, item1.StockQuantity); // unchanged, delta 0
-            Assert.Equal(5, item2.StockQuantity);  // 8 - 3
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(10, It.IsAny<int>()), Times.Never); // delta 0, skipped entirely
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(11, -3), Times.Once); // fully removed: 0 - 3
         }
 
         [Fact]
@@ -92,7 +92,7 @@ namespace HotelPOS.Tests
             };
             _purchaseRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(oldPurchase);
             _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item> { item });
-            _itemRepoMock.Setup(r => r.UpdateRangeAsync(It.IsAny<List<Item>>())).ThrowsAsync(new Exception("DB failure"));
+            _itemRepoMock.Setup(r => r.AdjustStockAsync(It.IsAny<int>(), It.IsAny<int>())).ThrowsAsync(new Exception("DB failure"));
 
             var updated = new Purchase
             {

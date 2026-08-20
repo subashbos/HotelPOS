@@ -36,6 +36,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<int> SaveOrderInternalAsync(SaveOrderRequest request)
         {
+            _authorization.EnsureEditPermission(PermissionModules.Billing);
+
             var (items, tableNumber, discount, paymentMode, customerName, customerPhone, customerGstin, orderType, customerId) = request;
 
             var command = new CreateOrderCommand(
@@ -202,7 +204,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task UpdateOrderInternalAsync(Order order)
         {
-            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+            _authorization.EnsureEditPermission(PermissionModules.OrderManagement);
 
             if (order.Items == null || order.Items.Count == 0)
                 throw new ArgumentException("Cannot save an empty order.");
@@ -285,7 +287,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteOrderInternalAsync(int orderId)
         {
-            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+            _authorization.EnsureDeletePermission(PermissionModules.OrderManagement);
 
             var existing = await _repo.GetByIdWithItemsAsync(orderId);
             if (existing != null)
@@ -308,7 +310,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task VoidOrderInternalAsync(int orderId, string reason, string authorizedUser)
         {
-            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+            _authorization.EnsureEditPermission(PermissionModules.OrderManagement);
 
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
@@ -364,7 +366,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task RefundOrderInternalAsync(int orderId, List<OrderItemRefundDto> itemsToRefund, string reason)
         {
-            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+            _authorization.EnsureEditPermission(PermissionModules.OrderManagement);
 
             if (itemsToRefund == null || itemsToRefund.Count == 0)
                 throw new ArgumentException("No items specified for refund.", nameof(itemsToRefund));
@@ -468,6 +470,8 @@ namespace HotelPOS.Application.UseCases
 
         public async Task ProcessPartialPaymentInternalAsync(int orderId, decimal cash, decimal card, decimal upi)
         {
+            _authorization.EnsureEditPermission(PermissionModules.Billing);
+
             var order = await _repo.GetByIdWithItemsAsync(orderId);
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
             if (order.Status == OrderStatuses.Void) throw new InvalidOperationException("Cannot add payment to a void order.");

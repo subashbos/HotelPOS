@@ -256,7 +256,7 @@
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                                 <TextBlock Text="{Binding Name}" Style="{StaticResource BodyTextBlockStyle}" FontWeight="SemiBold"/>
                                                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                                    <Border Padding="12,4" Background="{DynamicResource SecondaryBrush}" CornerRadius="16" Margin="8,0,0,0"><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Foreground="White" FontWeight="Bold" Style="{StaticResource BodySmallTextBlockStyle}"/></Border>
+                                                    <Border Padding="12,4" Background="{DynamicResource SecondaryBrush}" CornerRadius="16" Margin="8,0,0,0"><TextBlock Text="{Binding Price, StringFormat=₹{0:N2}}" Foreground="White" FontWeight="Bold" Style="{StaticResource BodySmallTextBlockStyle}"/></Border>
                                                     <TextBlock Text="{Binding TaxPercentage, StringFormat={}({0}% GST)}" Foreground="{DynamicResource WarningBrush}" Style="{StaticResource CaptionTextBlockStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                                     <Border Padding="8,2" Background="{Binding StockQuantity, Converter={StaticResource StockToColorConverter}}" CornerRadius="10" Margin="8,0,0,0" 
                                                             Visibility="{Binding TrackInventory, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -302,7 +302,7 @@
                                                     </TextBlock>
                                                 </StackPanel>
                                             </StackPanel>
-                                            <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{DynamicResource TaxAccentBrush}"/></StackPanel></Border>
+                                            <Border Grid.Column="1" Padding="14,8" Background="{DynamicResource SurfaceBrush}" CornerRadius="20" Margin="8,0"><StackPanel><TextBlock Text="{Binding Price, StringFormat=₹{0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/><TextBlock Text="{Binding TaxPercentage, StringFormat=GST {0}%}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{DynamicResource TaxAccentBrush}"/></StackPanel></Border>
                                             <Button Grid.Column="2" Content="+" Command="{Binding DataContext.AddToCartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource PrimaryBtn}" Width="38" Height="38" Padding="0" FontSize="20" FontWeight="Bold">
                                                 <Button.IsEnabled>
                                                     <MultiBinding Converter="{StaticResource IdToEnabledConverter}" ConverterParameter="StockCheck">
@@ -358,7 +358,7 @@
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="TOTAL" Width="110" IsReadOnly="True" HeaderStyle="{StaticResource RightHeader}">
                             <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate><TextBlock Text="{Binding Total, StringFormat=Rs.{0:N2}}" FontWeight="Bold" Style="{StaticResource RightCell}"/></DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding Total, StringFormat=₹{0:N2}}" FontWeight="Bold" Style="{StaticResource RightCell}"/></DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
@@ -441,7 +441,7 @@
                                     <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="0,2,0,0">
                                         <Grid>
                                             <TextBlock Text="TOTAL" FontSize="12" FontWeight="Bold"/>
-                                            <TextBlock HorizontalAlignment="Right" Text="{Binding TotalAmount, StringFormat=Rs. {0:N2}}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                                            <TextBlock HorizontalAlignment="Right" Text="{Binding TotalAmount, StringFormat=₹{0:N2}}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                                         </Grid>
                                     </Border>
                                 </StackPanel>

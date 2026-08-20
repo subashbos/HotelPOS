@@ -279,6 +279,87 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task ItemRepository_AdjustStockAsync_PositiveDelta_IncrementsStock()
+        {
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var context = new HotelDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+                context.Items.Add(new Item { Id = 1, Name = "Milk", StockQuantity = 20, UnitId = 1 });
+                await context.SaveChangesAsync();
+            }
+
+            using var repoContext = new HotelDbContext(options);
+            var repo = new ItemRepository(repoContext);
+            await repo.AdjustStockAsync(1, 5);
+
+            var item = await repo.GetByIdAsync(1);
+            Assert.Equal(25, item!.StockQuantity);
+        }
+
+        [Fact]
+        public async Task ItemRepository_AdjustStockAsync_NegativeDeltaBelowZero_ClampsToZero()
+        {
+            // Proves the Math.Max(0, ...) in AdjustStockAsync's SetProperty lambda actually
+            // translates to SQL and is enforced server-side, not just in C#.
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var context = new HotelDbContext(options))
+            {
+                await context.Database.EnsureCreatedAsync();
+                context.Items.Add(new Item { Id = 1, Name = "Milk", StockQuantity = 2, UnitId = 1 });
+                await context.SaveChangesAsync();
+            }
+
+            using var repoContext = new HotelDbContext(options);
+            var repo = new ItemRepository(repoContext);
+            await repo.AdjustStockAsync(1, -5);
+
+            var item = await repo.GetByIdAsync(1);
+            Assert.Equal(0, item!.StockQuantity);
+        }
+
+        [Fact]
+        public async Task ItemRepository_AdjustStockAsync_ConcurrentPurchases_NeverLosesAnUpdate()
+        {
+            // Regression test for the lost-update race: 20 concurrent purchases each atomically
+            // add 1 unit to a stock of 0, each through its own connection/DbContext against the
+            // same shared-cache SQLite database. A read-modify-write on a tracked entity would
+            // lose most of these; the atomic SQL UPDATE must land all 20.
+            var connectionString = $"DataSource=file:{Guid.NewGuid():N}?mode=memory&cache=shared";
+            using var anchor = new Microsoft.Data.Sqlite.SqliteConnection(connectionString);
+            await anchor.OpenAsync();
+            var options = SqliteOptions(connectionString);
+
+            using (var seedContext = new HotelDbContext(options))
+            {
+                await seedContext.Database.EnsureCreatedAsync();
+                seedContext.Items.Add(new Item { Id = 1, Name = "Flour", StockQuantity = 0, UnitId = 1 });
+                await seedContext.SaveChangesAsync();
+            }
+
+            var tasks = Enumerable.Range(0, 20).Select(async _ =>
+            {
+                using var context = new HotelDbContext(options);
+                var repo = new ItemRepository(context);
+                await repo.AdjustStockAsync(1, 1);
+            });
+
+            await Task.WhenAll(tasks);
+
+            using var verifyContext = new HotelDbContext(options);
+            var finalItem = await verifyContext.Items.FindAsync(1);
+            Assert.Equal(20, finalItem!.StockQuantity);
+        }
+
+        [Fact]
         public async Task OrderService_SaveOrder_InsufficientStockOnSecondItem_RollsBackFirstItemsAtomicDeduction()
         {
             // End-to-end proof that TryDeductStockAsync's ExecuteUpdateAsync (which bypasses EF's

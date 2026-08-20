@@ -126,11 +126,12 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                             <DataGridTextColumn Header="UNIT" Binding="{Binding Unit.Name}" Width="80" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
+                            <DataGridTextColumn Header="HSN CODE" Binding="{Binding HsnCode}" Width="100" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                             <DataGridTemplateColumn Header="PRICE" Width="130" HeaderStyle="{StaticResource RightHeader}">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <Border Padding="12,5" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="16" Background="{DynamicResource SecondaryBrush}" Margin="0,0,14,0">
-                                            <TextBlock Text="{Binding Price, StringFormat=Rs. {0:N2}}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="White"/>
+                                            <TextBlock Text="{Binding Price, StringFormat=₹{0:N2}}" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="White"/>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>

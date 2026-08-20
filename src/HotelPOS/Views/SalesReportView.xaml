@@ -201,7 +201,7 @@
                         <DataGridTemplateColumn Header="AMOUNT" Width="110" HeaderStyle="{StaticResource RightHeader}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Total, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                                    <TextBlock Text="{Binding Total, StringFormat=₹{0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -258,7 +258,7 @@
                             <TextBlock x:Name="TotalOrdersCount" Text="0" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="8,0,24,0"/>
                             
                             <TextBlock Text="Total Revenue:" Foreground="{DynamicResource TextMuted}" FontSize="13"/>
-                            <TextBlock x:Name="TotalRevenueSum" Text="Rs. 0.00" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="8,0,0,0"/>
+                            <TextBlock x:Name="TotalRevenueSum" Text="₹0.00" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" Margin="8,0,0,0"/>
                         </StackPanel>
 
                         <Button Grid.Column="1" Click="Export_Click" Style="{StaticResource ActionBtn}" Foreground="{DynamicResource PrimaryBrush}">

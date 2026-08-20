@@ -13,7 +13,6 @@ import { CardStatsComponent } from './components/cards/card-stats/card-stats.com
 import { CardLineChartComponent } from './components/cards/card-line-chart/card-line-chart.component';
 import { CardBarChartComponent } from './components/cards/card-bar-chart/card-bar-chart.component';
 import { CardSettingsComponent } from './components/cards/card-settings/card-settings.component';
-import { CardTableComponent } from './components/cards/card-table/card-table.component';
 import { TableDropdownComponent } from './components/dropdowns/table-dropdown/table-dropdown.component';
 import { NotificationDropdownComponent } from './components/dropdowns/notification-dropdown/notification-dropdown.component';
 import { UserDropdownComponent } from './components/dropdowns/user-dropdown/user-dropdown.component';
@@ -76,7 +75,6 @@ import { EssProfileComponent } from './views/ess/profile/ess-profile.component';
     CardLineChartComponent,
     CardBarChartComponent,
     CardSettingsComponent,
-    CardTableComponent,
     TableDropdownComponent,
     NotificationDropdownComponent,
     UserDropdownComponent,
@@ -140,7 +138,6 @@ import { EssProfileComponent } from './views/ess/profile/ess-profile.component';
     CardLineChartComponent,
     CardBarChartComponent,
     CardSettingsComponent,
-    CardTableComponent,
     TableDropdownComponent,
     NotificationDropdownComponent,
     UserDropdownComponent,

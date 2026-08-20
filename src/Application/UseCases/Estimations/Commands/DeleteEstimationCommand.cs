@@ -19,10 +19,19 @@ namespace HotelPOS.Application.UseCases.Estimations.Commands
 
         public async Task Handle(DeleteEstimationCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Estimation);
+            _authorization.EnsureDeletePermission(PermissionModules.Estimation);
 
             // Idempotent delete, same convention as OrderService.DeleteOrderInternalAsync /
             // DeletePurchaseCommandHandler.
+            var existing = await _estimationRepository.GetByIdAsync(request.Id);
+            if (existing == null) return;
+
+            // Mirrors UpdateEstimationCommand's guard: deleting a Converted estimation would
+            // silently discard the traceability link (ConvertedOrderId) to the real order it
+            // produced, even though that order itself is untouched.
+            if (existing.Status == EstimationStatuses.Converted)
+                throw new InvalidOperationException("A converted estimation can no longer be deleted.");
+
             await _estimationRepository.DeleteAsync(request.Id);
         }
     }

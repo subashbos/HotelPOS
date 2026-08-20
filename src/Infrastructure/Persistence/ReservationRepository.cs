@@ -96,5 +96,65 @@ namespace HotelPOS.Infrastructure.Persistence
             _context.Reservations.Remove(existing);
             await _context.SaveChangesAsync();
         }
+
+        private Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction? _currentTransaction;
+
+        public async Task BeginTransactionAsync()
+        {
+            _currentTransaction = await _context.Database.BeginTransactionAsync();
+        }
+
+        public async Task CommitTransactionAsync()
+        {
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.CommitAsync();
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.RollbackAsync();
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+        }
+
+        public async Task AcquireTableDateLockAsync(int tableId, DateTime date)
+        {
+            if (!_context.Database.IsSqlServer())
+                return;
+
+            if (_context.Database.CurrentTransaction == null)
+            {
+                throw new InvalidOperationException("AcquireTableDateLockAsync must be called within an active transaction for concurrency safety.");
+            }
+
+            var resourceParam = new Microsoft.Data.SqlClient.SqlParameter("@Resource", $"Reservation_{tableId}_{date:yyyyMMdd}");
+            var modeParam = new Microsoft.Data.SqlClient.SqlParameter("@LockMode", "Exclusive");
+            var ownerParam = new Microsoft.Data.SqlClient.SqlParameter("@LockOwner", "Transaction");
+            var timeoutParam = new Microsoft.Data.SqlClient.SqlParameter("@LockTimeout", 15000); // 15 seconds
+
+            var resultParam = new Microsoft.Data.SqlClient.SqlParameter
+            {
+                ParameterName = "@Result",
+                SqlDbType = System.Data.SqlDbType.Int,
+                Direction = System.Data.ParameterDirection.Output
+            };
+
+            await _context.Database.ExecuteSqlRawAsync(
+                "EXEC @Result = sp_getapplock @Resource, @LockMode, @LockOwner, @LockTimeout",
+                resultParam, resourceParam, modeParam, ownerParam, timeoutParam);
+
+            var lockResult = (int)resultParam.Value;
+            if (lockResult < 0)
+            {
+                throw new InvalidOperationException($"Could not acquire lock for reservation booking. Result code: {lockResult}");
+            }
+        }
     }
 }

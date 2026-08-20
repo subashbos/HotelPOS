@@ -69,10 +69,10 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                <StackPanel Grid.Row="3" Margin="0,12,0,0" FocusManager.IsFocusScope="True">
                     <TextBlock Text="NEW ROLE NAME" Style="{StaticResource FieldLabel}"/>
                     <TextBox x:Name="NewRoleNameBox" Margin="0,0,0,10"/>
-                    <Button Content="➕ Add Role" Style="{StaticResource PrimaryBtn}" Click="AddRole_Click"/>
+                    <Button Content="➕ Add Role" Style="{StaticResource PrimaryBtn}" Click="AddRole_Click" IsDefault="True"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -185,7 +185,7 @@
 
                     <!-- Action Buttons -->
                     <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                        <Button Content="💾  Save Permissions" Style="{StaticResource PrimaryBtn}" Click="SavePermissions_Click" Margin="0,0,12,0"/>
+                        <Button Content="💾  Save Permissions" Style="{StaticResource PrimaryBtn}" Click="SavePermissions_Click" IsDefault="True" Margin="0,0,12,0"/>
                         <Button x:Name="DeleteRoleBtn" Content="🗑  Delete Role" Style="{StaticResource DangerBtn}" Click="DeleteRole_Click"/>
                     </StackPanel>
                 </Grid>

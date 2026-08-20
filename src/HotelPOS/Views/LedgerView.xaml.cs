@@ -121,7 +121,7 @@ namespace HotelPOS.Views
                 })
                 .ToList();
 
-            TotalRevBadge.Text = $"Rs. {_allRows.Sum(r => r.GrossRevenue):N2}";
+            TotalRevBadge.Text = $"₹{_allRows.Sum(r => r.GrossRevenue):N2}";
             TotalOrdersBadge.Text = _allRows.Sum(r => r.OrderCount).ToString();
             
             _items.Clear();

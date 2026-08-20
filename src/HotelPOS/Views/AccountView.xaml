@@ -30,7 +30,7 @@
 
                 <!-- ══ LEFT COLUMN: PROFILE CARD & EMAIL ══ -->
                 <StackPanel Grid.Column="0">
-                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24" Margin="0,0,0,20">
+                    <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24" Margin="0,0,0,20" FocusManager.IsFocusScope="True">
                         <StackPanel>
                             <StackPanel HorizontalAlignment="Center" Margin="0,0,0,16">
                                 <Border Width="72" Height="72" CornerRadius="36" Background="{DynamicResource PrimaryBrush}" HorizontalAlignment="Center">
@@ -45,7 +45,7 @@
                             <TextBlock Text="EMAIL ADDRESS" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,8"/>
                             <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
 
-                            <Button Content="📧 Save Email Address" Command="{Binding UpdateEmailCommand}"
+                            <Button Content="📧 Save Email Address" Command="{Binding UpdateEmailCommand}" IsDefault="True"
                                     Style="{StaticResource PrimaryBtn}"/>
                         </StackPanel>
                     </Border>
@@ -69,7 +69,7 @@
                 </StackPanel>
 
                 <!-- ══ RIGHT COLUMN: CHANGE PASSWORD ══ -->
-                <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24" VerticalAlignment="Top">
+                <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="24" VerticalAlignment="Top" FocusManager.IsFocusScope="True">
                     <StackPanel>
                         <TextBlock Text="CHANGE PASSWORD" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,16"/>
 
@@ -82,7 +82,7 @@
                         <TextBlock Text="Confirm New Password" Style="{StaticResource FieldLabel}"/>
                         <PasswordBox x:Name="ConfirmPasswordBox" PasswordChanged="ConfirmPasswordBox_PasswordChanged" Margin="0,0,0,24"/>
 
-                        <Button Content="🔒 Change Password" Command="{Binding ChangePasswordCommand}"
+                        <Button Content="🔒 Change Password" Command="{Binding ChangePasswordCommand}" IsDefault="True"
                                 Style="{StaticResource PrimaryBtn}"/>
                     </StackPanel>
                 </Border>

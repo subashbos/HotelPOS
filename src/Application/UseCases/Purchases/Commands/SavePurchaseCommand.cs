@@ -22,7 +22,7 @@ namespace HotelPOS.Application.UseCases.Purchases.Commands
 
         public async Task Handle(SavePurchaseCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Purchase);
+            _authorization.EnsureEditPermission(PermissionModules.Purchase);
 
             var purchase = request.Purchase;
 
@@ -35,18 +35,15 @@ namespace HotelPOS.Application.UseCases.Purchases.Commands
                 var catalogItems = await _itemRepository.GetByIdsAsync(itemIds);
                 var itemsById = catalogItems.ToDictionary(i => i.Id);
 
+                // Atomic per-item SQL UPDATE rather than read-modify-write on a tracked entity, so
+                // two purchases for the same item submitted concurrently can't have one's stock
+                // credit silently overwritten by the other (lost update).
                 foreach (var item in purchase.PurchaseItems)
                 {
                     if (itemsById.TryGetValue(item.ItemId, out var catalogItem) && catalogItem.TrackInventory)
                     {
-                        catalogItem.StockQuantity += item.Quantity;
+                        await _itemRepository.AdjustStockAsync(item.ItemId, item.Quantity);
                     }
-                }
-
-                var toUpdate = catalogItems.Where(i => i.TrackInventory).ToList();
-                if (toUpdate.Count > 0)
-                {
-                    await _itemRepository.UpdateRangeAsync(toUpdate);
                 }
 
                 await _purchaseRepository.CommitTransactionAsync();

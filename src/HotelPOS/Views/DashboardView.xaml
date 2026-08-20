@@ -106,7 +106,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="TOTAL REVENUE" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="RevenueValueText" Text="Rs. 0.00" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                                <TextBlock x:Name="RevenueValueText" Text="₹0.00" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                             </StackPanel>
                             <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="{DynamicResource IconBadgeOverlayBrush}" VerticalAlignment="Center">
                                 <TextBlock Text="💰" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -152,7 +152,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="AVG. TICKET" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="ExtraBold" Foreground="White" Opacity="0.8" Margin="0,0,0,8"/>
-                                <TextBlock x:Name="AvgValueText" Text="Rs. 0.00" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                                <TextBlock x:Name="AvgValueText" Text="₹0.00" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
                             </StackPanel>
                             <Border Grid.Column="1" Width="44" Height="44" CornerRadius="22" Background="{DynamicResource IconBadgeOverlayBrush}" VerticalAlignment="Center">
                                 <TextBlock Text="📈" Style="{StaticResource H2TextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -349,12 +349,12 @@
                                             <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="60" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                             <DataGridTextColumn Header="DATE" Binding="{Binding Date, StringFormat=dd MMM yyyy}" Width="140"/>
                                             <DataGridTextColumn Header="ORDERS" Binding="{Binding OrderCount}" Width="80" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
-                                            <DataGridTextColumn Header="GROSS" Binding="{Binding GrossRevenue, StringFormat=Rs. {0:N2}}" Width="*" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
-                                            <DataGridTextColumn Header="GST" Binding="{Binding GstAmount, StringFormat=Rs. {0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                            <DataGridTextColumn Header="GROSS" Binding="{Binding GrossRevenue, StringFormat=₹{0:N2}}" Width="*" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                            <DataGridTextColumn Header="GST" Binding="{Binding GstAmount, StringFormat=₹{0:N2}}" Width="120" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                                             <DataGridTemplateColumn Header="NET" Width="130" HeaderStyle="{StaticResource RightHeader}">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Text="{Binding NetIncome, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                                                        <TextBlock Text="{Binding NetIncome, StringFormat=₹{0:N2}}" FontWeight="Bold" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Right" Margin="0,0,14,0"/>
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
@@ -369,11 +369,11 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="PAGE SUBTOTAL (NET):" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="DatePageSubtotalText" Text="Rs. 0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="DatePageSubtotalText" Text="₹0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                 <TextBlock Text="RANGE TOTAL (NET):" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="DateRangeTotalText" Text="Rs. 0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="DateRangeTotalText" Text="₹0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -398,7 +398,7 @@
                                         <DataGridTemplateColumn Header="REVENUE" Width="*" HeaderStyle="{StaticResource RightHeader}">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding TotalRevenue, StringFormat=Rs. {0:N0}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                                                    <TextBlock Text="{Binding TotalRevenue, StringFormat=₹{0:N0}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" HorizontalAlignment="Right" Margin="0,0,14,0"/>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
@@ -413,11 +413,11 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="PAGE SUBTOTAL:" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="TablePageSubtotalText" Text="Rs. 0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="TablePageSubtotalText" Text="₹0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                 <TextBlock Text="TOTAL:" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="TableRangeTotalText" Text="Rs. 0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="TableRangeTotalText" Text="₹0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -446,12 +446,12 @@
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="S.NO" Binding="{Binding SNo}" Width="50" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                         <DataGridTextColumn Header="ITEM NAME" Binding="{Binding ItemName}" Width="*"/>
-                                        <DataGridTextColumn Header="PRICE" Binding="{Binding UnitPrice, StringFormat=Rs. {0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
+                                        <DataGridTextColumn Header="PRICE" Binding="{Binding UnitPrice, StringFormat=₹{0:N2}}" Width="100" HeaderStyle="{StaticResource RightHeader}" ElementStyle="{StaticResource RightCell}"/>
                                         <DataGridTextColumn Header="QTY" Binding="{Binding TotalQtySold}" Width="70" HeaderStyle="{StaticResource CenterHeader}" ElementStyle="{StaticResource CenterCell}"/>
                                         <DataGridTemplateColumn Header="REVENUE" Width="120" HeaderStyle="{StaticResource RightHeader}">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding TotalRevenue, StringFormat=Rs. {0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                                                    <TextBlock Text="{Binding TotalRevenue, StringFormat=₹{0:N2}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,14,0"/>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
@@ -466,11 +466,11 @@
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="PAGE REVENUE:" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="ItemPageSubtotalText" Text="Rs. 0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="ItemPageSubtotalText" Text="₹0.00" Style="{StaticResource BodySmallTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                                 <TextBlock Text="TOTAL REVENUE:" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBlock x:Name="ItemRangeTotalText" Text="Rs. 0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+                                                <TextBlock x:Name="ItemRangeTotalText" Text="₹0.00" Style="{StaticResource BodyTextBlockStyle}" FontWeight="{StaticResource FontWeightBold}" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -500,7 +500,7 @@
                                         <DataGridTemplateColumn Header="REVENUE" Width="110" HeaderStyle="{StaticResource RightHeader}">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Revenue, StringFormat=Rs. {0:N0}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,14,0"/>
+                                                    <TextBlock Text="{Binding Revenue, StringFormat=₹{0:N0}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,14,0"/>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>

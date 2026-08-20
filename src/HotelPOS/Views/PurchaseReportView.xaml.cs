@@ -3,6 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using HotelPOS.Application.Interfaces;
 using ClosedXML.Excel;
+using HotelPOS.Services;
 using HotelPOS.ViewModels;
 using Microsoft.Win32;
 using System.Windows;
@@ -84,8 +85,8 @@ namespace HotelPOS.Views
                     {
                         ws.Cell(row, 1).Value = item.PurchaseDate.ToString("g");
                         ws.Cell(row, 2).Value = item.InvoiceNumber;
-                        ws.Cell(row, 3).Value = item.SupplierName;
-                        ws.Cell(row, 4).Value = item.ItemName;
+                        ws.Cell(row, 3).Value = item.SupplierName.ForSpreadsheet();
+                        ws.Cell(row, 4).Value = item.ItemName.ForSpreadsheet();
                         ws.Cell(row, 5).Value = item.Quantity;
                         ws.Cell(row, 6).Value = (double)item.UnitPrice;
                         ws.Cell(row, 7).Value = (double)item.TaxAmount;

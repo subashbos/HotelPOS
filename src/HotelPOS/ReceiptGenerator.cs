@@ -62,7 +62,7 @@ namespace HotelPOS
 
             hdr.Inlines.Add(new Run(new string('-', isThermal ? 38 : 86) + "\n") { FontSize = smallSz });
             hdr.Inlines.Add(new Run($"Date  : {order.CreatedAt.ToLocalTime():dd-MMM-yyyy  hh:mm tt}\n") { FontSize = smallSz });
-            hdr.Inlines.Add(new Run($"Receipt #: {order.Id}\n") { FontSize = smallSz });
+            hdr.Inlines.Add(new Run($"Invoice #: {(string.IsNullOrWhiteSpace(order.InvoiceNumber) ? order.Id.ToString() : order.InvoiceNumber)}\n") { FontSize = smallSz });
 
             string receiptTitle = settings.IsCompositionScheme ? "BILL OF SUPPLY" : "TAX INVOICE";
             hdr.Inlines.Add(new Run(receiptTitle + "\n") { FontSize = headSz, FontWeight = FontWeights.Bold });

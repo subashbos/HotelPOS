@@ -21,7 +21,7 @@ namespace HotelPOS.Application.UseCases.Purchases.Commands
 
         public async Task Handle(DeletePurchaseCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Purchase);
+            _authorization.EnsureDeletePermission(PermissionModules.Purchase);
 
             var purchase = await _purchaseRepository.GetByIdAsync(request.Id);
             if (purchase == null) return; // idempotent delete, same convention as OrderService.DeleteOrderInternalAsync
@@ -35,20 +35,16 @@ namespace HotelPOS.Application.UseCases.Purchases.Commands
                 var catalogItems = await _itemRepository.GetByIdsAsync(itemIds);
                 var itemsById = catalogItems.ToDictionary(i => i.Id);
 
+                // Atomic per-item SQL UPDATE rather than read-modify-write on a tracked entity, so
+                // a concurrent purchase save/update for the same item can't be silently overwritten
+                // (lost update). Clamped to zero server-side: some of the purchased stock may
+                // already have been sold, so reversing the purchase can't go negative.
                 foreach (var item in purchase.PurchaseItems)
                 {
                     if (itemsById.TryGetValue(item.ItemId, out var catalogItem) && catalogItem.TrackInventory)
                     {
-                        // Clamped rather than thrown: some of the purchased stock may already
-                        // have been sold, so reversing the purchase can't go negative.
-                        catalogItem.StockQuantity = Math.Max(0, catalogItem.StockQuantity - item.Quantity);
+                        await _itemRepository.AdjustStockAsync(item.ItemId, -item.Quantity);
                     }
-                }
-
-                var toUpdate = catalogItems.Where(i => i.TrackInventory).ToList();
-                if (toUpdate.Count > 0)
-                {
-                    await _itemRepository.UpdateRangeAsync(toUpdate);
                 }
 
                 await _purchaseRepository.DeleteAsync(request.Id);

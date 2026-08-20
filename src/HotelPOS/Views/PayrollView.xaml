@@ -30,7 +30,7 @@
             <!-- ══ LEFT: SALARY STRUCTURE + RUN PAYROLL ══ -->
             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,16">
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,16" FocusManager.IsFocusScope="True">
                     <StackPanel>
                         <TextBlock Text="SALARY STRUCTURE" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,10"/>
 
@@ -104,13 +104,13 @@
                             <CheckBox Content="PT Applicable" IsChecked="{Binding ProfessionalTaxApplicable}"/>
                         </StackPanel>
 
-                        <Button Command="{Binding SaveSalaryStructureCommand}" Style="{StaticResource PrimaryBtn}" Padding="18,10" HorizontalAlignment="Left">
+                        <Button Command="{Binding SaveSalaryStructureCommand}" IsDefault="True" Style="{StaticResource PrimaryBtn}" Padding="18,10" HorizontalAlignment="Left">
                             <TextBlock Text="💾  Save Salary Structure"/>
                         </Button>
                     </StackPanel>
                 </Border>
 
-                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14">
+                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="16,14" FocusManager.IsFocusScope="True">
                     <StackPanel>
                         <TextBlock Text="RUN MONTHLY PAYROLL" Style="{StaticResource FieldLabel}" FontWeight="Bold" Margin="0,0,0,10"/>
                         <Grid Margin="0,0,0,10">
@@ -128,7 +128,7 @@
                                 <TextBox Text="{Binding Year, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                         </Grid>
-                        <Button Command="{Binding RunPayrollCommand}" Style="{StaticResource PrimaryBtn}" Padding="18,10" HorizontalAlignment="Left">
+                        <Button Command="{Binding RunPayrollCommand}" IsDefault="True" Style="{StaticResource PrimaryBtn}" Padding="18,10" HorizontalAlignment="Left">
                             <TextBlock Text="▶  Run Payroll"/>
                         </Button>
                     </StackPanel>
@@ -190,17 +190,17 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="GROSS" Binding="{Binding GrossEarnings, StringFormat=Rs. {0:N2}}" Width="*"
+                            <DataGridTextColumn Header="GROSS" Binding="{Binding GrossEarnings, StringFormat=₹{0:N2}}" Width="*"
                                                 ElementStyle="{StaticResource GridCellTextRight}"/>
-                            <DataGridTextColumn Header="PF (EE)" Binding="{Binding PfEmployee, StringFormat=Rs. {0:N2}}" Width="*"
+                            <DataGridTextColumn Header="PF (EE)" Binding="{Binding PfEmployee, StringFormat=₹{0:N2}}" Width="*"
                                                 ElementStyle="{StaticResource GridCellTextRight}"/>
-                            <DataGridTextColumn Header="ESI (EE)" Binding="{Binding EsiEmployee, StringFormat=Rs. {0:N2}}" Width="*"
+                            <DataGridTextColumn Header="ESI (EE)" Binding="{Binding EsiEmployee, StringFormat=₹{0:N2}}" Width="*"
                                                 ElementStyle="{StaticResource GridCellTextRight}"/>
-                            <DataGridTextColumn Header="PT" Binding="{Binding ProfessionalTax, StringFormat=Rs. {0:N2}}" Width="*"
+                            <DataGridTextColumn Header="PT" Binding="{Binding ProfessionalTax, StringFormat=₹{0:N2}}" Width="*"
                                                 ElementStyle="{StaticResource GridCellTextRight}"/>
                             <DataGridTextColumn Header="LOP DAYS" Binding="{Binding LopDays}" Width="0.7*"
                                                 ElementStyle="{StaticResource GridCellTextRight}"/>
-                            <DataGridTextColumn Header="NET PAY" Binding="{Binding NetPay, StringFormat=Rs. {0:N2}}" Width="1.1*"
+                            <DataGridTextColumn Header="NET PAY" Binding="{Binding NetPay, StringFormat=₹{0:N2}}" Width="1.1*"
                                                 ElementStyle="{StaticResource GridCellTextRightBold}"/>
                         </DataGrid.Columns>
                     </DataGrid>

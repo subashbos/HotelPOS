@@ -112,7 +112,7 @@
                         <TextBox Text="{Binding MinStockThreshold, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}"
                                  Padding="10,8" Margin="0,0,0,24"/>
 
-                        <Button Content="💾  Save" Command="{Binding SaveCommand}"
+                        <Button Content="💾  Save" Command="{Binding SaveCommand}" IsDefault="True"
                                 Style="{StaticResource PrimaryBtn}" Height="40" Margin="0,0,0,8"/>
                         <Button Content="🗑  Delete" Command="{Binding DeleteCommand}"
                                 Style="{StaticResource DangerBtn}" Height="40"

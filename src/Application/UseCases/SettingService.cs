@@ -46,7 +46,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveSettingsAsync(SystemSetting settings)
         {
-            _authorization?.EnsurePermission(PermissionModules.Settings);
+            _authorization?.EnsureEditPermission(PermissionModules.Settings);
 
             if (_mediator != null)
             {

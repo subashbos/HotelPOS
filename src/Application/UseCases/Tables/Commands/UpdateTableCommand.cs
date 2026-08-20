@@ -29,7 +29,7 @@ namespace HotelPOS.Application.UseCases.Tables.Commands
 
         public async Task Handle(UpdateTableCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Tables);
+            _authorization.EnsureEditPermission(PermissionModules.Tables);
 
             var existing = await _repo.GetAllAsync() ?? new List<Table>();
             if (existing.Any(t => t.Number == request.Dto.Number && t.Id != request.Id && !t.IsDeleted))

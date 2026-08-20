@@ -23,7 +23,7 @@ namespace HotelPOS.Application.UseCases.Items.Commands
 
         public async Task<bool> Handle(DeleteItemCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Items);
+            _authorization.EnsureDeletePermission(PermissionModules.Items);
 
             if (request.Id <= 0)
                 throw new ArgumentException("Invalid item ID.", nameof(request));

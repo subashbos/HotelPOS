@@ -55,6 +55,13 @@ namespace HotelPOS.Infrastructure.Persistence
             return rows > 0;
         }
 
+        public async Task AdjustStockAsync(int itemId, int delta)
+        {
+            await _context.Items
+                .Where(i => i.Id == itemId)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(i => i.StockQuantity, i => Math.Max(0, i.StockQuantity + delta)));
+        }
+
         public async Task UpdateRangeAsync(List<Item> items)
         {
             _context.Items.UpdateRange(items);

@@ -20,7 +20,7 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
 
         public async Task Handle(UpdateOrderCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+            _authorization.EnsureEditPermission(PermissionModules.OrderManagement);
 
             await _orderService.UpdateOrderInternalAsync(request.Order);
         }

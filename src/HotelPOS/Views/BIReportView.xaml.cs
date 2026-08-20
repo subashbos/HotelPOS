@@ -1,6 +1,7 @@
 using ClosedXML.Excel;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;
+using HotelPOS.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using System.Windows;
@@ -106,8 +107,8 @@ namespace HotelPOS.Views
 
                 // 1. Load Profit margin metrics
                 var profitSummary = await _biService.GetProfitMarginSummaryAsync(from, to);
-                TxtTotalRevenue.Text = $"Rs. {profitSummary.TotalRevenue:N2}";
-                TxtNetProfit.Text = $"Rs. {profitSummary.NetProfit:N2}";
+                TxtTotalRevenue.Text = $"₹{profitSummary.TotalRevenue:N2}";
+                TxtNetProfit.Text = $"₹{profitSummary.NetProfit:N2}";
                 TxtFoodCostPct.Text = $"{profitSummary.FoodCostPercentage:N1}%";
 
                 // 2. Load Item margin grid
@@ -116,7 +117,7 @@ namespace HotelPOS.Views
 
                 // 3. Load Wastage summary & grid
                 var wastageSummary = await _biService.GetWastageSummaryAsync(from, to);
-                TxtWastageCost.Text = $"Rs. {wastageSummary.TotalWastageCost:N2}";
+                TxtWastageCost.Text = $"₹{wastageSummary.TotalWastageCost:N2}";
                 WastageGrid.ItemsSource = wastageSummary.RecentWastage;
 
                 // Populate wastage reason categories
@@ -146,16 +147,16 @@ namespace HotelPOS.Views
                     BarHeightRevenue = (double)t.Revenue / maxVal * 150.0,
                     BarHeightProfit = (double)t.GrossProfit / maxVal * 150.0,
                     X = i++ * 50 + 20,
-                    ToolTipRevenue = $"Revenue: Rs. {t.Revenue:N2}",
-                    ToolTipProfit = $"Gross Profit: Rs. {t.GrossProfit:N2}"
+                    ToolTipRevenue = $"Revenue: ₹{t.Revenue:N2}",
+                    ToolTipProfit = $"Gross Profit: ₹{t.GrossProfit:N2}"
                 }).ToList();
 
                 // 6. Load Shift Closure
                 var shiftReport = await _biService.GetShiftClosureReportAsync(null, from);
-                TxtShiftOpening.Text = $"Rs. {shiftReport.OpeningBalance:N2}";
-                TxtShiftCashSales.Text = $"Rs. {shiftReport.CashSales:N2}";
-                TxtShiftActualCash.Text = $"Rs. {shiftReport.ActualCashCounted:N2}";
-                TxtShiftVariance.Text = $"Rs. {shiftReport.CashVariance:N2}";
+                TxtShiftOpening.Text = $"₹{shiftReport.OpeningBalance:N2}";
+                TxtShiftCashSales.Text = $"₹{shiftReport.CashSales:N2}";
+                TxtShiftActualCash.Text = $"₹{shiftReport.ActualCashCounted:N2}";
+                TxtShiftVariance.Text = $"₹{shiftReport.CashVariance:N2}";
 
                 // 7. Load Void & Discount Audit
                 var voidAudits = await _biService.GetVoidDiscountAuditReportAsync(from, to);
@@ -167,7 +168,7 @@ namespace HotelPOS.Views
 
                 // 9. Load Stock Valuation & ABC
                 var stockValuation = await _biService.GetStockValuationReportAsync();
-                TxtTotalStockCost.Text = $"Rs. {stockValuation.TotalInventoryCostValue:N2}";
+                TxtTotalStockCost.Text = $"₹{stockValuation.TotalInventoryCostValue:N2}";
                 TxtAbcCategoryA.Text = $"{stockValuation.HighValueCategoryACount} Items";
                 TxtAbcCategoryB.Text = $"{stockValuation.MediumValueCategoryBCount} Items";
                 TxtAbcCategoryC.Text = $"{stockValuation.LowValueCategoryCCount} Items";
@@ -175,10 +176,10 @@ namespace HotelPOS.Views
 
                 // 10. Load P&L
                 var pnlReport = await _biService.GetProfitAndLossReportAsync(from, to);
-                TxtPnlRevenue.Text = $"Rs. {pnlReport.TotalSalesRevenue:N2}";
-                TxtPnlCogs.Text = $"Rs. {pnlReport.TotalCostOfGoodsSold:N2}";
-                TxtPnlExpenses.Text = $"Rs. {pnlReport.TotalExpenses:N2}";
-                TxtPnlNetProfit.Text = $"Rs. {pnlReport.NetOperatingProfit:N2}";
+                TxtPnlRevenue.Text = $"₹{pnlReport.TotalSalesRevenue:N2}";
+                TxtPnlCogs.Text = $"₹{pnlReport.TotalCostOfGoodsSold:N2}";
+                TxtPnlExpenses.Text = $"₹{pnlReport.TotalExpenses:N2}";
+                TxtPnlNetProfit.Text = $"₹{pnlReport.NetOperatingProfit:N2}";
                 PnlExpenseGrid.ItemsSource = pnlReport.ExpensesByCategory;
             }
             catch (Exception ex)
@@ -276,8 +277,8 @@ namespace HotelPOS.Views
                     int r = 2;
                     foreach (var item in items)
                     {
-                        ws.Cell(r, 1).Value = item.ItemName;
-                        ws.Cell(r, 2).Value = item.CategoryName;
+                        ws.Cell(r, 1).Value = item.ItemName.ForSpreadsheet();
+                        ws.Cell(r, 2).Value = item.CategoryName.ForSpreadsheet();
                         ws.Cell(r, 3).Value = item.QuantitySold;
                         ws.Cell(r, 4).Value = (double)item.UnitPrice;
                         ws.Cell(r, 5).Value = (double)item.CostPrice;

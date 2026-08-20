@@ -35,14 +35,19 @@ namespace HotelPOS.Views
                 e.Handled = true;
                 StartTimeTextBox.Focus();
             }
-            // 3. Enter key behavior inside standard TextBox to move focus forward
+            // 3. Enter key -> Save (skip multi-line note inputs)
             else if (e.Key == Key.Enter)
             {
                 var element = Keyboard.FocusedElement as UIElement;
-                if (element is TextBox tb && !tb.AcceptsReturn)
+                if (element is TextBox tb && tb.AcceptsReturn)
                 {
-                    e.Handled = true;
-                    element.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                    return;
+                }
+
+                e.Handled = true;
+                if (_viewModel.SaveReservationCommand.CanExecute(null))
+                {
+                    _viewModel.SaveReservationCommand.Execute(null);
                 }
             }
         }

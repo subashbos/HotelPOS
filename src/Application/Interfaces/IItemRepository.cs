@@ -21,5 +21,16 @@ namespace HotelPOS.Application.Interfaces
         /// </summary>
         /// <returns>true if the row was updated (stock was sufficient or quantity was non-positive); false if the item wasn't found or stock was insufficient.</returns>
         Task<bool> TryDeductStockAsync(int itemId, int quantity);
+
+        /// <summary>
+        /// Atomically adds <paramref name="delta"/> (positive or negative) to StockQuantity in a
+        /// single guarded SQL UPDATE (via EF Core's ExecuteUpdateAsync), clamped to zero so a
+        /// negative delta can't drive stock below zero. Unlike a read-modify-write on a tracked
+        /// entity, this can't lose a concurrent purchase's stock credit to a last-writer-wins
+        /// overwrite - the same class of bug <see cref="TryDeductStockAsync"/> already guards
+        /// against on the order-deduction side. Callers are responsible for deciding whether the
+        /// item should be tracked at all (TrackInventory) before calling this.
+        /// </summary>
+        Task AdjustStockAsync(int itemId, int delta);
     }
 }

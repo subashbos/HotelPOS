@@ -54,7 +54,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SaveSalaryStructureAsync(SalaryStructure structure)
         {
-            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+            _authorization.EnsureEditPermission(PermissionModules.HrPayrollRun);
 
             if (structure == null) throw new ArgumentNullException(nameof(structure));
 
@@ -78,7 +78,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<PayrollRun> RunPayrollAsync(int month, int year, int? processedByUserId)
         {
-            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+            _authorization.EnsureEditPermission(PermissionModules.HrPayrollRun);
 
             if (month < 1 || month > 12) throw new ArgumentException("Month must be between 1 and 12.");
 
@@ -150,7 +150,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task MarkRunAsPaidAsync(int runId)
         {
-            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+            _authorization.EnsureEditPermission(PermissionModules.HrPayrollRun);
 
             var run = await _payrollRepository.GetRunByIdAsync(runId)
                 ?? throw new KeyNotFoundException($"Payroll run #{runId} not found.");
@@ -179,7 +179,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task VoidRunAsync(int runId, string reason)
         {
-            _authorization.EnsurePermission(PermissionModules.HrPayrollRun);
+            _authorization.EnsureEditPermission(PermissionModules.HrPayrollRun);
 
             var run = await _payrollRepository.GetRunByIdAsync(runId)
                 ?? throw new KeyNotFoundException($"Payroll run #{runId} not found.");

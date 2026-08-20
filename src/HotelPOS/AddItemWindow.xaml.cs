@@ -55,6 +55,7 @@ namespace HotelPOS
                         ItemCategoryCombo.SelectedValue = _editingItem.CategoryId;
                         SetTaxCombo(_editingItem.TaxPercentage);
                         BarcodeBox.Text = _editingItem.Barcode;
+                        HsnCodeBox.Text = _editingItem.HsnCode;
                         TrackStockCheck.IsChecked = _editingItem.TrackInventory;
                         StockQuantityBox.Text = _editingItem.StockQuantity.ToString();
                         UnitCombo.SelectedValue = _editingItem.UnitId;
@@ -142,13 +143,14 @@ namespace HotelPOS
 
                 var catId = (int?)ItemCategoryCombo.SelectedValue;
                 var unitId = (int?)UnitCombo.SelectedValue ?? 0;
+                var hsnCode = HsnCodeBox.Text?.Trim();
 
                 var command = new CreateItemCommand(
                     name,
                     price,
                     tax,
                     catId,
-                    _editingItem?.HsnCode,
+                    hsnCode,
                     BarcodeBox.Text?.Trim(),
                     stock,
                     TrackStockCheck.IsChecked ?? false,
@@ -180,6 +182,7 @@ namespace HotelPOS
                         Price = price,
                         TaxPercentage = tax,
                         CategoryId = catId,
+                        HsnCode = hsnCode,
                         StockQuantity = stock,
                         TrackInventory = TrackStockCheck.IsChecked ?? false,
                         Barcode = BarcodeBox.Text?.Trim(),
@@ -198,6 +201,7 @@ namespace HotelPOS
                         ItemNameBox.Clear();
                         ItemPriceBox.Clear();
                         BarcodeBox.Clear();
+                        HsnCodeBox.Clear();
                         StockQuantityBox.Clear();
                         ItemCategoryCombo.SelectedIndex = -1;
                         TaxCombo.SelectedIndex = 0;

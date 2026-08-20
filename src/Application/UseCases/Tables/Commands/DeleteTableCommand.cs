@@ -23,7 +23,7 @@ namespace HotelPOS.Application.UseCases.Tables.Commands
 
         public async Task Handle(DeleteTableCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Tables);
+            _authorization.EnsureDeletePermission(PermissionModules.Tables);
 
             var table = await _repo.GetByIdAsync(request.Id);
             if (table is null || table.IsDeleted)

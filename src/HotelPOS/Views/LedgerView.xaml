@@ -29,7 +29,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="{DynamicResource SecondaryBrush}" CornerRadius="20" Padding="18,10" Margin="0,0,12,0">
                         <StackPanel>
-                            <TextBlock x:Name="TotalRevBadge" Text="Rs. 0" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TotalRevBadge" Text="₹0" FontSize="18" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
                             <TextBlock Text="Period Revenue" FontSize="11" Foreground="White" Opacity="0.8" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Border>
@@ -86,7 +86,7 @@
                         <DataGridTemplateColumn Header="GROSS REVENUE" Width="170">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding GrossRevenue, StringFormat=Rs.{0:N2}}"
+                                    <TextBlock Text="{Binding GrossRevenue, StringFormat=₹{0:N2}}"
                                                FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"
                                                Padding="14,0" VerticalAlignment="Center"/>
                                 </DataTemplate>
@@ -95,7 +95,7 @@
                         <DataGridTemplateColumn Header="GST COLLECTED" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding GstAmount, StringFormat=Rs.{0:N2}}"
+                                    <TextBlock Text="{Binding GstAmount, StringFormat=₹{0:N2}}"
                                                Foreground="{DynamicResource TaxAccentBrush}"
                                                Padding="14,0" VerticalAlignment="Center"/>
                                 </DataTemplate>
@@ -104,7 +104,7 @@
                         <DataGridTemplateColumn Header="NET INCOME" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding NetIncome, StringFormat=Rs.{0:N2}}"
+                                    <TextBlock Text="{Binding NetIncome, StringFormat=₹{0:N2}}"
                                                Padding="14,0" VerticalAlignment="Center"
                                                Foreground="{DynamicResource TextPrimary}"/>
                                 </DataTemplate>
@@ -114,7 +114,7 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Border Padding="10,4" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding RunningBalance, StringFormat=Rs.{0:N2}}"
+                                        <TextBlock Text="{Binding RunningBalance, StringFormat=₹{0:N2}}"
                                                    FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextPrimary}"/>
                                     </Border>
                                 </DataTemplate>

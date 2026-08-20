@@ -22,7 +22,7 @@ namespace HotelPOS.Application.UseCases.Reservations.Commands
 
         public async Task Handle(UpdateReservationCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Reservation);
+            _authorization.EnsureEditPermission(PermissionModules.Reservation);
 
             var reservation = request.Reservation;
 
@@ -38,9 +38,33 @@ namespace HotelPOS.Application.UseCases.Reservations.Commands
             if (reservation.PartySize > table.Capacity)
                 throw new ArgumentException($"Party size ({reservation.PartySize}) exceeds table '{table.Name}' capacity ({table.Capacity}).");
 
-            await ReservationOverlapChecker.EnsureNoOverlapAsync(_reservationRepository, reservation, excludeReservationId: reservation.Id);
+            await _reservationRepository.BeginTransactionAsync();
+            try
+            {
+                // Serializes concurrent bookings for this table/date so two requests can't both
+                // pass the overlap check below and double-book the table.
+                await _reservationRepository.AcquireTableDateLockAsync(reservation.TableId, reservation.ReservationDate.Date);
 
-            await _reservationRepository.UpdateAsync(reservation);
+                await ReservationOverlapChecker.EnsureNoOverlapAsync(_reservationRepository, reservation, excludeReservationId: reservation.Id);
+
+                await _reservationRepository.UpdateAsync(reservation);
+
+                await _reservationRepository.CommitTransactionAsync();
+            }
+            catch (Exception ex) // NOSONAR: intentional - log with operation context at failure site, preserve stack trace for global handler
+            {
+                Serilog.Log.Error(ex, "Transaction failed while updating reservation");
+                try
+                {
+                    await _reservationRepository.RollbackTransactionAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Serilog.Log.Error(rollbackEx, "Transaction rollback failed while updating reservation");
+                    throw new AggregateException("Transaction failed and rollback also failed.", ex, rollbackEx);
+                }
+                throw;
+            }
         }
     }
 }

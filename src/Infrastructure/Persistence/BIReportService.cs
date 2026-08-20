@@ -211,7 +211,7 @@ namespace HotelPOS.Infrastructure.Persistence
 
         public async Task LogWastageAsync(int itemId, int quantity, string reason, string? notes)
         {
-            _authorization.EnsurePermission(PermissionModules.SalesReport);
+            _authorization.EnsureEditPermission(PermissionModules.SalesReport);
 
             var item = await _context.Items.FindAsync(itemId);
             if (item == null) throw new KeyNotFoundException("Item not found");

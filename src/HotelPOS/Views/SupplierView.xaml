@@ -122,7 +122,7 @@
                         </DataGridTextColumn>
 
                         <!-- Balance -->
-                        <DataGridTextColumn Header="OPENING BAL." Binding="{Binding OpeningBalance, StringFormat=Rs. {0:N2}}" Width="1.1*">
+                        <DataGridTextColumn Header="OPENING BAL." Binding="{Binding OpeningBalance, StringFormat=₹{0:N2}}" Width="1.1*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -134,7 +134,7 @@
                         </DataGridTextColumn>
 
                         <!-- Limit -->
-                        <DataGridTextColumn Header="CREDIT LIMIT" Binding="{Binding CreditLimit, StringFormat=Rs. {0:N2}}" Width="1.1*">
+                        <DataGridTextColumn Header="CREDIT LIMIT" Binding="{Binding CreditLimit, StringFormat=₹{0:N2}}" Width="1.1*">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>

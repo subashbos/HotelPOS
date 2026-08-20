@@ -22,7 +22,7 @@ namespace HotelPOS.Application.UseCases.Suppliers.Commands
 
         public async Task<int> Handle(SaveSupplierCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Purchase);
+            _authorization.EnsureEditPermission(PermissionModules.Purchase);
 
             var dto = request.Dto;
 

@@ -28,7 +28,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- ══ LEFT COLUMN: DEPARTMENTS ══ -->
-            <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" FocusManager.IsFocusScope="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -65,7 +65,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="0" Content="✨ New" Command="{Binding NewDepartmentCommand}" Style="{StaticResource SecondaryBtn}"/>
-                                <Button Grid.Column="2" Content="💾 Save" Command="{Binding SaveDepartmentCommand}" Style="{StaticResource PrimaryBtn}"/>
+                                <Button Grid.Column="2" Content="💾 Save" Command="{Binding SaveDepartmentCommand}" IsDefault="True" Style="{StaticResource PrimaryBtn}"/>
                                 <Button Grid.Column="4" Content="🗑️ Delete" Command="{Binding DeleteDepartmentCommand}" Style="{StaticResource DangerBtn}"/>
                             </Grid>
                         </StackPanel>
@@ -74,7 +74,7 @@
             </Border>
 
             <!-- ══ RIGHT COLUMN: DESIGNATIONS ══ -->
-            <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Border Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="20" FocusManager.IsFocusScope="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -111,7 +111,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="0" Content="✨ New" Command="{Binding NewDesignationCommand}" Style="{StaticResource SecondaryBtn}"/>
-                                <Button Grid.Column="2" Content="💾 Save" Command="{Binding SaveDesignationCommand}" Style="{StaticResource PrimaryBtn}"/>
+                                <Button Grid.Column="2" Content="💾 Save" Command="{Binding SaveDesignationCommand}" IsDefault="True" Style="{StaticResource PrimaryBtn}"/>
                                 <Button Grid.Column="4" Content="🗑️ Delete" Command="{Binding DeleteDesignationCommand}" Style="{StaticResource DangerBtn}"/>
                             </Grid>
                         </StackPanel>

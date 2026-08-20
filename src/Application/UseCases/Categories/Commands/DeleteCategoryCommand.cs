@@ -27,7 +27,7 @@ namespace HotelPOS.Application.UseCases.Categories.Commands
 
         public async Task Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.Categories);
+            _authorization.EnsureDeletePermission(PermissionModules.Categories);
 
             var items = await _itemRepo.GetAllAsync() ?? new List<Item>();
             if (items.Any(i => i.CategoryId == request.Id))

@@ -94,6 +94,57 @@ namespace HotelPOS.Tests
             thread.Join();
         }
         [Fact]
+        public void CreateReceipt_ShowsRealInvoiceNumber_NotTheRawDatabaseId()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                var order = new Order
+                {
+                    Id = 42,
+                    InvoiceNumber = "INV/2026-27/0007",
+                    PaymentMode = PaymentModes.Cash,
+                    Items = new List<OrderItem>()
+                };
+                var settings = new SystemSetting { HotelName = "Test Hotel" };
+
+                var doc = ReceiptGenerator.CreateReceipt(order, true, settings);
+                var text = new TextRange(doc.ContentStart, doc.ContentEnd).Text;
+
+                Assert.Contains("Invoice #: INV/2026-27/0007", text);
+                Assert.DoesNotContain("Receipt #:", text);
+            });
+
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
+        public void CreateReceipt_MissingInvoiceNumber_FallsBackToOrderId()
+        {
+            var thread = new System.Threading.Thread(() =>
+            {
+                var order = new Order
+                {
+                    Id = 42,
+                    InvoiceNumber = null,
+                    PaymentMode = PaymentModes.Cash,
+                    Items = new List<OrderItem>()
+                };
+                var settings = new SystemSetting { HotelName = "Test Hotel" };
+
+                var doc = ReceiptGenerator.CreateReceipt(order, true, settings);
+                var text = new TextRange(doc.ContentStart, doc.ContentEnd).Text;
+
+                Assert.Contains("Invoice #: 42", text);
+            });
+
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+        }
+
+        [Fact]
         public void CreateKOT_Table0_ShowsTakeawayOnline()
         {
             var thread = new System.Threading.Thread(() =>

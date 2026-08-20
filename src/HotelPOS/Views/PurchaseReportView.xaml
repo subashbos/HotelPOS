@@ -152,15 +152,15 @@
                     </StackPanel>
                     <StackPanel Margin="0,0,24,0">
                         <TextBlock Text="Total Tax" Style="{StaticResource FieldLabel}"/>
-                        <TextBlock Text="{Binding TotalTax, StringFormat=Rs. \{0:N2\}}" FontSize="16" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding TotalTax, StringFormat=₹\{0:N2\}}" FontSize="16" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,24,0">
                         <TextBlock Text="Total Discount" Style="{StaticResource FieldLabel}"/>
-                        <TextBlock Text="{Binding TotalDiscount, StringFormat=Rs. \{0:N2\}}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}"/>
+                        <TextBlock Text="{Binding TotalDiscount, StringFormat=₹\{0:N2\}}" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource DangerBrush}"/>
                     </StackPanel>
                     <StackPanel>
                         <TextBlock Text="Grand Total" Style="{StaticResource FieldLabel}"/>
-                        <TextBlock Text="{Binding TotalPurchaseAmount, StringFormat=Rs. \{0:N2\}}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
+                        <TextBlock Text="{Binding TotalPurchaseAmount, StringFormat=₹\{0:N2\}}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

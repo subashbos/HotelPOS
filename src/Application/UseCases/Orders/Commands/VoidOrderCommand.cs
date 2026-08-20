@@ -25,7 +25,7 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
 
         public async Task Handle(VoidOrderCommand request, CancellationToken cancellationToken)
         {
-            _authorization.EnsurePermission(PermissionModules.OrderManagement);
+            _authorization.EnsureEditPermission(PermissionModules.OrderManagement);
 
             await _orderService.VoidOrderInternalAsync(
                 request.OrderId,

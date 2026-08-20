@@ -44,7 +44,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task<(bool Success, string Error)> AddUserAsync(string username, string password, string role, int roleId)
         {
-            _authorization.EnsurePermission(PermissionModules.Settings);
+            _authorization.EnsureEditPermission(PermissionModules.Settings);
 
             if (_mediator != null)
                 return await _mediator.Send(new AddUserCommand(username, password, role, roleId));
@@ -83,7 +83,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task ToggleActiveAsync(int userId, bool isActive)
         {
-            _authorization.EnsurePermission(PermissionModules.Settings);
+            _authorization.EnsureEditPermission(PermissionModules.Settings);
 
             if (_mediator != null)
             {
@@ -116,7 +116,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task SetEmailAsync(int userId, string? email)
         {
-            _authorization.EnsurePermission(PermissionModules.Settings);
+            _authorization.EnsureEditPermission(PermissionModules.Settings);
 
             if (_mediator != null)
             {
@@ -132,7 +132,7 @@ namespace HotelPOS.Application.UseCases
 
         public async Task DeleteUserAsync(int userId, int currentUserId)
         {
-            _authorization.EnsurePermission(PermissionModules.Settings);
+            _authorization.EnsureDeletePermission(PermissionModules.Settings);
 
             if (_mediator != null)
             {

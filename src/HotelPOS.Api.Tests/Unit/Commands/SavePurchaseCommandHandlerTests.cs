@@ -18,7 +18,7 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
-        public async Task Handle_ValidPurchase_BatchesStockUpdatesIntoSingleCall()
+        public async Task Handle_ValidPurchase_AtomicallyAdjustsStockForTrackedItemsOnly()
         {
             var item1 = new Item { Id = 10, Name = "Milk", StockQuantity = 20, TrackInventory = true };
             var item2 = new Item { Id = 11, Name = "Cups", StockQuantity = 100, TrackInventory = false };
@@ -39,17 +39,14 @@ namespace HotelPOS.Tests
 
             await _handler.Handle(new SavePurchaseCommand(purchase), CancellationToken.None);
 
-            Assert.Equal(25, item1.StockQuantity); // 20 + 5, TrackInventory = true
-            Assert.Equal(100, item2.StockQuantity); // unchanged, TrackInventory = false
-
             _purchaseRepoMock.Verify(r => r.AddAsync(purchase), Times.Once);
-            _itemRepoMock.Verify(r => r.UpdateRangeAsync(It.Is<List<Item>>(l => l.Count == 1 && l[0] == item1)), Times.Once);
-            _itemRepoMock.Verify(r => r.UpdateAsync(It.IsAny<Item>()), Times.Never);
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(10, 5), Times.Once);
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(11, It.IsAny<int>()), Times.Never); // TrackInventory = false
             _purchaseRepoMock.Verify(r => r.CommitTransactionAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task Handle_ItemNotInCatalog_GracefullySkipsWithoutCallingUpdateRange()
+        public async Task Handle_ItemNotInCatalog_GracefullySkipsWithoutAdjustingStock()
         {
             _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item>());
 
@@ -66,7 +63,7 @@ namespace HotelPOS.Tests
             var exception = await Record.ExceptionAsync(() => _handler.Handle(new SavePurchaseCommand(purchase), CancellationToken.None));
 
             Assert.Null(exception);
-            _itemRepoMock.Verify(r => r.UpdateRangeAsync(It.IsAny<List<Item>>()), Times.Never);
+            _itemRepoMock.Verify(r => r.AdjustStockAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -74,7 +71,7 @@ namespace HotelPOS.Tests
         {
             var item = new Item { Id = 10, Name = "Rice", StockQuantity = 10, TrackInventory = true };
             _itemRepoMock.Setup(r => r.GetByIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Item> { item });
-            _itemRepoMock.Setup(r => r.UpdateRangeAsync(It.IsAny<List<Item>>())).ThrowsAsync(new Exception("DB failure"));
+            _itemRepoMock.Setup(r => r.AdjustStockAsync(It.IsAny<int>(), It.IsAny<int>())).ThrowsAsync(new Exception("DB failure"));
 
             var purchase = new Purchase
             {
