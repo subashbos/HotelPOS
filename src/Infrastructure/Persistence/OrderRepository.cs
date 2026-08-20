@@ -191,6 +191,7 @@ namespace HotelPOS.Infrastructure.Persistence
             if (existing == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");
 
             // Update main order properties
+            existing.Status = order.Status;
             existing.TableNumber = order.TableNumber;
             existing.Subtotal = order.Subtotal;
             existing.GstAmount = order.GstAmount;
@@ -207,6 +208,17 @@ namespace HotelPOS.Infrastructure.Persistence
             existing.CustomerName = order.CustomerName;
             existing.CustomerPhone = order.CustomerPhone;
             existing.CustomerGstin = order.CustomerGstin;
+
+            // Payment/void/refund fields — previously silently dropped on update, which meant
+            // Void/Refund never actually persisted (see VoidOrderInternalAsync/RefundOrderAsync
+            // in OrderService, which set these on the in-memory order before calling UpdateAsync)
+            existing.AmountPaid = order.AmountPaid;
+            existing.CashPaid = order.CashPaid;
+            existing.CardPaid = order.CardPaid;
+            existing.UpiPaid = order.UpiPaid;
+            existing.RefundedAmount = order.RefundedAmount;
+            existing.RefundReason = order.RefundReason;
+            existing.VoidReason = order.VoidReason;
 
             // Replace items (simpler than syncing individual rows)
             _context.OrderItems.RemoveRange(existing.Items);
