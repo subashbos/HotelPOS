@@ -552,6 +552,30 @@
             Purchase Report
           </a>
         </li>
+        <li class="items-center" *ngIf="has('SalesReport')">
+          <a
+            [routerLink]="['/admin/gstr1-report']"
+            class="text-xs uppercase py-3 font-bold block"
+            routerLinkActive
+            #adminGstr1Report="routerLinkActive"
+            [ngClass]="
+              adminGstr1Report.isActive
+                ? 'text-red-600 hover:text-red-700'
+                : 'text-blueGray-700 hover:text-blueGray-500'
+            "
+          >
+            <svg
+              class="w-4 h-4 mr-2 inline-block fill-current align-middle"
+              [ngClass]="
+                adminGstr1Report.isActive ? 'opacity-75' : 'text-blueGray-300'
+              "
+              viewBox="0 0 24 24"
+            >
+              <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 12h10v1.5H7V12zm0 3.5h10V17H7v-1.5zm0-7h6V10H7V8.5z"/>
+            </svg>
+            GSTR-1 Report
+          </a>
+        </li>
         <li class="items-center" *ngIf="has('Ledger')">
           <a
             [routerLink]="['/admin/ledger']"

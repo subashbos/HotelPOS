@@ -1,0 +1,201 @@
+<div class="flex flex-wrap mt-4">
+  <div class="w-full mb-12 px-4">
+    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
+      <div class="rounded-t mb-0 px-6 py-4 border-b border-solid border-blueGray-200">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <h3 class="font-semibold text-lg text-blueGray-700">
+            <i class="fas fa-file-invoice text-blueGray-400 mr-2"></i> GSTR-1 Report
+          </h3>
+          <div class="flex items-end gap-3">
+            <div>
+              <label for="gr1-from" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">From</label>
+              <input id="gr1-from" type="date" [(ngModel)]="fromDate" name="fromDate" (change)="load()"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+            </div>
+            <div>
+              <label for="gr1-to" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">To</label>
+              <input id="gr1-to" type="date" [(ngModel)]="toDate" name="toDate" (change)="load()"
+                class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <button type="button" (click)="setTab('b2b')"
+            class="px-4 py-2 text-xs uppercase font-bold rounded"
+            [ngClass]="activeTab === 'b2b' ? 'bg-blueGray-700 text-white' : 'bg-blueGray-50 text-blueGray-600'">
+            B2B Invoices
+          </button>
+          <button type="button" (click)="setTab('b2c')"
+            class="px-4 py-2 text-xs uppercase font-bold rounded"
+            [ngClass]="activeTab === 'b2c' ? 'bg-blueGray-700 text-white' : 'bg-blueGray-50 text-blueGray-600'">
+            B2C Summary
+          </button>
+          <button type="button" (click)="setTab('hsn')"
+            class="px-4 py-2 text-xs uppercase font-bold rounded"
+            [ngClass]="activeTab === 'hsn' ? 'bg-blueGray-700 text-white' : 'bg-blueGray-50 text-blueGray-600'">
+            HSN Summary
+          </button>
+        </div>
+      </div>
+      <div class="px-6 py-4">
+        <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
+        <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading GSTR-1 report...</p>
+
+        <ng-container *ngIf="!isLoading">
+          <!-- B2B Invoices -->
+          <ng-container *ngIf="activeTab === 'b2b'">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Recipients</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ distinctRecipients }}</p>
+              </div>
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Invoices</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ distinctInvoices }}</p>
+              </div>
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Taxable Value</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ b2bTaxableValue | number:'1.2-2' }}</p>
+              </div>
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Tax Amount</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ b2bTaxAmount | number:'1.2-2' }}</p>
+              </div>
+            </div>
+            <div class="block w-full overflow-x-auto">
+              <table class="items-center w-full bg-transparent border-collapse">
+                <thead>
+                  <tr>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">S.No</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">GSTIN</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Invoice</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Date</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Invoice Value</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-center">POS</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Customer</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Taxable Value</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-center">Rate</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">CGST</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">SGST</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of b2bRows">
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ row.sNo }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ row.gstin }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ row.invoiceNumber }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ row.date | date:'dd MMM yyyy' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.invoiceValue | number:'1.2-2' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-center">{{ row.pos }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ row.customerName }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.taxableValue | number:'1.2-2' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-center">{{ row.rate }}%</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.cgst | number:'1.2-2' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.sgst | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr *ngIf="b2bRows.length === 0">
+                    <td colspan="11" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">No B2B invoices in this range.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+
+          <!-- B2C Summary -->
+          <ng-container *ngIf="activeTab === 'b2c'">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Invoices</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ b2cInvoiceCount }}</p>
+              </div>
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Taxable Value</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ b2cTaxableValue | number:'1.2-2' }}</p>
+              </div>
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Tax Amount</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ b2cTaxAmount | number:'1.2-2' }}</p>
+              </div>
+            </div>
+            <div class="block w-full overflow-x-auto">
+              <table class="items-center w-full bg-transparent border-collapse">
+                <thead>
+                  <tr>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-center">Rate</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">No. of Invoices</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Taxable Value</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">CGST</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">SGST</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Total Tax</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Total Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of b2cSummary">
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-center">{{ row.rate }}%</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.invoiceCount }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.taxableValue | number:'1.2-2' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.cgst | number:'1.2-2' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.sgst | number:'1.2-2' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.totalTax | number:'1.2-2' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right font-semibold">{{ row.totalValue | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr *ngIf="b2cSummary.length === 0">
+                    <td colspan="7" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">No B2C sales in this range.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+
+          <!-- HSN Summary -->
+          <ng-container *ngIf="activeTab === 'hsn'">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">HSN Codes</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ hsnCodeCount }}</p>
+              </div>
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Total Quantity</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ hsnTotalQuantity }}</p>
+              </div>
+              <div class="bg-blueGray-50 rounded p-4 text-center">
+                <p class="text-xs uppercase text-blueGray-400">Taxable Value</p>
+                <p class="text-lg font-bold text-blueGray-700">{{ hsnTaxableValue | number:'1.2-2' }}</p>
+              </div>
+            </div>
+            <div class="block w-full overflow-x-auto">
+              <table class="items-center w-full bg-transparent border-collapse">
+                <thead>
+                  <tr>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">HSN Code</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-left">Description</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-center">UQC</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Qty</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Taxable Value</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-center">Rate</th>
+                    <th class="px-4 bg-blueGray-50 text-blueGray-500 align-middle border border-solid border-blueGray-100 py-3 text-xs uppercase text-right">Total Tax</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of hsnSummary">
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ row.hsnCode }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4">{{ row.description }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-center">{{ row.uqc }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.totalQuantity }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right">{{ row.taxableValue | number:'1.2-2' }}</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-center">{{ row.rate }}%</td>
+                    <td class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs whitespace-nowrap p-4 text-right font-semibold">{{ row.totalTax | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr *ngIf="hsnSummary.length === 0">
+                    <td colspan="7" class="border-t-0 px-4 align-middle border-l-0 border-r-0 text-xs p-4 text-center text-blueGray-400">No data in this range.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

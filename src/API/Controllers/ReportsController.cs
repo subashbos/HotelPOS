@@ -36,6 +36,12 @@ namespace HotelPOS.Api.Controllers
             return Ok(await _reportService.GetGstReportAsync(from, to));
         }
 
+        [HttpGet("gstr1")]
+        public async Task<ActionResult<GstR1ReportDto>> GetGstR1Report([FromQuery] DateTime from, [FromQuery] DateTime to)
+        {
+            return Ok(await _reportService.GetGstR1ReportAsync(from, to));
+        }
+
         [HttpGet("monthly-chart")]
         public async Task<ActionResult<List<MonthlySalesChartDto>>> GetMonthlyChart()
         {

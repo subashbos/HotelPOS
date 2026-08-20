@@ -4,7 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ReportService } from './report.service';
 import { environment } from '../../environments/environment';
 import {
-  GstReportRow, ItemMarginRow, ItemReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
+  GstR1Report, GstReportRow, ItemMarginRow, ItemReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
   PagedPurchaseReport, ProfitMarginSummary, SalesReport, WastageSummary
 } from '../models/report.model';
 
@@ -85,6 +85,34 @@ describe('ReportService', () => {
       expect(req.request.params.get('from')).toBe('2026-07-01');
       expect(req.request.params.get('to')).toBe('2026-07-31');
       req.flush(dummyRows);
+    });
+  });
+
+  describe('getGstR1Report', () => {
+    it('should retrieve GSTR-1 report with required from and to params', () => {
+      const dummyReport: GstR1Report = {
+        b2BRows: [
+          { sNo: 1, gstin: '33AQZPS2365E1ZE', invoiceNumber: 'INV24', date: '2026-07-01', invoiceValue: 6615,
+            pos: '33', reverseCharge: 'N', invoiceType: 'R', customerName: 'Anu Labs', taxableValue: 6300,
+            itemTotal: 6615, rate: 5, cgst: 157.5, sgst: 157.5, igst: 0 }
+        ],
+        b2cSummary: [
+          { rate: 5, invoiceCount: 2, taxableValue: 7300, cgst: 182.5, sgst: 182.5, igst: 0, totalTax: 365, totalValue: 7665 }
+        ],
+        hsnSummary: [
+          { hsnCode: '2106', description: 'Chicken Biriyani', uqc: 'Plate', totalQuantity: 3, taxableValue: 300,
+            rate: 5, cgst: 7.5, sgst: 7.5, igst: 0, totalTax: 15, totalValue: 315 }
+        ]
+      };
+
+      service.getGstR1Report('2026-07-01', '2026-07-31').subscribe(report => {
+        expect(report).toEqual(dummyReport);
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/gstr1`);
+      expect(req.request.params.get('from')).toBe('2026-07-01');
+      expect(req.request.params.get('to')).toBe('2026-07-31');
+      req.flush(dummyReport);
     });
   });
 
