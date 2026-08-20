@@ -75,6 +75,62 @@ namespace HotelPOS.Tests
             Assert.Contains("Actual cash amount cannot be negative", ex.Message);
             _repoMock.Verify(r => r.UpdateAsync(It.IsAny<CashSession>()), Times.Never);
         }
+
+        [Fact]
+        public async Task CloseSessionAsync_NoActiveSession_ThrowsInvalidOperationException()
+        {
+            // Arrange - repository has no active (already-closed) session to close.
+            _repoMock.Setup(r => r.GetCurrentSessionAsync()).ReturnsAsync((CashSession?)null);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CloseSessionAsync(100m, "notes", "admin"));
+            Assert.Contains("No active session to close", ex.Message);
+            _repoMock.Verify(r => r.UpdateAsync(It.IsAny<CashSession>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetCurrentSessionAsync_ReturnsFromRepository()
+        {
+            var session = new CashSession { Id = 3 };
+            _repoMock.Setup(r => r.GetCurrentSessionAsync()).ReturnsAsync(session);
+
+            var result = await _service.GetCurrentSessionAsync();
+
+            Assert.Same(session, result);
+        }
+
+        [Fact]
+        public async Task GetSessionHistoryAsync_ReturnsFromRepository()
+        {
+            var history = new List<CashSession> { new CashSession { Id = 1 }, new CashSession { Id = 2 } };
+            _repoMock.Setup(r => r.GetHistoryAsync(10)).ReturnsAsync(history);
+
+            var result = await _service.GetSessionHistoryAsync(10);
+
+            Assert.Same(history, result);
+        }
+
+        [Fact]
+        public async Task GetTotalSalesForCurrentSessionAsync_NoActiveSession_ReturnsZero()
+        {
+            _repoMock.Setup(r => r.GetCurrentSessionAsync()).ReturnsAsync((CashSession?)null);
+
+            var result = await _service.GetTotalSalesForCurrentSessionAsync();
+
+            Assert.Equal(0, result);
+        }
+
+        [Fact]
+        public async Task GetTotalSalesForCurrentSessionAsync_ActiveSession_ReturnsSalesTotal()
+        {
+            var session = new CashSession { OpenedAt = DateTime.UtcNow.AddHours(-2) };
+            _repoMock.Setup(r => r.GetCurrentSessionAsync()).ReturnsAsync(session);
+            _repoMock.Setup(r => r.GetSalesTotalAsync(session.OpenedAt)).ReturnsAsync(750m);
+
+            var result = await _service.GetTotalSalesForCurrentSessionAsync();
+
+            Assert.Equal(750m, result);
+        }
     }
 }
 

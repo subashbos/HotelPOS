@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Xunit;
 
@@ -162,6 +163,177 @@ public class DomainEntityTests
         Assert.Equal(now, order.CreatedAt);
         Assert.Equal(3, order.TableNumber);
         Assert.Equal(250m, order.TotalAmount);
+    }
+
+    // ========== SystemSetting ==========
+
+    [Fact]
+    public void SystemSetting_DefaultHotelName_IsHotelPOS()
+    {
+        var setting = new SystemSetting();
+        Assert.Equal("Hotel POS", setting.HotelName);
+    }
+
+    [Fact]
+    public void SystemSetting_DefaultReceiptFormat_IsThermal()
+    {
+        var setting = new SystemSetting();
+        Assert.Equal("Thermal", setting.ReceiptFormat);
+    }
+
+    [Fact]
+    public void SystemSetting_DefaultIdleTimeoutMinutes_Is15()
+    {
+        var setting = new SystemSetting();
+        Assert.Equal(15, setting.IdleTimeoutMinutes);
+    }
+
+    [Fact]
+    public void SystemSetting_DefaultEnableRoundOff_IsFalse()
+    {
+        var setting = new SystemSetting();
+        Assert.False(setting.EnableRoundOff);
+    }
+
+    [Fact]
+    public void SystemSetting_DefaultIsCompositionScheme_IsFalse()
+    {
+        var setting = new SystemSetting();
+        Assert.False(setting.IsCompositionScheme);
+    }
+
+    [Fact]
+    public void SystemSetting_DefaultEnableAutomatedBackups_IsTrue()
+    {
+        var setting = new SystemSetting();
+        Assert.True(setting.EnableAutomatedBackups);
+    }
+
+    [Fact]
+    public void SystemSetting_DefaultId_IsZero()
+    {
+        var setting = new SystemSetting();
+        Assert.Equal(0, setting.Id);
+    }
+
+    // ========== Employee ==========
+
+    [Fact]
+    public void Employee_DefaultEmploymentType_IsPermanent()
+    {
+        var employee = new Employee();
+        Assert.Equal(EmploymentTypes.Permanent, employee.EmploymentType);
+    }
+
+    [Fact]
+    public void Employee_DefaultStatus_IsActive()
+    {
+        var employee = new Employee();
+        Assert.Equal(EmployeeStatuses.Active, employee.Status);
+    }
+
+    [Fact]
+    public void Employee_DefaultEmployeeCode_IsEmptyString()
+    {
+        var employee = new Employee();
+        Assert.Equal(string.Empty, employee.EmployeeCode);
+    }
+
+    [Fact]
+    public void Employee_DefaultFirstName_IsEmptyString()
+    {
+        var employee = new Employee();
+        Assert.Equal(string.Empty, employee.FirstName);
+    }
+
+    [Fact]
+    public void Employee_DefaultId_IsZero()
+    {
+        var employee = new Employee();
+        Assert.Equal(0, employee.Id);
+    }
+
+    // ========== Reservation ==========
+
+    [Fact]
+    public void Reservation_DefaultStatus_IsReserved()
+    {
+        var reservation = new Reservation();
+        Assert.Equal(ReservationStatuses.Reserved, reservation.Status);
+    }
+
+    [Fact]
+    public void Reservation_DefaultId_IsZero()
+    {
+        var reservation = new Reservation();
+        Assert.Equal(0, reservation.Id);
+    }
+
+    [Fact]
+    public void Reservation_DefaultPartySize_IsZero()
+    {
+        var reservation = new Reservation();
+        Assert.Equal(0, reservation.PartySize);
+    }
+
+    // ========== CashSession ==========
+
+    [Fact]
+    public void CashSession_DefaultStatus_IsOpen()
+    {
+        var session = new CashSession();
+        Assert.Equal(CashSessionStatuses.Open, session.Status);
+    }
+
+    [Fact]
+    public void CashSession_DefaultOpenedBy_IsEmptyString()
+    {
+        var session = new CashSession();
+        Assert.Equal(string.Empty, session.OpenedBy);
+    }
+
+    [Fact]
+    public void CashSession_DefaultOpeningBalance_IsZero()
+    {
+        var session = new CashSession();
+        Assert.Equal(0m, session.OpeningBalance);
+    }
+
+    [Fact]
+    public void CashSession_DefaultClosedAt_IsNull()
+    {
+        var session = new CashSession();
+        Assert.Null(session.ClosedAt);
+    }
+
+    // ========== Expense ==========
+
+    [Fact]
+    public void Expense_DefaultCategory_IsGeneral()
+    {
+        var expense = new Expense();
+        Assert.Equal("General", expense.Category);
+    }
+
+    [Fact]
+    public void Expense_DefaultPaymentMode_IsCash()
+    {
+        var expense = new Expense();
+        Assert.Equal(PaymentModes.Cash, expense.PaymentMode);
+    }
+
+    [Fact]
+    public void Expense_DefaultTitle_IsEmptyString()
+    {
+        var expense = new Expense();
+        Assert.Equal(string.Empty, expense.Title);
+    }
+
+    [Fact]
+    public void Expense_DefaultAmount_IsZero()
+    {
+        var expense = new Expense();
+        Assert.Equal(0m, expense.Amount);
     }
 }
 

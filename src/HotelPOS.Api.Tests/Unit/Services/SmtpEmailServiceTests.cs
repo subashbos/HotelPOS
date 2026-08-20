@@ -55,5 +55,32 @@ namespace HotelPOS.Tests.Unit.Services
 
             settingService.Verify(s => s.GetSettingsAsync(), Times.Once);
         }
+
+        [Fact]
+        public async Task SendEmailAsync_NullSettings_ThrowsNullReferenceException()
+        {
+            // The settings-overload has no null guard - it dereferences smtpSettings.SmtpHost
+            // directly, so a null SystemSetting fails fast with a NullReferenceException rather
+            // than the friendlier "not configured" InvalidOperationException.
+            var settingService = new Mock<ISettingService>(MockBehavior.Strict);
+            var service = new SmtpEmailService(settingService.Object);
+
+            await Assert.ThrowsAsync<NullReferenceException>(
+                () => service.SendEmailAsync("guest@example.com", "Subject", "Body", null!));
+        }
+
+        [Fact]
+        public async Task SendEmailAsync_InvalidRecipientFormat_ThrowsFormatException()
+        {
+            // With a configured host, MailMessage's own address parsing runs before any network
+            // I/O is attempted, so a malformed "to" address fails synchronously and deterministically
+            // (this doesn't touch the network, unlike an actual SendMailAsync failure would).
+            var settingService = new Mock<ISettingService>(MockBehavior.Strict);
+            var service = new SmtpEmailService(settingService.Object);
+            var settings = new SystemSetting { SmtpHost = "smtp.example.com" };
+
+            await Assert.ThrowsAsync<FormatException>(
+                () => service.SendEmailAsync("not-an-email-address", "Subject", "Body", settings));
+        }
     }
 }

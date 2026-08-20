@@ -12,7 +12,8 @@ namespace HotelPOS.Domain.Common
         {
             if (string.IsNullOrEmpty(password)) return false;
 
-            return password.Any(char.IsUpper)
+            return password.Length >= 10
+                && password.Any(char.IsUpper)
                 && password.Any(char.IsLower)
                 && password.Any(char.IsDigit)
                 && password.Any(c => !char.IsLetterOrDigit(c));

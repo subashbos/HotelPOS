@@ -2,6 +2,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.UseCases.Estimations.Commands;
 using HotelPOS.Application.UseCases.Estimations.Queries;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Domain.Events;
 using MediatR;
@@ -103,6 +104,105 @@ namespace HotelPOS.Tests.Unit.Services
             mediatorMock.Verify(
                 m => m.Publish(It.Is<EntityActionEvent>(e => e.EntityName == "Estimation" && e.EntityId == 11 && e.Action == "ConvertToOrder"), default),
                 Times.Once);
+        }
+
+        [Fact]
+        public async Task ConvertToOrderAsync_LegacyPath_EstimationNotFound_ThrowsKeyNotFoundException()
+        {
+            var estimationRepoMock = new Mock<IEstimationRepository>();
+            var orderServiceMock = new Mock<IOrderService>();
+            estimationRepoMock.Setup(r => r.GetByIdAsync(42)).ReturnsAsync((Estimation?)null);
+            var service = new EstimationService(estimationRepoMock.Object, orderServiceMock.Object, TestAuthorization.AllowAll().Object);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ConvertToOrderAsync(42));
+        }
+
+        [Fact]
+        public async Task ConvertToOrderAsync_LegacyPath_AlreadyConverted_ThrowsInvalidOperationException()
+        {
+            var estimationRepoMock = new Mock<IEstimationRepository>();
+            var orderServiceMock = new Mock<IOrderService>();
+            var estimation = new Estimation { Id = 5, Status = EstimationStatuses.Converted, EstimationItems = new List<EstimationItem>() };
+            estimationRepoMock.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(estimation);
+            var service = new EstimationService(estimationRepoMock.Object, orderServiceMock.Object, TestAuthorization.AllowAll().Object);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ConvertToOrderAsync(5));
+            Assert.Contains("already been converted", ex.Message);
+            orderServiceMock.Verify(o => o.SaveOrderAsync(It.IsAny<SaveOrderRequest>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ConvertToOrderAsync_LegacyPath_NotAccepted_ThrowsInvalidOperationException()
+        {
+            var estimationRepoMock = new Mock<IEstimationRepository>();
+            var orderServiceMock = new Mock<IOrderService>();
+            var estimation = new Estimation { Id = 6, Status = EstimationStatuses.Draft, EstimationItems = new List<EstimationItem>() };
+            estimationRepoMock.Setup(r => r.GetByIdAsync(6)).ReturnsAsync(estimation);
+            var service = new EstimationService(estimationRepoMock.Object, orderServiceMock.Object, TestAuthorization.AllowAll().Object);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ConvertToOrderAsync(6));
+            Assert.Contains("Only an Accepted estimation can be converted", ex.Message);
+        }
+
+        [Fact]
+        public async Task ConvertToOrderAsync_LegacyPath_Accepted_ConvertsAndReturnsOrderId()
+        {
+            var estimationRepoMock = new Mock<IEstimationRepository>();
+            var orderServiceMock = new Mock<IOrderService>();
+            var estimation = new Estimation
+            {
+                Id = 7,
+                Status = EstimationStatuses.Accepted,
+                TotalDiscount = 100,
+                CustomerName = "Alice",
+                CustomerPhone = "12345",
+                CustomerId = 3,
+                EstimationItems = new List<EstimationItem>
+                {
+                    new EstimationItem { ItemId = 1, ItemName = "Cake", Quantity = 2, UnitPrice = 500 }
+                }
+            };
+            estimationRepoMock.Setup(r => r.GetByIdAsync(7)).ReturnsAsync(estimation);
+            orderServiceMock.Setup(o => o.SaveOrderAsync(It.IsAny<SaveOrderRequest>())).ReturnsAsync(555);
+            estimationRepoMock.Setup(r => r.TryMarkConvertedAsync(7, 555)).ReturnsAsync(true);
+            var service = new EstimationService(estimationRepoMock.Object, orderServiceMock.Object, TestAuthorization.AllowAll().Object);
+
+            var orderId = await service.ConvertToOrderAsync(7);
+
+            Assert.Equal(555, orderId);
+            orderServiceMock.Verify(
+                o => o.SaveOrderAsync(It.Is<SaveOrderRequest>(req => req.Items.Count == 1 && req.CustomerName == "Alice" && req.Discount == 100)),
+                Times.Once);
+            estimationRepoMock.Verify(r => r.TryMarkConvertedAsync(7, 555), Times.Once);
+        }
+
+        [Fact]
+        public async Task ConvertToOrderAsync_LegacyPath_LosesConversionRace_VoidsOrderAndThrows()
+        {
+            // TryMarkConvertedAsync returning false means another request already converted this
+            // estimation between the status check and the atomic compare-and-swap - the handler
+            // should void the just-created order and surface the same "already converted" error.
+            var estimationRepoMock = new Mock<IEstimationRepository>();
+            var orderServiceMock = new Mock<IOrderService>();
+            var estimation = new Estimation
+            {
+                Id = 8,
+                Status = EstimationStatuses.Accepted,
+                EstimationItems = new List<EstimationItem>
+                {
+                    new EstimationItem { ItemId = 1, ItemName = "Cake", Quantity = 1, UnitPrice = 500 }
+                }
+            };
+            estimationRepoMock.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(estimation);
+            orderServiceMock.Setup(o => o.SaveOrderAsync(It.IsAny<SaveOrderRequest>())).ReturnsAsync(777);
+            estimationRepoMock.Setup(r => r.TryMarkConvertedAsync(8, 777)).ReturnsAsync(false);
+            orderServiceMock.Setup(o => o.DeleteOrderAsync(777)).Returns(Task.CompletedTask);
+            var service = new EstimationService(estimationRepoMock.Object, orderServiceMock.Object, TestAuthorization.AllowAll().Object);
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.ConvertToOrderAsync(8));
+
+            Assert.Contains("already been converted", ex.Message);
+            orderServiceMock.Verify(o => o.DeleteOrderAsync(777), Times.Once);
         }
     }
 }
