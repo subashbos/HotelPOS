@@ -84,7 +84,10 @@
                                         <TextBlock Text="UNIT OF MEASUREMENT" Style="{StaticResource FieldLabel}" Margin="0"/>
                                         <TextBlock Text=" *" Foreground="{DynamicResource DangerBrush}" FontWeight="Bold" FontSize="12"/>
                                     </StackPanel>
-                                    <ComboBox x:Name="UnitCombo" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,0,24"/>
+                                    <ComboBox x:Name="UnitCombo" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,0,16"/>
+
+                                    <TextBlock Text="HSN CODE" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox x:Name="HsnCodeBox" Tag="e.g., 996331 (for GSTR-1 filing)" Margin="0,0,0,24"/>
 
                                     <TextBlock Text="Pricing" Style="{StaticResource H3TextBlockStyle}" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,12"/>
 
