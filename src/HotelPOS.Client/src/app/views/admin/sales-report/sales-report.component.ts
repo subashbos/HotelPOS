@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ReportService } from '../../../services/report.service';
 import { SalesReport } from '../../../models/report.model';
+import { downloadBlob } from '../../../utils/download.util';
 
 function firstOfMonth(): string {
   const d = new Date();
@@ -19,6 +20,7 @@ export class SalesReportComponent implements OnInit {
   report: SalesReport | null = null;
   isLoading = false;
   loadError = '';
+  isExporting = false;
 
   fromDate = firstOfMonth();
   toDate = today();
@@ -41,6 +43,20 @@ export class SalesReportComponent implements OnInit {
         this.loadError = 'Failed to load the sales report. Please check the server connection.';
         this.isLoading = false;
         console.error('Sales report load error:', err);
+      }
+    });
+  }
+
+  export(): void {
+    this.isExporting = true;
+    this.reportService.exportSalesReport(this.fromDate, this.toDate).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, `Sales_Report_${this.fromDate}_to_${this.toDate}.xlsx`);
+        this.isExporting = false;
+      },
+      error: (err) => {
+        this.isExporting = false;
+        console.error('Sales report export error:', err);
       }
     });
   }

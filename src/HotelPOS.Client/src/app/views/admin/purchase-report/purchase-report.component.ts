@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ReportService } from '../../../services/report.service';
 import { PagedPurchaseReport } from '../../../models/report.model';
+import { downloadBlob } from '../../../utils/download.util';
 
 @Component({
   standalone: false,
@@ -11,6 +12,7 @@ export class PurchaseReportComponent implements OnInit {
   report: PagedPurchaseReport | null = null;
   isLoading = false;
   loadError = '';
+  isExporting = false;
 
   page = 1;
   pageSize = 20;
@@ -56,5 +58,19 @@ export class PurchaseReportComponent implements OnInit {
       this.page += 1;
       this.load();
     }
+  }
+
+  export(): void {
+    this.isExporting = true;
+    this.reportService.exportPurchaseReport(this.fromDate || undefined, this.toDate || undefined).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, `Purchase_Report_${Date.now()}.xlsx`);
+        this.isExporting = false;
+      },
+      error: (err) => {
+        this.isExporting = false;
+        console.error('Purchase report export error:', err);
+      }
+    });
   }
 }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ReportService } from '../../../services/report.service';
 import { ItemReportRow } from '../../../models/report.model';
+import { downloadBlob } from '../../../utils/download.util';
 
 function firstOfMonth(): string {
   const d = new Date();
@@ -19,6 +20,7 @@ export class ItemReportComponent implements OnInit {
   rows: ItemReportRow[] = [];
   isLoading = false;
   loadError = '';
+  isExporting = false;
 
   fromDate = firstOfMonth();
   toDate = today();
@@ -47,5 +49,19 @@ export class ItemReportComponent implements OnInit {
 
   get totalRevenue(): number {
     return this.rows.reduce((s, r) => s + r.totalRevenue, 0);
+  }
+
+  export(): void {
+    this.isExporting = true;
+    this.reportService.exportItemReport(this.fromDate, this.toDate).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, `Item_Report_${this.fromDate}_to_${this.toDate}.xlsx`);
+        this.isExporting = false;
+      },
+      error: (err) => {
+        this.isExporting = false;
+        console.error('Item report export error:', err);
+      }
+    });
   }
 }

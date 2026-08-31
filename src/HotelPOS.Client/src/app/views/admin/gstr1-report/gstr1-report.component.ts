@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ReportService } from '../../../services/report.service';
 import { GstR1B2cSummaryRow, GstR1Row, HsnSummaryRow } from '../../../models/report.model';
+import { downloadBlob } from '../../../utils/download.util';
 
 function firstOfMonth(): string {
   const d = new Date();
@@ -26,6 +27,7 @@ export class Gstr1ReportComponent implements OnInit {
 
   isLoading = false;
   loadError = '';
+  isExporting = false;
 
   fromDate = firstOfMonth();
   toDate = today();
@@ -96,5 +98,19 @@ export class Gstr1ReportComponent implements OnInit {
 
   get hsnTaxableValue(): number {
     return this.hsnSummary.reduce((s, r) => s + r.taxableValue, 0);
+  }
+
+  export(): void {
+    this.isExporting = true;
+    this.reportService.exportGstR1Report(this.fromDate, this.toDate).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, `GSTR1_Report_${this.fromDate}_to_${this.toDate}.xlsx`);
+        this.isExporting = false;
+      },
+      error: (err) => {
+        this.isExporting = false;
+        console.error('GSTR-1 report export error:', err);
+      }
+    });
   }
 }

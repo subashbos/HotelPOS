@@ -1,3 +1,4 @@
+using HotelPOS.Api.Export;
 using HotelPOS.Application.DTOs.Report;
 using HotelPOS.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,8 @@ namespace HotelPOS.Api.Controllers
     [Authorize]
     public class ReportsController : BaseApiController
     {
+        private const string ExcelContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
         private readonly IReportService _reportService;
         private readonly IBIReportService _biReportService;
 
@@ -24,10 +27,44 @@ namespace HotelPOS.Api.Controllers
             return Ok(await _reportService.GetSalesReportAsync(from, to));
         }
 
+        [HttpGet("sales/export")]
+        public async Task<IActionResult> ExportSalesReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+        {
+            var report = await _reportService.GetSalesReportAsync(from, to);
+            var rows = report.RecentOrders.Select(r => (IReadOnlyList<object?>)new object?[]
+            {
+                r.CreatedAt.ToString("dd MMM yyyy HH:mm"), r.InvoiceNumber ?? string.Empty, r.CustomerName ?? "N/A", r.OrderType, r.PaymentMode, r.Total
+            }).ToList();
+
+            var bytes = ExcelExportBuilder.Build(new ExcelSheet(
+                "Sales Report",
+                new[] { "Date", "Invoice", "Customer", "Type", "Payment", "Total Amount" },
+                rows));
+
+            return File(bytes, ExcelContentType, $"Sales_Report_{DateTime.Now:yyyyMMdd}.xlsx");
+        }
+
         [HttpGet("items")]
         public async Task<ActionResult<List<ItemReportRowDto>>> GetItemReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             return Ok(await _reportService.GetItemReportAsync(from, to));
+        }
+
+        [HttpGet("items/export")]
+        public async Task<IActionResult> ExportItemReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+        {
+            var rows = await _reportService.GetItemReportAsync(from, to);
+            var sheetRows = rows.Select(r => (IReadOnlyList<object?>)new object?[]
+            {
+                r.ItemName, r.TotalQtySold, r.UnitPrice, r.TotalRevenue
+            }).ToList();
+
+            var bytes = ExcelExportBuilder.Build(new ExcelSheet(
+                "Item Report",
+                new[] { "Item", "Qty Sold", "Unit Price", "Revenue" },
+                sheetRows));
+
+            return File(bytes, ExcelContentType, $"Item_Report_{DateTime.Now:yyyyMMdd}.xlsx");
         }
 
         [HttpGet("gst")]
@@ -36,10 +73,61 @@ namespace HotelPOS.Api.Controllers
             return Ok(await _reportService.GetGstReportAsync(from, to));
         }
 
+        [HttpGet("gst/export")]
+        public async Task<IActionResult> ExportGstReport([FromQuery] DateTime from, [FromQuery] DateTime to)
+        {
+            var rows = await _reportService.GetGstReportAsync(from, to);
+            var sheetRows = rows.Select(r => (IReadOnlyList<object?>)new object?[]
+            {
+                r.Date.ToString("dd MMM yyyy"), r.OrderCount, r.GrossRevenue, r.GstAmount, r.NetIncome
+            }).ToList();
+
+            var bytes = ExcelExportBuilder.Build(new ExcelSheet(
+                "Ledger",
+                new[] { "Date", "Orders", "Gross Revenue", "GST", "Net Income" },
+                sheetRows));
+
+            return File(bytes, ExcelContentType, $"Ledger_{DateTime.Now:yyyyMMdd}.xlsx");
+        }
+
         [HttpGet("gstr1")]
         public async Task<ActionResult<GstR1ReportDto>> GetGstR1Report([FromQuery] DateTime from, [FromQuery] DateTime to)
         {
             return Ok(await _reportService.GetGstR1ReportAsync(from, to));
+        }
+
+        [HttpGet("gstr1/export")]
+        public async Task<IActionResult> ExportGstR1Report([FromQuery] DateTime from, [FromQuery] DateTime to)
+        {
+            var report = await _reportService.GetGstR1ReportAsync(from, to);
+
+            var b2bSheet = new ExcelSheet(
+                "B2B Invoices",
+                new[] { "S.No", "GSTIN", "Invoice Number", "Date", "Invoice Value", "POS", "Reverse Charge", "Invoice Type", "Customer", "Taxable Value", "Item Total", "Rate", "CGST", "SGST", "IGST" },
+                report.B2BRows.Select(r => (IReadOnlyList<object?>)new object?[]
+                {
+                    r.SNo, r.Gstin, r.InvoiceNumber, r.Date.ToString("dd-MM-yyyy"), r.InvoiceValue, r.Pos, r.ReverseCharge,
+                    r.InvoiceType, r.CustomerName, r.TaxableValue, r.ItemTotal, r.Rate, r.Cgst, r.Sgst, r.Igst
+                }).ToList());
+
+            var b2cSheet = new ExcelSheet(
+                "B2C Summary",
+                new[] { "Rate", "No. of Invoices", "Taxable Value", "CGST", "SGST", "IGST", "Total Tax", "Total Value" },
+                report.B2cSummary.Select(s => (IReadOnlyList<object?>)new object?[]
+                {
+                    s.Rate, s.InvoiceCount, s.TaxableValue, s.Cgst, s.Sgst, s.Igst, s.TotalTax, s.TotalValue
+                }).ToList());
+
+            var hsnSheet = new ExcelSheet(
+                "HSN Summary",
+                new[] { "HSN Code", "Description", "UQC", "Total Quantity", "Taxable Value", "Rate", "CGST", "SGST", "IGST", "Total Tax", "Total Value" },
+                report.HsnSummary.Select(h => (IReadOnlyList<object?>)new object?[]
+                {
+                    h.HsnCode, h.Description, h.Uqc, h.TotalQuantity, h.TaxableValue, h.Rate, h.Cgst, h.Sgst, h.Igst, h.TotalTax, h.TotalValue
+                }).ToList());
+
+            var bytes = ExcelExportBuilder.Build(b2bSheet, b2cSheet, hsnSheet);
+            return File(bytes, ExcelContentType, $"GSTR1_Report_{DateTime.Now:yyyyMMdd}.xlsx");
         }
 
         [HttpGet("monthly-chart")]
@@ -73,6 +161,29 @@ namespace HotelPOS.Api.Controllers
                 TotalDiscount = totalDiscount,
                 TotalQty = totalQty
             });
+        }
+
+        [HttpGet("purchases/export")]
+        public async Task<IActionResult> ExportPurchaseReport([FromQuery] PurchaseReportQueryRequest request)
+        {
+            // pageSize -1: export every matching row, not just the current page of the on-screen grid.
+            var query = new PagedPurchaseReportRequest(
+                1, -1, request.From, request.To, request.SupplierId, request.ItemName, request.PaymentType, request.InvoiceNo);
+
+            var (items, _, _, _, _, _) = await _reportService.GetPagedPurchaseReportAsync(query);
+
+            var rows = items.Select(r => (IReadOnlyList<object?>)new object?[]
+            {
+                r.PurchaseDate.ToString("g"), r.InvoiceNumber, r.SupplierName, r.ItemName, r.Quantity,
+                r.UnitPrice, r.TaxAmount, r.Discount, r.TotalAmount, r.PaymentType
+            }).ToList();
+
+            var bytes = ExcelExportBuilder.Build(new ExcelSheet(
+                "Purchase Report",
+                new[] { "Date", "Invoice No", "Supplier", "Item Name", "Qty", "Price", "Tax Amount", "Discount", "Total Amount", "Payment" },
+                rows));
+
+            return File(bytes, ExcelContentType, $"Purchase_Report_{DateTime.Now:yyyyMMdd}.xlsx");
         }
 
         [HttpGet("margins/summary")]
