@@ -31,15 +31,33 @@ namespace HotelPOS.Api.Controllers
         public async Task<IActionResult> ExportSalesReport([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             var report = await _reportService.GetSalesReportAsync(from, to);
-            var rows = report.RecentOrders.Select(r => (IReadOnlyList<object?>)new object?[]
-            {
-                r.CreatedAt.ToString("dd MMM yyyy HH:mm"), r.InvoiceNumber ?? string.Empty, r.CustomerName ?? "N/A", r.OrderType, r.PaymentMode, r.Total
-            }).ToList();
 
-            var bytes = ExcelExportBuilder.Build(new ExcelSheet(
-                "Sales Report",
-                new[] { "Date", "Invoice", "Customer", "Type", "Payment", "Total Amount" },
-                rows));
+            var ordersSheet = new ExcelSheet(
+                "Recent Orders",
+                new[] { "Date", "Invoice", "Customer", "Table", "Type", "Status", "Payment", "Total Amount" },
+                report.RecentOrders.Select(r => (IReadOnlyList<object?>)new object?[]
+                {
+                    r.CreatedAt.ToString("dd MMM yyyy HH:mm"), r.InvoiceNumber ?? string.Empty, r.CustomerName ?? "N/A",
+                    r.TableNumber, r.OrderType, r.Status, r.PaymentMode, r.Total
+                }).ToList());
+
+            var categorySheet = new ExcelSheet(
+                "Sales by Category",
+                new[] { "Category", "Revenue", "%" },
+                report.SalesByCategory.Select(c => (IReadOnlyList<object?>)new object?[]
+                {
+                    c.CategoryName, c.Revenue, c.Percentage
+                }).ToList());
+
+            var paymentModeSheet = new ExcelSheet(
+                "Sales by Payment Mode",
+                new[] { "Mode", "Orders", "Revenue" },
+                report.SalesByPaymentMode.Select(p => (IReadOnlyList<object?>)new object?[]
+                {
+                    p.PaymentMode, p.OrderCount, p.Revenue
+                }).ToList());
+
+            var bytes = ExcelExportBuilder.Build(ordersSheet, categorySheet, paymentModeSheet);
 
             return File(bytes, ExcelContentType, $"Sales_Report_{DateTime.Now:yyyyMMdd}.xlsx");
         }
