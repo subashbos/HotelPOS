@@ -20,7 +20,7 @@ describe('PurchaseReportComponent', () => {
   };
 
   beforeEach(async () => {
-    reportServiceSpy = jasmine.createSpyObj('ReportService', ['getPurchaseReport']);
+    reportServiceSpy = jasmine.createSpyObj('ReportService', ['getPurchaseReport', 'exportPurchaseReport']);
     reportServiceSpy.getPurchaseReport.and.returnValue(of(mockReport));
 
     await TestBed.configureTestingModule({
@@ -59,5 +59,27 @@ describe('PurchaseReportComponent', () => {
     fixture.detectChanges();
     expect(component.isLoading).toBeFalse();
     expect(component.loadError).toBe('Failed to load the purchase report. Please check the server connection.');
+  });
+
+  it('should export the purchase report as a downloaded file', () => {
+    spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock');
+    spyOn(window.URL, 'revokeObjectURL');
+    reportServiceSpy.exportPurchaseReport.and.returnValue(of(new Blob(['data'])));
+    fixture.detectChanges();
+
+    component.export();
+
+    expect(reportServiceSpy.exportPurchaseReport).toHaveBeenCalled();
+    expect(component.isExporting).toBeFalse();
+  });
+
+  it('should handle export error', () => {
+    spyOn(console, 'error');
+    reportServiceSpy.exportPurchaseReport.and.returnValue(throwError(() => new Error('Error')));
+    fixture.detectChanges();
+
+    component.export();
+
+    expect(component.isExporting).toBeFalse();
   });
 });

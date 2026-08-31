@@ -19,16 +19,32 @@ export class ReportService {
     return this.http.get<SalesReport>(`${this.apiUrl}/sales`, { params: this.dateParams(from, to) });
   }
 
+  exportSalesReport(from?: string, to?: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/sales/export`, { params: this.dateParams(from, to), responseType: 'blob' });
+  }
+
   getItemReport(from?: string, to?: string): Observable<ItemReportRow[]> {
     return this.http.get<ItemReportRow[]>(`${this.apiUrl}/items`, { params: this.dateParams(from, to) });
+  }
+
+  exportItemReport(from?: string, to?: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/items/export`, { params: this.dateParams(from, to), responseType: 'blob' });
   }
 
   getGstReport(from: string, to: string): Observable<GstReportRow[]> {
     return this.http.get<GstReportRow[]>(`${this.apiUrl}/gst`, { params: { from, to } });
   }
 
+  exportGstReport(from: string, to: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/gst/export`, { params: { from, to }, responseType: 'blob' });
+  }
+
   getGstR1Report(from: string, to: string): Observable<GstR1Report> {
     return this.http.get<GstR1Report>(`${this.apiUrl}/gstr1`, { params: { from, to } });
+  }
+
+  exportGstR1Report(from: string, to: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/gstr1/export`, { params: { from, to }, responseType: 'blob' });
   }
 
   getMonthlyChart(): Observable<MonthlySalesChart[]> {
@@ -39,6 +55,10 @@ export class ReportService {
     return this.http.get<PagedPurchaseReport>(`${this.apiUrl}/purchases`, {
       params: { page, pageSize, ...this.dateParams(from, to) }
     });
+  }
+
+  exportPurchaseReport(from?: string, to?: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/purchases/export`, { params: this.dateParams(from, to), responseType: 'blob' });
   }
 
   getMarginSummary(from?: string, to?: string): Observable<ProfitMarginSummary> {

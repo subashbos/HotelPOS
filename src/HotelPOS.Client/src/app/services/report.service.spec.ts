@@ -71,6 +71,62 @@ describe('ReportService', () => {
     });
   });
 
+  describe('exportSalesReport', () => {
+    it('should request the sales report export as a blob', () => {
+      const dummyBlob = new Blob(['data']);
+
+      service.exportSalesReport('2026-07-01', '2026-07-31').subscribe(blob => {
+        expect(blob).toEqual(dummyBlob);
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/sales/export`);
+      expect(req.request.responseType).toBe('blob');
+      req.flush(dummyBlob);
+    });
+  });
+
+  describe('exportItemReport', () => {
+    it('should request the item report export as a blob', () => {
+      const dummyBlob = new Blob(['data']);
+
+      service.exportItemReport('2026-07-01', '2026-07-31').subscribe(blob => {
+        expect(blob).toEqual(dummyBlob);
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/items/export`);
+      expect(req.request.responseType).toBe('blob');
+      req.flush(dummyBlob);
+    });
+  });
+
+  describe('exportPurchaseReport', () => {
+    it('should request the purchase report export as a blob', () => {
+      const dummyBlob = new Blob(['data']);
+
+      service.exportPurchaseReport('2026-07-01', '2026-07-31').subscribe(blob => {
+        expect(blob).toEqual(dummyBlob);
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/purchases/export`);
+      expect(req.request.responseType).toBe('blob');
+      req.flush(dummyBlob);
+    });
+  });
+
+  describe('exportGstReport', () => {
+    it('should request the GST report export as a blob', () => {
+      const dummyBlob = new Blob(['data']);
+
+      service.exportGstReport('2026-07-01', '2026-07-31').subscribe(blob => {
+        expect(blob).toEqual(dummyBlob);
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/gst/export`);
+      expect(req.request.responseType).toBe('blob');
+      req.flush(dummyBlob);
+    });
+  });
+
   describe('getGstReport', () => {
     it('should retrieve GST report with required from and to params', () => {
       const dummyRows: GstReportRow[] = [
@@ -113,6 +169,20 @@ describe('ReportService', () => {
       expect(req.request.params.get('from')).toBe('2026-07-01');
       expect(req.request.params.get('to')).toBe('2026-07-31');
       req.flush(dummyReport);
+    });
+  });
+
+  describe('exportGstR1Report', () => {
+    it('should request the GSTR-1 report export as a blob', () => {
+      const dummyBlob = new Blob(['data']);
+
+      service.exportGstR1Report('2026-07-01', '2026-07-31').subscribe(blob => {
+        expect(blob).toEqual(dummyBlob);
+      });
+
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/gstr1/export`);
+      expect(req.request.responseType).toBe('blob');
+      req.flush(dummyBlob);
     });
   });
 

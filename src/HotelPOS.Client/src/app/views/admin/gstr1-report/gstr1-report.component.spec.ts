@@ -29,7 +29,7 @@ describe('Gstr1ReportComponent', () => {
   };
 
   beforeEach(async () => {
-    reportServiceSpy = jasmine.createSpyObj('ReportService', ['getGstR1Report']);
+    reportServiceSpy = jasmine.createSpyObj('ReportService', ['getGstR1Report', 'exportGstR1Report']);
     reportServiceSpy.getGstR1Report.and.returnValue(of(dummyReport));
 
     await TestBed.configureTestingModule({
@@ -90,5 +90,27 @@ describe('Gstr1ReportComponent', () => {
     fixture.detectChanges();
     expect(component.isLoading).toBeFalse();
     expect(component.loadError).toBe('Failed to load the GSTR-1 report. Please check the server connection.');
+  });
+
+  it('should export the GSTR-1 report as a downloaded file', () => {
+    spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock');
+    spyOn(window.URL, 'revokeObjectURL');
+    reportServiceSpy.exportGstR1Report.and.returnValue(of(new Blob(['data'])));
+    fixture.detectChanges();
+
+    component.export();
+
+    expect(reportServiceSpy.exportGstR1Report).toHaveBeenCalledWith(component.fromDate, component.toDate);
+    expect(component.isExporting).toBeFalse();
+  });
+
+  it('should handle export error', () => {
+    spyOn(console, 'error');
+    reportServiceSpy.exportGstR1Report.and.returnValue(throwError(() => new Error('Error')));
+    fixture.detectChanges();
+
+    component.export();
+
+    expect(component.isExporting).toBeFalse();
   });
 });

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ReportService } from '../../../services/report.service';
 import { GstReportRow } from '../../../models/report.model';
+import { downloadBlob } from '../../../utils/download.util';
 
 function firstOfMonth(): string {
   const d = new Date();
@@ -19,6 +20,7 @@ export class LedgerComponent implements OnInit {
   rows: GstReportRow[] = [];
   isLoading = false;
   loadError = '';
+  isExporting = false;
 
   fromDate = firstOfMonth();
   toDate = today();
@@ -54,5 +56,19 @@ export class LedgerComponent implements OnInit {
       }),
       { gross: 0, gst: 0, net: 0 }
     );
+  }
+
+  export(): void {
+    this.isExporting = true;
+    this.reportService.exportGstReport(this.fromDate, this.toDate).subscribe({
+      next: (blob) => {
+        downloadBlob(blob, `Ledger_${this.fromDate}_to_${this.toDate}.xlsx`);
+        this.isExporting = false;
+      },
+      error: (err) => {
+        this.isExporting = false;
+        console.error('Ledger export error:', err);
+      }
+    });
   }
 }

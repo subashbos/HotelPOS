@@ -25,6 +25,8 @@ namespace HotelPOS.Tests.Integration
     /// </summary>
     public class ReportsHttpTests : IClassFixture<CustomWebApplicationFactory>
     {
+        private const string ExcelContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
         private readonly CustomWebApplicationFactory _factory;
 
         public ReportsHttpTests(CustomWebApplicationFactory factory)
@@ -88,6 +90,28 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task ExportSalesReport_AdminToken_ReturnsXlsx()
+        {
+            var client = CreateClient(RoleNames.Admin, "reports.admin-sales-export");
+
+            var response = await client.GetAsync("/api/reports/sales/export");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(ExcelContentType, response.Content.Headers.ContentType?.MediaType);
+            Assert.NotEmpty(await response.Content.ReadAsByteArrayAsync());
+        }
+
+        [Fact]
+        public async Task ExportSalesReport_CashierFallback_ReturnsForbidden()
+        {
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-sales-export");
+
+            var response = await client.GetAsync("/api/reports/sales/export");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
         public async Task GetItemReport_AdminToken_ReturnsOk()
         {
             var client = CreateClient(RoleNames.Admin, "reports.admin-items");
@@ -95,6 +119,28 @@ namespace HotelPOS.Tests.Integration
             var response = await client.GetAsync("/api/reports/items");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExportItemReport_AdminToken_ReturnsXlsx()
+        {
+            var client = CreateClient(RoleNames.Admin, "reports.admin-items-export");
+
+            var response = await client.GetAsync("/api/reports/items/export");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(ExcelContentType, response.Content.Headers.ContentType?.MediaType);
+            Assert.NotEmpty(await response.Content.ReadAsByteArrayAsync());
+        }
+
+        [Fact]
+        public async Task ExportItemReport_CashierFallback_ReturnsForbidden()
+        {
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-items-export");
+
+            var response = await client.GetAsync("/api/reports/items/export");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]
@@ -113,6 +159,28 @@ namespace HotelPOS.Tests.Integration
             var client = CreateClient(RoleNames.Cashier, "reports.cashier-gst");
 
             var response = await client.GetAsync("/api/reports/gst?from=2026-01-01&to=2026-12-31");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExportGstReport_AdminToken_ReturnsXlsx()
+        {
+            var client = CreateClient(RoleNames.Admin, "reports.admin-gst-export");
+
+            var response = await client.GetAsync("/api/reports/gst/export?from=2026-01-01&to=2026-12-31");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(ExcelContentType, response.Content.Headers.ContentType?.MediaType);
+            Assert.NotEmpty(await response.Content.ReadAsByteArrayAsync());
+        }
+
+        [Fact]
+        public async Task ExportGstReport_CashierFallback_ReturnsForbidden()
+        {
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-gst-export");
+
+            var response = await client.GetAsync("/api/reports/gst/export?from=2026-01-01&to=2026-12-31");
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -138,6 +206,28 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task ExportGstR1Report_AdminToken_ReturnsXlsx()
+        {
+            var client = CreateClient(RoleNames.Admin, "reports.admin-gstr1-export");
+
+            var response = await client.GetAsync("/api/reports/gstr1/export?from=2026-01-01&to=2026-12-31");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(ExcelContentType, response.Content.Headers.ContentType?.MediaType);
+            Assert.NotEmpty(await response.Content.ReadAsByteArrayAsync());
+        }
+
+        [Fact]
+        public async Task ExportGstR1Report_CashierFallback_ReturnsForbidden()
+        {
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-gstr1-export");
+
+            var response = await client.GetAsync("/api/reports/gstr1/export?from=2026-01-01&to=2026-12-31");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
         public async Task GetMonthlyChart_AdminToken_ReturnsOk()
         {
             var client = CreateClient(RoleNames.Admin, "reports.admin-monthly-chart");
@@ -155,6 +245,28 @@ namespace HotelPOS.Tests.Integration
             var response = await client.GetAsync("/api/reports/purchases");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExportPurchaseReport_AdminToken_ReturnsXlsx()
+        {
+            var client = CreateClient(RoleNames.Admin, "reports.admin-purchases-export");
+
+            var response = await client.GetAsync("/api/reports/purchases/export");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(ExcelContentType, response.Content.Headers.ContentType?.MediaType);
+            Assert.NotEmpty(await response.Content.ReadAsByteArrayAsync());
+        }
+
+        [Fact]
+        public async Task ExportPurchaseReport_CashierFallback_ReturnsForbidden()
+        {
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-purchases-export");
+
+            var response = await client.GetAsync("/api/reports/purchases/export");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]

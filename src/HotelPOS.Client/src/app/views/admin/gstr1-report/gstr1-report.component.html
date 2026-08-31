@@ -17,6 +17,10 @@
               <input id="gr1-to" type="date" [(ngModel)]="toDate" name="toDate" (change)="load()"
                 class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
             </div>
+            <button type="button" (click)="export()" [disabled]="isExporting"
+              class="bg-emerald-500 text-white active:bg-emerald-600 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md disabled:opacity-50">
+              <i class="fas fa-file-excel mr-1"></i> {{ isExporting ? 'Exporting...' : 'Export' }}
+            </button>
           </div>
         </div>
         <div class="flex gap-2 mt-4">
