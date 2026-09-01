@@ -6,11 +6,11 @@ on:
   pull_request:
     branches: [ "main", "develop" ]
 
-# A push to develop also updates any open PR whose head is develop (e.g. the
-# standing develop -> main PR), firing both the push and pull_request triggers
-# for the same commit. Grouping by branch name (head_ref for PR events, ref_name
-# for push events - both resolve to the same branch) lets the second run cancel
-# the first instead of running the whole suite twice.
+# Belt-and-suspenders: if a push ever does land while a PR sharing the same
+# branch is already open and its check hasn't started yet, this lets the
+# later run cancel the earlier one instead of both running. Doesn't help the
+# far more common case below (jobs' `if:`), where the two runs are minutes
+# apart rather than concurrent.
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
@@ -18,6 +18,12 @@ concurrency:
 jobs:
   dotnet:
     name: .NET Build & Test
+    # Skip only the auto-generated develop-head bookkeeping PR into main (a bot
+    # recreates it after every merge) - that commit was already fully tested by
+    # the push trigger above, often minutes before this PR is even opened. Any
+    # other PR (a real feature branch, into develop or directly into main)
+    # still runs normally.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main'
     # HotelPOS.WPF and HotelPOS.Tests target net10.0-windows with UseWPF=true,
     # which only builds on a Windows toolchain.
     runs-on: windows-latest
@@ -74,6 +80,7 @@ jobs:
 
   angular:
     name: Angular Test
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main'
     runs-on: windows-latest
     defaults:
       run:
