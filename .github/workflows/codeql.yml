@@ -19,6 +19,15 @@ on:
   schedule:
     - cron: '43 1 * * 6'
 
+# A push to develop also updates any open PR whose head is develop (e.g. the
+# standing develop -> main PR), firing both the push and pull_request triggers
+# for the same commit. Grouping by branch name (head_ref for PR events, ref_name
+# for push events - both resolve to the same branch) lets the second run cancel
+# the first instead of running the whole suite twice.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
