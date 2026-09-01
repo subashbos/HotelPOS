@@ -72,8 +72,8 @@ namespace HotelPOS.Application.DTOs.Report
         public decimal UnitPrice { get; set; }
     }
 
-    /// <summary>One row in the GST report.</summary>
-    public class GstReportRowDto
+    /// <summary>One row in the Ledger report (daily revenue/GST/net-income breakdown).</summary>
+    public class LedgerReportRowDto
     {
         public int SNo { get; set; }
         public DateTime Date { get; set; }

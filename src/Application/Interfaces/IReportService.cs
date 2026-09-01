@@ -15,9 +15,9 @@ namespace HotelPOS.Application.Interfaces
         Task<List<ItemReportRowDto>> GetItemReportAsync(DateTime? from = null, DateTime? to = null);
         Task<List<ItemReportRowDto>> GetItemReportInternalAsync(DateTime? from = null, DateTime? to = null);
 
-        /// <summary>Returns aggregated GST data per day.</summary>
-        Task<List<GstReportRowDto>> GetGstReportAsync(DateTime from, DateTime to);
-        Task<List<GstReportRowDto>> GetGstReportInternalAsync(DateTime from, DateTime to);
+        /// <summary>Returns aggregated GST/revenue ledger data per day.</summary>
+        Task<List<LedgerReportRowDto>> GetLedgerReportAsync(DateTime from, DateTime to);
+        Task<List<LedgerReportRowDto>> GetLedgerReportInternalAsync(DateTime from, DateTime to);
 
         /// <summary>Returns the GSTR-1 filing report (B2B invoice-wise, B2C(Small) rate-wise
         /// summary, and HSN-wise summary) for the given period.</summary>

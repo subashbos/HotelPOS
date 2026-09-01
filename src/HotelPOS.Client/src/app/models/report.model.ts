@@ -19,7 +19,7 @@ export interface SalesReport {
 }
 
 export interface ItemReportRow { sNo: number; itemName: string; totalQtySold: number; totalRevenue: number; unitPrice: number; }
-export interface GstReportRow { sNo: number; date: string; orderCount: number; grossRevenue: number; gstAmount: number; netIncome: number; }
+export interface LedgerReportRow { sNo: number; date: string; orderCount: number; grossRevenue: number; gstAmount: number; netIncome: number; }
 export interface MonthlySalesChart { monthName: string; revenue: number; }
 
 export interface PurchaseReportRow {
@@ -34,6 +34,12 @@ export interface PagedPurchaseReport {
   totalTax: number;
   totalDiscount: number;
   totalQty: number;
+}
+export interface PurchaseReportFilters {
+  supplierId?: number;
+  itemName?: string;
+  paymentType?: string;
+  invoiceNo?: string;
 }
 
 export interface ProfitMarginSummary {

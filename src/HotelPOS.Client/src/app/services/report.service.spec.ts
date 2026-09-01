@@ -4,7 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ReportService } from './report.service';
 import { environment } from '../../environments/environment';
 import {
-  GstR1Report, GstReportRow, ItemMarginRow, ItemReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
+  GstR1Report, ItemMarginRow, ItemReportRow, LedgerReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
   PagedPurchaseReport, ProfitMarginSummary, SalesReport, WastageSummary
 } from '../models/report.model';
 
@@ -111,33 +111,46 @@ describe('ReportService', () => {
       expect(req.request.responseType).toBe('blob');
       req.flush(dummyBlob);
     });
+
+    it('should include supplier/item/payment/invoice filters when provided', () => {
+      service.exportPurchaseReport(undefined, undefined, {
+        supplierId: 7, itemName: 'Rice', paymentType: 'Credit', invoiceNo: 'INV-1'
+      }).subscribe();
+
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/purchases/export`);
+      expect(req.request.params.get('supplierId')).toBe('7');
+      expect(req.request.params.get('itemName')).toBe('Rice');
+      expect(req.request.params.get('paymentType')).toBe('Credit');
+      expect(req.request.params.get('invoiceNo')).toBe('INV-1');
+      req.flush(new Blob(['data']));
+    });
   });
 
-  describe('exportGstReport', () => {
-    it('should request the GST report export as a blob', () => {
+  describe('exportLedgerReport', () => {
+    it('should request the ledger report export as a blob', () => {
       const dummyBlob = new Blob(['data']);
 
-      service.exportGstReport('2026-07-01', '2026-07-31').subscribe(blob => {
+      service.exportLedgerReport('2026-07-01', '2026-07-31').subscribe(blob => {
         expect(blob).toEqual(dummyBlob);
       });
 
-      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/gst/export`);
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/ledger/export`);
       expect(req.request.responseType).toBe('blob');
       req.flush(dummyBlob);
     });
   });
 
-  describe('getGstReport', () => {
-    it('should retrieve GST report with required from and to params', () => {
-      const dummyRows: GstReportRow[] = [
+  describe('getLedgerReport', () => {
+    it('should retrieve the ledger report with required from and to params', () => {
+      const dummyRows: LedgerReportRow[] = [
         { sNo: 1, date: '2026-07-01', orderCount: 10, grossRevenue: 1000, gstAmount: 50, netIncome: 950 }
       ];
 
-      service.getGstReport('2026-07-01', '2026-07-31').subscribe(rows => {
+      service.getLedgerReport('2026-07-01', '2026-07-31').subscribe(rows => {
         expect(rows).toEqual(dummyRows);
       });
 
-      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/gst`);
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/ledger`);
       expect(req.request.params.get('from')).toBe('2026-07-01');
       expect(req.request.params.get('to')).toBe('2026-07-31');
       req.flush(dummyRows);
@@ -225,6 +238,19 @@ describe('ReportService', () => {
       expect(req.request.params.get('pageSize')).toBe('10');
       expect(req.request.params.get('from')).toBe('2026-07-01');
       expect(req.request.params.get('to')).toBe('2026-07-31');
+      req.flush({} as PagedPurchaseReport);
+    });
+
+    it('should include supplier/item/payment/invoice filters when provided', () => {
+      service.getPurchaseReport(1, 20, undefined, undefined, {
+        supplierId: 7, itemName: 'Rice', paymentType: 'Credit', invoiceNo: 'INV-1'
+      }).subscribe();
+
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/reports/purchases`);
+      expect(req.request.params.get('supplierId')).toBe('7');
+      expect(req.request.params.get('itemName')).toBe('Rice');
+      expect(req.request.params.get('paymentType')).toBe('Credit');
+      expect(req.request.params.get('invoiceNo')).toBe('INV-1');
       req.flush({} as PagedPurchaseReport);
     });
   });

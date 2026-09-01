@@ -1,4 +1,5 @@
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Domain.Events;
@@ -20,8 +21,9 @@ namespace HotelPOS.Application.UseCases
         private readonly IAuthorizationService _authorization;
         private readonly IValidator<CreateOrderCommand> _validator;
         private readonly IBomService? _bomService;
+        private readonly ISettingService? _settingService;
 
-        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, ICashService cashService, IAuthorizationService authorization, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null)
+        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, ICashService cashService, IAuthorizationService authorization, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null, ISettingService? settingService = null)
         {
             _repo = repo;
             _mediator = mediator;
@@ -30,6 +32,18 @@ namespace HotelPOS.Application.UseCases
             _authorization = authorization;
             _validator = validator ?? new CreateOrderCommandValidator();
             _bomService = bomService;
+            _settingService = settingService;
+        }
+
+        /// <summary>The hotel's own GSTIN (Settings), used to decide whether a sale is interstate
+        /// (IGST) or intrastate (CGST+SGST). Null when no settings service is wired up (some legacy
+        /// test constructors), which CalculateTotals treats as "always intrastate", matching prior
+        /// behavior.</summary>
+        private async Task<string?> GetHotelGstinAsync()
+        {
+            if (_settingService == null) return null;
+            var settings = await _settingService.GetSettingsAsync();
+            return settings.HotelGst;
         }
 
         public Task<int> SaveOrderAsync(SaveOrderRequest request) => SaveOrderInternalAsync(request);
@@ -81,6 +95,8 @@ namespace HotelPOS.Application.UseCases
             if (discount > realSubtotal)
                 throw new ArgumentException("Discount cannot exceed order subtotal.");
 
+            var hotelGstin = await GetHotelGstinAsync();
+
             await _repo.BeginTransactionAsync();
             try
             {
@@ -94,17 +110,17 @@ namespace HotelPOS.Application.UseCases
                     FiscalYear = fy,
                     CreatedAt = now,
                     TableNumber = effectiveTableNumber,
-                    Items = orderItems
+                    Items = orderItems,
+                    CustomerGstin = customerGstin
                 };
 
-                CalculateTotals(order, orderItems);
+                CalculateTotals(order, orderItems, hotelGstin);
                 order.DiscountAmount = discount;
                 order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - discount);
                 order.PaymentMode = paymentMode;
                 order.OrderType = orderType;
                 order.CustomerName = customerName;
                 order.CustomerPhone = customerPhone;
-                order.CustomerGstin = customerGstin;
                 order.CustomerId = customerId;
                 order.Status = OrderStatuses.Paid;
                 order.AmountPaid = order.TotalAmount;
@@ -172,15 +188,26 @@ namespace HotelPOS.Application.UseCases
             return orderItems;
         }
 
-        private static void CalculateTotals(Order order, List<OrderItem> items)
+        /// <param name="hotelGstin">The hotel's own GSTIN (Settings), or null. When its state code
+        /// differs from the order's CustomerGstin, the sale is interstate and taxed as IGST instead
+        /// of the CGST+SGST default - see <see cref="GstinHelper.IsInterstate"/>.</param>
+        private static void CalculateTotals(Order order, List<OrderItem> items, string? hotelGstin)
         {
             order.Subtotal = items.Sum(x => x.Total);
             order.GstAmount = Math.Round(items.Sum(x => x.Price * x.Quantity * (x.TaxPercentage / MoneyPrecision.PercentDivisor)), MoneyPrecision.CurrencyDecimals);
 
-            // Assume Intrastate default for Hotel POS (CGST = 50%, SGST = 50%)
-            order.CgstAmount = Math.Round(order.GstAmount / 2m, MoneyPrecision.CurrencyDecimals);
-            order.SgstAmount = order.GstAmount - order.CgstAmount;
-            order.IgstAmount = 0m;
+            if (GstinHelper.IsInterstate(hotelGstin, order.CustomerGstin))
+            {
+                order.CgstAmount = 0m;
+                order.SgstAmount = 0m;
+                order.IgstAmount = order.GstAmount;
+            }
+            else
+            {
+                order.CgstAmount = Math.Round(order.GstAmount / 2m, MoneyPrecision.CurrencyDecimals);
+                order.SgstAmount = order.GstAmount - order.CgstAmount;
+                order.IgstAmount = 0m;
+            }
         }
 
         private static string GetFiscalYear(DateTime date)
@@ -222,6 +249,8 @@ namespace HotelPOS.Application.UseCases
             if (order.OrderType == OrderTypes.Takeaway || order.OrderType == OrderTypes.Online)
                 order.TableNumber = 0;
 
+            var hotelGstin = await GetHotelGstinAsync();
+
             await _repo.BeginTransactionAsync();
             try
             {
@@ -240,7 +269,7 @@ namespace HotelPOS.Application.UseCases
                 // caller's items already come from the same catalog, so behavior is unchanged there.
                 order.Items = await BuildPricedOrderItemsAsync(order.Items);
 
-                CalculateTotals(order, order.Items);
+                CalculateTotals(order, order.Items, hotelGstin);
                 order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
 
                 await _repo.UpdateAsync(order);
@@ -375,6 +404,8 @@ namespace HotelPOS.Application.UseCases
             if (order == null) throw new KeyNotFoundException($"Order #{orderId} not found.");
             if (order.Status == OrderStatuses.Void) throw new InvalidOperationException("Cannot refund a void order.");
 
+            var hotelGstin = await GetHotelGstinAsync();
+
             await _repo.BeginTransactionAsync();
             try
             {
@@ -384,7 +415,7 @@ namespace HotelPOS.Application.UseCases
                 order.Items.RemoveAll(x => x.Quantity == 0);
 
                 // Recalculate totals
-                CalculateTotals(order, order.Items);
+                CalculateTotals(order, order.Items, hotelGstin);
 
                 order.TotalAmount = Math.Max(0, order.Subtotal + order.GstAmount - order.DiscountAmount);
                 order.RefundedAmount += refundTotal;

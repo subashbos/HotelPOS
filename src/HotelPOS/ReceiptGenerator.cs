@@ -1,3 +1,4 @@
+using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using System.Windows;
@@ -160,17 +161,26 @@ namespace HotelPOS
                     .GroupBy(i => i.TaxPercentage)
                     .OrderBy(g => g.Key);
 
+                bool isInterstate = GstinHelper.IsInterstate(settings.HotelGst, order.CustomerGstin);
+
                 foreach (var group in taxGroups)
                 {
                     if (group.Key == 0) continue;
 
                     decimal groupSubtotal = group.Sum(i => i.Price * i.Quantity);
                     decimal groupTax = groupSubtotal * (group.Key / 100m);
-                    decimal halfTax = groupTax / 2;
-                    decimal halfRate = group.Key / 2;
 
-                    AddTotalsRow(tg, $"CGST ({halfRate:0.#}%):", halfTax.ToString("N2"), false, textSz);
-                    AddTotalsRow(tg, $"SGST ({halfRate:0.#}%):", halfTax.ToString("N2"), false, textSz);
+                    if (isInterstate)
+                    {
+                        AddTotalsRow(tg, $"IGST ({group.Key:0.#}%):", groupTax.ToString("N2"), false, textSz);
+                    }
+                    else
+                    {
+                        decimal halfTax = groupTax / 2;
+                        decimal halfRate = group.Key / 2;
+                        AddTotalsRow(tg, $"CGST ({halfRate:0.#}%):", halfTax.ToString("N2"), false, textSz);
+                        AddTotalsRow(tg, $"SGST ({halfRate:0.#}%):", halfTax.ToString("N2"), false, textSz);
+                    }
                 }
             }
             if (order.DiscountAmount > 0)

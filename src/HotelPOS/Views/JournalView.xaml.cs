@@ -168,11 +168,11 @@ namespace HotelPOS.Views
                 var from = FromDate.SelectedDate ?? DateTime.Today.AddDays(-30);
                 var to = ToDate.SelectedDate ?? DateTime.Today;
 
-                List<GstReportRowDto> data;
+                List<LedgerReportRowDto> data;
                 using (var scope = App.CreateDbScope())
                 {
                     var reportService = scope.ServiceProvider.GetRequiredService<IReportService>();
-                    data = await reportService.GetGstReportAsync(from, to);
+                    data = await reportService.GetLedgerReportAsync(from, to);
                 }
 
                 using var wb = new XLWorkbook();
