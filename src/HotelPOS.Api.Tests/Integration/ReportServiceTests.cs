@@ -106,7 +106,7 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
-        public async Task GetGstReportAsync_GroupsByLocalDate()
+        public async Task GetLedgerReportAsync_GroupsByLocalDate()
         {
             // Arrange
             // Order 1: 11 PM UTC (which is next day in many timezones, e.g. IST +5:30)
@@ -126,7 +126,7 @@ namespace HotelPOS.Tests
             // Act
             var from = new DateTime(2026, 5, 1);
             var to = new DateTime(2026, 5, 2);
-            var result = await _service.GetGstReportAsync(from, to);
+            var result = await _service.GetLedgerReportAsync(from, to);
 
             // Assert
             // This test is sensitive to the runner's local time, but we expect at least two groups 

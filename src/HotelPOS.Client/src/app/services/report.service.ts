@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
-  GstR1Report, GstReportRow, ItemMarginRow, ItemReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
-  PagedPurchaseReport, ProfitAndLossReport, ProfitMarginSummary, SalesReport, ShiftClosureReport, StaffPerformanceReport, StockValuationSummary, VoidDiscountAuditRow, WastageSummary
+  GstR1Report, ItemMarginRow, ItemReportRow, LedgerReportRow, LowStockAlert, MonthlySalesChart, MonthlyTrend,
+  PagedPurchaseReport, ProfitAndLossReport, ProfitMarginSummary, PurchaseReportFilters, SalesReport, ShiftClosureReport,
+  StaffPerformanceReport, StockValuationSummary, VoidDiscountAuditRow, WastageSummary
 } from '../models/report.model';
 import { environment } from '../../environments/environment';
 
@@ -31,12 +32,12 @@ export class ReportService {
     return this.http.get(`${this.apiUrl}/items/export`, { params: this.dateParams(from, to), responseType: 'blob' });
   }
 
-  getGstReport(from: string, to: string): Observable<GstReportRow[]> {
-    return this.http.get<GstReportRow[]>(`${this.apiUrl}/gst`, { params: { from, to } });
+  getLedgerReport(from: string, to: string): Observable<LedgerReportRow[]> {
+    return this.http.get<LedgerReportRow[]>(`${this.apiUrl}/ledger`, { params: { from, to } });
   }
 
-  exportGstReport(from: string, to: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/gst/export`, { params: { from, to }, responseType: 'blob' });
+  exportLedgerReport(from: string, to: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/ledger/export`, { params: { from, to }, responseType: 'blob' });
   }
 
   getGstR1Report(from: string, to: string): Observable<GstR1Report> {
@@ -51,14 +52,17 @@ export class ReportService {
     return this.http.get<MonthlySalesChart[]>(`${this.apiUrl}/monthly-chart`);
   }
 
-  getPurchaseReport(page: number, pageSize: number, from?: string, to?: string): Observable<PagedPurchaseReport> {
+  getPurchaseReport(page: number, pageSize: number, from?: string, to?: string, filters?: PurchaseReportFilters): Observable<PagedPurchaseReport> {
     return this.http.get<PagedPurchaseReport>(`${this.apiUrl}/purchases`, {
-      params: { page, pageSize, ...this.dateParams(from, to) }
+      params: { page, pageSize, ...this.dateParams(from, to), ...this.purchaseFilterParams(filters) }
     });
   }
 
-  exportPurchaseReport(from?: string, to?: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/purchases/export`, { params: this.dateParams(from, to), responseType: 'blob' });
+  exportPurchaseReport(from?: string, to?: string, filters?: PurchaseReportFilters): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/purchases/export`, {
+      params: { ...this.dateParams(from, to), ...this.purchaseFilterParams(filters) },
+      responseType: 'blob'
+    });
   }
 
   getMarginSummary(from?: string, to?: string): Observable<ProfitMarginSummary> {
@@ -108,6 +112,15 @@ export class ReportService {
     const params: Record<string, string> = {};
     if (from) params['from'] = from;
     if (to) params['to'] = to;
+    return params;
+  }
+
+  private purchaseFilterParams(filters?: PurchaseReportFilters): Record<string, string> {
+    const params: Record<string, string> = {};
+    if (filters?.supplierId) params['supplierId'] = filters.supplierId.toString();
+    if (filters?.itemName) params['itemName'] = filters.itemName;
+    if (filters?.paymentType) params['paymentType'] = filters.paymentType;
+    if (filters?.invoiceNo) params['invoiceNo'] = filters.invoiceNo;
     return params;
   }
 }

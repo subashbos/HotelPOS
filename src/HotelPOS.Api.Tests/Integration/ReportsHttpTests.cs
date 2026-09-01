@@ -144,31 +144,31 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
-        public async Task GetGstReport_AdminToken_ReturnsOk()
+        public async Task GetLedgerReport_AdminToken_ReturnsOk()
         {
-            var client = CreateClient(RoleNames.Admin, "reports.admin-gst");
+            var client = CreateClient(RoleNames.Admin, "reports.admin-ledger");
 
-            var response = await client.GetAsync("/api/reports/gst?from=2026-01-01&to=2026-12-31");
+            var response = await client.GetAsync("/api/reports/ledger?from=2026-01-01&to=2026-12-31");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
-        public async Task GetGstReport_CashierFallback_ReturnsForbidden()
+        public async Task GetLedgerReport_CashierFallback_ReturnsForbidden()
         {
-            var client = CreateClient(RoleNames.Cashier, "reports.cashier-gst");
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-ledger");
 
-            var response = await client.GetAsync("/api/reports/gst?from=2026-01-01&to=2026-12-31");
+            var response = await client.GetAsync("/api/reports/ledger?from=2026-01-01&to=2026-12-31");
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]
-        public async Task ExportGstReport_AdminToken_ReturnsXlsx()
+        public async Task ExportLedgerReport_AdminToken_ReturnsXlsx()
         {
-            var client = CreateClient(RoleNames.Admin, "reports.admin-gst-export");
+            var client = CreateClient(RoleNames.Admin, "reports.admin-ledger-export");
 
-            var response = await client.GetAsync("/api/reports/gst/export?from=2026-01-01&to=2026-12-31");
+            var response = await client.GetAsync("/api/reports/ledger/export?from=2026-01-01&to=2026-12-31");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(ExcelContentType, response.Content.Headers.ContentType?.MediaType);
@@ -176,11 +176,11 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
-        public async Task ExportGstReport_CashierFallback_ReturnsForbidden()
+        public async Task ExportLedgerReport_CashierFallback_ReturnsForbidden()
         {
-            var client = CreateClient(RoleNames.Cashier, "reports.cashier-gst-export");
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-ledger-export");
 
-            var response = await client.GetAsync("/api/reports/gst/export?from=2026-01-01&to=2026-12-31");
+            var response = await client.GetAsync("/api/reports/ledger/export?from=2026-01-01&to=2026-12-31");
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }

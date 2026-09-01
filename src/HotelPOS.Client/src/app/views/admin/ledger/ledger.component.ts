@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ReportService } from '../../../services/report.service';
-import { GstReportRow } from '../../../models/report.model';
+import { LedgerReportRow } from '../../../models/report.model';
 import { downloadBlob } from '../../../utils/download.util';
 
 function firstOfMonth(): string {
@@ -17,7 +17,7 @@ function today(): string {
   templateUrl: './ledger.component.html',
 })
 export class LedgerComponent implements OnInit {
-  rows: GstReportRow[] = [];
+  rows: LedgerReportRow[] = [];
   isLoading = false;
   loadError = '';
   isExporting = false;
@@ -34,7 +34,7 @@ export class LedgerComponent implements OnInit {
   load(): void {
     this.isLoading = true;
     this.loadError = '';
-    this.reportService.getGstReport(this.fromDate, this.toDate).subscribe({
+    this.reportService.getLedgerReport(this.fromDate, this.toDate).subscribe({
       next: (rows) => {
         this.rows = rows;
         this.isLoading = false;
@@ -60,7 +60,7 @@ export class LedgerComponent implements OnInit {
 
   export(): void {
     this.isExporting = true;
-    this.reportService.exportGstReport(this.fromDate, this.toDate).subscribe({
+    this.reportService.exportLedgerReport(this.fromDate, this.toDate).subscribe({
       next: (blob) => {
         downloadBlob(blob, `Ledger_${this.fromDate}_to_${this.toDate}.xlsx`);
         this.isExporting = false;

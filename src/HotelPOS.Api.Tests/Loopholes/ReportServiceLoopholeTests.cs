@@ -10,7 +10,7 @@ namespace HotelPOS.Tests
 {
     /// <summary>
     /// Covers ReportService edge cases missing from ReportServiceTests.cs:
-    /// zero orders, GetItemReport date range, GetGstReport empty range,
+    /// zero orders, GetItemReport date range, GetLedgerReport empty range,
     /// GetMonthlyChartData (zero tests previously), category "Others" fallback,
     /// and MostPopularItem tie-breaking.
     /// </summary>
@@ -193,14 +193,14 @@ namespace HotelPOS.Tests
             Assert.Equal(2, result[1].SNo);
         }
 
-        // ── GetGstReportAsync ────────────────────────────────────────────────
+        // ── GetLedgerReportAsync ─────────────────────────────────────────────
 
         [Fact]
-        public async Task GetGstReportAsync_NoOrdersInRange_ReturnsEmptyList()
+        public async Task GetLedgerReportAsync_NoOrdersInRange_ReturnsEmptyList()
         {
             SetupEmptyOrders();
 
-            var result = await _service.GetGstReportAsync(
+            var result = await _service.GetLedgerReportAsync(
                 DateTime.Today.AddDays(-7), DateTime.Today);
 
             Assert.NotNull(result);
@@ -208,7 +208,7 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
-        public async Task GetGstReportAsync_GroupsByLocalDate()
+        public async Task GetLedgerReportAsync_GroupsByLocalDate()
         {
             var orders = new List<Order>
             {
@@ -225,7 +225,7 @@ namespace HotelPOS.Tests
             };
             SetupOrders(orders);
 
-            var result = await _service.GetGstReportAsync(
+            var result = await _service.GetLedgerReportAsync(
                 new DateTime(2026, 5, 1), new DateTime(2026, 5, 2));
 
             // Both orders are on the same local date — should be one group
@@ -236,7 +236,7 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
-        public async Task GetGstReportAsync_SNoIsSequential()
+        public async Task GetLedgerReportAsync_SNoIsSequential()
         {
             var orders = new List<Order>
             {
@@ -247,7 +247,7 @@ namespace HotelPOS.Tests
             };
             SetupOrders(orders);
 
-            var result = await _service.GetGstReportAsync(
+            var result = await _service.GetLedgerReportAsync(
                 new DateTime(2026, 5, 1), new DateTime(2026, 5, 3));
 
             for (int i = 0; i < result.Count; i++)

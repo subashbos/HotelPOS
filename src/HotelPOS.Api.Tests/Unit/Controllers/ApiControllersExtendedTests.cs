@@ -959,16 +959,16 @@ namespace HotelPOS.Tests.Unit.Controllers
         }
 
         [Fact]
-        public async Task Reports_GetGstReport_ReturnsOkWithData()
+        public async Task Reports_GetLedgerReport_ReturnsOkWithData()
         {
             var from = new DateTime(2026, 1, 1);
             var to = new DateTime(2026, 1, 31);
             var reportSvc = new Mock<IReportService>();
-            var rows = new List<GstReportRowDto> { new GstReportRowDto { OrderCount = 3 } };
-            reportSvc.Setup(s => s.GetGstReportAsync(from, to)).ReturnsAsync(rows);
+            var rows = new List<LedgerReportRowDto> { new LedgerReportRowDto { OrderCount = 3 } };
+            reportSvc.Setup(s => s.GetLedgerReportAsync(from, to)).ReturnsAsync(rows);
 
             var controller = CreateReportsController(reportSvc);
-            var result = await controller.GetGstReport(from, to);
+            var result = await controller.GetLedgerReport(from, to);
 
             var ok = Assert.IsType<OkObjectResult>(result.Result);
             Assert.Same(rows, ok.Value);

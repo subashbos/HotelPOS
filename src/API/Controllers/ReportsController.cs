@@ -85,16 +85,16 @@ namespace HotelPOS.Api.Controllers
             return File(bytes, ExcelContentType, $"Item_Report_{DateTime.Now:yyyyMMdd}.xlsx");
         }
 
-        [HttpGet("gst")]
-        public async Task<ActionResult<List<GstReportRowDto>>> GetGstReport([FromQuery] DateTime from, [FromQuery] DateTime to)
+        [HttpGet("ledger")]
+        public async Task<ActionResult<List<LedgerReportRowDto>>> GetLedgerReport([FromQuery] DateTime from, [FromQuery] DateTime to)
         {
-            return Ok(await _reportService.GetGstReportAsync(from, to));
+            return Ok(await _reportService.GetLedgerReportAsync(from, to));
         }
 
-        [HttpGet("gst/export")]
-        public async Task<IActionResult> ExportGstReport([FromQuery] DateTime from, [FromQuery] DateTime to)
+        [HttpGet("ledger/export")]
+        public async Task<IActionResult> ExportLedgerReport([FromQuery] DateTime from, [FromQuery] DateTime to)
         {
-            var rows = await _reportService.GetGstReportAsync(from, to);
+            var rows = await _reportService.GetLedgerReportAsync(from, to);
             var sheetRows = rows.Select(r => (IReadOnlyList<object?>)new object?[]
             {
                 r.Date.ToString("dd MMM yyyy"), r.OrderCount, r.GrossRevenue, r.GstAmount, r.NetIncome

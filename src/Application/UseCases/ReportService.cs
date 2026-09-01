@@ -125,19 +125,19 @@ namespace HotelPOS.Application.UseCases
             return result;
         }
 
-        public async Task<List<GstReportRowDto>> GetGstReportAsync(DateTime from, DateTime to)
+        public async Task<List<LedgerReportRowDto>> GetLedgerReportAsync(DateTime from, DateTime to)
         {
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
             if (_mediator != null)
             {
-                return await _mediator.Send(new GetGstReportQuery(from, to));
+                return await _mediator.Send(new GetLedgerReportQuery(from, to));
             }
 
-            return await GetGstReportInternalAsync(from, to);
+            return await GetLedgerReportInternalAsync(from, to);
         }
 
-        public async Task<List<GstReportRowDto>> GetGstReportInternalAsync(DateTime from, DateTime to)
+        public async Task<List<LedgerReportRowDto>> GetLedgerReportInternalAsync(DateTime from, DateTime to)
         {
             // Standardize bounds to UTC
             var utcFrom = from.ToUniversalTime();
@@ -147,7 +147,7 @@ namespace HotelPOS.Application.UseCases
 
             var result = filtered
                 .GroupBy(o => o.CreatedAt.ToLocalTime().Date)
-                .Select(g => new GstReportRowDto
+                .Select(g => new LedgerReportRowDto
                 {
                     Date = g.Key,
                     OrderCount = g.Count(),

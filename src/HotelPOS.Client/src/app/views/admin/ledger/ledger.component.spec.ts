@@ -10,8 +10,8 @@ describe('LedgerComponent', () => {
   let reportServiceSpy: jasmine.SpyObj<ReportService>;
 
   beforeEach(async () => {
-    reportServiceSpy = jasmine.createSpyObj('ReportService', ['getGstReport', 'exportGstReport']);
-    reportServiceSpy.getGstReport.and.returnValue(of([
+    reportServiceSpy = jasmine.createSpyObj('ReportService', ['getLedgerReport', 'exportLedgerReport']);
+    reportServiceSpy.getLedgerReport.and.returnValue(of([
       { sNo: 1, date: '2026-01-01', orderCount: 10, grossRevenue: 10000, gstAmount: 1800, netIncome: 8200 }
     ]));
 
@@ -32,14 +32,14 @@ describe('LedgerComponent', () => {
   it('should create component and calculate totals', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
-    expect(reportServiceSpy.getGstReport).toHaveBeenCalled();
+    expect(reportServiceSpy.getLedgerReport).toHaveBeenCalled();
     expect(component.rows).toHaveSize(1);
     expect(component.totals).toEqual({ gross: 10000, gst: 1800, net: 8200 });
   });
 
   it('should handle load error', () => {
     spyOn(console, 'error');
-    reportServiceSpy.getGstReport.and.returnValue(throwError(() => new Error('Error')));
+    reportServiceSpy.getLedgerReport.and.returnValue(throwError(() => new Error('Error')));
     fixture.detectChanges();
     expect(component.isLoading).toBeFalse();
     expect(component.loadError).toBe('Failed to load the ledger. Please check the server connection.');
@@ -48,18 +48,18 @@ describe('LedgerComponent', () => {
   it('should export the ledger as a downloaded file', () => {
     spyOn(window.URL, 'createObjectURL').and.returnValue('blob:mock');
     spyOn(window.URL, 'revokeObjectURL');
-    reportServiceSpy.exportGstReport.and.returnValue(of(new Blob(['data'])));
+    reportServiceSpy.exportLedgerReport.and.returnValue(of(new Blob(['data'])));
     fixture.detectChanges();
 
     component.export();
 
-    expect(reportServiceSpy.exportGstReport).toHaveBeenCalledWith(component.fromDate, component.toDate);
+    expect(reportServiceSpy.exportLedgerReport).toHaveBeenCalledWith(component.fromDate, component.toDate);
     expect(component.isExporting).toBeFalse();
   });
 
   it('should handle export error', () => {
     spyOn(console, 'error');
-    reportServiceSpy.exportGstReport.and.returnValue(throwError(() => new Error('Error')));
+    reportServiceSpy.exportLedgerReport.and.returnValue(throwError(() => new Error('Error')));
     fixture.detectChanges();
 
     component.export();

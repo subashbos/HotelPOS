@@ -25,6 +25,43 @@
         </div>
       </div>
       <div class="px-6 py-4">
+        <div class="flex flex-wrap items-end gap-3 mb-6">
+          <div>
+            <label for="pr-supplier" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Supplier</label>
+            <select id="pr-supplier" [(ngModel)]="supplierId" name="supplierId"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring">
+              <option [ngValue]="null">All</option>
+              <option *ngFor="let s of suppliers" [ngValue]="s.id">{{ s.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label for="pr-item" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Item</label>
+            <input id="pr-item" type="text" [(ngModel)]="itemName" name="itemName" placeholder="Item name"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+          </div>
+          <div>
+            <label for="pr-payment" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Payment</label>
+            <select id="pr-payment" [(ngModel)]="paymentType" name="paymentType"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring">
+              <option value="">All</option>
+              <option *ngFor="let p of paymentTypes" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+          <div>
+            <label for="pr-invoice" class="block uppercase text-blueGray-600 text-xs font-bold mb-1">Invoice No</label>
+            <input id="pr-invoice" type="text" [(ngModel)]="invoiceNo" name="invoiceNo" placeholder="Invoice number"
+              class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
+          </div>
+          <button type="button" (click)="applyFilters()"
+            class="bg-blueGray-700 text-white active:bg-blueGray-600 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md">
+            Apply
+          </button>
+          <button type="button" (click)="clearFilters()"
+            class="bg-blueGray-200 text-blueGray-700 active:bg-blueGray-300 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md">
+            Clear
+          </button>
+        </div>
+
         <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
         <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading purchase report...</p>
 
