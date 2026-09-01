@@ -146,5 +146,67 @@ namespace HotelPOS.Tests
             var row = Assert.Single(summary);
             Assert.Equal("(No HSN)", row.HsnCode);
         }
+
+        [Fact]
+        public void BuildRow_InterstateCustomer_ChargesIgstInsteadOfCgstSgst()
+        {
+            // Hotel is in state 33 (Tamil Nadu); customer's GSTIN is state 29 (Karnataka).
+            var order = MakeOrder(gstin: "29APWAS2365E1ZE");
+            var items = new List<OrderItem> { new() { Price = 6300, Quantity = 1, TaxPercentage = 5, Total = 6300 } };
+
+            var row = GstR1RowBuilder.BuildRow(order, 5m, items, hotelGstin: "33AQZPS2365E1ZE");
+
+            Assert.Equal(0m, row.Cgst);
+            Assert.Equal(0m, row.Sgst);
+            Assert.Equal(315m, row.Igst); // 6300 * 5%
+        }
+
+        [Fact]
+        public void BuildRow_SameStateCustomer_StillChargesCgstSgst()
+        {
+            var order = MakeOrder(gstin: "33APWAS2365E1ZE");
+            var items = new List<OrderItem> { new() { Price = 6300, Quantity = 1, TaxPercentage = 5, Total = 6300 } };
+
+            var row = GstR1RowBuilder.BuildRow(order, 5m, items, hotelGstin: "33AQZPS2365E1ZE");
+
+            Assert.Equal(157.50m, row.Cgst);
+            Assert.Equal(157.50m, row.Sgst);
+            Assert.Equal(0m, row.Igst);
+        }
+
+        [Fact]
+        public void BuildRow_B2cNoCustomerGstin_DefaultsToIntrastateEvenWithHotelGstinConfigured()
+        {
+            var order = MakeOrder(gstin: null);
+            var items = new List<OrderItem> { new() { Price = 100, Quantity = 1, TaxPercentage = 5, Total = 100 } };
+
+            var row = GstR1RowBuilder.BuildRow(order, 5m, items, hotelGstin: "33AQZPS2365E1ZE");
+
+            Assert.Equal(0m, row.Igst);
+            Assert.True(row.Cgst > 0 && row.Sgst > 0);
+        }
+
+        [Fact]
+        public void BuildHsnSummary_MixOfInterstateAndIntrastateOrders_SplitsTaxCorrectlyPerBucket()
+        {
+            var catalog = new Dictionary<int, Item>
+            {
+                [1] = new Item { Id = 1, Name = "Chicken Biriyani", HsnCode = "2106", TaxPercentage = 5 }
+            };
+
+            var interstateOrder = MakeOrder(gstin: "29APWAS2365E1ZE", invoiceNumber: "INV1");
+            interstateOrder.Items = [new() { ItemId = 1, ItemName = "Chicken Biriyani", Price = 100, Quantity = 2, TaxPercentage = 5, Total = 200 }];
+
+            var intrastateOrder = MakeOrder(gstin: "33APWAS2365E1ZE", invoiceNumber: "INV2");
+            intrastateOrder.Items = [new() { ItemId = 1, ItemName = "Chicken Biriyani", Price = 100, Quantity = 1, TaxPercentage = 5, Total = 100 }];
+
+            var summary = GstR1RowBuilder.BuildHsnSummary([interstateOrder, intrastateOrder], catalog, hotelGstin: "33AQZPS2365E1ZE");
+
+            var row = Assert.Single(summary);
+            Assert.Equal(300m, row.TaxableValue);
+            Assert.Equal(10m, row.Igst); // 200 (interstate) * 5%
+            Assert.Equal(2.50m, row.Cgst); // 100 (intrastate) * 5% / 2
+            Assert.Equal(2.50m, row.Sgst);
+        }
     }
 }

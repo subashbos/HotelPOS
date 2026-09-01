@@ -230,5 +230,31 @@ namespace HotelPOS.Tests
             Assert.Equal(5m, summary[0].Rate);
             Assert.Equal(18m, summary[1].Rate);
         }
+
+        [Fact]
+        public void BuildRow_InterstateCustomer_ChargesIgstInsteadOfCgstSgst()
+        {
+            var order = MakeOrder(gstin: "29APWAS2365E1ZE");
+            var items = new List<OrderItem> { new() { Price = 6300, Quantity = 1, TaxPercentage = 5, Total = 6300 } };
+
+            var row = GstR1RowBuilder.BuildRow(order, 5m, items, hotelGstin: "33AQZPS2365E1ZE");
+
+            Assert.Equal(0m, row.Cgst);
+            Assert.Equal(0m, row.Sgst);
+            Assert.Equal(315m, row.Igst);
+        }
+
+        [Fact]
+        public void BuildRow_SameStateCustomer_StillChargesCgstSgst()
+        {
+            var order = MakeOrder(gstin: "33APWAS2365E1ZE");
+            var items = new List<OrderItem> { new() { Price = 6300, Quantity = 1, TaxPercentage = 5, Total = 6300 } };
+
+            var row = GstR1RowBuilder.BuildRow(order, 5m, items, hotelGstin: "33AQZPS2365E1ZE");
+
+            Assert.Equal(157.50m, row.Cgst);
+            Assert.Equal(157.50m, row.Sgst);
+            Assert.Equal(0m, row.Igst);
+        }
     }
 }

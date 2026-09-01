@@ -15,6 +15,7 @@ namespace HotelPOS.Application.UseCases
         private readonly IPurchaseRepository _purchaseRepo;
         private readonly IAuthorizationService _authorization;
         private readonly IMediator? _mediator;
+        private readonly ISettingService? _settingService;
 
         public ReportService(
             IOrderRepository orderRepo,
@@ -22,7 +23,8 @@ namespace HotelPOS.Application.UseCases
             ICategoryRepository categoryRepo,
             IPurchaseRepository purchaseRepo,
             IAuthorizationService authorization,
-            IMediator? mediator = null)
+            IMediator? mediator = null,
+            ISettingService? settingService = null)
         {
             _orderRepo = orderRepo;
             _itemRepo = itemRepo;
@@ -30,6 +32,7 @@ namespace HotelPOS.Application.UseCases
             _purchaseRepo = purchaseRepo;
             _authorization = authorization;
             _mediator = mediator;
+            _settingService = settingService;
         }
 
         public async Task<SalesReportDto> GetSalesReportAsync(
@@ -182,11 +185,12 @@ namespace HotelPOS.Application.UseCases
             var (orders, _) = await _orderRepo.GetPagedWithItemsAsync(1, -1, new OrderQueryFilter(utcFrom, utcTo));
             var allItems = await _itemRepo.GetAllAsync();
             var catalogById = allItems.ToDictionary(i => i.Id);
+            var hotelGstin = _settingService != null ? (await _settingService.GetSettingsAsync()).HotelGst : null;
 
             // B2B: the customer must have a GSTIN on file (GSTR-1 tables 4A/4B/4C/6B/6C - invoice-wise
             // details of supplies to registered persons).
             var b2bOrders = orders.Where(o => !string.IsNullOrWhiteSpace(o.CustomerGstin));
-            var b2bRows = Reports.GstR1RowBuilder.BuildRows(b2bOrders)
+            var b2bRows = Reports.GstR1RowBuilder.BuildRows(b2bOrders, hotelGstin)
                 .OrderBy(r => r.Date)
                 .ThenBy(r => r.InvoiceNumber)
                 .ToList();
@@ -195,11 +199,11 @@ namespace HotelPOS.Application.UseCases
             // B2C(Small): walk-in/retail sales without a customer GSTIN, summarized by tax rate
             // (GSTR-1 table 7) rather than shown invoice-wise.
             var b2cOrders = orders.Where(o => string.IsNullOrWhiteSpace(o.CustomerGstin));
-            var b2cSummary = Reports.GstR1RowBuilder.BuildB2cSummary(b2cOrders);
+            var b2cSummary = Reports.GstR1RowBuilder.BuildB2cSummary(b2cOrders, hotelGstin);
 
             // HSN Summary (table 12): ALL outward supplies in the period, B2B and B2C combined,
             // grouped by HSN code + rate - unlike the tabs above, this isn't split by customer type.
-            var hsnSummary = Reports.GstR1RowBuilder.BuildHsnSummary(orders, catalogById);
+            var hsnSummary = Reports.GstR1RowBuilder.BuildHsnSummary(orders, catalogById, hotelGstin);
 
             return new GstR1ReportDto
             {

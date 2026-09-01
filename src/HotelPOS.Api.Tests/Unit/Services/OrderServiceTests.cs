@@ -48,6 +48,75 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task SaveOrderAsync_InterstateCustomer_ChargesIgstInsteadOfCgstSgst()
+        {
+            var settingServiceMock = new Mock<ISettingService>();
+            settingServiceMock.Setup(s => s.GetSettingsAsync())
+                .ReturnsAsync(new SystemSetting { HotelGst = "33AQZPS2365E1ZE" }); // hotel is in state 33
+
+            var service = new OrderService(
+                _repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object,
+                TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object,
+                settingService: settingServiceMock.Object);
+
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Test", Quantity = 2, Price = 100, TaxPercentage = 5, Total = 200 }
+            };
+            _repoMock.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-002");
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(11);
+
+            // Customer GSTIN is state 29 - different from the hotel's state 33.
+            await service.SaveOrderAsync(new SaveOrderRequest(items, 1, CustomerGstin: "29APWAS2365E1ZE"));
+
+            _repoMock.Verify(r => r.AddAsync(It.Is<Order>(o =>
+                o.CgstAmount == 0m && o.SgstAmount == 0m && o.IgstAmount == 10m)), Times.Once); // 200 * 5%
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_SameStateCustomer_StillChargesCgstSgst()
+        {
+            var settingServiceMock = new Mock<ISettingService>();
+            settingServiceMock.Setup(s => s.GetSettingsAsync())
+                .ReturnsAsync(new SystemSetting { HotelGst = "33AQZPS2365E1ZE" });
+
+            var service = new OrderService(
+                _repoMock.Object, _mediatorMock.Object, _itemServiceMock.Object,
+                TestCashService.WithOpenSession().Object, TestAuthorization.AllowAll().Object,
+                settingService: settingServiceMock.Object);
+
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Test", Quantity = 2, Price = 100, TaxPercentage = 5, Total = 200 }
+            };
+            _repoMock.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-003");
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(12);
+
+            await service.SaveOrderAsync(new SaveOrderRequest(items, 1, CustomerGstin: "33APWAS2365E1ZE"));
+
+            _repoMock.Verify(r => r.AddAsync(It.Is<Order>(o =>
+                o.CgstAmount == 5m && o.SgstAmount == 5m && o.IgstAmount == 0m)), Times.Once);
+        }
+
+        [Fact]
+        public async Task SaveOrderAsync_NoSettingServiceWired_DefaultsToIntrastate()
+        {
+            // _service (test fixture default) has no ISettingService - matches prior behavior
+            // for callers that don't wire one up.
+            var items = new List<OrderItem>
+            {
+                new OrderItem { ItemId = 1, ItemName = "Test", Quantity = 2, Price = 100, TaxPercentage = 5, Total = 200 }
+            };
+            _repoMock.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-004");
+            _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(13);
+
+            await _service.SaveOrderAsync(new SaveOrderRequest(items, 1, CustomerGstin: "29APWAS2365E1ZE"));
+
+            _repoMock.Verify(r => r.AddAsync(It.Is<Order>(o =>
+                o.CgstAmount == 5m && o.SgstAmount == 5m && o.IgstAmount == 0m)), Times.Once);
+        }
+
+        [Fact]
         public async Task SaveOrderAsync_EmptyItems_ShouldThrowException()
         {
             // Act & Assert
