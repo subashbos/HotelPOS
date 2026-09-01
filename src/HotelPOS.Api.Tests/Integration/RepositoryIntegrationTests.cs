@@ -995,5 +995,24 @@ namespace HotelPOS.Tests
             var deleted = await repo.GetByIdWithItemsAsync(1);
             Assert.Null(deleted);
         }
+
+        [Fact]
+        public async Task OrderRepository_GetNextInvoiceNumberAsync_CrossesFiveDigitBoundaryNumerically()
+        {
+            // Regression test: once a fiscal year passes 9999 orders, invoice numbers become
+            // 5 digits. Comparing them as strings makes "...9999" sort after "...10000"
+            // ('9' > '1' lexicographically), which used to make the generator recompute the
+            // same "10000" forever instead of advancing past it.
+            using var context = GetIsolatedContext(nameof(OrderRepository_GetNextInvoiceNumberAsync_CrossesFiveDigitBoundaryNumerically));
+            var repo = new OrderRepository(context);
+
+            context.Orders.Add(new Order { Id = 1, InvoiceNumber = "INV/2026-27/9999", FiscalYear = "2026-27", TotalAmount = 100, CreatedAt = DateTime.UtcNow });
+            context.Orders.Add(new Order { Id = 2, InvoiceNumber = "INV/2026-27/10000", FiscalYear = "2026-27", TotalAmount = 100, CreatedAt = DateTime.UtcNow });
+            await context.SaveChangesAsync();
+
+            var nextInvoice = await repo.GetNextInvoiceNumberAsync("2026-27");
+
+            Assert.Equal("INV/2026-27/10001", nextInvoice);
+        }
     }
 }
