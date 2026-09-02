@@ -160,6 +160,26 @@ namespace HotelPOS.Application.Interfaces
         double NetProfitMarginPercentage
     );
 
+    public record BiOverviewKpisDto(
+        decimal TotalRevenue,
+        decimal NetProfit,
+        double FoodCostPercentage,
+        decimal TotalWastageCost,
+        decimal Cogs,
+        decimal TotalExpenses
+    );
+
+    public record MonthlyTrendBarDto(
+        string MonthName,
+        decimal Revenue,
+        decimal Profit
+    );
+
+    public record BiAnalyticsOverviewDto(
+        BiOverviewKpisDto Kpis,
+        List<MonthlyTrendBarDto> MonthlyTrends
+    );
+
     public interface IBIReportService
     {
         Task<ProfitMarginSummaryDto> GetProfitMarginSummaryAsync(DateTime? from = null, DateTime? to = null);
@@ -174,5 +194,6 @@ namespace HotelPOS.Application.Interfaces
         Task<List<StaffPerformanceReportDto>> GetStaffPerformanceReportAsync(DateTime? from = null, DateTime? to = null);
         Task<StockValuationSummaryDto> GetStockValuationReportAsync();
         Task<ProfitAndLossReportDto> GetProfitAndLossReportAsync(DateTime? from = null, DateTime? to = null);
+        Task<BiAnalyticsOverviewDto> GetBiAnalyticsOverviewAsync(DateTime? from = null, DateTime? to = null);
     }
 }

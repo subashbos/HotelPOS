@@ -287,6 +287,8 @@ namespace HotelPOS.Domain.Common.Constants
         public const int TrailingSalesDays = 30;
         public const int TrailingHistoryMonths = 12;
         public const int ItemPreviewLimit = 10;
+        /// <summary>Months shown in the BI overview's monthly trend chart — narrower than <see cref="TrailingHistoryMonths"/>, which backs the full journal/trend report.</summary>
+        public const int OverviewTrendMonths = 6;
     }
 
     public static class MoneyPrecision

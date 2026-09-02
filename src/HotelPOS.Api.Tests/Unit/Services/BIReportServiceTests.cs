@@ -469,6 +469,62 @@ namespace HotelPOS.Tests
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetProfitMarginSummaryAsync());
         }
+
+        [Fact]
+        public async Task GetBiAnalyticsOverviewAsync_ComposesKpisAndMonthlyTrendsCorrectly()
+        {
+            using var context = GetContext("BI_OverviewDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+
+            var now = DateTime.UtcNow;
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                TotalAmount = 200,
+                CreatedAt = now,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+
+            var expense = new Expense { Id = 1, Title = "Utilities", Amount = 30, Date = now };
+            context.Expenses.Add(expense);
+
+            var wastage = new WastageEntry { Id = 1, ItemId = 1, Item = item, Quantity = 1, CostPerUnit = 40, Reason = "Spoilage", WastedAt = now };
+            context.WastageEntries.Add(wastage);
+            await context.SaveChangesAsync();
+
+            var overview = await service.GetBiAnalyticsOverviewAsync();
+
+            // Same figures GetProfitMarginSummaryAsync/GetWastageSummaryAsync compute independently.
+            Assert.Equal(200m, overview.Kpis.TotalRevenue);
+            Assert.Equal(80m, overview.Kpis.Cogs); // 2 * 40
+            Assert.Equal(90m, overview.Kpis.NetProfit); // (200 rev - 80 cogs) gross - 30 expense = 90
+            Assert.Equal(40m, overview.Kpis.TotalWastageCost); // 1 * 40
+            Assert.Equal(30m, overview.Kpis.TotalExpenses);
+
+            Assert.Equal(ReportingLimits.OverviewTrendMonths, overview.MonthlyTrends.Count);
+            var currentMonthLabel = now.ToLocalTime().ToString("MMM yy");
+            var currentMonthTrend = overview.MonthlyTrends.Single(t => t.MonthName == currentMonthLabel);
+            Assert.Equal(200m, currentMonthTrend.Revenue);
+            Assert.Equal(90m, currentMonthTrend.Profit); // net profit: 120 gross - 30 expense
+        }
+
+        [Fact]
+        public async Task GetBiAnalyticsOverviewAsync_WhenUnauthorized_Throws()
+        {
+            using var context = GetContext("BI_OverviewUnauthorizedDb");
+            var service = new BIReportService(context, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetBiAnalyticsOverviewAsync());
+        }
     }
 }
 

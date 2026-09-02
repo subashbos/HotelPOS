@@ -273,6 +273,12 @@ namespace HotelPOS.Api.Controllers
         {
             return Ok(await _biReportService.GetProfitAndLossReportAsync(from, to));
         }
+
+        [HttpGet("bi-analytics")]
+        public async Task<ActionResult<BiAnalyticsOverviewDto>> GetBiAnalyticsOverview([FromQuery(Name = "fromDate")] DateTime? fromDate, [FromQuery(Name = "toDate")] DateTime? toDate)
+        {
+            return Ok(await _biReportService.GetBiAnalyticsOverviewAsync(fromDate, toDate));
+        }
     }
 
     public sealed class PurchaseReportQueryRequest

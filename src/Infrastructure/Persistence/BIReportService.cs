@@ -726,5 +726,30 @@ namespace HotelPOS.Infrastructure.Persistence
                 Math.Round(netProfitMarginPct, MoneyPrecision.CurrencyDecimals)
             );
         }
+
+        public async Task<BiAnalyticsOverviewDto> GetBiAnalyticsOverviewAsync(DateTime? from = null, DateTime? to = null)
+        {
+            _authorization.EnsurePermission(PermissionModules.SalesReport);
+
+            var summary = await GetProfitMarginSummaryAsync(from, to);
+            var wastage = await GetWastageSummaryAsync(from, to);
+            var trends = await GetMonthlyTrendDataAsync();
+
+            var kpis = new BiOverviewKpisDto(
+                summary.TotalRevenue,
+                summary.NetProfit,
+                summary.FoodCostPercentage,
+                wastage.TotalWastageCost,
+                summary.TotalCogs,
+                summary.TotalExpenses
+            );
+
+            var monthlyTrends = trends
+                .TakeLast(ReportingLimits.OverviewTrendMonths)
+                .Select(t => new MonthlyTrendBarDto(t.MonthName, t.Revenue, t.NetProfit))
+                .ToList();
+
+            return new BiAnalyticsOverviewDto(kpis, monthlyTrends);
+        }
     }
 }
