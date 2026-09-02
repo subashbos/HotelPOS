@@ -614,9 +614,6 @@ namespace HotelPOS.Tests
             var suppliers = await repo.GetSuppliersAsync();
             Assert.Contains(suppliers, s => s.Id == 101 && s.Name == "Veggies Supplier");
 
-            var purchases = await repo.GetPurchasesAsync();
-            Assert.Single(purchases);
-
             var paged = await repo.GetPagedPurchasesAsync(1, 10);
             Assert.Equal(1, paged.totalCount);
             Assert.Single(paged.purchases);

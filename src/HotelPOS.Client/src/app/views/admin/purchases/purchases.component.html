@@ -47,6 +47,16 @@
             </tbody>
           </table>
         </div>
+
+        <div class="flex items-center justify-between mt-4" *ngIf="!isLoading && purchases.length > 0">
+          <button (click)="prevPage()" [disabled]="page <= 1" class="text-blueGray-500 text-xs font-bold uppercase px-3 py-2 disabled:opacity-30">
+            <i class="fas fa-chevron-left mr-1"></i> Prev
+          </button>
+          <span class="text-xs text-blueGray-500">Page {{ page }} of {{ totalPages }}</span>
+          <button (click)="nextPage()" [disabled]="page >= totalPages" class="text-blueGray-500 text-xs font-bold uppercase px-3 py-2 disabled:opacity-30">
+            Next <i class="fas fa-chevron-right ml-1"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>

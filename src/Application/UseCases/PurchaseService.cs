@@ -41,12 +41,12 @@ namespace HotelPOS.Application.UseCases
             return await _purchaseRepository!.GetSuppliersAsync();
         }
 
-        public async Task<List<Purchase>> GetPurchasesAsync()
+        public async Task<(List<Purchase> purchases, int totalCount)> GetPagedPurchasesAsync(int page, int pageSize, PurchaseQueryFilter? filter = null)
         {
             if (_mediator != null)
-                return await _mediator.Send(new GetAllPurchasesQuery());
+                return await _mediator.Send(new GetPagedPurchasesQuery(page, pageSize, filter));
 
-            return await _purchaseRepository!.GetPurchasesAsync();
+            return await _purchaseRepository!.GetPagedPurchasesAsync(page, pageSize, filter);
         }
 
         public async Task<Purchase?> GetPurchaseByIdAsync(int id)

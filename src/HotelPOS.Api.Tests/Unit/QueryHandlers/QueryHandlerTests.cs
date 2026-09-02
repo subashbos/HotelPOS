@@ -190,16 +190,17 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
-        public async Task GetAllPurchasesQueryHandler_DelegatesToRepository()
+        public async Task GetPagedPurchasesQueryHandler_DelegatesToRepository()
         {
             var repo = new Mock<IPurchaseRepository>();
             var purchases = new List<Purchase> { new Purchase { Id = 1 } };
-            repo.Setup(r => r.GetPurchasesAsync()).ReturnsAsync(purchases);
-            var handler = new GetAllPurchasesQueryHandler(repo.Object);
+            repo.Setup(r => r.GetPagedPurchasesAsync(1, 20, null)).ReturnsAsync((purchases, 1));
+            var handler = new GetPagedPurchasesQueryHandler(repo.Object);
 
-            var result = await handler.Handle(new GetAllPurchasesQuery(), CancellationToken.None);
+            var result = await handler.Handle(new GetPagedPurchasesQuery(1, 20), CancellationToken.None);
 
-            Assert.Same(purchases, result);
+            Assert.Same(purchases, result.purchases);
+            Assert.Equal(1, result.totalCount);
         }
     }
 }

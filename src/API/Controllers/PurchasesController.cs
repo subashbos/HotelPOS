@@ -22,10 +22,18 @@ namespace HotelPOS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PurchaseDto>>> GetPurchases()
+        public async Task<ActionResult<PagedPurchasesResponse>> GetPurchases([FromQuery] PurchaseListQueryRequest request)
         {
-            var purchases = await _purchaseService.GetPurchasesAsync();
-            return Ok(_mapper.Map<IEnumerable<PurchaseDto>>(purchases));
+            var (purchases, totalCount) = await _purchaseService.GetPagedPurchasesAsync(
+                request.Page ?? 1,
+                request.PageSize ?? 20,
+                new PurchaseQueryFilter(request.From, request.To, request.SupplierId, request.ItemName, request.PaymentType, request.InvoiceNo));
+
+            return Ok(new PagedPurchasesResponse
+            {
+                Items = _mapper.Map<List<PurchaseDto>>(purchases),
+                TotalCount = totalCount
+            });
         }
 
         [HttpGet("suppliers")]
@@ -132,5 +140,23 @@ namespace HotelPOS.Api.Controllers
 
             return purchase;
         }
+    }
+
+    public sealed class PurchaseListQueryRequest
+    {
+        public int? Page { get; set; } = 1;
+        public int? PageSize { get; set; } = 20;
+        public DateTime? From { get; set; }
+        public DateTime? To { get; set; }
+        public int? SupplierId { get; set; }
+        public string? ItemName { get; set; }
+        public string? PaymentType { get; set; }
+        public string? InvoiceNo { get; set; }
+    }
+
+    public sealed class PagedPurchasesResponse
+    {
+        public List<PurchaseDto> Items { get; set; } = new();
+        public int TotalCount { get; set; }
     }
 }

@@ -41,7 +41,7 @@ describe('PurchasesComponent', () => {
     purchaseServiceSpy = jasmine.createSpyObj('PurchaseService', ['getPurchases', 'getSuppliers', 'createPurchase', 'deletePurchase']);
     itemServiceSpy = jasmine.createSpyObj('ItemService', ['getItems']);
 
-    purchaseServiceSpy.getPurchases.and.returnValue(of([mockPurchase]));
+    purchaseServiceSpy.getPurchases.and.returnValue(of({ items: [mockPurchase], totalCount: 1 }));
     purchaseServiceSpy.getSuppliers.and.returnValue(of([{ id: 1, name: 'Fresh Veg' } as any]));
     itemServiceSpy.getItems.and.returnValue(of([mockItem]));
 
