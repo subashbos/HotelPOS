@@ -36,5 +36,7 @@ namespace HotelPOS.Domain.Entities
 
         public int UnitId { get; set; }
         public UnitOfMeasurement? Unit { get; set; }
+
+        public bool IsDeleted { get; set; }
     }
 }

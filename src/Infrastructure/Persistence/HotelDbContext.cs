@@ -55,6 +55,10 @@ namespace HotelPOS.Infrastructure.Persistence
             // ── Global soft-delete query filter (prevents deleted orders appearing in any query) ──
             modelBuilder.Entity<Order>().HasQueryFilter(o => !o.IsDeleted);
 
+            // ── Global soft-delete query filter for Items (deleting a sold item must not erase the
+            // cost-price history that past-period P&L/margin reports depend on) ──
+            modelBuilder.Entity<Item>().HasQueryFilter(i => !i.IsDeleted);
+
             // ── Indexes for Performance ──────────────────────────────────────────
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.CreatedAt);

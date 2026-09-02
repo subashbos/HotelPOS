@@ -203,6 +203,47 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task GetItemMarginsAsync_ItemDeletedAfterSale_StillReportsCorrectCogs()
+        {
+            using var context = GetContext("BI_ItemMarginsDeletedItemDb");
+            var itemRepo = new ItemRepository(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Discontinued Item", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+            await context.SaveChangesAsync();
+
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                TotalAmount = 200,
+                CreatedAt = DateTime.UtcNow,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Discontinued Item", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            // Soft-delete the item through the real repository path, same as the API's delete endpoint.
+            await itemRepo.DeleteAsync(1);
+
+            var visibleItems = await itemRepo.GetAllAsync();
+            Assert.Empty(visibleItems); // deleted item no longer shows up for menus/pickers
+
+            var margins = await service.GetItemMarginsAsync();
+
+            var deletedItemRow = margins.Single(x => x.ItemName == "Discontinued Item");
+            // 200 rev - (2 * 40) cogs = 120 profit. Before the soft-delete fix, COGS silently became 0 here.
+            Assert.Equal(80m, deletedItemRow.TotalCogs);
+            Assert.Equal(120m, deletedItemRow.Profit);
+            Assert.Equal(60.0, deletedItemRow.MarginPercentage);
+        }
+
+        [Fact]
         public async Task GetWastageSummaryAsync_AggregatesAndFiltersCorrectly()
         {
             using var context = GetContext("BI_WastageSummaryDb");
@@ -270,6 +311,43 @@ namespace HotelPOS.Tests
             Assert.Equal(200m, currentMonthTrend.Revenue);
             Assert.Equal(100m, currentMonthTrend.GrossProfit); // 200 rev - 100 cogs (2 * 50) = 100
             Assert.Equal(70m, currentMonthTrend.NetProfit); // 100 gross - 30 expense = 70
+        }
+
+        [Fact]
+        public async Task GetProfitAndLossReportAsync_ItemDeletedAfterSale_StillReportsCorrectCogs()
+        {
+            using var context = GetContext("BI_PnLDeletedItemDb");
+            var itemRepo = new ItemRepository(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Discontinued Item", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+            await context.SaveChangesAsync();
+
+            var now = DateTime.UtcNow;
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                TotalAmount = 200,
+                CreatedAt = now,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Discontinued Item", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            await itemRepo.DeleteAsync(1);
+
+            var report = await service.GetProfitAndLossReportAsync(now.AddDays(-1), now.AddDays(1));
+
+            Assert.Equal(200m, report.TotalSalesRevenue);
+            // 2 * 40 = 80. Before the soft-delete fix, this silently became 0 once the item was deleted.
+            Assert.Equal(80m, report.TotalCostOfGoodsSold);
+            Assert.Equal(120m, report.GrossProfit);
         }
 
         [Fact]

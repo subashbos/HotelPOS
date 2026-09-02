@@ -46,8 +46,10 @@ namespace HotelPOS.Infrastructure.Persistence
             decimal totalRevenue = orders.Sum(o => o.TotalAmount);
             decimal totalCogs = 0;
 
-            // Load all items to get cost prices
-            var itemsMap = await _context.Items.AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
+            // Load all items to get cost prices. IgnoreQueryFilters so a since-deleted item's cost
+            // price is still found for orders sold before it was deleted, instead of silently
+            // dropping its COGS to zero.
+            var itemsMap = await _context.Items.IgnoreQueryFilters().AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
 
             foreach (var order in orders)
             {
@@ -95,7 +97,9 @@ namespace HotelPOS.Infrastructure.Persistence
             }
 
             var orders = await query.Include(o => o.Items).ToListAsync();
-            var itemsMap = await _context.Items.AsNoTracking().Include(i => i.Category).ToDictionaryAsync(i => i.Id, i => i);
+            // IgnoreQueryFilters so a since-deleted item's cost price/name/category still resolve
+            // for orders sold before it was deleted, instead of silently dropping its COGS to zero.
+            var itemsMap = await _context.Items.IgnoreQueryFilters().AsNoTracking().Include(i => i.Category).ToDictionaryAsync(i => i.Id, i => i);
 
             var grouped = orders.SelectMany(o => o.Items)
                 .GroupBy(oi => oi.ItemId)
@@ -328,7 +332,9 @@ namespace HotelPOS.Infrastructure.Persistence
                 .Where(e => e.Date >= startDateUtc)
                 .ToListAsync();
 
-            var itemsMap = await _context.Items.AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
+            // IgnoreQueryFilters so a since-deleted item's cost price still resolves for orders sold
+            // before it was deleted, instead of silently dropping its COGS to zero.
+            var itemsMap = await _context.Items.IgnoreQueryFilters().AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
 
             var result = new List<MonthlyTrendDto>();
 
@@ -663,7 +669,9 @@ namespace HotelPOS.Infrastructure.Persistence
                 .Where(e => e.Date >= utcFrom && e.Date < utcTo)
                 .ToListAsync();
 
-            var itemsMap = await _context.Items.AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
+            // IgnoreQueryFilters so a since-deleted item's cost price still resolves for orders sold
+            // before it was deleted, instead of silently dropping its COGS to zero.
+            var itemsMap = await _context.Items.IgnoreQueryFilters().AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
 
             decimal totalSalesRevenue = orders.Sum(o => o.TotalAmount);
             decimal totalCogs = 0;

@@ -73,7 +73,7 @@ namespace HotelPOS.Infrastructure.Persistence
             var item = await _context.Items.FindAsync(id);
             if (item is not null)
             {
-                _context.Items.Remove(item);
+                item.IsDeleted = true;
                 await _context.SaveChangesAsync();
             }
         }
