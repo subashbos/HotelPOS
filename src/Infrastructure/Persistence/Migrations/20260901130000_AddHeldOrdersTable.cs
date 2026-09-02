@@ -13,27 +13,29 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
             // HeldOrders isn't part of the EF model - HeldOrderRepository manages it entirely via
             // raw SQL (held/parked cart state, not tracked change history) - but no migration ever
             // created the table, so it never existed on any real database.
-            migrationBuilder.CreateTable(
-                name: "HeldOrders",
-                columns: table => new
-                {
-                    Id = table.Column<System.Guid>(type: "uniqueidentifier", nullable: false),
-                    HoldName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    HeldAt = table.Column<System.DateTime>(type: "datetime2", nullable: false),
-                    TableNumber = table.Column<int>(type: "int", nullable: false),
-                    SerializedItems = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_HeldOrders", x => x.Id);
-                });
+            //
+            // Guarded: App.Database.cs's InitializeDatabase() also creates this table itself via raw
+            // SQL (after Migrate() runs) as a database-agnostic fallback, and multiple POS terminals
+            // can start against the same shared SQL Server at once. An unguarded CreateTable here
+            // fails with "already exists" in both cases - see the 2026-09-01 production incident.
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'HeldOrders')
+                BEGIN
+                    CREATE TABLE [HeldOrders] (
+                        [Id] uniqueidentifier NOT NULL,
+                        [HoldName] nvarchar(200) NOT NULL,
+                        [HeldAt] datetime2 NOT NULL,
+                        [TableNumber] int NOT NULL,
+                        [SerializedItems] nvarchar(max) NOT NULL,
+                        CONSTRAINT [PK_HeldOrders] PRIMARY KEY ([Id])
+                    );
+                END");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "HeldOrders");
+            migrationBuilder.Sql("IF EXISTS (SELECT * FROM sys.tables WHERE name = 'HeldOrders') DROP TABLE [HeldOrders];");
         }
     }
 }

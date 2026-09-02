@@ -4,6 +4,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO;
+using System.Security.AccessControl;
 using System.Text.RegularExpressions;
 
 namespace HotelPOS.Services
@@ -118,8 +119,12 @@ namespace HotelPOS.Services
             }
         }
 
+        // CommonApplicationData (ProgramData), not LocalApplicationData: BACKUP DATABASE below runs
+        // inside the SQL Server engine process under the SQL Server service account, not under the
+        // interactively logged-in Windows user, so a path under that user's profile (the old default)
+        // is invisible to it and fails with "Access is denied" the moment a real backup is attempted.
         private static string GetDefaultBackupDir() => Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
             "HotelPOS", "Backups");
 
         private static async Task<string?> PerformSqliteBackup(System.Data.Common.DbConnection conn, string backupDir)
@@ -144,6 +149,8 @@ namespace HotelPOS.Services
             var fileName = $"HotelPOS_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
             var destPath = Path.Combine(backupDir, fileName);
 
+            EnsureDirectoryWritableBySqlServer(backupDir);
+
             EnsureSafeIdentifier(conn.Database);
             var quotedDb = new Microsoft.Data.SqlClient.SqlCommandBuilder().QuoteIdentifier(conn.Database);
             // sonar: identifiers can't be SQL parameters; conn.Database is allowlist-validated above and quoted.
@@ -151,6 +158,36 @@ namespace HotelPOS.Services
             var sql = $"BACKUP DATABASE {quotedDb} TO DISK = {{0}} WITH FORMAT, NAME = 'Full Backup of HotelPOS'";
             await db.Database.ExecuteSqlRawAsync(sql, destPath); // NOSONAR - see comment above sql
             return destPath;
+        }
+
+        // BACKUP DATABASE runs under the SQL Server service account, which is not the interactive
+        // Windows user and has no guaranteed write access even to CommonApplicationData - the
+        // account name varies by install (NT SERVICE\MSSQLSERVER, a named-instance service SID,
+        // NETWORK SERVICE, a domain account, etc.) so it can't be targeted directly. Grant the
+        // well-known "Everyone" SID write access instead: best-effort, and only relaxes permissions
+        // on this one backup folder, not the whole machine. If it fails (e.g. no permission to
+        // change the ACL), the BACKUP DATABASE call below will surface a clear error rather than
+        // this failing silently.
+        private static void EnsureDirectoryWritableBySqlServer(string backupDir)
+        {
+            try
+            {
+                var dirInfo = new DirectoryInfo(backupDir);
+                var security = dirInfo.GetAccessControl();
+                var everyone = new System.Security.Principal.SecurityIdentifier(
+                    System.Security.Principal.WellKnownSidType.WorldSid, null);
+                security.AddAccessRule(new FileSystemAccessRule(
+                    everyone,
+                    FileSystemRights.Modify | FileSystemRights.Synchronize,
+                    InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                    PropagationFlags.None,
+                    AccessControlType.Allow));
+                dirInfo.SetAccessControl(security);
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "Could not grant the SQL Server service account write access to backup directory {Dir}.", backupDir);
+            }
         }
 
         // Database/table names can't be bound as SQL parameters, so validate before interpolating into DDL.
