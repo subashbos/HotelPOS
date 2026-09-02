@@ -18,44 +18,54 @@ concurrency:
 jobs:
   dotnet:
     name: .NET Build & Test
-    # Skip only the auto-generated develop-head bookkeeping PR into main (a bot
-    # recreates it after every merge) - that commit was already fully tested by
-    # the push trigger above, often minutes before this PR is even opened. Any
-    # other PR (a real feature branch, into develop or directly into main)
-    # still runs normally.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main'
     # HotelPOS.WPF and HotelPOS.Tests target net10.0-windows with UseWPF=true,
     # which only builds on a Windows toolchain.
     runs-on: windows-latest
+    env:
+      # Skip only the auto-generated develop-head bookkeeping PR into main (a bot
+      # recreates it after every merge) - that commit was already fully tested by
+      # the push trigger above, often minutes before this PR is even opened. Any
+      # other PR (a real feature branch, into develop or directly into main)
+      # still runs normally. Gated per-step rather than via a job-level `if:` so
+      # the job still reports a real SUCCESS conclusion instead of "skipped" -
+      # a skipped job/check makes GitHub's PR merge-status UI show "unstable"
+      # even though nothing is actually wrong with the PR.
+      RUN_CHECKS: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main' }}
     permissions:
       contents: read
       checks: write
     steps:
       - name: Checkout repository
+        if: env.RUN_CHECKS == 'true'
         uses: actions/checkout@v4
 
       - name: Setup .NET
+        if: env.RUN_CHECKS == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
       - name: Restore dependencies
+        if: env.RUN_CHECKS == 'true'
         run: dotnet restore HotelPOS.sln
 
       - name: Build
+        if: env.RUN_CHECKS == 'true'
         run: dotnet build HotelPOS.sln --no-restore --configuration Release -warnaserror
 
       - name: Test (WPF)
+        if: env.RUN_CHECKS == 'true'
         run: dotnet test src/HotelPOS.Tests/HotelPOS.Tests.csproj --configuration Release --logger trx --results-directory TestResults -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=../../TestResults/coverage/ -p:Threshold=80 -p:ThresholdType=line -p:ThresholdStat=total
 
       - name: Test (API/backend)
+        if: env.RUN_CHECKS == 'true'
         # HotelPOS.Infrastructure.Persistence.Migrations is EF Core scaffolding (~71k generated
         # lines) with no hand-written logic to test; it's excluded so coverage reflects real code.
         run: dotnet test src/HotelPOS.Api.Tests/HotelPOS.Api.Tests.csproj --configuration Release --logger trx --results-directory TestResults -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=../../TestResults/coverage-api/ -p:Exclude="[HotelPOS.Infrastructure]HotelPOS.Infrastructure.Persistence.Migrations.*" -p:Threshold=75 -p:ThresholdType=line -p:ThresholdStat=total
 
       - name: Publish test results
         uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc # v1
-        if: success() || failure()
+        if: env.RUN_CHECKS == 'true' && (success() || failure())
         with:
           name: .NET Test Results
           path: TestResults/*.trx
@@ -64,14 +74,14 @@ jobs:
 
       - name: Upload test results artifact
         uses: actions/upload-artifact@v4
-        if: always()
+        if: env.RUN_CHECKS == 'true' && always()
         with:
           name: dotnet-test-results
           path: TestResults/*.trx
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
-        if: always()
+        if: env.RUN_CHECKS == 'true' && always()
         with:
           name: dotnet-coverage-report
           path: |
@@ -80,16 +90,20 @@ jobs:
 
   angular:
     name: Angular Test
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main'
     runs-on: windows-latest
+    env:
+      # See the identical comment on the `dotnet` job above.
+      RUN_CHECKS: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main' }}
     defaults:
       run:
         working-directory: src/HotelPOS.Client
     steps:
       - name: Checkout repository
+        if: env.RUN_CHECKS == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node.js
+        if: env.RUN_CHECKS == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -97,14 +111,16 @@ jobs:
           cache-dependency-path: src/HotelPOS.Client/package-lock.json
 
       - name: Install dependencies
+        if: env.RUN_CHECKS == 'true'
         run: npm ci
 
       - name: Run tests
+        if: env.RUN_CHECKS == 'true'
         run: npx ng test --watch=false --browsers=ChromeHeadlessCI --code-coverage
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
-        if: always()
+        if: env.RUN_CHECKS == 'true' && always()
         with:
           name: angular-coverage-report
           path: src/HotelPOS.Client/coverage/hotel-pos-client
