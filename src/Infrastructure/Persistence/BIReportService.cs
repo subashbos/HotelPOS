@@ -43,7 +43,9 @@ namespace HotelPOS.Infrastructure.Persistence
             var orders = await query.Include(o => o.Items).ToListAsync();
             var expenses = await expQuery.ToListAsync();
 
-            decimal totalRevenue = orders.Sum(o => o.TotalAmount);
+            // Revenue excludes GST (TotalAmount - GstAmount): GST collected from the customer is a
+            // liability owed to the government, not income, so it must not count toward profit.
+            decimal totalRevenue = orders.Sum(o => o.TotalAmount - o.GstAmount);
             decimal totalCogs = 0;
 
             // Load all items to get cost prices. IgnoreQueryFilters so a since-deleted item's cost
@@ -344,7 +346,8 @@ namespace HotelPOS.Infrastructure.Persistence
                 var targetOrders = orders.Where(o => o.CreatedAt.ToLocalTime().Year == target.Year && o.CreatedAt.ToLocalTime().Month == target.Month).ToList();
                 var targetExpenses = expenses.Where(e => e.Date.ToLocalTime().Year == target.Year && e.Date.ToLocalTime().Month == target.Month).ToList();
 
-                decimal revenue = targetOrders.Sum(o => o.TotalAmount);
+                // Revenue excludes GST (TotalAmount - GstAmount) — see GetProfitMarginSummaryAsync.
+                decimal revenue = targetOrders.Sum(o => o.TotalAmount - o.GstAmount);
                 decimal cogs = 0;
 
                 foreach (var order in targetOrders)
@@ -673,7 +676,8 @@ namespace HotelPOS.Infrastructure.Persistence
             // before it was deleted, instead of silently dropping its COGS to zero.
             var itemsMap = await _context.Items.IgnoreQueryFilters().AsNoTracking().ToDictionaryAsync(i => i.Id, i => i);
 
-            decimal totalSalesRevenue = orders.Sum(o => o.TotalAmount);
+            // Revenue excludes GST (TotalAmount - GstAmount) — see GetProfitMarginSummaryAsync.
+            decimal totalSalesRevenue = orders.Sum(o => o.TotalAmount - o.GstAmount);
             decimal totalCogs = 0;
 
             foreach (var order in orders)

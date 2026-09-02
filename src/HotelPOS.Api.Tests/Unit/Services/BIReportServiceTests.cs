@@ -63,6 +63,41 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task ProfitMarginSummary_ExcludesGstFromRevenue()
+        {
+            using var context = GetContext("BI_ProfitMarginGstDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+
+            // 2 units at 100 = 200 subtotal, +10% GST = 20, so TotalAmount (tax-inclusive) is 220.
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                Subtotal = 200,
+                GstAmount = 20,
+                TotalAmount = 220,
+                CreatedAt = DateTime.UtcNow,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            var summary = await service.GetProfitMarginSummaryAsync();
+
+            // Revenue must exclude the GST collected on behalf of the government (200, not 220).
+            Assert.Equal(200m, summary.TotalRevenue);
+            Assert.Equal(80m, summary.TotalCogs); // 2 * 40
+            Assert.Equal(120m, summary.GrossProfit); // 200 - 80, not 220 - 80
+        }
+
+        [Fact]
         public async Task LogWastage_DeductsInventoryCorrectly()
         {
             using var context = GetContext("BI_WastageDb");
@@ -314,6 +349,45 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task GetMonthlyTrendDataAsync_ExcludesGstFromRevenue()
+        {
+            using var context = GetContext("BI_MonthlyTrendsGstDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 50 };
+            context.Items.Add(item);
+
+            var now = DateTime.UtcNow;
+
+            // 2 units at 100 = 200 subtotal, +10% GST = 20, so TotalAmount (tax-inclusive) is 220.
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                Subtotal = 200,
+                GstAmount = 20,
+                TotalAmount = 220,
+                CreatedAt = now,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            var trends = await service.GetMonthlyTrendDataAsync();
+
+            var currentMonthLabel = now.ToLocalTime().ToString("MMM yy");
+            var currentMonthTrend = trends.First(t => t.MonthName == currentMonthLabel);
+
+            // Revenue must exclude the GST collected on behalf of the government (200, not 220).
+            Assert.Equal(200m, currentMonthTrend.Revenue);
+            Assert.Equal(100m, currentMonthTrend.GrossProfit); // 200 - 100 cogs, not 220 - 100
+        }
+
+        [Fact]
         public async Task GetProfitAndLossReportAsync_ItemDeletedAfterSale_StillReportsCorrectCogs()
         {
             using var context = GetContext("BI_PnLDeletedItemDb");
@@ -348,6 +422,43 @@ namespace HotelPOS.Tests
             // 2 * 40 = 80. Before the soft-delete fix, this silently became 0 once the item was deleted.
             Assert.Equal(80m, report.TotalCostOfGoodsSold);
             Assert.Equal(120m, report.GrossProfit);
+        }
+
+        [Fact]
+        public async Task GetProfitAndLossReportAsync_ExcludesGstFromRevenue()
+        {
+            using var context = GetContext("BI_PnLGstDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+
+            var now = DateTime.UtcNow;
+
+            // 2 units at 100 = 200 subtotal, +10% GST = 20, so TotalAmount (tax-inclusive) is 220.
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                Subtotal = 200,
+                GstAmount = 20,
+                TotalAmount = 220,
+                CreatedAt = now,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            var report = await service.GetProfitAndLossReportAsync(now.AddDays(-1), now.AddDays(1));
+
+            // Revenue must exclude the GST collected on behalf of the government (200, not 220).
+            Assert.Equal(200m, report.TotalSalesRevenue);
+            Assert.Equal(80m, report.TotalCostOfGoodsSold); // 2 * 40
+            Assert.Equal(120m, report.GrossProfit); // 200 - 80, not 220 - 80
         }
 
         [Fact]
