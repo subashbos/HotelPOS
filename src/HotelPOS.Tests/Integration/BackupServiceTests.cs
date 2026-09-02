@@ -54,7 +54,7 @@ namespace HotelPOS.Tests
 
             var service = new BackupService(scopeFactory);
             var tempPath = Path.Combine(Path.GetTempPath(), "HotelPOS_Tests_" + Guid.NewGuid());
-            
+
             try
             {
                 // Act

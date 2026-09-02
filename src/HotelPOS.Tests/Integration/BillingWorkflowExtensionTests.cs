@@ -26,7 +26,7 @@ namespace HotelPOS.Tests
             _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
             _settingService.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting { ReceiptFormat = "Thermal" });
             _cashService.Setup(s => s.GetCurrentSessionAsync()).ReturnsAsync(new CashSession { Id = 1 });
-            
+
             BillingViewModel.RegisterTestServices(
                 _itemService.Object, _orderService.Object, _categoryService.Object,
                 _cashService.Object, _tableService.Object);

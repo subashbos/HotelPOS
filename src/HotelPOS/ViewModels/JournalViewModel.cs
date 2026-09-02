@@ -71,9 +71,9 @@ namespace HotelPOS.ViewModels
             {
                 var to = ToDate?.AddDays(1);
                 var request = new PagedOrdersRequest(_currentPage, PageSize, FromDate, to, TableFilter);
-                
+
                 var result = await _orderService.GetPagedOrdersAsync(request, token);
-                
+
                 if (result.Items.Count < PageSize)
                 {
                     HasMoreData = false;

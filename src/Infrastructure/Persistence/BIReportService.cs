@@ -228,14 +228,14 @@ namespace HotelPOS.Infrastructure.Persistence
             }
 
             var entry = new WastageEntry
-                {
-                    ItemId = itemId,
-                    Quantity = quantity,
-                    Reason = reason,
-                    Notes = notes,
-                    CostPerUnit = item.CostPrice > 0 ? item.CostPrice : item.Price,
-                    WastedAt = DateTime.UtcNow
-                };
+            {
+                ItemId = itemId,
+                Quantity = quantity,
+                Reason = reason,
+                Notes = notes,
+                CostPerUnit = item.CostPrice > 0 ? item.CostPrice : item.Price,
+                WastedAt = DateTime.UtcNow
+            };
 
             _context.WastageEntries.Add(entry);
             await _context.SaveChangesAsync();
@@ -591,7 +591,8 @@ namespace HotelPOS.Infrastructure.Persistence
             var valuationRows = new List<StockValuationRowDto>();
             decimal accumRevenue = 0;
 
-            var sortedItems = items.Select(i => new {
+            var sortedItems = items.Select(i => new
+            {
                 Item = i,
                 Revenue = salesByItem.TryGetValue(i.Id, out var rev) ? rev : 0
             }).OrderByDescending(x => x.Revenue).ToList();

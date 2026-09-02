@@ -227,7 +227,7 @@ namespace HotelPOS.Views
 
                 // Calculate total net income for the date-wise range
                 DateRangeTotalText.Text = $"₹{LastDailyReport.Sum(x => x.NetIncome):N2}";
-                
+
                 _datePage = 1;
                 _dateItems.Clear();
                 LoadMoreDate();

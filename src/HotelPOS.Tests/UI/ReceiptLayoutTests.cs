@@ -150,7 +150,7 @@ namespace HotelPOS.Tests
             var thread = new System.Threading.Thread(() =>
             {
                 var items = new List<OrderItem> { new OrderItem { ItemName = "Burger", Quantity = 1 } };
-                
+
                 // Table 0 (Takeaway)
                 var doc = ReceiptGenerator.CreateKOT(0, items, true);
 

@@ -35,7 +35,7 @@ namespace HotelPOS.ViewModels
         {
             Message = message;
             Title = title;
-            
+
             // Set Icon
             IconEmoji = icon switch
             {

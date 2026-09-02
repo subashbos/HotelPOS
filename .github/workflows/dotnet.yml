@@ -60,6 +60,10 @@ jobs:
         if: env.RUN_CHECKS == 'true'
         run: dotnet build HotelPOS.sln --no-restore --configuration Release -warnaserror
 
+      - name: Format check
+        if: env.RUN_CHECKS == 'true'
+        run: dotnet format HotelPOS.sln --verify-no-changes
+
       - name: Test (WPF)
         if: env.RUN_CHECKS == 'true'
         run: dotnet test src/HotelPOS.Tests/HotelPOS.Tests.csproj --configuration Release --logger trx --results-directory TestResults -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura -p:CoverletOutput=../../TestResults/coverage/ -p:Threshold=80 -p:ThresholdType=line -p:ThresholdStat=total

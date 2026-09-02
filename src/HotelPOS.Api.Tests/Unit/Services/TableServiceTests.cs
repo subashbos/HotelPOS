@@ -59,10 +59,10 @@ namespace HotelPOS.Tests
         public async Task UpdateTableAsync_DuplicateNumber_ShouldThrow()
         {
             // Arrange
-            var existing = new List<Table> 
-            { 
-                new Table { Id = 1, Number = 5 }, 
-                new Table { Id = 2, Number = 10 } 
+            var existing = new List<Table>
+            {
+                new Table { Id = 1, Number = 5 },
+                new Table { Id = 2, Number = 10 }
             };
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(existing);
             var dto = new CreateTableDto { Number = 10, Name = "Rename 5 to 10" };
@@ -79,7 +79,7 @@ namespace HotelPOS.Tests
             var existing = new List<Table> { table };
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(existing);
             _repoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(table);
-            
+
             var dto = new CreateTableDto { Number = 5, Name = "New Name" };
 
             // Act

@@ -56,7 +56,7 @@ namespace HotelPOS.Tests
             Assert.Equal("Customer request", order.VoidReason);
             Assert.Equal(0, order.TotalAmount);
             Assert.Equal(0, order.Subtotal);
-            
+
             // Verify stock replenishment (negative quantities passed to DeductStockAsync indicate stock return)
             _itemServiceMock.Verify(s => s.DeductStockAsync(101, -2), Times.Once);
             _itemServiceMock.Verify(s => s.DeductStockAsync(102, -1), Times.Once);
@@ -99,7 +99,7 @@ namespace HotelPOS.Tests
             Assert.Equal("PartiallyRefunded", order.Status);
             Assert.Equal(200, order.RefundedAmount);
             Assert.Equal("Quality issue", order.RefundReason);
-            
+
             // Check recalculated totals
             // Item A quantity is reduced from 2 to 1 (Total: 200). Item B is unchanged (Total: 100).
             // Subtotal: 300, GST: 300 * 5% = 15. Total: 315.

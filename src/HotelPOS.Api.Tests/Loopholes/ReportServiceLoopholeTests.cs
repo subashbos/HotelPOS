@@ -360,7 +360,9 @@ namespace HotelPOS.Tests
         {
             var orders = Enumerable.Range(1, 60).Select(i => new Order
             {
-                Id = i, TotalAmount = 100, CreatedAt = DateTime.UtcNow.AddMinutes(-i),
+                Id = i,
+                TotalAmount = 100,
+                CreatedAt = DateTime.UtcNow.AddMinutes(-i),
                 Items = new List<OrderItem>()
             }).ToList();
             SetupOrders(orders);

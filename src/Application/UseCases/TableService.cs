@@ -34,7 +34,7 @@ namespace HotelPOS.Application.UseCases
         {
             _tableRepository = tableRepository;
             _validator = validator ?? new CreateTableDtoValidator();
-            
+
             if (mapper == null)
             {
                 var cfg = new AutoMapper.MapperConfiguration(

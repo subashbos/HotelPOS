@@ -93,7 +93,7 @@ namespace HotelPOS.Tests
         {
             var vm = new ConfirmCheckoutViewModel();
             vm.FinalPayableAmount = 300m;
-            
+
             // Switch to Split
             vm.PaymentMode = "Split";
             Assert.True(vm.IsSplitPayment);

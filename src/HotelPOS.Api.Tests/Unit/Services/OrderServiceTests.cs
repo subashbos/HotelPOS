@@ -215,7 +215,7 @@ namespace HotelPOS.Tests
             };
             _repoMock.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
             _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(10);
-            
+
             // Force DeductStockAsync to fail
             _itemServiceMock.Setup(s => s.DeductStockAsync(It.IsAny<int>(), It.IsAny<int>()))
                              .ThrowsAsync(new Exception("Stock deduction error"));

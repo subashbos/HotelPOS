@@ -20,7 +20,7 @@ namespace HotelPOS.Application.UseCases.Reports.Queries
     ) : IRequest<(List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)>;
 
     public class GetPagedPurchaseReportQueryHandler : IRequestHandler<
-        GetPagedPurchaseReportQuery, 
+        GetPagedPurchaseReportQuery,
         (List<PurchaseReportRowDto> items, int totalCount, decimal totalPurchases, decimal totalTax, decimal totalDiscount, int totalQty)
     >
     {

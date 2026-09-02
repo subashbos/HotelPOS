@@ -573,7 +573,9 @@ namespace HotelPOS.Tests
 
             var order = new Order
             {
-                Id = 20, TableNumber = 0, OrderType = OrderTypes.Takeaway,
+                Id = 20,
+                TableNumber = 0,
+                OrderType = OrderTypes.Takeaway,
                 Items = new List<OrderItem> { new OrderItem { ItemId = 1, ItemName = "Wrap", Quantity = 1, Price = 80, Total = 80 } }
             };
 
@@ -592,7 +594,9 @@ namespace HotelPOS.Tests
 
             var order = new Order
             {
-                Id = 21, TableNumber = 0, OrderType = OrderTypes.Online,
+                Id = 21,
+                TableNumber = 0,
+                OrderType = OrderTypes.Online,
                 Items = new List<OrderItem> { new OrderItem { ItemId = 1, ItemName = "Salad", Quantity = 1, Price = 120, Total = 120 } }
             };
 
@@ -611,7 +615,9 @@ namespace HotelPOS.Tests
 
             var order = new Order
             {
-                Id = 22, TableNumber = 3, OrderType = OrderTypes.DineIn,
+                Id = 22,
+                TableNumber = 3,
+                OrderType = OrderTypes.DineIn,
                 Items = new List<OrderItem> { new OrderItem { ItemId = 1, ItemName = "Coffee", Quantity = 1, Price = 50, Total = 50 } }
             };
 

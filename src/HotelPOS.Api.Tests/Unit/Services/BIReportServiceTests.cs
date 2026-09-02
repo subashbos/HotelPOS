@@ -155,7 +155,7 @@ namespace HotelPOS.Tests
             var alerts = await service.GetLowStockAlertsAsync();
 
             Assert.Equal(2, alerts.Count);
-            
+
             var itemAAlert = alerts.First(a => a.ItemId == 1);
             Assert.Equal(AlertLevels.Critical, itemAAlert.AlertLevel); // Since 5 <= 10 (Warning/Critical depending on daily sales) and 5 is very low.
 
@@ -195,7 +195,7 @@ namespace HotelPOS.Tests
             var margins = await service.GetItemMarginsAsync();
 
             Assert.Equal(2, margins.Count);
-            
+
             var itemA = margins.First(x => x.ItemName == "Item A");
             Assert.Equal(60.0, itemA.MarginPercentage); // 200 rev - 80 cogs = 120 profit. 120/200 * 100 = 60%
             Assert.Contains("Healthy", itemA.Recommendation);
@@ -342,7 +342,7 @@ namespace HotelPOS.Tests
 
             var currentMonthLabel = now.ToLocalTime().ToString("MMM yy");
             var currentMonthTrend = trends.First(t => t.MonthName == currentMonthLabel);
-            
+
             Assert.Equal(200m, currentMonthTrend.Revenue);
             Assert.Equal(100m, currentMonthTrend.GrossProfit); // 200 rev - 100 cogs (2 * 50) = 100
             Assert.Equal(70m, currentMonthTrend.NetProfit); // 100 gross - 30 expense = 70

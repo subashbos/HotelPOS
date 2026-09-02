@@ -29,7 +29,7 @@ namespace HotelPOS.Domain.Entities
         public string Role { get; set; } = RoleNames.Cashier;
 
         public int? RoleId { get; set; }
-        
+
         [ForeignKey("RoleId")]
         public Role? RoleDetails { get; set; }
 

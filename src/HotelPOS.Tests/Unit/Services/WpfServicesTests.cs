@@ -290,7 +290,7 @@ namespace HotelPOS.Tests.Unit.Services
         {
             if (System.Windows.Application.Current != null)
                 return true;
-            
+
             ClearApplicationSingleton();
             return false;
         }
@@ -300,7 +300,7 @@ namespace HotelPOS.Tests.Unit.Services
             try
             {
                 var appType = typeof(System.Windows.Application);
-                
+
                 var field = appType.GetField("_appInstance",
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
                 field?.SetValue(null, null);

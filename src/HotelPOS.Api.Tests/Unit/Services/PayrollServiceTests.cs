@@ -194,7 +194,7 @@ namespace HotelPOS.Tests.Unit.Services
 
             // Setup for successful run
             _payrollRepoMock.Setup(r => r.GetRunAsync(6, 2026)).ReturnsAsync((PayrollRun?)null);
-            
+
             var employees = new List<Employee>
             {
                 new Employee { Id = 1, FirstName = "A", Status = EmployeeStatuses.Active },
@@ -221,7 +221,7 @@ namespace HotelPOS.Tests.Unit.Services
             Assert.Equal(2026, run.Year);
             Assert.Single(run.Payslips);
             Assert.Equal(1, run.Payslips[0].EmployeeId);
-            
+
             _payrollRepoMock.Verify(r => r.AddRunAsync(run), Times.Once);
             _mediatorMock.Verify(m => m.Publish(It.Is<EntityActionEvent>(e =>
                 e.EntityName == "PayrollRun" && e.Action == "Create"), default), Times.Once);
@@ -240,9 +240,9 @@ namespace HotelPOS.Tests.Unit.Services
             await Assert.ThrowsAsync<InvalidOperationException>(() => _service.MarkRunAsPaidAsync(1));
 
             // Successful path
-            var validRun = new PayrollRun 
-            { 
-                Id = 2, 
+            var validRun = new PayrollRun
+            {
+                Id = 2,
                 Status = PayrollRunStatuses.Processed,
                 Payslips = new List<Payslip> { new Payslip { Id = 10 } }
             };

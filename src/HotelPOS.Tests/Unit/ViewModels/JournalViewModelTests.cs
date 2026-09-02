@@ -27,10 +27,10 @@ namespace HotelPOS.Tests.Unit.ViewModels
         public void Properties_ShouldGetAndSetCorrectly()
         {
             var vm = new JournalViewModel(_orderServiceMock.Object, _notificationServiceMock.Object);
-            
+
             var from = DateTime.Today.AddDays(-1);
             var to = DateTime.Today;
-            
+
             vm.FromDate = from;
             vm.ToDate = to;
             vm.TableFilter = 5;
@@ -45,7 +45,7 @@ namespace HotelPOS.Tests.Unit.ViewModels
         {
             // Arrange
             var vm = new JournalViewModel(_orderServiceMock.Object, _notificationServiceMock.Object);
-            
+
             var orders = new List<Order>
             {
                 new Order { Id = 1, TableNumber = 3, TotalAmount = 500, CreatedAt = DateTime.Now, Items = new List<OrderItem>() }
@@ -69,7 +69,7 @@ namespace HotelPOS.Tests.Unit.ViewModels
         {
             // Arrange
             var vm = new JournalViewModel(_orderServiceMock.Object, _notificationServiceMock.Object);
-            
+
             var orders = new List<Order>();
             for (int i = 1; i <= 20; i++)
             {
@@ -117,7 +117,7 @@ namespace HotelPOS.Tests.Unit.ViewModels
         {
             // Arrange
             var vm = new JournalViewModel(_orderServiceMock.Object, _notificationServiceMock.Object);
-            
+
             _orderServiceMock.Setup(s => s.GetPagedOrdersAsync(It.IsAny<PagedOrdersRequest>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Database error"));
 
@@ -133,7 +133,7 @@ namespace HotelPOS.Tests.Unit.ViewModels
         public void Dispose_CancelsTokenSource()
         {
             var vm = new JournalViewModel(_orderServiceMock.Object, _notificationServiceMock.Object);
-            
+
             // Should not throw
             var exception = Record.Exception(() => vm.Dispose());
             Assert.Null(exception);
