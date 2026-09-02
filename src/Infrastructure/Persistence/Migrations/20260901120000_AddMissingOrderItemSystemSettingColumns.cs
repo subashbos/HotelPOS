@@ -10,139 +10,55 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<decimal>(
-                name: "AmountPaid",
-                table: "Orders",
-                type: "decimal(18,2)",
-                precision: 18,
-                scale: 2,
-                nullable: false,
-                defaultValue: 0m);
+            // Guarded: App.Database.cs's InitializeDatabase() also backfills every one of these
+            // columns itself via raw SQL (after Migrate() runs) as a database-agnostic fallback.
+            // Unguarded AddColumn calls fail with "column already exists" on any database where
+            // that fallback got there first - which, for a column this old, is most of them.
+            AddColumnIfMissing(migrationBuilder, "Orders", "AmountPaid", "decimal(18,2) NOT NULL DEFAULT 0.00");
+            AddColumnIfMissing(migrationBuilder, "Orders", "CashPaid", "decimal(18,2) NOT NULL DEFAULT 0.00");
+            AddColumnIfMissing(migrationBuilder, "Orders", "CardPaid", "decimal(18,2) NOT NULL DEFAULT 0.00");
+            AddColumnIfMissing(migrationBuilder, "Orders", "UpiPaid", "decimal(18,2) NOT NULL DEFAULT 0.00");
+            AddColumnIfMissing(migrationBuilder, "Orders", "RefundedAmount", "decimal(18,2) NOT NULL DEFAULT 0.00");
+            AddColumnIfMissing(migrationBuilder, "Orders", "RefundReason", "nvarchar(max) NULL");
+            AddColumnIfMissing(migrationBuilder, "Orders", "VoidReason", "nvarchar(max) NULL");
+            AddColumnIfMissing(migrationBuilder, "Items", "CostPrice", "decimal(18,2) NOT NULL DEFAULT 0.00");
+            AddColumnIfMissing(migrationBuilder, "Items", "MinStockThreshold", "int NOT NULL DEFAULT 10");
+            AddColumnIfMissing(migrationBuilder, "SystemSettings", "EnableAutomatedBackups", "bit NOT NULL DEFAULT 1");
+            AddColumnIfMissing(migrationBuilder, "SystemSettings", "OffsiteBackupPath", "nvarchar(max) NULL");
+        }
 
-            migrationBuilder.AddColumn<decimal>(
-                name: "CashPaid",
-                table: "Orders",
-                type: "decimal(18,2)",
-                precision: 18,
-                scale: 2,
-                nullable: false,
-                defaultValue: 0m);
-
-            migrationBuilder.AddColumn<decimal>(
-                name: "CardPaid",
-                table: "Orders",
-                type: "decimal(18,2)",
-                precision: 18,
-                scale: 2,
-                nullable: false,
-                defaultValue: 0m);
-
-            migrationBuilder.AddColumn<decimal>(
-                name: "UpiPaid",
-                table: "Orders",
-                type: "decimal(18,2)",
-                precision: 18,
-                scale: 2,
-                nullable: false,
-                defaultValue: 0m);
-
-            migrationBuilder.AddColumn<decimal>(
-                name: "RefundedAmount",
-                table: "Orders",
-                type: "decimal(18,2)",
-                precision: 18,
-                scale: 2,
-                nullable: false,
-                defaultValue: 0m);
-
-            migrationBuilder.AddColumn<string>(
-                name: "RefundReason",
-                table: "Orders",
-                type: "nvarchar(max)",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "VoidReason",
-                table: "Orders",
-                type: "nvarchar(max)",
-                nullable: true);
-
-            migrationBuilder.AddColumn<decimal>(
-                name: "CostPrice",
-                table: "Items",
-                type: "decimal(18,2)",
-                precision: 18,
-                scale: 2,
-                nullable: false,
-                defaultValue: 0m);
-
-            migrationBuilder.AddColumn<int>(
-                name: "MinStockThreshold",
-                table: "Items",
-                type: "int",
-                nullable: false,
-                defaultValue: 10);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "EnableAutomatedBackups",
-                table: "SystemSettings",
-                type: "bit",
-                nullable: false,
-                defaultValue: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "OffsiteBackupPath",
-                table: "SystemSettings",
-                type: "nvarchar(max)",
-                nullable: true);
+        private static void AddColumnIfMissing(MigrationBuilder migrationBuilder, string table, string column, string columnDefinition)
+        {
+            migrationBuilder.Sql($@"
+                IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('{table}') AND name = '{column}')
+                BEGIN
+                    ALTER TABLE [{table}] ADD [{column}] {columnDefinition};
+                END");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "AmountPaid",
-                table: "Orders");
+            DropColumnIfExists(migrationBuilder, "Orders", "AmountPaid");
+            DropColumnIfExists(migrationBuilder, "Orders", "CashPaid");
+            DropColumnIfExists(migrationBuilder, "Orders", "CardPaid");
+            DropColumnIfExists(migrationBuilder, "Orders", "UpiPaid");
+            DropColumnIfExists(migrationBuilder, "Orders", "RefundedAmount");
+            DropColumnIfExists(migrationBuilder, "Orders", "RefundReason");
+            DropColumnIfExists(migrationBuilder, "Orders", "VoidReason");
+            DropColumnIfExists(migrationBuilder, "Items", "CostPrice");
+            DropColumnIfExists(migrationBuilder, "Items", "MinStockThreshold");
+            DropColumnIfExists(migrationBuilder, "SystemSettings", "EnableAutomatedBackups");
+            DropColumnIfExists(migrationBuilder, "SystemSettings", "OffsiteBackupPath");
+        }
 
-            migrationBuilder.DropColumn(
-                name: "CashPaid",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "CardPaid",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "UpiPaid",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "RefundedAmount",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "RefundReason",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "VoidReason",
-                table: "Orders");
-
-            migrationBuilder.DropColumn(
-                name: "CostPrice",
-                table: "Items");
-
-            migrationBuilder.DropColumn(
-                name: "MinStockThreshold",
-                table: "Items");
-
-            migrationBuilder.DropColumn(
-                name: "EnableAutomatedBackups",
-                table: "SystemSettings");
-
-            migrationBuilder.DropColumn(
-                name: "OffsiteBackupPath",
-                table: "SystemSettings");
+        private static void DropColumnIfExists(MigrationBuilder migrationBuilder, string table, string column)
+        {
+            migrationBuilder.Sql($@"
+                IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('{table}') AND name = '{column}')
+                BEGIN
+                    ALTER TABLE [{table}] DROP COLUMN [{column}];
+                END");
         }
     }
 }

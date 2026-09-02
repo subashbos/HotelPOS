@@ -10,29 +10,29 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Tables",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Number = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Capacity = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Tables", x => x.Id);
-                });
+            // Guarded: App.Database.cs's InitializeDatabase() has always created this table itself,
+            // via raw SQL, before Migrate() ever runs - on both fresh installs and any database that
+            // predates this migration. An unguarded CreateTable here collides with it every time,
+            // failing with "There is already an object named 'Tables' in the database."
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Tables')
+                BEGIN
+                    CREATE TABLE [Tables] (
+                        [Id] int NOT NULL IDENTITY(1,1),
+                        [Number] int NOT NULL,
+                        [Name] nvarchar(max) NOT NULL,
+                        [Capacity] int NOT NULL,
+                        [IsActive] bit NOT NULL,
+                        [IsDeleted] bit NOT NULL,
+                        CONSTRAINT [PK_Tables] PRIMARY KEY ([Id])
+                    );
+                END");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Tables");
+            migrationBuilder.Sql("IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Tables') DROP TABLE [Tables];");
         }
     }
 }

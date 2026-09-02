@@ -52,6 +52,20 @@ namespace HotelPOS
                 // full context, surfaces the error to the user, and shuts down - avoid double-logging here.
                 Log.Information("Synchronizing database schema and migration history...");
 
+                // Multiple POS terminals can point at the same shared SQL Server and start up around
+                // the same time (e.g. store opening). Without serializing this whole method, two
+                // instances race on Migrate() and the raw-SQL patches below - whichever loses hits
+                // "There is already an object named ..." (see the 2026-09-01 HeldOrders incident).
+                // Sqlite is single-process/file-based so it can't hit this race and has no applock.
+                var isSqlServer = context.Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer";
+                if (isSqlServer)
+                {
+                    AcquireDatabaseInitializationLock(context);
+                }
+
+                try
+                {
+
                 // 1. Ensure the Migrations History table exists
                 context.Database.ExecuteSqlRaw(@"
                     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '__EFMigrationsHistory')
@@ -325,6 +339,68 @@ namespace HotelPOS
 
                 Log.Information("Database synchronization complete.");
                 return needsAdminRegistration;
+
+                }
+                finally
+                {
+                    if (isSqlServer)
+                    {
+                        ReleaseDatabaseInitializationLock(context);
+                    }
+                }
+            }
+        }
+
+        // Held for the entire duration of InitializeDatabase() via @LockOwner = 'Session', so it
+        // covers Migrate() and every raw-SQL patch that follows it, not just the moment of acquisition.
+        // Requires the connection to stay open for that whole span - see ReleaseDatabaseInitializationLock.
+        private static void AcquireDatabaseInitializationLock(HotelDbContext context)
+        {
+            context.Database.OpenConnection();
+            var conn = context.Database.GetDbConnection();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "sp_getapplock";
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@Resource", "HotelPOS_DbInit"));
+            cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@LockMode", "Exclusive"));
+            cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@LockOwner", "Session"));
+            cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@LockTimeout", 60000));
+            var returnValue = new Microsoft.Data.SqlClient.SqlParameter { Direction = System.Data.ParameterDirection.ReturnValue };
+            cmd.Parameters.Add(returnValue);
+
+            cmd.ExecuteNonQuery();
+
+            // sp_getapplock returns a status code rather than throwing on timeout/failure:
+            // 0/1 = acquired (immediately or after waiting), negative = timed out or errored.
+            if ((int)returnValue.Value < 0)
+            {
+                throw new InvalidOperationException(
+                    $"Could not acquire the database initialization lock (sp_getapplock returned {returnValue.Value}). " +
+                    "Another HotelPOS instance may be synchronizing the database right now - please try again shortly.");
+            }
+        }
+
+        private static void ReleaseDatabaseInitializationLock(HotelDbContext context)
+        {
+            try
+            {
+                var conn = context.Database.GetDbConnection();
+                if (conn.State == System.Data.ConnectionState.Open)
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = "sp_releaseapplock";
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@Resource", "HotelPOS_DbInit"));
+                    cmd.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@LockOwner", "Session"));
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            finally
+            {
+                // Closing the connection also releases the session-scoped applock as a backstop,
+                // even if the explicit sp_releaseapplock above didn't run (e.g. connection already broken).
+                context.Database.CloseConnection();
             }
         }
 
