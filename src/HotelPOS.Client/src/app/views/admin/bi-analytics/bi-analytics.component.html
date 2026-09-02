@@ -55,6 +55,10 @@
       <!-- Content -->
       <div class="p-6">
 
+        <div *ngIf="errorMessage" class="mb-4 text-xs font-bold text-red-600 bg-red-50 p-3 rounded border border-red-200">
+          {{ errorMessage }}
+        </div>
+
         <!-- TAB 1: OVERVIEW -->
         <div *ngIf="activeTab === 'overview'">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -106,14 +110,15 @@
               <div class="divide-y divide-blueGray-100">
                 <div *ngFor="let item of topMarginItems" class="py-3 flex items-center justify-between">
                   <div>
-                    <div class="text-xs font-bold text-blueGray-700">{{ item.name }}</div>
-                    <div class="text-[10px] text-blueGray-400">Price: ₹{{ item.price }} | Cost: ₹{{ item.foodCost }}</div>
+                    <div class="text-xs font-bold text-blueGray-700">{{ item.itemName }}</div>
+                    <div class="text-[10px] text-blueGray-400">Price: ₹{{ item.unitPrice | number:'1.2-2' }} | Cost: ₹{{ item.costPrice | number:'1.2-2' }}</div>
                   </div>
                   <div class="text-right">
-                    <div class="text-xs font-extrabold text-emerald-600">{{ item.marginPct }}%</div>
+                    <div class="text-xs font-extrabold text-emerald-600">{{ item.marginPercentage | number:'1.1-1' }}%</div>
                     <div class="text-[10px] text-blueGray-400">Margin</div>
                   </div>
                 </div>
+                <div *ngIf="topMarginItems.length === 0" class="py-4 text-center text-xs text-blueGray-400">No margin data available.</div>
               </div>
             </div>
           </div>
