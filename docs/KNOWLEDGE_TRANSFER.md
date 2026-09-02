@@ -239,7 +239,7 @@ Status legend: `Open` | `In Progress` | `Mitigated` | `Closed`
 - **Actions:**
   1. Add tests for fiscal year invoice transitions and sequence format (rollover logic).
   2. Add backup behavior tests validated by DB provider.
-  3. Implement end-to-end soft-delete filtering verification in repositories.
+  3. [DONE] Implement end-to-end soft-delete filtering verification in repositories — `SoftDeleteTests.cs` (`GetAllWithItemsAsync_FiltersOutDeletedOrders`, `GetPagedWithItemsAsync_FiltersOutDeletedOrders`, `DeleteAsync_SetsIsDeletedTrue`).
   4. [DONE] Add tests for `UpdateOrderAsync` stock reconciliation (rollback/re-apply).
 - **Done criteria:** Critical order flow tests pass in CI; failures block release.
 

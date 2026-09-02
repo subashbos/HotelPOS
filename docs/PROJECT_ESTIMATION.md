@@ -2,7 +2,7 @@
 
 This document estimates the effort to build HotelPOS **from scratch to its current
 state**: a Clean Architecture solution with a WPF desktop client, an Angular web
-client, a JWT-secured REST API, Indian GST/payroll compliance, and a 1,196-test
+client, a JWT-secured REST API, Indian GST/payroll compliance, and a 2,076-test
 automated suite. It is meant as a reference for planning follow-on work, staffing,
 or quoting comparable modules — not as a record of hours actually spent.
 
@@ -10,14 +10,14 @@ or quoting comparable modules — not as a record of hours actually spent.
 
 | Metric | Count |
 |---|---|
-| Domain entities | 37 |
-| API controllers | 22 |
-| EF Core migrations | 52 |
-| WPF views (XAML) | 59 |
-| Angular components | 55 |
-| Angular routes | 43 |
-| Automated tests | 1,196 (423 core/WPF + 773 API) across 185 test files |
-| Lines of code | ~135,000 C# (incl. tests) + ~15,600 TypeScript |
+| Domain entities | 39 |
+| API controllers | 24 (25 files incl. abstract `BaseApiController`) |
+| EF Core migrations | 60 |
+| WPF views (XAML) | 63 |
+| Angular components | 57 |
+| Angular routes | 46 |
+| Automated tests | 2,076 (539 core/WPF + 1,537 API) across 208 test files |
+| Lines of code | ~166,500 C# (incl. tests) + ~16,900 TypeScript |
 | CI pipelines | `dotnet.yml`, `eslint.yml`, `codeql.yml` + SonarCloud coverage gating |
 
 ---
@@ -111,7 +111,7 @@ tests — mirroring how the repo is actually structured.
 
 | Work item | Hours |
 |---|---:|
-| Integration/HTTP-level test harness & fixtures (773 API + 423 core/WPF tests, seed data) | 220 |
+| Integration/HTTP-level test harness & fixtures (1,537 API + 539 core/WPF tests, seed data) | 220 |
 | Security hardening (PBKDF2 600k iterations, JWT key management, CORS lockdown) | 30 |
 | Dedicated QA gap review & closure pass | 60 |
 | Coverage gating & ratcheting in CI | 20 |
@@ -181,8 +181,10 @@ single-solution-file codebase.
   direction is provided or kept minimal/utilitarian as in the current app.
 - Indian GST/PF/ESI statutory rules are assumed stable during development;
   regulatory changes requiring rework are out of scope.
-- TDS auto-computation is out of scope, matching the current codebase (§7 of
-  `HUMAN_RESOURCES_DEEP_DIVE.md` notes it's hardcoded to 0 today).
+- TDS auto-computation is implemented (`TdsCalculator.CalculateMonthlyTds`
+  against `TdsConfig`/`TdsSlab`, wired into `PayrollService.CalculatePayslip`)
+  but is **new tax regime only** — old-regime declared-exemption handling
+  (80C/HRA/etc.) is out of scope; see `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 5.
 - Figures are planning estimates, not a fixed-bid quote — actual effort varies
   with team seniority, requirement churn, and integration surprises. A
   **15–20% contingency buffer** on top of the grand total (≈ 375–500 hours) is
