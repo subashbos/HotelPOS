@@ -3,7 +3,7 @@
 Use this checklist before deploying any new version of HotelPOS.
 
 ## 1. Authentication & Security
-- [ ] Admin login (admin/admin) works.
+- [ ] On a fresh database, first launch shows "Create Administrator Account" and the chosen admin credentials work (no default `admin/admin` is seeded — see `OPERATIONS_RUNBOOK.md` §1). For a database carrying a historical hardcoded seed hash, confirm the one-time-password reset/forced-change flow instead.
 - [ ] Password change required on first login.
 - [ ] Cashier account has restricted access (cannot see Reports/Settings).
 - [ ] Lockout works after 5 failed attempts (5-minute lockout window).

@@ -87,4 +87,4 @@ All projects live under `src/`:
 - **src/Infrastructure**: Entity Framework DbContext, database migrations, and repositories (namespace `HotelPOS.Infrastructure.Persistence`) plus other infrastructure implementations. This project absorbed the former standalone `HotelPOS.Persistence` project.
 - **src/API** (`HotelPOS.Api`): JWT-secured ASP.NET Core REST API exposing the same Application layer.
 - **src/HotelPOS.Client**: Angular web client (currently no HR UI; billing/admin features are WPF-only — see [HUMAN_RESOURCES_DEEP_DIVE.md](HUMAN_RESOURCES_DEEP_DIVE.md)).
-- **src/HotelPOS.Tests** / **src/HotelPOS.Api.Tests**: Comprehensive unit and integration test suite (1,196 tests total: 423 core/WPF + 773 API).
+- **src/HotelPOS.Tests** / **src/HotelPOS.Api.Tests**: Comprehensive unit and integration test suite (2,076 tests total: 539 core/WPF + 1,537 API).
