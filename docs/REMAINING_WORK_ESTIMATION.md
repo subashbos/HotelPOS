@@ -36,11 +36,10 @@ open" entry in `QA_REVIEW_AND_TEST_GAPS.md`, the risk register in
 
 | Item | Source | Hours |
 |---|---|---:|
-| Column-level encryption/masking for PII (PAN, Aadhaar, UAN, ESIC number, bank details) | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 5 | 70 |
-| Wire TDS auto-computation into `PayrollService.CalculatePayslip` (currently hardcoded to 0) using existing `TdsConfig`/`TdsSlab` entities | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 6 | 45 |
+| Column-level encryption/masking for PII (PAN, Aadhaar, UAN, ESIC number, bank details) | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 7 | 70 |
 | Investigate & fix systemic gap: void `IRequest` commands with FluentValidation validators not reliably passing through `ValidationBehavior` (only Purchases has a narrow patch) | `QA_REVIEW_AND_TEST_GAPS.md` item 8 | 30 |
 | Deployment checklist step + tooling to rotate/disable the bootstrap admin account post go-live | `KNOWLEDGE_TRANSFER.md` Risk 5, remaining action | 8 |
-| **Subtotal** | | **153** |
+| **Subtotal** | | **108** |
 
 ### 2.2 Reliability & Architecture
 
@@ -52,17 +51,20 @@ open" entry in `QA_REVIEW_AND_TEST_GAPS.md`, the risk register in
 
 ### 2.3 Access Control Granularity
 
-| Item | Source | Hours |
-|---|---|---:|
-| Action-level HR permissions (e.g. view payroll vs. run payroll) surfaced in the desktop permission model, not just API `[Authorize(Roles=...)]` | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 8 | 30 |
-| **Subtotal** | | **30** |
+**Closed** — action-level HR permissions (view payroll vs. run payroll) are now
+surfaced in the desktop permission model, not just enforced server-side. See
+`HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 6. A parallel gap remains in the Angular
+client (`PayrollComponent` has no `PermissionService` check gating its
+run/mark-paid buttons) — not counted here since it wasn't part of the original
+"desktop" scoping of this item, but worth a small follow-up (~10 hrs) for
+web/desktop parity.
 
 ### 2.4 Employee Self-Service Completeness
 
 | Item | Source | Hours |
 |---|---|---:|
-| Notifications (e.g. email) on leave request approve/reject | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 7 | 30 |
-| Dedicated "my profile" self-service view tied to `Employee.UserId` | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 7 | 25 |
+| Notifications (e.g. email) on leave request approve/reject | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 8 | 30 |
+| Dedicated "my profile" self-service view tied to `Employee.UserId` | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 8 | 25 |
 | **Subtotal** | | **55** |
 
 ### 2.5 Test Coverage Closure
@@ -92,15 +94,15 @@ open" entry in `QA_REVIEW_AND_TEST_GAPS.md`, the risk register in
 
 | Category | Hours |
 |---|---:|
-| Security & compliance hardening | 153 |
+| Security & compliance hardening | 108 |
 | Reliability & architecture | 60 |
-| Access control granularity | 30 |
+| Access control granularity | 0 (closed) |
 | Employee self-service completeness | 55 |
 | Test coverage closure | 68 |
 | Documentation | 8 |
-| Subtotal (delivery) | 374 |
-| PM/coordination & PR-review overlay (12%) | 45 |
-| **Grand total** | **≈ 419 hours** |
+| Subtotal (delivery) | 299 |
+| PM/coordination & PR-review overlay (12%) | 36 |
+| **Grand total** | **≈ 335 hours** |
 
 ---
 
@@ -108,9 +110,9 @@ open" entry in `QA_REVIEW_AND_TEST_GAPS.md`, the risk register in
 
 | Team composition | Effective capacity/week | Estimated duration |
 |---|---:|---:|
-| 1 full-stack developer (solo) | 40 hrs | ~10.5 weeks (≈ 2.5 months) |
-| 2 developers (backend + full-stack) sharing QA | ~72 hrs (~90% efficiency) | ~6 weeks |
-| 3 people (2 dev, 1 QA) | ~100 hrs (~85% efficiency) | ~4 weeks |
+| 1 full-stack developer (solo) | 40 hrs | ~8.5 weeks (≈ 2 months) |
+| 2 developers (backend + full-stack) sharing QA | ~72 hrs (~90% efficiency) | ~4.5 weeks |
+| 3 people (2 dev, 1 QA) | ~100 hrs (~85% efficiency) | ~3.5 weeks |
 
 A 2-person team is the recommended baseline — most items are independent
 (security, ESS, tests, docs can proceed in parallel with minimal shared-file
@@ -122,15 +124,17 @@ coordination tax a larger team would add for a backlog this size.
 ## 5. Suggested Priority Order
 
 1. **Security & compliance** (§2.1) — PII exposure and the validation-pipeline
-   gap are the highest-risk items; TDS being hardcoded to 0 is a compliance
-   gap for any real payroll run.
+   gap are the highest-risk items remaining. (TDS auto-computation, previously
+   listed here as hardcoded to 0, has already shipped — see
+   `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 5.)
 2. **Reliability & architecture** (§2.2) — singleton/scoped audit reduces risk
    of hard-to-debug production incidents as usage grows.
 3. **Test coverage closure** (§2.5) — cheap, well-defined, de-risks the above
    two categories as they land.
-4. **Access control granularity** (§2.3) and **ESS completeness** (§2.4) —
-   product-completeness items, lower risk, can slot in parallel with the
-   above once security work is underway.
+4. **ESS completeness** (§2.4) — product-completeness item, lower risk, can
+   slot in parallel with the above once security work is underway.
+   (Access control granularity, §2.3, is closed — see
+   `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 6.)
 5. **Documentation** (§2.6) — closes out the last open item in
    `QA_REVIEW_AND_TEST_GAPS.md`, low effort.
 
@@ -146,5 +150,5 @@ coordination tax a larger team would add for a backlog this size.
   database-native/HSM-backed approach would cost more.
 - Excludes any new feature requests not already tracked as an open item in
   the repo's own documentation.
-- A **15% contingency** (≈ 63 hours) on top of the grand total is recommended,
+- A **15% contingency** (≈ 50 hours) on top of the grand total is recommended,
   consistent with the main `PROJECT_ESTIMATION.md`.

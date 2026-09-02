@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using HotelPOS.ViewModels;
 using Moq;
@@ -14,12 +15,14 @@ namespace HotelPOS.Tests.Unit.ViewModels
         private readonly Mock<IPayrollService> _mockPayrollService = new();
         private readonly Mock<IEmployeeService> _mockEmployeeService = new();
         private readonly Mock<INotificationService> _mockNotif = new();
+        private readonly Mock<IAuthorizationService> _mockAuth = new();
         private readonly PayrollViewModel _vm;
 
         public PayrollViewModelTests()
         {
             _mockPayrollService.Setup(s => s.GetRunsAsync()).ReturnsAsync(new List<PayrollRun>());
-            _vm = new PayrollViewModel(_mockPayrollService.Object, _mockEmployeeService.Object, _mockNotif.Object);
+            _mockAuth.Setup(a => a.HasEditPermission(PermissionModules.HrPayrollRun)).Returns(true);
+            _vm = new PayrollViewModel(_mockPayrollService.Object, _mockEmployeeService.Object, _mockNotif.Object, _mockAuth.Object);
         }
 
         [Fact]
@@ -226,6 +229,29 @@ namespace HotelPOS.Tests.Unit.ViewModels
             await _vm.SaveSalaryStructureCommand.ExecuteAsync(null);
 
             _mockNotif.Verify(n => n.ShowError(It.Is<string>(s => s.Contains("save fail"))), Times.Once);
+        }
+
+        [Fact]
+        public void WithoutHrPayrollRunPermission_CanRunPayrollIsFalse_AndCommandsReportNotExecutable()
+        {
+            var authWithoutRunAccess = new Mock<IAuthorizationService>();
+            authWithoutRunAccess.Setup(a => a.HasEditPermission(PermissionModules.HrPayrollRun)).Returns(false);
+
+            var vm = new PayrollViewModel(_mockPayrollService.Object, _mockEmployeeService.Object, _mockNotif.Object, authWithoutRunAccess.Object);
+
+            Assert.False(vm.CanRunPayroll);
+            Assert.False(vm.RunPayrollCommand.CanExecute(null));
+            Assert.False(vm.MarkRunAsPaidCommand.CanExecute(null));
+            Assert.False(vm.SaveSalaryStructureCommand.CanExecute(null));
+        }
+
+        [Fact]
+        public void WithHrPayrollRunPermission_CanRunPayrollIsTrue_AndCommandsReportExecutable()
+        {
+            Assert.True(_vm.CanRunPayroll);
+            Assert.True(_vm.RunPayrollCommand.CanExecute(null));
+            Assert.True(_vm.MarkRunAsPaidCommand.CanExecute(null));
+            Assert.True(_vm.SaveSalaryStructureCommand.CanExecute(null));
         }
     }
 }
