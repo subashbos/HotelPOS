@@ -45,17 +45,9 @@ export class BomComponent implements OnInit {
           this.selectMenuItem(this.filteredMenuItems[0]);
         }
       },
-      error: () => {
-        this.menuItems = [
-          { id: 101, name: 'Butter Chicken', price: 340, taxPercentage: 5, stockQuantity: 100, trackInventory: true, unitId: 1 },
-          { id: 102, name: 'Paneer Butter Masala', price: 280, taxPercentage: 5, stockQuantity: 100, trackInventory: true, unitId: 1 },
-          { id: 103, name: 'Chicken Biryani', price: 290, taxPercentage: 5, stockQuantity: 100, trackInventory: true, unitId: 1 },
-          { id: 104, name: 'Veg Fried Rice', price: 180, taxPercentage: 5, stockQuantity: 100, trackInventory: true, unitId: 1 }
-        ];
-        this.applyItemFilter();
-        if (this.filteredMenuItems.length > 0) {
-          this.selectMenuItem(this.filteredMenuItems[0]);
-        }
+      error: (err) => {
+        this.errorMessage = 'Failed to load menu items. Please check the server connection.';
+        console.error('Menu items load error:', err);
       }
     });
   }
@@ -65,12 +57,9 @@ export class BomComponent implements OnInit {
       next: (mats) => {
         this.rawMaterials = mats || [];
       },
-      error: () => {
-        this.rawMaterialService.getMockRawMaterials().subscribe({
-          next: (mockMats) => {
-            this.rawMaterials = mockMats;
-          }
-        });
+      error: (err) => {
+        this.errorMessage = 'Failed to load raw materials. Please check the server connection.';
+        console.error('Raw materials load error:', err);
       }
     });
   }
@@ -103,22 +92,10 @@ export class BomComponent implements OnInit {
         this.recalculateAll();
         this.isLoading = false;
       },
-      error: () => {
-        if (this.selectedMenuItem?.name.toLowerCase().includes('chicken')) {
-          this.ingredients = [
-            { rawMaterialId: 3, rawMaterialName: 'Chicken (Whole/Cut)', unit: 'kg', quantityRequired: 0.25, wastagePercentage: 10, effectiveQuantity: 0.275, costPerUnit: 220, wastageCost: 5.5, ingredientCost: 60.5 },
-            { rawMaterialId: 7, rawMaterialName: 'Butter', unit: 'kg', quantityRequired: 0.05, wastagePercentage: 0, effectiveQuantity: 0.05, costPerUnit: 480, wastageCost: 0, ingredientCost: 24.0 },
-            { rawMaterialId: 8, rawMaterialName: 'Garam Masala', unit: 'g', quantityRequired: 15, wastagePercentage: 0, effectiveQuantity: 15, costPerUnit: 0.85, wastageCost: 0, ingredientCost: 12.75 }
-          ];
-        } else if (this.selectedMenuItem?.name.toLowerCase().includes('paneer')) {
-          this.ingredients = [
-            { rawMaterialId: 4, rawMaterialName: 'Paneer (Cottage Cheese)', unit: 'kg', quantityRequired: 0.20, wastagePercentage: 5, effectiveQuantity: 0.21, costPerUnit: 340, wastageCost: 3.4, ingredientCost: 71.4 },
-            { rawMaterialId: 7, rawMaterialName: 'Butter', unit: 'kg', quantityRequired: 0.04, wastagePercentage: 0, effectiveQuantity: 0.04, costPerUnit: 480, wastageCost: 0, ingredientCost: 19.2 }
-          ];
-        } else {
-          this.ingredients = [];
-        }
-        this.recalculateAll();
+      error: (err) => {
+        this.ingredients = [];
+        this.errorMessage = 'Failed to load the recipe for this menu item. Please check the server connection.';
+        console.error('BOM load error:', err);
         this.isLoading = false;
       }
     });
@@ -187,9 +164,10 @@ export class BomComponent implements OnInit {
         this.isSaving = false;
         this.statusMessage = 'Recipe saved successfully!';
       },
-      error: () => {
+      error: (err) => {
         this.isSaving = false;
-        this.statusMessage = 'Recipe saved successfully (local)!';
+        this.errorMessage = 'Failed to save the recipe. Please check the server connection and try again.';
+        console.error('Recipe save error:', err);
       }
     });
   }

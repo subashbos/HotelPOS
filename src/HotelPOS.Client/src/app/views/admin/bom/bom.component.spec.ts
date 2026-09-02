@@ -61,13 +61,14 @@ describe('BomComponent', () => {
     expect(bomServiceSpy.getBomForMenuItem).toHaveBeenCalledWith(1);
   });
 
-  it('should fall back to built-in mock menu items on load error', () => {
+  it('should surface an error and not fabricate menu items on load error', () => {
     itemServiceSpy.getItems.and.returnValue(throwError(() => new Error('boom')));
 
     fixture.detectChanges();
 
-    expect(component.menuItems.length).toBeGreaterThan(0);
-    expect(component.selectedMenuItem).not.toBeNull();
+    expect(component.menuItems.length).toBe(0);
+    expect(component.selectedMenuItem).toBeNull();
+    expect(component.errorMessage).toContain('Failed to load menu items');
   });
 
   it('should filter menu items by search query', () => {
@@ -80,21 +81,22 @@ describe('BomComponent', () => {
     expect(component.filteredMenuItems[0].name).toBe('Veg Fried Rice');
   });
 
-  it('should fall back to mock raw materials on load error', () => {
+  it('should surface an error and not fabricate raw materials on load error', () => {
     rawMaterialServiceSpy.getRawMaterials.and.returnValue(throwError(() => new Error('boom')));
-    rawMaterialServiceSpy.getMockRawMaterials.and.returnValue(of(mockMaterials));
 
     fixture.detectChanges();
 
-    expect(component.rawMaterials).toEqual(mockMaterials);
+    expect(component.rawMaterials).toEqual([]);
+    expect(component.errorMessage).toContain('Failed to load raw materials');
   });
 
-  it('should use canned ingredient data on BOM load error for a chicken item', () => {
+  it('should surface an error and clear ingredients on BOM load error', () => {
     bomServiceSpy.getBomForMenuItem.and.returnValue(throwError(() => new Error('boom')));
 
     fixture.detectChanges();
 
-    expect(component.ingredients.length).toBeGreaterThan(0);
+    expect(component.ingredients.length).toBe(0);
+    expect(component.errorMessage).toContain('Failed to load the recipe');
   });
 
   it('should add an ingredient row from the first raw material', () => {
@@ -169,13 +171,14 @@ describe('BomComponent', () => {
     expect(component.statusMessage).toBe('Recipe saved successfully!');
   });
 
-  it('should show a local-save message when saveBom errors', () => {
+  it('should surface an error and not claim success when saveBom errors', () => {
     fixture.detectChanges();
     bomServiceSpy.saveBom.and.returnValue(throwError(() => new Error('boom')));
 
     component.saveRecipe();
 
-    expect(component.statusMessage).toContain('local');
+    expect(component.statusMessage).toBe('');
+    expect(component.errorMessage).toContain('Failed to save the recipe');
   });
 
   it('should not save when no menu item is selected', () => {

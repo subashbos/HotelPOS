@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, catchError } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RawMaterial } from '../models/raw-material.model';
 
@@ -25,9 +25,7 @@ export class RawMaterialService {
   constructor(private readonly http: HttpClient) { }
 
   getRawMaterials(): Observable<RawMaterial[]> {
-    return this.http.get<RawMaterial[]>(this.apiUrl).pipe(
-      catchError(() => of(this.mockMaterials))
-    );
+    return this.http.get<RawMaterial[]>(this.apiUrl);
   }
 
   createRawMaterial(material: Partial<RawMaterial>): Observable<RawMaterial> {

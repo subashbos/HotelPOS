@@ -93,6 +93,9 @@
             <div *ngIf="statusMessage" class="mb-3 text-xs font-bold text-emerald-600 bg-emerald-50 p-3 rounded border border-emerald-200">
               {{ statusMessage }}
             </div>
+            <div *ngIf="errorMessage" class="mb-3 text-xs font-bold text-red-600 bg-red-50 p-3 rounded border border-red-200">
+              {{ errorMessage }}
+            </div>
 
             <!-- Ingredients Table -->
             <div class="flex-1 overflow-x-auto overflow-y-auto border border-solid border-blueGray-200 rounded mb-4">
