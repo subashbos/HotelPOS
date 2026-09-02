@@ -24,8 +24,15 @@ on:
 # later run cancel the earlier one instead of both running. Doesn't help the
 # far more common case below (jobs' `if:`), where the two runs are minutes
 # apart rather than concurrent.
+#
+# The auto-generated develop-head bookkeeping PR into main gets its own group
+# suffix so it never shares a group with the push to develop that triggered
+# it: that PR's run finishes in seconds (steps below are skipped for it), and
+# without this it would cancel the real, still-running push-triggered test
+# run purely by finishing first - reporting the actual tests as "cancelled"
+# instead of letting them complete.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}-${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop') && 'bookkeeping-pr' || 'default' }}
   cancel-in-progress: true
 
 jobs:
