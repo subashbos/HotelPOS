@@ -578,11 +578,13 @@ namespace HotelPOS.Infrastructure.Persistence
             _authorization.EnsurePermission(PermissionModules.SalesReport);
 
             var items = await _context.Items.AsNoTracking().Include(i => i.Category).ToListAsync();
-            var orders = await _context.Orders.AsNoTracking().Include(o => o.Items).Where(o => !o.IsDeleted && o.Status != OrderStatuses.Void).ToListAsync();
 
-            var salesByItem = orders.SelectMany(o => o.Items)
+            var salesByItem = await _context.OrderItems
+                .AsNoTracking()
+                .Where(oi => oi.Order != null && !oi.Order.IsDeleted && oi.Order.Status != OrderStatuses.Void)
                 .GroupBy(oi => oi.ItemId)
-                .ToDictionary(g => g.Key, g => g.Sum(oi => oi.Total));
+                .Select(g => new { ItemId = g.Key, Revenue = g.Sum(oi => oi.Total) })
+                .ToDictionaryAsync(x => x.ItemId, x => x.Revenue);
 
             decimal totalSalesRevenue = salesByItem.Values.Sum();
 
