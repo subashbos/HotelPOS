@@ -59,6 +59,11 @@ namespace HotelPOS.Infrastructure.Persistence
             // cost-price history that past-period P&L/margin reports depend on) ──
             modelBuilder.Entity<Item>().HasQueryFilter(i => !i.IsDeleted);
 
+            // ── Global soft-delete query filter for Tables (previously only enforced by
+            // TableRepository's manual .Where(!t.IsDeleted) - this closes the gap for any
+            // query against the Tables DbSet that forgets to add it) ──
+            modelBuilder.Entity<Table>().HasQueryFilter(t => !t.IsDeleted);
+
             // ── Indexes for Performance ──────────────────────────────────────────
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.CreatedAt);
