@@ -96,14 +96,4 @@ describe('RawMaterialService', () => {
     });
   });
 
-  describe('getMockRawMaterials', () => {
-    it('should emit the built-in mock list without an HTTP call', done => {
-      service.getMockRawMaterials().subscribe(result => {
-        expect(result.length).toBeGreaterThan(0);
-        done();
-      });
-
-      httpMock.expectNone(apiUrl);
-    });
-  });
 });

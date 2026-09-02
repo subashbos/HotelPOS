@@ -30,7 +30,7 @@ describe('BomComponent', () => {
 
   beforeEach(async () => {
     itemServiceSpy = jasmine.createSpyObj('ItemService', ['getItems']);
-    rawMaterialServiceSpy = jasmine.createSpyObj('RawMaterialService', ['getRawMaterials', 'getMockRawMaterials']);
+    rawMaterialServiceSpy = jasmine.createSpyObj('RawMaterialService', ['getRawMaterials']);
     bomServiceSpy = jasmine.createSpyObj('BomService', ['getBomForMenuItem', 'saveBom']);
 
     itemServiceSpy.getItems.and.returnValue(of(mockItems));
