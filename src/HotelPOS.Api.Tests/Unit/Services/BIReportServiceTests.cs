@@ -171,6 +171,38 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task GetItemMarginsAsync_UnitPriceIsQuantityWeightedNotSimpleAverage()
+        {
+            using var context = GetContext("BI_ItemMarginsWeightedDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item C", Price = 200, CostPrice = 50 };
+            context.Items.Add(item);
+
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                TotalAmount = 700,
+                CreatedAt = DateTime.UtcNow,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item C", Quantity = 1, Price = 100, Total = 100 },
+                    new OrderItem { ItemId = 1, ItemName = "Item C", Quantity = 3, Price = 200, Total = 600 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            var margins = await service.GetItemMarginsAsync();
+
+            var itemC = margins.Single(x => x.ItemName == "Item C");
+            // Quantity-weighted: (100 + 600) / (1 + 3) = 175. A simple average of unit prices would wrongly give 150.
+            Assert.Equal(175m, itemC.UnitPrice);
+        }
+
+        [Fact]
         public async Task GetWastageSummaryAsync_AggregatesAndFiltersCorrectly()
         {
             using var context = GetContext("BI_WastageSummaryDb");

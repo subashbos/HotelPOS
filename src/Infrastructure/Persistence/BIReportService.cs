@@ -106,7 +106,7 @@ namespace HotelPOS.Infrastructure.Persistence
                     var rev = g.Sum(oi => oi.Total);
 
                     decimal costPrice = 0;
-                    decimal unitPrice = g.Average(oi => oi.Price);
+                    decimal unitPrice = qty > 0 ? rev / qty : 0;
                     string name = "Unknown Item";
                     string catName = "Others";
 
