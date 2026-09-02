@@ -14,20 +14,31 @@ on:
 # later run cancel the earlier one instead of both running. Doesn't help the
 # far more common case below (jobs' `if:`), where the two runs are minutes
 # apart rather than concurrent.
+#
+# The auto-generated develop-head bookkeeping PR into main gets its own group
+# suffix so it never shares a group with the push to develop that triggered
+# it: that PR's run finishes in seconds (steps below are skipped for it), and
+# without this it would cancel the real, still-running push-triggered test
+# run purely by finishing first - reporting the actual tests as "cancelled"
+# instead of letting them complete.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}-${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop') && 'bookkeeping-pr' || 'default' }}
   cancel-in-progress: true
 
 jobs:
   eslint:
     name: Run ESLint Scanning
-    # Skip only the auto-generated develop-head bookkeeping PR into main (a bot
-    # recreates it after every merge) - that commit was already fully tested by
-    # the push trigger above, often minutes before this PR is even opened. Any
-    # other PR (a real feature branch, into develop or directly into main)
-    # still runs normally.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main'
     runs-on: ubuntu-latest
+    env:
+      # Skip only the auto-generated develop-head bookkeeping PR into main (a bot
+      # recreates it after every merge) - that commit was already fully tested by
+      # the push trigger above, often minutes before this PR is even opened. Any
+      # other PR (a real feature branch, into develop or directly into main)
+      # still runs normally. Gated per-step rather than via a job-level `if:` so
+      # the job still reports a real SUCCESS conclusion instead of "skipped" -
+      # a skipped job/check makes GitHub's PR merge-status UI show "unstable"
+      # even though nothing is actually wrong with the PR.
+      RUN_CHECKS: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main' }}
     permissions:
       security-events: write
       contents: read
@@ -35,9 +46,11 @@ jobs:
 
     steps:
       - name: Checkout repository
+        if: env.RUN_CHECKS == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node.js
+        if: env.RUN_CHECKS == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -45,15 +58,18 @@ jobs:
           cache-dependency-path: src/HotelPOS.Client/package-lock.json
 
       - name: Install dependencies
+        if: env.RUN_CHECKS == 'true'
         run: npm ci --ignore-scripts
         working-directory: src/HotelPOS.Client
 
       - name: Run ESLint and generate SARIF report
+        if: env.RUN_CHECKS == 'true'
         run: npm run lint
         working-directory: src/HotelPOS.Client
         continue-on-error: true
 
       - name: Upload ESLint SARIF results
+        if: env.RUN_CHECKS == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: eslint-results.sarif

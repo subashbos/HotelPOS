@@ -24,25 +24,36 @@ on:
 # later run cancel the earlier one instead of both running. Doesn't help the
 # far more common case below (jobs' `if:`), where the two runs are minutes
 # apart rather than concurrent.
+#
+# The auto-generated develop-head bookkeeping PR into main gets its own group
+# suffix so it never shares a group with the push to develop that triggered
+# it: that PR's run finishes in seconds (steps below are skipped for it), and
+# without this it would cancel the real, still-running push-triggered test
+# run purely by finishing first - reporting the actual tests as "cancelled"
+# instead of letting them complete.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}-${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'develop') && 'bookkeeping-pr' || 'default' }}
   cancel-in-progress: true
 
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    # Skip only the auto-generated develop-head bookkeeping PR into main (a bot
-    # recreates it after every merge) - that commit was already fully tested by
-    # the push trigger above, often minutes before this PR is even opened. Any
-    # other PR (a real feature branch, into develop or directly into main)
-    # still runs normally.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main'
     # Runner size impacts CodeQL analysis time. To learn more, please see:
     #   - https://gh.io/recommended-hardware-resources-for-running-codeql
     #   - https://gh.io/supported-runners-and-hardware-resources
     #   - https://gh.io/using-larger-runners (GitHub.com only)
     # Consider using larger runners or machines with greater resources for possible analysis time improvements.
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    env:
+      # Skip only the auto-generated develop-head bookkeeping PR into main (a bot
+      # recreates it after every merge) - that commit was already fully tested by
+      # the push trigger above, often minutes before this PR is even opened. Any
+      # other PR (a real feature branch, into develop or directly into main)
+      # still runs normally. Gated per-step rather than via a job-level `if:` so
+      # the job still reports a real SUCCESS conclusion instead of "skipped" -
+      # a skipped job/check makes GitHub's PR merge-status UI show "unstable"
+      # even though nothing is actually wrong with the PR.
+      RUN_CHECKS: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.ref != 'develop' || github.event.pull_request.base.ref != 'main' }}
     permissions:
       # required for all workflows
       security-events: write
@@ -72,6 +83,7 @@ jobs:
         # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
     steps:
     - name: Checkout repository
+      if: env.RUN_CHECKS == 'true'
       uses: actions/checkout@v4
 
     # Add any setup steps before running the `github/codeql-action/init` action.
@@ -82,6 +94,7 @@ jobs:
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
+      if: env.RUN_CHECKS == 'true'
       uses: github/codeql-action/init@v4
       with:
         languages: ${{ matrix.language }}
@@ -100,7 +113,7 @@ jobs:
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
     - name: Run manual build steps
-      if: matrix.build-mode == 'manual'
+      if: env.RUN_CHECKS == 'true' && matrix.build-mode == 'manual'
       shell: bash
       run: |
         echo 'If you are using a "manual" build mode for one or more of the' \
@@ -111,6 +124,7 @@ jobs:
         exit 1
 
     - name: Perform CodeQL Analysis
+      if: env.RUN_CHECKS == 'true'
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{matrix.language}}"
