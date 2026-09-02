@@ -104,7 +104,8 @@
                             <CheckBox Content="PT Applicable" IsChecked="{Binding ProfessionalTaxApplicable}"/>
                         </StackPanel>
 
-                        <Button Command="{Binding SaveSalaryStructureCommand}" IsDefault="True" Style="{StaticResource PrimaryBtn}" Padding="18,10" HorizontalAlignment="Left">
+                        <Button Command="{Binding SaveSalaryStructureCommand}" IsDefault="True" Style="{StaticResource PrimaryBtn}" Padding="18,10" HorizontalAlignment="Left"
+                                ToolTip="Requires HR: Run Payroll permission">
                             <TextBlock Text="💾  Save Salary Structure"/>
                         </Button>
                     </StackPanel>
@@ -128,7 +129,8 @@
                                 <TextBox Text="{Binding Year, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
                         </Grid>
-                        <Button Command="{Binding RunPayrollCommand}" IsDefault="True" Style="{StaticResource PrimaryBtn}" Padding="18,10" HorizontalAlignment="Left">
+                        <Button Command="{Binding RunPayrollCommand}" IsDefault="True" Style="{StaticResource PrimaryBtn}" Padding="18,10" HorizontalAlignment="Left"
+                                ToolTip="Requires HR: Run Payroll permission">
                             <TextBlock Text="▶  Run Payroll"/>
                         </Button>
                     </StackPanel>
@@ -146,7 +148,8 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
-                    <Button Command="{Binding MarkRunAsPaidCommand}" Style="{StaticResource SecondaryBtn}" Padding="14,8">
+                    <Button Command="{Binding MarkRunAsPaidCommand}" Style="{StaticResource SecondaryBtn}" Padding="14,8"
+                            ToolTip="Requires HR: Run Payroll permission">
                         <TextBlock Text="₹  Mark Selected Run as Paid"/>
                     </Button>
                 </StackPanel>

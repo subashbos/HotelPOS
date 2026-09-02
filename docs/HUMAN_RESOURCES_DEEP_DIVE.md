@@ -112,7 +112,7 @@ Computation logic lives in `CalculatePayslip`, driven by Indian statutory consta
 | ESI wage threshold | ₹21,000 gross/month |
 | Professional Tax threshold | ₹15,000 gross/month |
 | Professional Tax amount | ₹200 (flat, when above threshold) |
-| TDS | **Not auto-computed** — hardcoded to 0, documented as a manual/statutory override |
+| TDS | Auto-computed via `TdsCalculator.CalculateMonthlyTds` against `TdsConfig`/`TdsSlab` (new tax regime only; see §7 for history) |
 
 `RunPayrollAsync`:
 1. Rejects if a run already exists for month/year.
@@ -137,7 +137,7 @@ Computation logic lives in `CalculatePayslip`, driven by Indian statutory consta
 | `EmployeesController` | `/api/employees` | Create/Update: Admin, Manager. Delete: Admin only. |
 | `AttendanceController` | `/api/attendance` | Mark/Delete: Admin, Manager. |
 | `LeaveController` | `/api/leave` | Approve/Reject: Admin, Manager. Apply/list: any authenticated user. |
-| `PayrollController` | `/api/payroll` | Salary structure: Admin, Manager. Run/mark-paid: **Admin only**. |
+| `PayrollController` | `/api/payroll` | Class-level `[Authorize]` only — no role restrictions on the controller itself. View (salary structures/runs/payslips): `PermissionModules.HrPayroll`. Save salary structure / run / mark-paid / void: `PermissionModules.HrPayrollRun`, enforced in `PayrollService` via `IAuthorizationService.EnsureEditPermission`, not a `[Authorize(Roles=...)]` attribute. |
 
 All write endpoints funnel service-layer `ArgumentException`/`InvalidOperationException`
 into `400 BadRequest`, and `KeyNotFoundException` into `404 NotFound`, keeping HTTP
@@ -207,23 +207,51 @@ Also fixed since the original version of this document:
 4. ~~**No web UI for HR.**~~ **Fixed 2026-07-18.** `HotelPOS.Client` gained
    `EmployeesComponent`, `AttendanceComponent`, `LeaveComponent`, and `PayrollComponent`,
    routed under `/admin/*`, consuming the same REST API as the WPF app.
+5. ~~**TDS is not computed.**~~ **Fixed.** `PayrollService.CalculatePayslip` now calls
+   `TdsCalculator.CalculateMonthlyTds` against `TdsConfig`/`TdsSlab` (`TdsRuleSet`
+   resolved per financial year via `IPayrollRepository.GetTdsRuleSetAsync`), landed in
+   commit `fbe9f80` ("add TDS slab engine and Employee Self-Service portal"). New tax
+   regime only — no old-regime/declared-exemption (80C/HRA) support, which is out of
+   scope per `docs/PROJECT_ESTIMATION.md`. Covered by
+   `PayrollServiceTests.CalculatePayslip_WithTdsRuleSet_ComputesNonZeroTds` and
+   `TdsCalculatorTests`.
+6. ~~**Action-level HR permissions still coarse.**~~ **Fixed.** The finer view-vs-run
+   distinction already existed end-to-end at the domain/service/API layers — a separate
+   `PermissionModules.HrPayrollRun` module (added by migration
+   `20260728161025_AddHrPayrollRunPermission`) gates `SaveSalaryStructureAsync`,
+   `RunPayrollAsync`, `MarkRunAsPaidAsync`, and `VoidRunAsync` via
+   `IAuthorizationService.EnsureEditPermission`, separate from the read-only
+   `PermissionModules.HrPayroll` access needed just to view the screen/runs/payslips —
+   `PayrollController` itself carries only a bare `[Authorize]`, not
+   `[Authorize(Roles = ...)]`, so this was never actually an API-attribute-level gate.
+   The desktop UI just didn't reflect the distinction: `PayrollView`'s Save/Run/Mark-Paid
+   buttons were always enabled for anyone who could see the screen at all, only failing
+   with an error toast on click if they lacked `HrPayrollRun`. `PayrollViewModel` now
+   takes `IAuthorizationService`, exposes `CanRunPayroll`
+   (`HasEditPermission(PermissionModules.HrPayrollRun)`), and gates all three commands
+   via `[RelayCommand(CanExecute = nameof(CanRunPayroll))]`, so WPF now disables (not
+   just rejects) those buttons for a view-only HR user, with a tooltip explaining why.
+   `IAuthorizationService.HasEditPermission` was promoted from the concrete
+   `AuthorizationService` class onto the interface to make this possible from a
+   DI-injected ViewModel. Covered by
+   `PayrollViewModelTests.WithoutHrPayrollRunPermission_CanRunPayrollIsFalse_AndCommandsReportNotExecutable`
+   and the paired `WithHrPayrollRunPermission_...` test.
+   Angular's `PayrollComponent` has the identical UI gap (no `PermissionService` check
+   gating its run/mark-paid buttons) — out of scope here since this pass targeted the
+   desktop client specifically, but worth the same fix later for parity.
 
 Still open:
 
-5. **PII stored unencrypted.** PAN, Aadhaar, UAN, ESIC number, and bank account details
+7. **PII stored unencrypted.** PAN, Aadhaar, UAN, ESIC number, and bank account details
    are plain `nvarchar` columns with no column-level encryption or masking — worth a
    security review if this ever handles real employee data at scale.
-6. **TDS is not computed.** `PayrollService.CalculatePayslip` hardcodes TDS to 0;
-   income-tax withholding must be entered/adjusted manually elsewhere (no mechanism to
-   do so is visible in the current Payslip write path — it's effectively always 0 today).
-7. **No employee self-service / notifications.** Applying for leave, viewing payslips,
+8. **No employee self-service / notifications.** Applying for leave, viewing payslips,
    etc. all go through the same admin-facing WPF screens — there's no notification (e.g.
    email) when a leave request is approved/rejected, and no dedicated "my profile" view
    for a logged-in employee tied via `Employee.UserId`.
-8. **Action-level HR permissions still coarse.** The new per-screen flags gate
-   visibility, but finer distinctions (e.g. view payroll vs. run payroll) still rely
-   solely on the API's `[Authorize(Roles = ...)]` checks, not the desktop permission
-   model.
+9. **No "Void Run" control in the WPF desktop UI.** `PayrollService.VoidRunAsync` /
+   `PayrollController.VoidRun` exist and are already gated by `HrPayrollRun`, but
+   `PayrollView.xaml` has no button wired to it.
 
 ## 8. Test Coverage
 

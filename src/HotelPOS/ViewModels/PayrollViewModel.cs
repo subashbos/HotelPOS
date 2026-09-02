@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HotelPOS.Application.Interfaces;
+using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
@@ -54,9 +55,20 @@ namespace HotelPOS.ViewModels
         public ObservableCollection<PayrollRun> Runs { get; } = new();
         public ObservableCollection<Payslip> Payslips { get; } = new();
 
-        public PayrollViewModel(IPayrollService payrollService, IEmployeeService employeeService, INotificationService notificationService)
+        /// <summary>
+        /// Whether the current user holds edit access to <see cref="PermissionModules.HrPayrollRun"/> —
+        /// saving a salary structure and running/marking-paid a payroll run all require it, distinct
+        /// from the read-only <see cref="PermissionModules.HrPayroll"/> access that just lets someone
+        /// view this screen. Gates the corresponding commands so the desktop UI reflects the same
+        /// action-level restriction the API/service layer already enforces, instead of only surfacing
+        /// it as an error toast after a click.
+        /// </summary>
+        public bool CanRunPayroll { get; }
+
+        public PayrollViewModel(IPayrollService payrollService, IEmployeeService employeeService, INotificationService notificationService, IAuthorizationService authorizationService)
         {
             _notificationService = notificationService;
+            CanRunPayroll = authorizationService.HasEditPermission(PermissionModules.HrPayrollRun);
 
             if (System.Windows.Application.Current == null)
             {
@@ -130,7 +142,7 @@ namespace HotelPOS.ViewModels
             }
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanRunPayroll))]
         private async Task RunPayrollAsync()
         {
             using (var scope = App.CreateDbScope())
@@ -151,7 +163,7 @@ namespace HotelPOS.ViewModels
             await LoadRunsAsync();
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanRunPayroll))]
         private async Task MarkRunAsPaidAsync()
         {
             if (SelectedRun == null)
@@ -178,7 +190,7 @@ namespace HotelPOS.ViewModels
             await LoadRunsAsync();
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanRunPayroll))]
         private async Task SaveSalaryStructureAsync()
         {
             if (SalaryEmployee == null)
