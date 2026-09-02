@@ -58,20 +58,25 @@ namespace HotelPOS.Infrastructure.Persistence
                 }
             }
 
-            // Find the highest sequence number for this fiscal year
-            // Invoice format: INV/2026-27/0001
-            var lastOrder = await _context.Orders
-                .Where(o => o.FiscalYear == fiscalYear)
-                .OrderByDescending(o => o.InvoiceNumber)
-                .FirstOrDefaultAsync();
+            // Find the highest sequence number for this fiscal year.
+            // Invoice format: INV/2026-27/0001. The sequence is only zero-padded to a
+            // *minimum* of 4 digits, so once a fiscal year passes 9999 orders the numbers
+            // become 5+ digits - sorting InvoiceNumber as a string (the previous approach)
+            // then picks "...9999" as the "largest" invoice forever, since '9' > '1'
+            // lexicographically, permanently colliding on the same next number. Parse and
+            // compare numerically instead.
+            var prefix = $"INV/{fiscalYear}/";
+            var sequenceSuffixes = await _context.Orders
+                .Where(o => o.FiscalYear == fiscalYear && o.InvoiceNumber != null && o.InvoiceNumber.StartsWith(prefix))
+                .Select(o => o.InvoiceNumber!.Substring(prefix.Length))
+                .ToListAsync();
 
             int nextNum = 1;
-            if (lastOrder != null && !string.IsNullOrEmpty(lastOrder.InvoiceNumber))
+            foreach (var suffix in sequenceSuffixes)
             {
-                var parts = lastOrder.InvoiceNumber.Split('/');
-                if (parts.Length == 3 && int.TryParse(parts[2], out var lastNum))
+                if (int.TryParse(suffix, out var seq) && seq >= nextNum)
                 {
-                    nextNum = lastNum + 1;
+                    nextNum = seq + 1;
                 }
             }
 

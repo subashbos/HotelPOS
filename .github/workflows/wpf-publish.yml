@@ -1,0 +1,49 @@
+name: WPF Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "src/HotelPOS/**"
+      - "src/Application/**"
+      - "src/Infrastructure/**"
+      - "src/Domain/**"
+      - ".github/workflows/wpf-publish.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    name: Publish WPF build artifact
+    # UseWPF=true requires the Windows toolchain.
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish HotelPOS.WPF
+        run: >
+          dotnet publish src/HotelPOS/HotelPOS.WPF.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          --output publish
+
+      - name: Upload WPF build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HotelPOS-WPF-win-x64
+          path: publish/
+          if-no-files-found: error
