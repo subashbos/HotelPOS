@@ -192,7 +192,13 @@ namespace HotelPOS
             services.AddTransient<ExpenseView>();
             services.AddTransient<CustomerView>();
 
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly);
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(HotelPOS.Application.Common.Behaviors.ValidationBehavior<,>));
+            });
+
+            services.AddValidatorsFromAssembly(typeof(CreateItemCommandValidator).Assembly);
 
             // ── Windows & Views ──────────────────────────────────────────────
             // CLEANUP: Redundant individual view registrations were removed here as they are 

@@ -72,6 +72,13 @@ Scope: Fast review of core POS risk areas: authentication, billing, orders, stoc
    - `BackupServiceTests` now creates backups under isolated `Path.GetTempPath()`-based directories per test (with cleanup in `finally` blocks) instead of the shared build-output `Backups` folder.
    - Status: FIXED.
 
+10. `HotelPOS.WPF` never ran *any* FluentValidation validator through MediatR - a bigger version of item 8's gap, not just the void-command edge case. (FIXED 2026-09-03)
+    - Root cause: `App.Services.cs`'s `AddMediatR(...)` call never registered `ValidationBehavior<,>` (unlike `API/Program.cs`), and the desktop app never called `AddValidatorsFromAssembly` at all, so `IValidator<T>` wasn't even in its DI container. This affects every command that relies solely on the pipeline for validation - not just the void `IRequest` ones item 8 covers, but ordinary `IRequest<TResponse>` commands like `SaveExpenseCommand` too, since `SaveExpenseCommandHandler` (unlike the `Items` handlers) has no defensive checks of its own.
+    - Confirmed empirically with a standalone repro (service collection built exactly like the old `App.Services.cs`, outside any test project): sending `SaveExpenseCommand` with `Amount = -100` completed with no error and persisted the negative amount; the same command through `API/Program.cs`'s registration correctly threw `FluentValidation.ValidationException`.
+    - Fix: `App.Services.cs` now registers `ValidationBehavior<,>` via `cfg.AddBehavior(...)` and calls `AddValidatorsFromAssembly(...)`, mirroring `API/Program.cs` exactly. Added `FluentValidation.DependencyInjectionExtensions` package reference to `HotelPOS.WPF.csproj` (the bare `FluentValidation` package doesn't include `AddValidatorsFromAssembly`).
+    - Regression test: `DependencyInjectionTests.Verify_Wpf_MediatR_Pipeline_RejectsInvalidCommand` - builds the service collection the same way `App.Services.cs` does and asserts an invalid `SaveExpenseCommand` throws `ValidationException`. (Only runs on the `windows-latest` CI job, since `HotelPOS.Tests` targets `net10.0-windows`.)
+    - Note: this fix does not touch the underlying `ValidationBehavior` pipeline-behavior gap for void commands noted in item 8 - that's a separate, still-open question specific to how MediatR resolves `IPipelineBehavior<TRequest, Unit>`. This item is purely "the desktop app wasn't wired up to use the pipeline at all."
+
 ## Missing High-Value Test Cases
 
 Add these first because they cover money, security, and data integrity:
