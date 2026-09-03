@@ -1,4 +1,3 @@
-using FluentAssertions;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Orders.Commands;
 using Moq;
@@ -38,6 +37,7 @@ public class RefundOrderCommandHandlerTests
 
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Cannot refund a void order.");
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(act);
+        Assert.Equal("Cannot refund a void order.", ex.Message);
     }
 }

@@ -1,4 +1,3 @@
-using FluentAssertions;
 using HotelPOS.Application.UseCases.Orders.Queries;
 using Xunit;
 
@@ -19,8 +18,8 @@ public class GetOrdersQueryValidatorTests
 
         var result = _validator.Validate(query);
 
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(GetOrdersQuery.PageSize));
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(GetOrdersQuery.PageSize));
     }
 
     [Theory]
@@ -32,8 +31,8 @@ public class GetOrdersQueryValidatorTests
 
         var result = _validator.Validate(query);
 
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(GetOrdersQuery.PageNumber));
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == nameof(GetOrdersQuery.PageNumber));
     }
 
     [Theory]
@@ -46,6 +45,6 @@ public class GetOrdersQueryValidatorTests
 
         var result = _validator.Validate(query);
 
-        result.IsValid.Should().BeTrue();
+        Assert.True(result.IsValid);
     }
 }

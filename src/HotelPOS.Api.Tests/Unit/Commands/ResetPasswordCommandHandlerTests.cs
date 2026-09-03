@@ -1,4 +1,3 @@
-using FluentAssertions;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.UseCases.Users.Commands;
@@ -34,8 +33,8 @@ public class ResetPasswordCommandHandlerTests
         var (success, error) = await _handler.Handle(
             new ResetPasswordCommand(5, "NewPassword1!", "OldPassword1!"), CancellationToken.None);
 
-        success.Should().BeTrue(error);
-        user.PasswordHash.Should().NotBe(hash);
+        Assert.True(success, error);
+        Assert.NotEqual(hash, user.PasswordHash);
         _userRepo.Verify(r => r.UpdateAsync(user), Times.Once);
     }
 
@@ -50,8 +49,8 @@ public class ResetPasswordCommandHandlerTests
         var (success, error) = await _handler.Handle(
             new ResetPasswordCommand(5, "NewPassword1!", "WrongPassword!"), CancellationToken.None);
 
-        success.Should().BeFalse();
-        error.Should().Be("Current password is incorrect.");
+        Assert.False(success);
+        Assert.Equal("Current password is incorrect.", error);
         _userRepo.Verify(r => r.UpdateAsync(It.IsAny<User>()), Times.Never);
     }
 
@@ -66,8 +65,8 @@ public class ResetPasswordCommandHandlerTests
         var (success, error) = await _handler.Handle(
             new ResetPasswordCommand(5, "NewPassword1!"), CancellationToken.None);
 
-        success.Should().BeFalse();
-        error.Should().Be("Current password is incorrect.");
+        Assert.False(success);
+        Assert.Equal("Current password is incorrect.", error);
     }
 
     [Fact]
@@ -80,7 +79,7 @@ public class ResetPasswordCommandHandlerTests
         var (success, error) = await _handler.Handle(
             new ResetPasswordCommand(6, "NewPassword1!"), CancellationToken.None);
 
-        success.Should().BeTrue(error);
+        Assert.True(success, error);
         _userRepo.Verify(r => r.UpdateAsync(user), Times.Once);
     }
 
@@ -92,7 +91,7 @@ public class ResetPasswordCommandHandlerTests
         var (success, error) = await _handler.Handle(
             new ResetPasswordCommand(99, "NewPassword1!"), CancellationToken.None);
 
-        success.Should().BeFalse();
-        error.Should().Be("User not found.");
+        Assert.False(success);
+        Assert.Equal("User not found.", error);
     }
 }
