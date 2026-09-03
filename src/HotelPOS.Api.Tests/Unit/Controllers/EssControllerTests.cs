@@ -1,4 +1,3 @@
-using AutoMapper;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.DTOs.Employee;
 using HotelPOS.Application.DTOs.Leave;
@@ -17,9 +16,7 @@ namespace HotelPOS.Tests.Unit.Controllers
     /// </summary>
     public class EssControllerTests
     {
-        private static readonly IMapper Mapper = new MapperConfiguration(
-            cfg => cfg.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static readonly MapsterMapper.IMapper Mapper = HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
 
         private readonly Mock<IEmployeeRepository> _employeeRepo = new();
         private readonly Mock<ILeaveService> _leaveService = new();

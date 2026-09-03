@@ -18,7 +18,7 @@ using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.UseCases.Expenses.Commands;
 using MediatR;
 using FluentValidation;
-using AutoMapper;
+using MapsterMapper;
 using System.Threading.Tasks;
 
 
@@ -89,11 +89,8 @@ namespace HotelPOS.Tests.Integration
             });
             services.AddValidatorsFromAssembly(typeof(HotelPOS.Application.UseCases.Items.Commands.CreateItemCommandValidator).Assembly);
 
-            // AutoMapper
-            var mapperCfg = new AutoMapper.MapperConfiguration(
-                mc => mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-            services.AddSingleton<IMapper>(mapperCfg.CreateMapper());
+            // Mapster
+            services.AddSingleton<IMapper>(HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper());
 
             return services.BuildServiceProvider();
         }
@@ -212,16 +209,11 @@ namespace HotelPOS.Tests.Integration
             services.AddScoped<IEmailService, HotelPOS.Infrastructure.Services.SmtpEmailService>();
             services.AddScoped<IPasswordResetService, PasswordResetService>();
 
-            // AutoMapper
-            var mapperCfg = new AutoMapper.MapperConfiguration(
-                mc =>
-                {
-                    mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile());
-                    mc.CreateMap<HotelPOS.Api.Controllers.CreateItemRequest, HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand>();
-                    mc.CreateMap<HotelPOS.Api.Controllers.CreateOrderRequest, HotelPOS.Application.UseCases.Orders.Commands.CreateOrderCommand>();
-                },
-                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-            AutoMapper.IMapper mapper = mapperCfg.CreateMapper();
+            // Mapster
+            var mapperConfig = HotelPOS.Application.Common.Mappings.MappingProfile.CreateConfig();
+            mapperConfig.NewConfig<HotelPOS.Api.Controllers.CreateItemRequest, HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand>();
+            mapperConfig.NewConfig<HotelPOS.Api.Controllers.CreateOrderRequest, HotelPOS.Application.UseCases.Orders.Commands.CreateOrderCommand>();
+            IMapper mapper = new Mapper(mapperConfig);
             services.AddSingleton(mapper);
 
             // Controllers

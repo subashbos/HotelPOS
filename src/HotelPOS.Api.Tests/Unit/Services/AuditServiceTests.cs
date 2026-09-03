@@ -11,7 +11,6 @@ using HotelPOS.Domain.Entities;
 using MediatR;
 using Moq;
 using Xunit;
-using AutoMapper;
 
 namespace HotelPOS.Tests
 {

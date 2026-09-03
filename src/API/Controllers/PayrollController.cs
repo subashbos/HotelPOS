@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.Payroll;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;

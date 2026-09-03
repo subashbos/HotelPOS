@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.Purchase;
 using HotelPOS.Application.DTOs.Supplier;
 using HotelPOS.Application.Interfaces;
