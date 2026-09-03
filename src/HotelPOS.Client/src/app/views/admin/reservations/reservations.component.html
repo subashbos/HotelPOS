@@ -9,6 +9,14 @@
             <i class="fas fa-calendar-alt text-blueGray-400 mr-2"></i> Table Reservations
           </h3>
           <div class="flex items-center gap-3">
+            <div class="flex rounded shadow overflow-hidden text-xs font-bold uppercase" role="group" aria-label="Reservation view">
+              <button type="button" (click)="viewMode = 'scheduler'"
+                [ngClass]="viewMode === 'scheduler' ? 'bg-red-600 text-white' : 'bg-blueGray-50 text-blueGray-500'"
+                class="px-3 py-2"><i class="fas fa-calendar-week mr-1"></i> Scheduler</button>
+              <button type="button" (click)="viewMode = 'list'"
+                [ngClass]="viewMode === 'list' ? 'bg-red-600 text-white' : 'bg-blueGray-50 text-blueGray-500'"
+                class="px-3 py-2"><i class="fas fa-list mr-1"></i> List</button>
+            </div>
             <input id="reservationDate" type="date" [(ngModel)]="selectedDate" (ngModelChange)="onDateChanged()" name="selectedDate"
               aria-label="Reservation date"
               class="border-0 px-3 py-2 text-blueGray-600 bg-blueGray-50 rounded text-sm shadow focus:outline-none focus:ring" />
@@ -25,7 +33,70 @@
         <p *ngIf="loadError" class="text-red-600 text-sm mb-4">{{ loadError }}</p>
         <p *ngIf="isLoading" class="text-blueGray-400 text-sm mb-4">Loading reservations...</p>
 
-        <div class="block w-full overflow-x-auto" *ngIf="!isLoading">
+        <!-- ══ SCHEDULER VIEW ══ -->
+        <div class="w-full overflow-x-auto border border-blueGray-100 rounded" *ngIf="!isLoading && viewMode === 'scheduler'">
+          <div class="inline-block min-w-full">
+            <!-- Hour ruler header -->
+            <div class="flex border-b border-blueGray-100 bg-blueGray-50">
+              <div class="sticky left-0 z-20 bg-blueGray-50 w-32 shrink-0 px-3 py-2 text-xs font-bold uppercase text-blueGray-500 border-r border-blueGray-100">Table</div>
+              <div class="relative" [style.width.px]="timelineWidthPx" style="height:32px;">
+                <div *ngFor="let hm of hourMarks" class="absolute top-0 bottom-0 border-l border-blueGray-200 text-xs text-blueGray-400 px-1 pt-2" [style.left.px]="hm.left">{{ hm.label }}</div>
+              </div>
+            </div>
+
+            <!-- One row per table -->
+            <div class="flex border-b border-blueGray-100" *ngFor="let t of tables">
+              <div class="sticky left-0 z-10 bg-white w-32 shrink-0 px-3 py-2 text-xs font-semibold text-blueGray-600 border-r border-blueGray-100 flex items-center">{{ t.name }}</div>
+              <div class="relative bg-white cursor-copy" [style.width.px]="timelineWidthPx" style="height:56px;" (click)="onTimelineClick($event, t)">
+                <div *ngFor="let hm of hourMarks" class="absolute top-0 bottom-0 border-l border-blueGray-50" [style.left.px]="hm.left"></div>
+                <div *ngIf="nowLineLeft !== null" class="absolute top-0 bottom-0 border-l-2 border-red-500 z-10" [style.left.px]="nowLineLeft"></div>
+
+                <div *ngFor="let r of reservationsForTable(t.id)"
+                  class="absolute top-2 h-9 rounded px-2 text-xs leading-9 truncate shadow cursor-pointer z-10"
+                  [ngStyle]="blockStyle(r)"
+                  [ngClass]="{
+                    'bg-blueGray-200 text-blueGray-700': r.status === 'Reserved',
+                    'bg-lightBlue-200 text-lightBlue-700': r.status === 'CheckedIn',
+                    'bg-emerald-200 text-emerald-700': r.status === 'Completed',
+                    'bg-red-200 text-red-700': r.status === 'Cancelled' || r.status === 'NoShow'
+                  }"
+                  (click)="onBlockClick($event, r)">
+                  <span class="font-semibold">{{ formatTime(r.startTime) }}</span> {{ r.customerName || 'Walk-in' }}
+
+                  <div *ngIf="selectedBlockId === r.id"
+                    class="absolute z-30 top-full left-0 mt-1 w-64 bg-white text-blueGray-700 normal-case leading-normal border border-blueGray-200 rounded shadow-lg p-3"
+                    (click)="$event.stopPropagation()">
+                    <p class="text-sm font-semibold">{{ r.customerName || 'Walk-in / Prospect' }}</p>
+                    <p class="text-xs text-blueGray-400" *ngIf="r.customerPhone">{{ r.customerPhone }}</p>
+                    <p class="text-xs text-blueGray-500 mt-1">{{ formatTime(r.startTime) }} – {{ formatTime(r.endTime) }} · Party of {{ r.partySize }} · {{ r.status }}</p>
+                    <p class="text-xs text-blueGray-400 mt-1" *ngIf="r.notes">{{ r.notes }}</p>
+                    <div class="flex items-center gap-2 mt-3">
+                      <select *ngIf="nextStatuses(r).length > 0" #schedStatusSelect
+                        [id]="'schedReservationStatus-' + r.id"
+                        [disabled]="statusUpdatingId === r.id"
+                        (change)="changeStatus(r, schedStatusSelect.value); schedStatusSelect.value = ''"
+                        aria-label="Change reservation status"
+                        class="border-0 px-2 py-1 text-blueGray-600 bg-blueGray-50 rounded text-xs shadow focus:outline-none focus:ring">
+                        <option value="">Mark as…</option>
+                        <option *ngFor="let s of nextStatuses(r)" [value]="s">{{ s }}</option>
+                      </select>
+                      <button type="button" *ngIf="r.status === 'Reserved'" (click)="deleteReservation(r)"
+                        [disabled]="statusUpdatingId === r.id"
+                        class="text-red-500 hover:text-red-700 disabled:opacity-50" title="Delete reservation">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p *ngIf="tables.length === 0" class="p-4 text-center text-xs text-blueGray-400">No active tables.</p>
+          </div>
+        </div>
+
+        <!-- ══ LIST VIEW ══ -->
+        <div class="block w-full overflow-x-auto" *ngIf="!isLoading && viewMode === 'list'">
           <table class="items-center w-full bg-transparent border-collapse">
             <thead>
               <tr>

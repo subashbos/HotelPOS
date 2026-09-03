@@ -18,6 +18,22 @@ function today(): string {
   return new Date().toISOString().substring(0, 10);
 }
 
+const DEFAULT_RANGE_START_MIN = 9 * 60;
+const DEFAULT_RANGE_END_MIN = 23 * 60;
+const PX_PER_HOUR = 72;
+const SNAP_MINUTES = 30;
+
+function timeToMinutes(value: string): number {
+  const [h, m] = value.split(':').map((p) => parseInt(p, 10));
+  return (h || 0) * 60 + (m || 0);
+}
+
+function minutesToTime(value: number): string {
+  const h = Math.floor(value / 60) % 24;
+  const m = value % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 @Component({
   standalone: false,
   selector: 'app-reservations',
@@ -35,6 +51,11 @@ export class ReservationsComponent implements OnInit {
   statusUpdatingId: number | null = null;
 
   selectedDate = today();
+
+  // ── Scheduler view ──
+  viewMode: 'scheduler' | 'list' = 'scheduler';
+  pxPerHour = PX_PER_HOUR;
+  selectedBlockId: number | null = null;
 
   // ── Entry form ──
   showForm = false;
@@ -83,6 +104,7 @@ export class ReservationsComponent implements OnInit {
   }
 
   onDateChanged(): void {
+    this.selectedBlockId = null;
     this.loadReservations();
   }
 
@@ -100,8 +122,85 @@ export class ReservationsComponent implements OnInit {
     this.showForm = true;
   }
 
+  /** Same as openForm(), but prefilled from a scheduler click instead of cleared. */
+  openFormAt(table: DiningTable, startMinutes: number): void {
+    const endMinutes = Math.min(startMinutes + 60, this.rangeEndMinutes);
+    this.formTableId = table.id;
+    this.formCustomerId = null;
+    this.formCustomerName = '';
+    this.formCustomerPhone = '';
+    this.formDate = this.selectedDate;
+    this.formStartTime = minutesToTime(startMinutes);
+    this.formEndTime = minutesToTime(endMinutes);
+    this.formPartySize = 2;
+    this.formNotes = '';
+    this.actionError = '';
+    this.showForm = true;
+  }
+
   closeForm(): void {
     this.showForm = false;
+  }
+
+  // ── Scheduler view helpers ──
+
+  get rangeStartMinutes(): number {
+    const starts = this.reservations.map((r) => timeToMinutes(r.startTime));
+    const earliest = starts.length ? Math.min(...starts) : DEFAULT_RANGE_START_MIN;
+    return Math.floor(Math.min(DEFAULT_RANGE_START_MIN, earliest) / 60) * 60;
+  }
+
+  get rangeEndMinutes(): number {
+    const ends = this.reservations.map((r) => timeToMinutes(r.endTime));
+    const latest = ends.length ? Math.max(...ends) : DEFAULT_RANGE_END_MIN;
+    return Math.ceil(Math.max(DEFAULT_RANGE_END_MIN, latest) / 60) * 60;
+  }
+
+  get timelineWidthPx(): number {
+    return ((this.rangeEndMinutes - this.rangeStartMinutes) / 60) * this.pxPerHour;
+  }
+
+  get hourMarks(): { label: string; left: number }[] {
+    const marks: { label: string; left: number }[] = [];
+    for (let m = this.rangeStartMinutes; m <= this.rangeEndMinutes; m += 60) {
+      marks.push({ label: minutesToTime(m), left: ((m - this.rangeStartMinutes) / 60) * this.pxPerHour });
+    }
+    return marks;
+  }
+
+  get nowLineLeft(): number | null {
+    if (this.selectedDate !== today()) return null;
+    const now = new Date();
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    if (minutes < this.rangeStartMinutes || minutes > this.rangeEndMinutes) return null;
+    return ((minutes - this.rangeStartMinutes) / 60) * this.pxPerHour;
+  }
+
+  reservationsForTable(tableId: number): Reservation[] {
+    return this.reservations.filter((r) => r.tableId === tableId);
+  }
+
+  blockStyle(r: Reservation): { left: string; width: string } {
+    const start = timeToMinutes(r.startTime);
+    const end = timeToMinutes(r.endTime);
+    const left = ((start - this.rangeStartMinutes) / 60) * this.pxPerHour;
+    const width = Math.max(((end - start) / 60) * this.pxPerHour, 24);
+    return { left: `${left}px`, width: `${width}px` };
+  }
+
+  onTimelineClick(event: MouseEvent, table: DiningTable): void {
+    this.selectedBlockId = null;
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const offsetX = event.clientX - rect.left;
+    const rawMinutes = this.rangeStartMinutes + (offsetX / this.pxPerHour) * 60;
+    const snapped = Math.round(rawMinutes / SNAP_MINUTES) * SNAP_MINUTES;
+    this.openFormAt(table, Math.min(Math.max(snapped, this.rangeStartMinutes), this.rangeEndMinutes - 30));
+  }
+
+  onBlockClick(event: MouseEvent, reservation: Reservation): void {
+    event.stopPropagation();
+    this.selectedBlockId = this.selectedBlockId === reservation.id ? null : reservation.id;
   }
 
   onCustomerSelected(): void {
@@ -153,6 +252,7 @@ export class ReservationsComponent implements OnInit {
     this.reservationService.changeStatus(reservation.id, newStatus).subscribe({
       next: () => {
         this.statusUpdatingId = null;
+        this.selectedBlockId = null;
         this.loadReservations();
       },
       error: (err) => {
@@ -171,6 +271,7 @@ export class ReservationsComponent implements OnInit {
     this.reservationService.deleteReservation(reservation.id).subscribe({
       next: () => {
         this.statusUpdatingId = null;
+        this.selectedBlockId = null;
         this.loadReservations();
       },
       error: (err) => {
