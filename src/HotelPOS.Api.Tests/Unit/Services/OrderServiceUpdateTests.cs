@@ -64,6 +64,7 @@ namespace HotelPOS.Tests
             var order = new Order
             {
                 Id = 99,
+                TableNumber = 5,
                 Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1, Price = 10, Total = 10 } }
             };
 
@@ -90,6 +91,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 1,
+                TableNumber = 5,
                 Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1, Price = 1, Total = 1 } }
             };
 
@@ -116,6 +118,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 1,
+                TableNumber = 5,
                 Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 2, Price = 100, Total = 200 } }
             };
             MockCatalogFor(newOrder);
@@ -138,6 +141,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 1,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 2, Price = 100, TaxPercentage = 10, Total = 200 }
@@ -165,6 +169,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 2,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 1, Price = 200, TaxPercentage = 5, Total = 200 }
@@ -193,6 +198,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 3,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 1, Price = 50, TaxPercentage = 0, Total = 50 }
@@ -218,6 +224,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 4,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 3, Price = 100, TaxPercentage = 0, Total = 300 }
@@ -246,6 +253,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 5,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 1, Price = 100, TaxPercentage = 18, Total = 100 }
@@ -276,6 +284,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 6,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 2, Price = 100, TaxPercentage = 0, Total = 200 }
@@ -304,6 +313,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 7,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 1, Price = 50, TaxPercentage = 0, Total = 50 }
@@ -332,6 +342,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 8,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 2, Price = 50, TaxPercentage = 0, Total = 100 },
@@ -370,6 +381,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 9,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, Quantity = 2, Price = 50, TaxPercentage = 0, Total = 100 }

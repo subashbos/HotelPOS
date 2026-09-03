@@ -98,7 +98,7 @@ namespace HotelPOS.Tests
         {
             var service = BuildService(_bomServiceMock.Object);
             var oldOrder = new Order { Id = 1, Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 1 } } };
-            var newOrder = new Order { Id = 1, Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 3 } } };
+            var newOrder = new Order { Id = 1, TableNumber = 5, Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 3 } } };
             _repoMock.Setup(r => r.GetByIdWithItemsAsync(1)).ReturnsAsync(oldOrder);
 
             await service.UpdateOrderAsync(newOrder);

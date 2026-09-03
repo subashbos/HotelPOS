@@ -44,6 +44,7 @@ public class StockReconciliationTests
         var updatedOrder = new Order
         {
             Id = 123,
+            TableNumber = 5,
             Items = new List<OrderItem>
             {
                 new OrderItem { ItemId = itemId, Quantity = newQty, Price = 100, Total = 300 }
@@ -87,6 +88,7 @@ public class StockReconciliationTests
         var updatedOrder = new Order
         {
             Id = 456,
+            TableNumber = 5,
             Items = new List<OrderItem>
             {
                 new OrderItem { ItemId = item1Id, Quantity = 1, Price = 50, Total = 50 }

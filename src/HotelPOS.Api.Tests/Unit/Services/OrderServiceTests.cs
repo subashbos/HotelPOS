@@ -149,6 +149,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 1,
+                TableNumber = 5,
                 Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 3 }, new OrderItem { ItemId = 2, Quantity = 2 } }
             };
 

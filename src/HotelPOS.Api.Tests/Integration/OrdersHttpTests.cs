@@ -387,6 +387,31 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task UpdateOrder_NegativeDiscount_ReturnsBadRequest()
+        {
+            // UpdateOrderCommandValidator rejects a negative Discount. UpdateOrderCommand is a
+            // void IRequest, the same shape documented as bypassing ValidationBehavior for
+            // Save/UpdatePurchaseCommand (QA_REVIEW_AND_TEST_GAPS.md item 8) - OrderService now
+            // validates directly (same pattern as SaveOrderInternalAsync) rather than relying on
+            // that pipeline alone.
+            await SeedOpenCashSessionAsync();
+            var client = CreateClient(RoleNames.Admin, "orders.admin-negative-discount");
+            var itemId = await SeedItemAsync("Orders Negative Discount Item");
+            var orderId = await CreateOrderAsync(client, itemId, "Orders Negative Discount Item");
+
+            var response = await client.PutAsJsonAsync($"/api/orders/{orderId}", new
+            {
+                Items = new[] { new { ItemId = itemId, ItemName = "Orders Negative Discount Item", Quantity = 1 } },
+                TableNumber = 5,
+                Discount = -50m,
+                PaymentMode = PaymentModes.Cash,
+                OrderType = OrderTypes.DineIn
+            });
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task UpdateOrder_CashierFallback_ReturnsForbidden()
         {
             await SeedOpenCashSessionAsync();
