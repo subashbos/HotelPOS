@@ -120,6 +120,21 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task SaveSettings_EmptyHotelName_ReturnsBadRequest()
+        {
+            // SaveSettingsCommandValidator rejects an empty HotelName (printed on every receipt).
+            // SaveSettingsCommand is a void IRequest, the same shape documented as bypassing
+            // ValidationBehavior for Save/UpdatePurchaseCommand and UpdateOrderCommand
+            // (QA_REVIEW_AND_TEST_GAPS.md item 8) - SettingService now validates directly rather
+            // than relying on that pipeline; the handler itself had no checks at all.
+            var client = CreateClient(RoleNames.Admin, "settings.admin-empty-name");
+
+            var response = await client.PutAsJsonAsync("/api/settings", new SaveSettingsDto { HotelName = "" });
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task SaveSettings_OmittedSmtpPassword_PreservesExistingPassword()
         {
             var adminClient = CreateClient(RoleNames.Admin, "settings.password-preserve");

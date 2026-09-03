@@ -1,5 +1,6 @@
 #nullable enable
 
+using FluentValidation;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Reservations.Commands;
 using HotelPOS.Application.UseCases.Reservations.Queries;
@@ -50,6 +51,12 @@ namespace HotelPOS.Application.UseCases
         {
             if (reservation == null) throw new ArgumentNullException(nameof(reservation));
 
+            // ValidationBehavior doesn't reliably run for void IRequest commands (see
+            // QA_REVIEW_AND_TEST_GAPS.md item 8) - validate directly so it isn't the only gate.
+            var saveValResult = new SaveReservationCommandValidator().Validate(new SaveReservationCommand(reservation));
+            if (!saveValResult.IsValid)
+                throw new ArgumentException(saveValResult.Errors[0].ErrorMessage);
+
             if (_mediator != null)
             {
                 await _mediator.Send(new SaveReservationCommand(reservation));
@@ -65,6 +72,12 @@ namespace HotelPOS.Application.UseCases
         public async Task UpdateReservationAsync(Reservation reservation)
         {
             if (reservation == null) throw new ArgumentNullException(nameof(reservation));
+
+            // ValidationBehavior doesn't reliably run for void IRequest commands (see
+            // QA_REVIEW_AND_TEST_GAPS.md item 8) - validate directly so it isn't the only gate.
+            var updateValResult = new UpdateReservationCommandValidator().Validate(new UpdateReservationCommand(reservation));
+            if (!updateValResult.IsValid)
+                throw new ArgumentException(updateValResult.Errors[0].ErrorMessage);
 
             if (_mediator != null)
             {

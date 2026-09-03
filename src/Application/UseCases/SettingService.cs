@@ -1,5 +1,6 @@
 #nullable enable
 
+using FluentValidation;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Settings.Commands;
 using HotelPOS.Application.UseCases.Settings.Queries;
@@ -47,6 +48,12 @@ namespace HotelPOS.Application.UseCases
         public async Task SaveSettingsAsync(SystemSetting settings)
         {
             _authorization?.EnsureEditPermission(PermissionModules.Settings);
+
+            // ValidationBehavior doesn't reliably run for void IRequest commands (see
+            // QA_REVIEW_AND_TEST_GAPS.md item 8) - validate directly so it isn't the only gate.
+            var saveValResult = new SaveSettingsCommandValidator().Validate(new SaveSettingsCommand(settings));
+            if (!saveValResult.IsValid)
+                throw new ArgumentException(saveValResult.Errors[0].ErrorMessage);
 
             if (_mediator != null)
             {

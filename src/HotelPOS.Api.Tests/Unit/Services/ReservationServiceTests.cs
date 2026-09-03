@@ -20,7 +20,15 @@ namespace HotelPOS.Tests.Unit.Services
             var mediatorMock = new Mock<IMediator>();
             var service = new ReservationService(mediatorMock.Object);
 
-            var reservation = new Reservation { Id = 15, TableId = 1, PartySize = 2 };
+            var reservation = new Reservation
+            {
+                Id = 15,
+                TableId = 1,
+                PartySize = 2,
+                ReservationDate = DateTime.Today,
+                StartTime = TimeSpan.FromHours(18),
+                EndTime = TimeSpan.FromHours(20)
+            };
 
             await service.SaveReservationAsync(reservation);
 
@@ -133,7 +141,14 @@ namespace HotelPOS.Tests.Unit.Services
             tableRepoMock.Setup(t => t.GetByIdAsync(3)).ReturnsAsync((Table?)null);
             var service = new ReservationService(reservationRepoMock.Object, tableRepoMock.Object, TestAuthorization.AllowAll().Object);
 
-            var reservation = new Reservation { TableId = 3, PartySize = 2, ReservationDate = DateTime.Today };
+            var reservation = new Reservation
+            {
+                TableId = 3,
+                PartySize = 2,
+                ReservationDate = DateTime.Today,
+                StartTime = TimeSpan.FromHours(18),
+                EndTime = TimeSpan.FromHours(20)
+            };
 
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.SaveReservationAsync(reservation));
             Assert.Contains("does not exist", ex.Message);
@@ -147,7 +162,14 @@ namespace HotelPOS.Tests.Unit.Services
             tableRepoMock.Setup(t => t.GetByIdAsync(3)).ReturnsAsync(new Table { Id = 3, Name = "T3", Capacity = 4 });
             var service = new ReservationService(reservationRepoMock.Object, tableRepoMock.Object, TestAuthorization.AllowAll().Object);
 
-            var reservation = new Reservation { TableId = 3, PartySize = 6, ReservationDate = DateTime.Today };
+            var reservation = new Reservation
+            {
+                TableId = 3,
+                PartySize = 6,
+                ReservationDate = DateTime.Today,
+                StartTime = TimeSpan.FromHours(18),
+                EndTime = TimeSpan.FromHours(20)
+            };
 
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.SaveReservationAsync(reservation));
             Assert.Contains("exceeds table", ex.Message);

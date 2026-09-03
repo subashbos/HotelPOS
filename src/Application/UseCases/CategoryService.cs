@@ -65,19 +65,21 @@ namespace HotelPOS.Application.UseCases
 
         public async Task UpdateCategoryAsync(int id, string name, int displayOrder = 0)
         {
-            if (_mediator != null)
-            {
-                await _mediator.Send(new UpdateCategoryCommand(id, name, displayOrder));
-                return;
-            }
-
             if (id <= 0) throw new ArgumentException("Invalid ID");
 
+            // ValidationBehavior doesn't reliably run for void IRequest commands (see
+            // QA_REVIEW_AND_TEST_GAPS.md item 8) - validate directly so the mediator path isn't
+            // the only gate; this used to only happen on the legacy path below.
             var trimmedName = name?.Trim() ?? string.Empty;
-            var category = new Category { Id = id, Name = trimmedName, DisplayOrder = displayOrder };
-            var result = _validator.Validate(category);
+            var result = _validator.Validate(new Category { Id = id, Name = trimmedName, DisplayOrder = displayOrder });
             if (!result.IsValid)
                 throw new ArgumentException(result.Errors[0].ErrorMessage);
+
+            if (_mediator != null)
+            {
+                await _mediator.Send(new UpdateCategoryCommand(id, trimmedName, displayOrder));
+                return;
+            }
 
             var all = await _repo!.GetAllAsync() ?? new List<Category>();
             if (all.Any(c => c.Id != id && c.Name.Trim().Equals(trimmedName, StringComparison.OrdinalIgnoreCase)))
