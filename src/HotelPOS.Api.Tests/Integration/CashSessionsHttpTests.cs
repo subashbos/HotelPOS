@@ -128,6 +128,24 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task CloseSession_NegativeActualCash_ReturnsBadRequest()
+        {
+            // Regression test: CashService.CloseSessionAsync's mediator branch has no negative-cash
+            // guard of its own - it relies entirely on CloseSessionCommandValidator running via
+            // ValidationBehavior. That pipeline silently never ran for void IRequest commands like
+            // CloseSessionCommand until ValidationBehavior's incorrect `where TRequest : IRequest<TResponse>`
+            // constraint was fixed (see docs/QA_REVIEW_AND_TEST_GAPS.md item 8).
+            await EnsureNoActiveSessionAsync();
+            var client = CreateClient(RoleNames.Cashier, "cash.negative-close");
+            var open = await client.PostAsJsonAsync("/api/cashsessions/open", new { OpeningBalance = 500m });
+            Assert.Equal(HttpStatusCode.OK, open.StatusCode);
+
+            var response = await client.PostAsJsonAsync("/api/cashsessions/close", new { ActualCash = -10m });
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task CloseSession_AfterOpen_ReturnsNoContentAndClearsCurrent()
         {
             await EnsureNoActiveSessionAsync();
