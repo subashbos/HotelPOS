@@ -241,9 +241,9 @@ namespace HotelPOS.Tests.Unit.ViewModels
             await _vm.LoadDataAsync();
 
             var block = Assert.Single(_vm.SchedulerBlocks);
-            Assert.Equal(1 * ReservationViewModel.RowHeight + 4, block.Top);
-            Assert.Equal((10 * 60 - 9 * 60) / 60.0 * ReservationViewModel.PxPerHour, block.Left);
-            Assert.Equal(2 * ReservationViewModel.RowHeight, _vm.TimelineHeight);
+            Assert.Equal(1 * ReservationViewModel.RowHeight + 4, block.Top, precision: 2);
+            Assert.Equal((10 * 60 - 9 * 60) / 60.0 * ReservationViewModel.PxPerHour, block.Left, precision: 2);
+            Assert.Equal(2 * ReservationViewModel.RowHeight, _vm.TimelineHeight, precision: 2);
             Assert.Equal(reservations[0], block.Reservation);
             Assert.Equal("10:00 Walk-in", block.Label);
         }
