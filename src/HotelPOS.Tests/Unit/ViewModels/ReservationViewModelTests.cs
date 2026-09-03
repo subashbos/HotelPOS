@@ -169,5 +169,191 @@ namespace HotelPOS.Tests.Unit.ViewModels
 
             _mockReservationService.Verify(s => s.DeleteReservationAsync(9), Times.Once);
         }
+
+        [Fact]
+        public async Task DeleteCommand_ClearsSelectedReservation()
+        {
+            await _vm.InitializationTask;
+            var reservation = new Reservation { Id = 9 };
+            _vm.SelectBlockCommand.Execute(reservation);
+
+            await _vm.DeleteCommand.ExecuteAsync(reservation);
+
+            Assert.Null(_vm.SelectedReservation);
+        }
+
+        [Fact]
+        public async Task MarkCheckedInCommand_ClearsSelectedReservation()
+        {
+            await _vm.InitializationTask;
+            var reservation = new Reservation { Id = 5, Status = ReservationStatuses.Reserved };
+            _vm.SelectBlockCommand.Execute(reservation);
+
+            await _vm.MarkCheckedInCommand.ExecuteAsync(reservation);
+
+            Assert.Null(_vm.SelectedReservation);
+        }
+
+        [Fact]
+        public async Task RecomputeScheduler_DefaultRange_BuildsHourMarksFrom9amTo11pm()
+        {
+            await _vm.InitializationTask;
+
+            Assert.Equal(9 * 60, _vm.RangeStartMinutes);
+            Assert.Equal(23 * 60, _vm.RangeEndMinutes);
+            Assert.Equal(15, _vm.HourMarks.Count);
+            Assert.Equal("09:00", _vm.HourMarks[0].Label);
+            Assert.Equal("23:00", _vm.HourMarks[^1].Label);
+        }
+
+        [Fact]
+        public async Task RecomputeScheduler_ReservationOutsideDefaultRange_WidensRange()
+        {
+            var tables = new List<Table> { new() { Id = 1, Name = "T1", Capacity = 4, IsActive = true } };
+            _mockTableService.Setup(s => s.GetTablesAsync()).ReturnsAsync(tables);
+            var reservations = new List<Reservation>
+            {
+                new() { Id = 1, TableId = 1, StartTime = TimeSpan.FromHours(7), EndTime = TimeSpan.FromHours(8) }
+            };
+            _mockReservationService.Setup(s => s.GetReservationsAsync(It.IsAny<DateTime?>())).ReturnsAsync(reservations);
+
+            await _vm.LoadDataAsync();
+
+            Assert.Equal(7 * 60, _vm.RangeStartMinutes);
+            Assert.Single(_vm.SchedulerBlocks);
+        }
+
+        [Fact]
+        public async Task RecomputeScheduler_BuildsBlockPositionedByTableRowAndTime()
+        {
+            var tables = new List<Table>
+            {
+                new() { Id = 1, Name = "T1", Capacity = 4, IsActive = true },
+                new() { Id = 2, Name = "T2", Capacity = 4, IsActive = true }
+            };
+            _mockTableService.Setup(s => s.GetTablesAsync()).ReturnsAsync(tables);
+            var reservations = new List<Reservation>
+            {
+                new() { Id = 1, TableId = 2, StartTime = TimeSpan.FromHours(10), EndTime = TimeSpan.FromHours(11) }
+            };
+            _mockReservationService.Setup(s => s.GetReservationsAsync(It.IsAny<DateTime?>())).ReturnsAsync(reservations);
+
+            await _vm.LoadDataAsync();
+
+            var block = Assert.Single(_vm.SchedulerBlocks);
+            Assert.Equal(1 * ReservationViewModel.RowHeight + 4, block.Top);
+            Assert.Equal((10 * 60 - 9 * 60) / 60.0 * ReservationViewModel.PxPerHour, block.Left);
+            Assert.Equal(2 * ReservationViewModel.RowHeight, _vm.TimelineHeight);
+            Assert.Equal(reservations[0], block.Reservation);
+            Assert.Equal("10:00 Walk-in", block.Label);
+        }
+
+        [Fact]
+        public async Task RecomputeScheduler_BlockBrush_DiffersByStatus()
+        {
+            var tables = new List<Table> { new() { Id = 1, Name = "T1", Capacity = 4, IsActive = true } };
+            _mockTableService.Setup(s => s.GetTablesAsync()).ReturnsAsync(tables);
+            var reservations = new List<Reservation>
+            {
+                new() { Id = 1, TableId = 1, Status = ReservationStatuses.Reserved, StartTime = TimeSpan.FromHours(9), EndTime = TimeSpan.FromHours(10) },
+                new() { Id = 2, TableId = 1, Status = ReservationStatuses.CheckedIn, StartTime = TimeSpan.FromHours(10), EndTime = TimeSpan.FromHours(11) },
+                new() { Id = 3, TableId = 1, Status = ReservationStatuses.Completed, StartTime = TimeSpan.FromHours(11), EndTime = TimeSpan.FromHours(12) },
+                new() { Id = 4, TableId = 1, Status = ReservationStatuses.Cancelled, StartTime = TimeSpan.FromHours(12), EndTime = TimeSpan.FromHours(13) },
+                new() { Id = 5, TableId = 1, Status = ReservationStatuses.NoShow, StartTime = TimeSpan.FromHours(13), EndTime = TimeSpan.FromHours(14) }
+            };
+            _mockReservationService.Setup(s => s.GetReservationsAsync(It.IsAny<DateTime?>())).ReturnsAsync(reservations);
+
+            await _vm.LoadDataAsync();
+
+            Assert.Equal(5, _vm.SchedulerBlocks.Count);
+            Assert.NotEqual(_vm.SchedulerBlocks[0].Brush, _vm.SchedulerBlocks[1].Brush);
+            Assert.NotEqual(_vm.SchedulerBlocks[1].Brush, _vm.SchedulerBlocks[2].Brush);
+            Assert.NotEqual(_vm.SchedulerBlocks[2].Brush, _vm.SchedulerBlocks[3].Brush);
+            Assert.Equal(_vm.SchedulerBlocks[3].Brush, _vm.SchedulerBlocks[4].Brush);
+        }
+
+        [Fact]
+        public void SelectingFutureDate_ShowNowLineIsFalse()
+        {
+            _vm.SelectedDate = DateTime.Today.AddDays(2);
+
+            Assert.False(_vm.ShowNowLine);
+        }
+
+        [Fact]
+        public void SelectingDate_ClearsSelectedReservation()
+        {
+            _vm.SelectBlockCommand.Execute(new Reservation { Id = 1 });
+
+            _vm.SelectedDate = DateTime.Today.AddDays(3);
+
+            Assert.Null(_vm.SelectedReservation);
+        }
+
+        [Fact]
+        public void SelectBlockCommand_SetsSelectedReservationAndSummary()
+        {
+            var reservation = new Reservation
+            {
+                Id = 3,
+                CustomerName = "Alice",
+                Status = ReservationStatuses.Reserved,
+                Table = new Table { Id = 1, Name = "T5", Capacity = 4 }
+            };
+
+            _vm.SelectBlockCommand.Execute(reservation);
+
+            Assert.Equal(reservation, _vm.SelectedReservation);
+            Assert.Contains("Alice", _vm.SelectedReservationSummary);
+        }
+
+        [Fact]
+        public void SelectBlockCommand_Null_ResetsSummary()
+        {
+            _vm.SelectBlockCommand.Execute(new Reservation { Id = 1 });
+
+            _vm.SelectBlockCommand.Execute(null);
+
+            Assert.Null(_vm.SelectedReservation);
+            Assert.Equal("(click a reservation block above)", _vm.SelectedReservationSummary);
+        }
+
+        [Fact]
+        public void ShowListAndSchedulerViewCommands_ToggleIsSchedulerView()
+        {
+            Assert.True(_vm.IsSchedulerView);
+
+            _vm.ShowListViewCommand.Execute(null);
+            Assert.False(_vm.IsSchedulerView);
+
+            _vm.ShowSchedulerViewCommand.Execute(null);
+            Assert.True(_vm.IsSchedulerView);
+        }
+
+        [Fact]
+        public async Task OpenFormAt_PrefillsTableAndSnappedTimes()
+        {
+            await _vm.InitializationTask;
+            var table = new Table { Id = 7, Name = "T7", Capacity = 2 };
+
+            _vm.OpenFormAt(table, 10 * 60 + 30);
+
+            Assert.Equal(table, _vm.FormTable);
+            Assert.Equal("10:30", _vm.FormStartTimeText);
+            Assert.Equal("11:30", _vm.FormEndTimeText);
+            Assert.Equal(_vm.SelectedDate, _vm.FormDate);
+            Assert.Equal(2, _vm.FormPartySize);
+        }
+
+        [Fact]
+        public async Task OpenFormAt_CapsEndTimeAtRangeEnd()
+        {
+            await _vm.InitializationTask;
+            var table = new Table { Id = 7, Name = "T7", Capacity = 2 };
+
+            _vm.OpenFormAt(table, 22 * 60 + 45);
+
+            Assert.Equal("23:00", _vm.FormEndTimeText);
+        }
     }
 }
