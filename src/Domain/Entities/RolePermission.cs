@@ -14,7 +14,7 @@ namespace HotelPOS.Domain.Entities
         public string ModuleName { get; set; } = string.Empty;
 
         public bool CanAccess { get; set; } = true;
-        
+
         // Future proofing for more granular control
         public bool CanEdit { get; set; } = true;
         public bool CanDelete { get; set; } = true;

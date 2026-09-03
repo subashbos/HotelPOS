@@ -93,7 +93,7 @@ namespace HotelPOS.Tests
         public void StockToColorMultiConverter_ReturnsCorrectBrush()
         {
             var converter = new StockToColorMultiConverter();
-            
+
             // Track false -> Muted
             var brush = (SolidColorBrush)converter.Convert(new object[] { 0, false }, typeof(Brush), null!, CultureInfo.InvariantCulture);
             Assert.Equal(0xA0, brush.Color.R);

@@ -20,10 +20,11 @@ namespace HotelPOS.Application.UseCases
         private readonly ICashService _cashService;
         private readonly IAuthorizationService _authorization;
         private readonly IValidator<CreateOrderCommand> _validator;
+        private readonly IValidator<UpdateOrderCommand> _updateValidator;
         private readonly IBomService? _bomService;
         private readonly ISettingService? _settingService;
 
-        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, ICashService cashService, IAuthorizationService authorization, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null, ISettingService? settingService = null)
+        public OrderService(IOrderRepository repo, IMediator? mediator, IItemService itemService, ICashService cashService, IAuthorizationService authorization, IValidator<CreateOrderCommand>? validator = null, IBomService? bomService = null, ISettingService? settingService = null, IValidator<UpdateOrderCommand>? updateValidator = null)
         {
             _repo = repo;
             _mediator = mediator;
@@ -33,6 +34,7 @@ namespace HotelPOS.Application.UseCases
             _validator = validator ?? new CreateOrderCommandValidator();
             _bomService = bomService;
             _settingService = settingService;
+            _updateValidator = updateValidator ?? new UpdateOrderCommandValidator();
         }
 
         /// <summary>The hotel's own GSTIN (Settings), used to decide whether a sale is interstate
@@ -233,8 +235,17 @@ namespace HotelPOS.Application.UseCases
         {
             _authorization.EnsureEditPermission(PermissionModules.OrderManagement);
 
-            if (order.Items == null || order.Items.Count == 0)
-                throw new ArgumentException("Cannot save an empty order.");
+            // UpdateOrderCommandHandler's mediator dispatch is supposed to run this same
+            // validator via ValidationBehavior, but that pipeline behavior doesn't reliably
+            // fire for void IRequest commands (see QA_REVIEW_AND_TEST_GAPS.md item 8, fixed
+            // narrowly for Purchases) - validate directly here too, same pattern as
+            // SaveOrderInternalAsync above, so this isn't the only gate.
+            var updateValResult = _updateValidator.Validate(new UpdateOrderCommand(order));
+            if (!updateValResult.IsValid)
+            {
+                var updateError = updateValResult.Errors[0];
+                throw new ArgumentException(updateError.ErrorMessage);
+            }
 
             var oldOrder = await _repo.GetByIdWithItemsAsync(order.Id);
             if (oldOrder == null) throw new KeyNotFoundException($"Order #{order.Id} not found.");

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { BiAnalyticsService, BiOverviewKpis, MonthlyTrendBar } from '../../../services/bi-analytics.service';
 import { ReportService } from '../../../services/report.service';
 import {
-  ProfitAndLossReport, ShiftClosureReport, StaffPerformanceReport,
+  ItemMarginRow, ProfitAndLossReport, ShiftClosureReport, StaffPerformanceReport,
   StockValuationSummary, VoidDiscountAuditRow
 } from '../../../models/report.model';
 
@@ -15,32 +15,21 @@ export class BiAnalyticsComponent implements OnInit {
   fromDate = '';
   toDate = '';
   isLoading = false;
+  errorMessage = '';
   activeTab: 'overview' | 'shift' | 'voids' | 'staff' | 'valuation' | 'pnl' = 'overview';
 
   kpis: BiOverviewKpis = {
-    totalRevenue: 485000,
-    netProfit: 142000,
-    foodCostPercentage: 31.5,
-    totalWastageCost: 12400,
-    cogs: 152775,
-    totalExpenses: 190225
+    totalRevenue: 0,
+    netProfit: 0,
+    foodCostPercentage: 0,
+    totalWastageCost: 0,
+    cogs: 0,
+    totalExpenses: 0
   };
 
-  monthlyTrends: MonthlyTrendBar[] = [
-    { monthName: 'Jan', revenue: 380000, profit: 98000 },
-    { monthName: 'Feb', revenue: 410000, profit: 112000 },
-    { monthName: 'Mar', revenue: 450000, profit: 128000 },
-    { monthName: 'Apr', revenue: 420000, profit: 115000 },
-    { monthName: 'May', revenue: 490000, profit: 145000 },
-    { monthName: 'Jun', revenue: 485000, profit: 142000 }
-  ];
+  monthlyTrends: MonthlyTrendBar[] = [];
 
-  topMarginItems = [
-    { name: 'Cold Coffee', category: 'Beverages', price: 120, foodCost: 22, marginPct: 81.6 },
-    { name: 'Veg Fried Rice', category: 'Main Course', price: 180, foodCost: 45, marginPct: 75.0 },
-    { name: 'Paneer Butter Masala', category: 'Main Course', price: 280, foodCost: 90.6, marginPct: 67.6 },
-    { name: 'Butter Chicken', category: 'Main Course', price: 340, foodCost: 97.25, marginPct: 71.4 }
-  ];
+  topMarginItems: ItemMarginRow[] = [];
 
   // Report States
   shiftReport: ShiftClosureReport | null = null;
@@ -68,26 +57,59 @@ export class BiAnalyticsComponent implements OnInit {
 
   loadData(): void {
     this.isLoading = true;
+    this.errorMessage = '';
 
     this.biAnalyticsService.getBiAnalytics(this.fromDate, this.toDate).subscribe({
       next: (res) => {
         if (res?.kpis) {
           this.kpis = res.kpis;
-          this.monthlyTrends = res.monthlyTrends || this.monthlyTrends;
+          this.monthlyTrends = res.monthlyTrends || [];
         }
       },
-      error: () => {}
+      error: (err) => {
+        this.errorMessage = this.errorMessage || 'Failed to load the overview KPIs. Please check the server connection.';
+        console.error('BI overview load error:', err);
+      }
+    });
+
+    this.reportService.getItemMargins(this.fromDate, this.toDate).subscribe({
+      next: (rows) => {
+        this.topMarginItems = [...rows].sort((a, b) => b.marginPercentage - a.marginPercentage).slice(0, 5);
+      },
+      error: (err) => {
+        this.topMarginItems = [];
+        console.error('Item margins load error:', err);
+      }
     });
 
     // Load new reports
-    this.reportService.getShiftClosureReport(undefined, this.fromDate).subscribe(data => this.shiftReport = data);
-    this.reportService.getVoidDiscountAudit(this.fromDate, this.toDate).subscribe(data => this.voidAudits = data);
-    this.reportService.getStaffPerformanceReport(this.fromDate, this.toDate).subscribe(data => this.staffReports = data);
-    this.reportService.getStockValuationReport().subscribe(data => this.stockValuation = data);
-    this.reportService.getProfitAndLossReport(this.fromDate, this.toDate).subscribe(data => {
-      this.pnlReport = data;
-      this.isLoading = false;
-    }, () => this.isLoading = false);
+    this.reportService.getShiftClosureReport(undefined, this.fromDate).subscribe({
+      next: (data) => this.shiftReport = data,
+      error: (err) => console.error('Shift closure report load error:', err)
+    });
+    this.reportService.getVoidDiscountAudit(this.fromDate, this.toDate).subscribe({
+      next: (data) => this.voidAudits = data,
+      error: (err) => console.error('Void/discount audit load error:', err)
+    });
+    this.reportService.getStaffPerformanceReport(this.fromDate, this.toDate).subscribe({
+      next: (data) => this.staffReports = data,
+      error: (err) => console.error('Staff performance report load error:', err)
+    });
+    this.reportService.getStockValuationReport().subscribe({
+      next: (data) => this.stockValuation = data,
+      error: (err) => console.error('Stock valuation report load error:', err)
+    });
+    this.reportService.getProfitAndLossReport(this.fromDate, this.toDate).subscribe({
+      next: (data) => {
+        this.pnlReport = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = this.errorMessage || 'Failed to load the profit & loss report. Please check the server connection.';
+        console.error('P&L report load error:', err);
+      }
+    });
   }
 
   refresh(): void {

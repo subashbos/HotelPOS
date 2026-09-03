@@ -110,6 +110,29 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task CreateEstimation_ZeroQuantityItem_ReturnsBadRequest()
+        {
+            // SaveEstimationCommandValidator rejects a zero item quantity. SaveEstimationCommand
+            // is a void IRequest, the same shape documented as bypassing ValidationBehavior for
+            // Save/UpdatePurchaseCommand and UpdateOrderCommand (QA_REVIEW_AND_TEST_GAPS.md item
+            // 8) - EstimationService now validates directly rather than relying on that pipeline.
+            var itemId = await SeedItemAsync("Zero Quantity Test Item");
+            var client = CreateClient(RoleNames.Admin, "estimations.admin-zero-qty");
+
+            var response = await client.PostAsJsonAsync("/api/estimations", new
+            {
+                EstimationNumber = "EST-ZERO-QTY",
+                EstimationDate = System.DateTime.UtcNow,
+                Items = new[]
+                {
+                    new { ItemId = itemId, ItemName = "Test Item", Quantity = 0, UnitPrice = 500m, TaxPercentage = 5m, Discount = 0m }
+                }
+            });
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task GetEstimation_UnknownId_ReturnsNotFound()
         {
             var client = CreateClient(RoleNames.Admin, "estimations.admin-get-missing");

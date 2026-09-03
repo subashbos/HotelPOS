@@ -86,6 +86,26 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task UpdateCategory_EmptyName_ReturnsBadRequest()
+        {
+            // UpdateCategoryCommand is a void IRequest, unlike CreateCategoryCommand (IRequest<int>,
+            // already correctly validated) - the same shape documented as bypassing
+            // ValidationBehavior for Save/UpdatePurchaseCommand and UpdateOrderCommand
+            // (QA_REVIEW_AND_TEST_GAPS.md item 8). CategoryService already held the right
+            // validator for its legacy path; it just wasn't reached before the mediator branch
+            // returned. Now validates directly for both paths.
+            var adminClient = CreateClient(RoleNames.Admin, "categories.admin-update-empty-name");
+            var create = await adminClient.PostAsJsonAsync("/api/categories", new { Name = "Snacks" });
+            Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+            var created = await create.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+            var categoryId = created.GetProperty("id").GetInt32();
+
+            var response = await adminClient.PutAsJsonAsync($"/api/categories/{categoryId}", new { Name = "" });
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task UpdateCategory_UnknownId_ReturnsNotFound()
         {
             var client = CreateClient(RoleNames.Admin, "categories.admin-update-missing");

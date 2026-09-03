@@ -15,7 +15,7 @@ namespace HotelPOS.Application.UseCases.Orders.Commands
             {
                 item.RuleFor(x => x.Price)
                     .GreaterThanOrEqualTo(0).WithMessage("Item price cannot be negative.");
-                
+
                 item.RuleFor(x => x.Quantity)
                     .GreaterThan(0).WithMessage("Item quantity must be at least 1.");
             });

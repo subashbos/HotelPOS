@@ -2,7 +2,9 @@ using AutoMapper;
 using FluentValidation;
 using HotelPOS.Api;
 using HotelPOS.Api.Configuration;
+using HotelPOS.Api.HealthChecks;
 using HotelPOS.Api.Middleware;
+using HotelPOS.Api.OpenApi;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Infrastructure;
@@ -180,7 +182,14 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // ── OpenAPI ───────────────────────────────────────────────────────────────
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
+
+// ── Health Checks ─────────────────────────────────────────────────────────
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseHealthCheck>("database");
 
 var app = builder.Build();
 
@@ -218,6 +227,7 @@ app.UseAuthentication();   // MUST come before UseAuthorization
 app.UseMiddleware<PermissionsPreloadMiddleware>(); // needs context.User from UseAuthentication above
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 await app.RunAsync();
 

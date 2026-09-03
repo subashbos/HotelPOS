@@ -63,6 +63,41 @@ namespace HotelPOS.Tests
         }
 
         [Fact]
+        public async Task ProfitMarginSummary_ExcludesGstFromRevenue()
+        {
+            using var context = GetContext("BI_ProfitMarginGstDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+
+            // 2 units at 100 = 200 subtotal, +10% GST = 20, so TotalAmount (tax-inclusive) is 220.
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                Subtotal = 200,
+                GstAmount = 20,
+                TotalAmount = 220,
+                CreatedAt = DateTime.UtcNow,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            var summary = await service.GetProfitMarginSummaryAsync();
+
+            // Revenue must exclude the GST collected on behalf of the government (200, not 220).
+            Assert.Equal(200m, summary.TotalRevenue);
+            Assert.Equal(80m, summary.TotalCogs); // 2 * 40
+            Assert.Equal(120m, summary.GrossProfit); // 200 - 80, not 220 - 80
+        }
+
+        [Fact]
         public async Task LogWastage_DeductsInventoryCorrectly()
         {
             using var context = GetContext("BI_WastageDb");
@@ -120,7 +155,7 @@ namespace HotelPOS.Tests
             var alerts = await service.GetLowStockAlertsAsync();
 
             Assert.Equal(2, alerts.Count);
-            
+
             var itemAAlert = alerts.First(a => a.ItemId == 1);
             Assert.Equal(AlertLevels.Critical, itemAAlert.AlertLevel); // Since 5 <= 10 (Warning/Critical depending on daily sales) and 5 is very low.
 
@@ -160,7 +195,7 @@ namespace HotelPOS.Tests
             var margins = await service.GetItemMarginsAsync();
 
             Assert.Equal(2, margins.Count);
-            
+
             var itemA = margins.First(x => x.ItemName == "Item A");
             Assert.Equal(60.0, itemA.MarginPercentage); // 200 rev - 80 cogs = 120 profit. 120/200 * 100 = 60%
             Assert.Contains("Healthy", itemA.Recommendation);
@@ -168,6 +203,79 @@ namespace HotelPOS.Tests
             var itemB = margins.First(x => x.ItemName == "Item B");
             Assert.Equal(5.0, itemB.MarginPercentage); // 200 rev - 190 cogs = 10 profit. 10/200 * 100 = 5%
             Assert.Contains("Critical", itemB.Recommendation);
+        }
+
+        [Fact]
+        public async Task GetItemMarginsAsync_UnitPriceIsQuantityWeightedNotSimpleAverage()
+        {
+            using var context = GetContext("BI_ItemMarginsWeightedDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item C", Price = 200, CostPrice = 50 };
+            context.Items.Add(item);
+
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                TotalAmount = 700,
+                CreatedAt = DateTime.UtcNow,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item C", Quantity = 1, Price = 100, Total = 100 },
+                    new OrderItem { ItemId = 1, ItemName = "Item C", Quantity = 3, Price = 200, Total = 600 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            var margins = await service.GetItemMarginsAsync();
+
+            var itemC = margins.Single(x => x.ItemName == "Item C");
+            // Quantity-weighted: (100 + 600) / (1 + 3) = 175. A simple average of unit prices would wrongly give 150.
+            Assert.Equal(175m, itemC.UnitPrice);
+        }
+
+        [Fact]
+        public async Task GetItemMarginsAsync_ItemDeletedAfterSale_StillReportsCorrectCogs()
+        {
+            using var context = GetContext("BI_ItemMarginsDeletedItemDb");
+            var itemRepo = new ItemRepository(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Discontinued Item", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+            await context.SaveChangesAsync();
+
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                TotalAmount = 200,
+                CreatedAt = DateTime.UtcNow,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Discontinued Item", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            // Soft-delete the item through the real repository path, same as the API's delete endpoint.
+            await itemRepo.DeleteAsync(1);
+
+            var visibleItems = await itemRepo.GetAllAsync();
+            Assert.Empty(visibleItems); // deleted item no longer shows up for menus/pickers
+
+            var margins = await service.GetItemMarginsAsync();
+
+            var deletedItemRow = margins.Single(x => x.ItemName == "Discontinued Item");
+            // 200 rev - (2 * 40) cogs = 120 profit. Before the soft-delete fix, COGS silently became 0 here.
+            Assert.Equal(80m, deletedItemRow.TotalCogs);
+            Assert.Equal(120m, deletedItemRow.Profit);
+            Assert.Equal(60.0, deletedItemRow.MarginPercentage);
         }
 
         [Fact]
@@ -234,10 +342,123 @@ namespace HotelPOS.Tests
 
             var currentMonthLabel = now.ToLocalTime().ToString("MMM yy");
             var currentMonthTrend = trends.First(t => t.MonthName == currentMonthLabel);
-            
+
             Assert.Equal(200m, currentMonthTrend.Revenue);
             Assert.Equal(100m, currentMonthTrend.GrossProfit); // 200 rev - 100 cogs (2 * 50) = 100
             Assert.Equal(70m, currentMonthTrend.NetProfit); // 100 gross - 30 expense = 70
+        }
+
+        [Fact]
+        public async Task GetMonthlyTrendDataAsync_ExcludesGstFromRevenue()
+        {
+            using var context = GetContext("BI_MonthlyTrendsGstDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 50 };
+            context.Items.Add(item);
+
+            var now = DateTime.UtcNow;
+
+            // 2 units at 100 = 200 subtotal, +10% GST = 20, so TotalAmount (tax-inclusive) is 220.
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                Subtotal = 200,
+                GstAmount = 20,
+                TotalAmount = 220,
+                CreatedAt = now,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            var trends = await service.GetMonthlyTrendDataAsync();
+
+            var currentMonthLabel = now.ToLocalTime().ToString("MMM yy");
+            var currentMonthTrend = trends.First(t => t.MonthName == currentMonthLabel);
+
+            // Revenue must exclude the GST collected on behalf of the government (200, not 220).
+            Assert.Equal(200m, currentMonthTrend.Revenue);
+            Assert.Equal(100m, currentMonthTrend.GrossProfit); // 200 - 100 cogs, not 220 - 100
+        }
+
+        [Fact]
+        public async Task GetProfitAndLossReportAsync_ItemDeletedAfterSale_StillReportsCorrectCogs()
+        {
+            using var context = GetContext("BI_PnLDeletedItemDb");
+            var itemRepo = new ItemRepository(context);
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Discontinued Item", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+            await context.SaveChangesAsync();
+
+            var now = DateTime.UtcNow;
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                TotalAmount = 200,
+                CreatedAt = now,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Discontinued Item", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            await itemRepo.DeleteAsync(1);
+
+            var report = await service.GetProfitAndLossReportAsync(now.AddDays(-1), now.AddDays(1));
+
+            Assert.Equal(200m, report.TotalSalesRevenue);
+            // 2 * 40 = 80. Before the soft-delete fix, this silently became 0 once the item was deleted.
+            Assert.Equal(80m, report.TotalCostOfGoodsSold);
+            Assert.Equal(120m, report.GrossProfit);
+        }
+
+        [Fact]
+        public async Task GetProfitAndLossReportAsync_ExcludesGstFromRevenue()
+        {
+            using var context = GetContext("BI_PnLGstDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+
+            var now = DateTime.UtcNow;
+
+            // 2 units at 100 = 200 subtotal, +10% GST = 20, so TotalAmount (tax-inclusive) is 220.
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                Subtotal = 200,
+                GstAmount = 20,
+                TotalAmount = 220,
+                CreatedAt = now,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+            await context.SaveChangesAsync();
+
+            var report = await service.GetProfitAndLossReportAsync(now.AddDays(-1), now.AddDays(1));
+
+            // Revenue must exclude the GST collected on behalf of the government (200, not 220).
+            Assert.Equal(200m, report.TotalSalesRevenue);
+            Assert.Equal(80m, report.TotalCostOfGoodsSold); // 2 * 40
+            Assert.Equal(120m, report.GrossProfit); // 200 - 80, not 220 - 80
         }
 
         [Fact]
@@ -247,6 +468,62 @@ namespace HotelPOS.Tests
             var service = new BIReportService(context, TestAuthorization.DenyAll().Object);
 
             await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetProfitMarginSummaryAsync());
+        }
+
+        [Fact]
+        public async Task GetBiAnalyticsOverviewAsync_ComposesKpisAndMonthlyTrendsCorrectly()
+        {
+            using var context = GetContext("BI_OverviewDb");
+            var service = new BIReportService(context, TestAuthorization.AllowAll().Object);
+
+            var item = new Item { Id = 1, Name = "Item A", Price = 100, CostPrice = 40 };
+            context.Items.Add(item);
+
+            var now = DateTime.UtcNow;
+            var order = new Order
+            {
+                Id = 1,
+                InvoiceNumber = "INV-001",
+                FiscalYear = "2026-27",
+                TotalAmount = 200,
+                CreatedAt = now,
+                Items = new List<OrderItem>
+                {
+                    new OrderItem { ItemId = 1, ItemName = "Item A", Quantity = 2, Price = 100, Total = 200 }
+                }
+            };
+            context.Orders.Add(order);
+
+            var expense = new Expense { Id = 1, Title = "Utilities", Amount = 30, Date = now };
+            context.Expenses.Add(expense);
+
+            var wastage = new WastageEntry { Id = 1, ItemId = 1, Item = item, Quantity = 1, CostPerUnit = 40, Reason = "Spoilage", WastedAt = now };
+            context.WastageEntries.Add(wastage);
+            await context.SaveChangesAsync();
+
+            var overview = await service.GetBiAnalyticsOverviewAsync();
+
+            // Same figures GetProfitMarginSummaryAsync/GetWastageSummaryAsync compute independently.
+            Assert.Equal(200m, overview.Kpis.TotalRevenue);
+            Assert.Equal(80m, overview.Kpis.Cogs); // 2 * 40
+            Assert.Equal(90m, overview.Kpis.NetProfit); // (200 rev - 80 cogs) gross - 30 expense = 90
+            Assert.Equal(40m, overview.Kpis.TotalWastageCost); // 1 * 40
+            Assert.Equal(30m, overview.Kpis.TotalExpenses);
+
+            Assert.Equal(ReportingLimits.OverviewTrendMonths, overview.MonthlyTrends.Count);
+            var currentMonthLabel = now.ToLocalTime().ToString("MMM yy");
+            var currentMonthTrend = overview.MonthlyTrends.Single(t => t.MonthName == currentMonthLabel);
+            Assert.Equal(200m, currentMonthTrend.Revenue);
+            Assert.Equal(90m, currentMonthTrend.Profit); // net profit: 120 gross - 30 expense
+        }
+
+        [Fact]
+        public async Task GetBiAnalyticsOverviewAsync_WhenUnauthorized_Throws()
+        {
+            using var context = GetContext("BI_OverviewUnauthorizedDb");
+            var service = new BIReportService(context, TestAuthorization.DenyAll().Object);
+
+            await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.GetBiAnalyticsOverviewAsync());
         }
     }
 }

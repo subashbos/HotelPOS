@@ -14,46 +14,6 @@ namespace HotelPOS
         public static App? CurrentApp => System.Windows.Application.Current as App;
         public ServiceProvider ServiceProvider { get; private set; } = null!;
 
-        private static readonly System.Threading.ThreadLocal<System.Collections.Generic.Dictionary<Type, object>> _testServices = new(() => new());
-
-        public static void RegisterTestService<T>(T service) where T : class
-        {
-            if (service != null)
-            {
-                _testServices.Value![typeof(T)] = service;
-            }
-        }
-
-        public static IServiceScope CreateDbScope()
-        {
-            if (System.Windows.Application.Current == null || CurrentApp?.ServiceProvider == null)
-            {
-                return new DummyScope();
-            }
-            return CurrentApp.ServiceProvider.CreateScope();
-        }
-
-        private sealed class DummyScope : IServiceScope
-        {
-            public IServiceProvider ServiceProvider => new DummyServiceProvider();
-            public void Dispose()
-            {
-                GC.SuppressFinalize(this);
-            }
-        }
-
-        private sealed class DummyServiceProvider : IServiceProvider
-        {
-            public object? GetService(Type serviceType)
-            {
-                if (_testServices.Value!.TryGetValue(serviceType, out var service))
-                {
-                    return service;
-                }
-                return null;
-            }
-        }
-
         /// <summary>
         /// Configures logging, global exception handlers, dependency injection, and the database, then opens the initial login window.
         /// </summary>

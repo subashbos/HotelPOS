@@ -20,15 +20,6 @@ namespace HotelPOS.Infrastructure.Persistence
             return await _context.Suppliers.AsNoTracking().ToListAsync();
         }
 
-        public async Task<List<Purchase>> GetPurchasesAsync()
-        {
-            return await _context.Purchases
-                .AsNoTracking()
-                .Include(p => p.Supplier)
-                .Include(p => p.PurchaseItems)
-                .ToListAsync();
-        }
-
         public async Task<(List<Purchase> purchases, int totalCount)> GetPagedPurchasesAsync(
             int page, int pageSize, PurchaseQueryFilter? filter = null)
         {

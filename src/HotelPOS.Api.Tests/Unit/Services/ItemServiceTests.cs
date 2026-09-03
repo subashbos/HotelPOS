@@ -71,10 +71,10 @@ namespace HotelPOS.Tests
         public async Task UpdateItemAsync_DuplicateName_ShouldThrow()
         {
             // Arrange
-            var items = new List<Item> 
-            { 
-                new Item { Id = 1, Name = "Pizza" }, 
-                new Item { Id = 2, Name = "Pasta" } 
+            var items = new List<Item>
+            {
+                new Item { Id = 1, Name = "Pizza" },
+                new Item { Id = 2, Name = "Pasta" }
             };
             _repoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(items);
             var dto = new CreateItemDto { Name = "Pasta", Price = 200, UnitId = 1 };
@@ -126,9 +126,9 @@ namespace HotelPOS.Tests
         public async Task BulkAddAsync_ShouldSkipBarcodeConflicts()
         {
             // Arrange
-            var existing = new List<Item> 
-            { 
-                new Item { Name = "Pizza", Barcode = "11111" } 
+            var existing = new List<Item>
+            {
+                new Item { Name = "Pizza", Barcode = "11111" }
             };
             var dtos = new List<CreateItemDto>
             {

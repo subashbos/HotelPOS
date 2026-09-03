@@ -24,7 +24,7 @@ namespace HotelPOS.Tests
             _cartService.Setup(s => s.GetHeldOrders()).Returns(new List<HeldOrder>());
             _cartService.Setup(s => s.GetItems(It.IsAny<int>())).Returns(new List<OrderItem>());
             _settingService.Setup(s => s.GetSettingsAsync()).ReturnsAsync(new SystemSetting());
-            
+
             BillingViewModel.RegisterTestServices(
                 _itemService.Object, _orderService.Object, _categoryService.Object,
                 _cashService.Object, _tableService.Object);
@@ -40,14 +40,14 @@ namespace HotelPOS.Tests
             // Arrange
             var item = new Item { Id = 1, Name = "Burger", Price = 100 };
             _itemService.Setup(s => s.GetItemsAsync()).ReturnsAsync(new List<Item> { item });
-            
+
             // Act
             _vm.AddToCartCommand.Execute(item);
 
             // Assert
             // Verify CartService was called
             _cartService.Verify(s => s.AddItem(It.IsAny<int>(), item), Times.Once);
-            
+
             // In a real UI, the view code-behind handles the focus shift based on this action.
             // This test ensures the underlying data command is functional.
         }
@@ -57,7 +57,7 @@ namespace HotelPOS.Tests
         {
             // Act
             _vm.SearchText = "";
-            
+
             // Assert
             _cartService.Verify(s => s.AddItem(It.IsAny<int>(), It.IsAny<Item>()), Times.Never);
         }
@@ -68,7 +68,7 @@ namespace HotelPOS.Tests
             // Arrange
             _cartService.Setup(s => s.GetSubtotal(It.IsAny<int>())).Returns(100m);
             _vm.TableNumber = 2; // Trigger subtotal update
-            
+
             // Act
             _vm.DiscountAmount = 20m;
 

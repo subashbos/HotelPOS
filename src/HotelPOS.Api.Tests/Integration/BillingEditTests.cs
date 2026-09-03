@@ -24,6 +24,7 @@ namespace HotelPOS.Tests
             var order = new Order
             {
                 Id = 1,
+                TableNumber = 5,
                 Items = new List<OrderItem>
                 {
                     new OrderItem { ItemId = 1, ItemName = "Test", Quantity = 2, Price = 100, TaxPercentage = 5, Total = 200 }

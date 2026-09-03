@@ -43,3 +43,8 @@ export interface SavePurchaseRequest {
   totalDiscount: number;
   items: SavePurchaseItemRequest[];
 }
+
+export interface PagedPurchases {
+  items: Purchase[];
+  totalCount: number;
+}

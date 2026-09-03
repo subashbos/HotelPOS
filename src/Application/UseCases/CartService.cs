@@ -70,16 +70,26 @@ namespace HotelPOS.Application.UseCases
 
         // ── Persistence helpers ──────────────────────────────────────────────
 
+        // Takes a quick snapshot under _lock, then does the actual disk write outside
+        // it - callers already released _lock before calling this, so file I/O never
+        // blocks other cart operations.
         private void SaveCarts()
         {
             if (_cartsFilePath == null) return;
+
+            Dictionary<int, List<OrderItem>> snapshot;
+            lock (_lock)
+            {
+                snapshot = _tableCarts.ToDictionary(kvp => kvp.Key, kvp => new List<OrderItem>(kvp.Value));
+            }
+
             try
             {
                 var dir = Path.GetDirectoryName(_cartsFilePath);
                 if (!string.IsNullOrEmpty(dir))
                     Directory.CreateDirectory(dir);
 
-                var json = JsonSerializer.Serialize(_tableCarts);
+                var json = JsonSerializer.Serialize(snapshot);
                 File.WriteAllText(_cartsFilePath, json);
             }
             catch (Exception ex)
@@ -113,85 +123,92 @@ namespace HotelPOS.Application.UseCases
             }
         }
 
+        // Fire-and-forget, same pattern as App.xaml.cs's InitializeDatabaseAsync -
+        // holding/resuming/clearing an order must not block the caller (the UI thread,
+        // in practice) on a DB round-trip. TaskScheduler.UnobservedTaskException already
+        // logs anything that escapes the try/catch below.
         private void SaveHeldOrderToDb(HeldOrder held)
         {
             if (_scopeFactory == null) return;
-            try
+            _ = Task.Run(async () =>
             {
-                Task.Run(async () =>
+                try
                 {
                     using var scope = _scopeFactory.CreateScope();
                     var repo = scope.ServiceProvider.GetRequiredService<IHeldOrderRepository>();
                     await repo.SaveAsync(held);
-                }).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex, "Failed to save held order to DB");
-            }
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex, "Failed to save held order to DB");
+                }
+            });
         }
 
         private void RemoveHeldOrderFromDb(Guid id)
         {
             if (_scopeFactory == null) return;
-            try
+            _ = Task.Run(async () =>
             {
-                Task.Run(async () =>
+                try
                 {
                     using var scope = _scopeFactory.CreateScope();
                     var repo = scope.ServiceProvider.GetRequiredService<IHeldOrderRepository>();
                     await repo.DeleteAsync(id);
-                }).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex, "Failed to remove held order from DB");
-            }
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex, "Failed to remove held order from DB");
+                }
+            });
         }
 
         private void ClearAllHeldOrdersFromDb()
         {
             if (_scopeFactory == null) return;
-            try
+            _ = Task.Run(async () =>
             {
-                Task.Run(async () =>
+                try
                 {
                     using var scope = _scopeFactory.CreateScope();
                     var repo = scope.ServiceProvider.GetRequiredService<IHeldOrderRepository>();
                     await repo.ClearAllAsync();
-                }).GetAwaiter().GetResult();
-            }
-            catch (Exception ex)
-            {
-                LogException(ex, "Failed to clear held orders from DB");
-            }
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex, "Failed to clear held orders from DB");
+                }
+            });
         }
 
+        // Fire-and-forget too: held orders populate a moment after construction rather
+        // than blocking every CartService consumer (a DI singleton, built on first
+        // resolve) on a DB round-trip at startup.
         private void RestoreHeldOrders()
         {
             if (_scopeFactory == null) return;
-            try
+            _ = Task.Run(async () =>
             {
-                var restored = Task.Run(async () =>
+                try
                 {
                     using var scope = _scopeFactory.CreateScope();
                     var repo = scope.ServiceProvider.GetRequiredService<IHeldOrderRepository>();
-                    return await repo.GetAllAsync();
-                }).GetAwaiter().GetResult();
+                    var restored = await repo.GetAllAsync();
 
-                lock (_lock)
-                {
-                    _heldOrders.Clear();
-                    foreach (var h in restored)
+                    lock (_lock)
                     {
-                        _heldOrders.Add(h);
+                        _heldOrders.Clear();
+                        foreach (var h in restored)
+                        {
+                            _heldOrders.Add(h);
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex, "Failed to restore held orders from DB");
-            }
+                catch (Exception ex)
+                {
+                    LogException(ex, "Failed to restore held orders from DB");
+                }
+            });
         }
 
         // ── Cart operations ──────────────────────────────────────────────────
@@ -220,8 +237,8 @@ namespace HotelPOS.Application.UseCases
                         Total = item.Price
                     });
                 }
-                SaveCarts();
             }
+            SaveCarts();
         }
 
         public void AddItem(int tableNumber, int itemId, int quantity)
@@ -236,8 +253,8 @@ namespace HotelPOS.Application.UseCases
                     if (existing.Quantity <= 0) items.Remove(existing);
                     else existing.Total = existing.Price * existing.Quantity;
                 }
-                SaveCarts();
             }
+            SaveCarts();
         }
 
         public void RemoveItem(int tableNumber, int itemId)
@@ -250,8 +267,8 @@ namespace HotelPOS.Application.UseCases
                 {
                     items.Remove(item);
                 }
-                SaveCarts();
             }
+            SaveCarts();
         }
 
         public void UpdateQuantity(int tableNumber, int itemId, int change)
@@ -271,13 +288,13 @@ namespace HotelPOS.Application.UseCases
                 if (item.Quantity <= 0)
                 {
                     items.Remove(item);
-                    SaveCarts();
-                    return;
                 }
-
-                item.Total = item.Price * item.Quantity;
-                SaveCarts();
+                else
+                {
+                    item.Total = item.Price * item.Quantity;
+                }
             }
+            SaveCarts();
         }
 
         public void SetQuantity(int tableNumber, int itemId, int quantity)
@@ -297,8 +314,8 @@ namespace HotelPOS.Application.UseCases
                     item.Quantity = quantity;
                     item.Total = item.Price * item.Quantity;
                 }
-                SaveCarts();
             }
+            SaveCarts();
         }
 
         public void Clear(int tableNumber)
@@ -312,8 +329,8 @@ namespace HotelPOS.Application.UseCases
                     _heldOrders.Remove(h);
                     RemoveHeldOrderFromDb(h.Id);
                 }
-                SaveCarts();
             }
+            SaveCarts();
         }
 
         public void ClearAll()
@@ -322,9 +339,9 @@ namespace HotelPOS.Application.UseCases
             {
                 _tableCarts.Clear();
                 _heldOrders.Clear();
-                SaveCarts();
                 ClearAllHeldOrdersFromDb();
             }
+            SaveCarts();
         }
 
         public List<OrderItem> GetItems(int tableNumber)
@@ -395,23 +412,25 @@ namespace HotelPOS.Application.UseCases
                         Total = CalculateLineTotal(item)
                     });
                 }
-                SaveCarts();
             }
+            SaveCarts();
         }
 
         public void UpdatePrice(int tableNumber, int itemId, decimal newPrice)
         {
+            bool changed;
             lock (_lock)
             {
                 var cart = GetOrCreateCart(tableNumber);
                 var item = cart.FirstOrDefault(x => x.ItemId == itemId);
+                changed = item != null;
                 if (item != null)
                 {
                     item.Price = newPrice;
                     item.Total = item.Price * item.Quantity;
-                    SaveCarts();
                 }
             }
+            if (changed) SaveCarts();
         }
 
         // ── Held orders ──────────────────────────────────────────────────────
@@ -420,6 +439,7 @@ namespace HotelPOS.Application.UseCases
 
         public void HoldOrder(int tableNumber, string holdName)
         {
+            HeldOrder held;
             lock (_lock)
             {
                 // Get items directly from the internal cart (no lock re-entry)
@@ -439,7 +459,7 @@ namespace HotelPOS.Application.UseCases
                         Total = x.Total
                     }).ToList();
 
-                var held = new HeldOrder
+                held = new HeldOrder
                 {
                     HoldName = string.IsNullOrWhiteSpace(holdName) ? $"Table {tableNumber}" : holdName,
                     HeldAt = DateTime.UtcNow,
@@ -448,21 +468,22 @@ namespace HotelPOS.Application.UseCases
                 };
 
                 _heldOrders.Add(held);
-                SaveHeldOrderToDb(held);
 
                 // Clear the cart directly without re-acquiring the lock
                 rawItems.Clear();
-                SaveCarts();
             }
+            SaveHeldOrderToDb(held);
+            SaveCarts();
         }
 
         public List<HeldOrder> GetHeldOrders() => _heldOrders.ToList();
 
         public void ResumeHeldOrder(Guid heldOrderId, int targetTableNumber)
         {
+            HeldOrder? held;
             lock (_lock)
             {
-                var held = _heldOrders.FirstOrDefault(x => x.Id == heldOrderId);
+                held = _heldOrders.FirstOrDefault(x => x.Id == heldOrderId);
                 if (held == null) return;
 
                 // Load items directly without re-acquiring the lock
@@ -480,11 +501,11 @@ namespace HotelPOS.Application.UseCases
                         Total = CalculateLineTotal(item)
                     });
                 }
-                SaveCarts();
 
                 _heldOrders.Remove(held);
-                RemoveHeldOrderFromDb(heldOrderId);
             }
+            SaveCarts();
+            RemoveHeldOrderFromDb(held.Id);
         }
 
         public void TransferTable(int sourceTableNumber, int targetTableNumber)
@@ -523,8 +544,8 @@ namespace HotelPOS.Application.UseCases
 
                 // Clear source directly
                 sourceItems.Clear();
-                SaveCarts();
             }
+            SaveCarts();
         }
 
         public List<int> GetActiveTables()

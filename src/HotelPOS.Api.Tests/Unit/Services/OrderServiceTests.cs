@@ -149,6 +149,7 @@ namespace HotelPOS.Tests
             var newOrder = new Order
             {
                 Id = 1,
+                TableNumber = 5,
                 Items = new List<OrderItem> { new OrderItem { ItemId = 1, Quantity = 3 }, new OrderItem { ItemId = 2, Quantity = 2 } }
             };
 
@@ -215,7 +216,7 @@ namespace HotelPOS.Tests
             };
             _repoMock.Setup(r => r.GetNextInvoiceNumberAsync(It.IsAny<string>())).ReturnsAsync("INV-001");
             _repoMock.Setup(r => r.AddAsync(It.IsAny<Order>())).ReturnsAsync(10);
-            
+
             // Force DeductStockAsync to fail
             _itemServiceMock.Setup(s => s.DeductStockAsync(It.IsAny<int>(), It.IsAny<int>()))
                              .ThrowsAsync(new Exception("Stock deduction error"));

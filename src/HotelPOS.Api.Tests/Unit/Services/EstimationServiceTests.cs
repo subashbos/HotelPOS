@@ -24,6 +24,8 @@ namespace HotelPOS.Tests.Unit.Services
             {
                 Id = 15,
                 EstimationNumber = "EST-100",
+                EstimationDate = DateTime.Today,
+                GrandTotal = 5000,
                 EstimationItems = new List<EstimationItem>
                 {
                     new EstimationItem { ItemId = 1, ItemName = "Banquet Hall", Quantity = 1, UnitPrice = 5000 }
@@ -62,6 +64,8 @@ namespace HotelPOS.Tests.Unit.Services
             {
                 Id = 20,
                 EstimationNumber = "EST-200",
+                EstimationDate = DateTime.Today,
+                GrandTotal = 5000,
                 EstimationItems = new List<EstimationItem>
                 {
                     new EstimationItem { ItemId = 1, ItemName = "Banquet Hall", Quantity = 1, UnitPrice = 5000 }

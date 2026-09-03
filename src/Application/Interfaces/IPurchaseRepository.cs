@@ -7,7 +7,6 @@ namespace HotelPOS.Application.Interfaces
     public interface IPurchaseRepository
     {
         Task<List<Supplier>> GetSuppliersAsync();
-        Task<List<Purchase>> GetPurchasesAsync();
         Task<(List<Purchase> purchases, int totalCount)> GetPagedPurchasesAsync(int page, int pageSize, PurchaseQueryFilter? filter = null);
         Task<Purchase?> GetByIdAsync(int id);
         Task AddAsync(Purchase purchase);

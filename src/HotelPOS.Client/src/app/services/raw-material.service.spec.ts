@@ -41,10 +41,10 @@ describe('RawMaterialService', () => {
       req.flush(materials);
     });
 
-    it('should fall back to mock data when the API errors', () => {
-      service.getRawMaterials().subscribe(result => {
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].name).toBe('Basmati Rice');
+    it('should propagate an error when the API fails', () => {
+      service.getRawMaterials().subscribe({
+        next: () => fail('expected an error, not a successful mock fallback'),
+        error: (err) => expect(err).toBeTruthy()
       });
 
       const req = httpMock.expectOne(apiUrl);
@@ -96,14 +96,4 @@ describe('RawMaterialService', () => {
     });
   });
 
-  describe('getMockRawMaterials', () => {
-    it('should emit the built-in mock list without an HTTP call', done => {
-      service.getMockRawMaterials().subscribe(result => {
-        expect(result.length).toBeGreaterThan(0);
-        done();
-      });
-
-      httpMock.expectNone(apiUrl);
-    });
-  });
 });

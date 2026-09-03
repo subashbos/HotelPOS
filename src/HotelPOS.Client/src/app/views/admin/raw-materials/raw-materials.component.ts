@@ -46,14 +46,10 @@ export class RawMaterialsComponent implements OnInit {
         this.applyFilter();
         this.isLoading = false;
       },
-      error: () => {
-        this.rawMaterialService.getMockRawMaterials().subscribe({
-          next: (mockData) => {
-            this.rawMaterials = mockData;
-            this.applyFilter();
-            this.isLoading = false;
-          }
-        });
+      error: (err) => {
+        this.loadError = 'Failed to load raw materials. Please check the server connection.';
+        this.isLoading = false;
+        console.error('Raw materials load error:', err);
       }
     });
   }
@@ -116,14 +112,10 @@ export class RawMaterialsComponent implements OnInit {
           this.showForm = false;
           this.loadRawMaterials();
         },
-        error: () => {
-          const idx = this.rawMaterials.findIndex(m => m.id === this.editingId);
-          if (idx !== -1) {
-            this.rawMaterials[idx] = { ...this.rawMaterials[idx], ...this.form as RawMaterial };
-            this.applyFilter();
-          }
+        error: (err) => {
           this.isSaving = false;
-          this.showForm = false;
+          this.formError = 'Failed to update the raw material. Please check the server connection and try again.';
+          console.error('Raw material update error:', err);
         }
       });
     } else {
@@ -133,19 +125,10 @@ export class RawMaterialsComponent implements OnInit {
           this.showForm = false;
           this.loadRawMaterials();
         },
-        error: () => {
-          const newMat: RawMaterial = {
-            id: Date.now(),
-            name: this.form.name!.trim(),
-            unit: this.form.unit || 'kg',
-            costPerUnit: Number(this.form.costPerUnit) || 0,
-            currentStock: Number(this.form.currentStock) || 0,
-            minStockThreshold: Number(this.form.minStockThreshold) || 0
-          };
-          this.rawMaterials.unshift(newMat);
-          this.applyFilter();
+        error: (err) => {
           this.isSaving = false;
-          this.showForm = false;
+          this.formError = 'Failed to create the raw material. Please check the server connection and try again.';
+          console.error('Raw material create error:', err);
         }
       });
     }
@@ -153,11 +136,12 @@ export class RawMaterialsComponent implements OnInit {
 
   deleteMaterial(material: RawMaterial): void {
     if (!confirm(`Delete raw material "${material.name}"?`)) return;
+    this.loadError = '';
     this.rawMaterialService.deleteRawMaterial(material.id).subscribe({
       next: () => this.loadRawMaterials(),
-      error: () => {
-        this.rawMaterials = this.rawMaterials.filter(m => m.id !== material.id);
-        this.applyFilter();
+      error: (err) => {
+        this.loadError = `Failed to delete "${material.name}". Please check the server connection and try again.`;
+        console.error('Raw material delete error:', err);
       }
     });
   }

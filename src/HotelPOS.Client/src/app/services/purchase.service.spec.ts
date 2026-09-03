@@ -28,16 +28,18 @@ describe('PurchaseService', () => {
   });
 
   describe('getPurchases', () => {
-    it('should retrieve all purchases', () => {
-      const dummyPurchases = MOCK_PURCHASES;
+    it('should retrieve a page of purchases', () => {
+      const dummyResponse = { items: MOCK_PURCHASES, totalCount: MOCK_PURCHASES.length };
 
-      service.getPurchases().subscribe(purchases => {
-        expect(purchases).toEqual(dummyPurchases);
+      service.getPurchases(1, 20).subscribe(response => {
+        expect(response).toEqual(dummyResponse);
       });
 
-      const req = httpMock.expectOne(`${environment.apiBaseUrl}/purchases`);
+      const req = httpMock.expectOne(req => req.url === `${environment.apiBaseUrl}/purchases`);
       expect(req.request.method).toBe('GET');
-      req.flush(dummyPurchases);
+      expect(req.request.params.get('page')).toBe('1');
+      expect(req.request.params.get('pageSize')).toBe('20');
+      req.flush(dummyResponse);
     });
   });
 

@@ -34,7 +34,7 @@ namespace HotelPOS.Application.UseCases
         {
             _tableRepository = tableRepository;
             _validator = validator ?? new CreateTableDtoValidator();
-            
+
             if (mapper == null)
             {
                 var cfg = new AutoMapper.MapperConfiguration(
@@ -75,15 +75,20 @@ namespace HotelPOS.Application.UseCases
 
         public async Task UpdateTableAsync(int id, CreateTableDto dto)
         {
+            // ValidationBehavior doesn't reliably run for void IRequest commands (see
+            // QA_REVIEW_AND_TEST_GAPS.md item 8) - validate directly so the mediator path isn't
+            // the only gate; this used to only happen on the legacy path below. _validator is
+            // null when constructed via the mediator-DI constructor, so use a fresh instance
+            // rather than relying on that field.
+            var result = (_validator ?? new CreateTableDtoValidator()).Validate(dto);
+            if (!result.IsValid)
+                throw new ArgumentException(result.Errors[0].ErrorMessage);
+
             if (_mediator != null)
             {
                 await _mediator.Send(new UpdateTableCommand(id, dto));
                 return;
             }
-
-            var result = _validator!.Validate(dto);
-            if (!result.IsValid)
-                throw new ArgumentException(result.Errors[0].ErrorMessage);
 
             var existing = await _tableRepository!.GetAllAsync() ?? new List<Table>();
             if (existing.Any(t => t.Number == dto.Number && t.Id != id && !t.IsDeleted))

@@ -26,6 +26,10 @@ export class PurchasesComponent implements OnInit {
   actionError = '';
   isSaving = false;
 
+  page = 1;
+  pageSize = 20;
+  totalCount = 0;
+
   readonly paymentTypes = PURCHASE_PAYMENT_TYPES;
 
   // ── Entry form ──
@@ -65,9 +69,10 @@ export class PurchasesComponent implements OnInit {
   loadPurchases(): void {
     this.isLoading = true;
     this.loadError = '';
-    this.purchaseService.getPurchases().subscribe({
-      next: (purchases) => {
-        this.purchases = purchases.sort((a, b) => (a.purchaseDate < b.purchaseDate ? 1 : -1));
+    this.purchaseService.getPurchases(this.page, this.pageSize).subscribe({
+      next: (result) => {
+        this.purchases = result.items;
+        this.totalCount = result.totalCount;
         this.isLoading = false;
       },
       error: (err) => {
@@ -76,6 +81,24 @@ export class PurchasesComponent implements OnInit {
         console.error('Purchases load error:', err);
       }
     });
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
+
+  prevPage(): void {
+    if (this.page > 1) {
+      this.page -= 1;
+      this.loadPurchases();
+    }
+  }
+
+  nextPage(): void {
+    if (this.page < this.totalPages) {
+      this.page += 1;
+      this.loadPurchases();
+    }
   }
 
   openForm(): void {
@@ -164,6 +187,7 @@ export class PurchasesComponent implements OnInit {
       next: () => {
         this.isSaving = false;
         this.closeForm();
+        this.page = 1;
         this.loadPurchases();
       },
       error: (err) => {

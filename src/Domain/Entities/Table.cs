@@ -12,7 +12,7 @@ namespace HotelPOS.Domain.Entities
         public string Name { get; set; } = string.Empty;
         public int Capacity { get; set; }
         public bool IsActive { get; set; } = true;
-        
+
         // For soft delete if needed
         public bool IsDeleted { get; set; }
     }

@@ -14,7 +14,7 @@ describe('RawMaterialsComponent', () => {
 
   beforeEach(async () => {
     rawMaterialServiceSpy = jasmine.createSpyObj('RawMaterialService', [
-      'getRawMaterials', 'getMockRawMaterials', 'createRawMaterial', 'updateRawMaterial', 'deleteRawMaterial'
+      'getRawMaterials', 'createRawMaterial', 'updateRawMaterial', 'deleteRawMaterial'
     ]);
     rawMaterialServiceSpy.getRawMaterials.and.returnValue(of([mockMaterial]));
 
@@ -36,13 +36,13 @@ describe('RawMaterialsComponent', () => {
     expect(component.filteredMaterials.length).toBe(1);
   });
 
-  it('should fall back to mock data on load error', () => {
+  it('should surface an error and not fabricate raw materials on load error', () => {
     rawMaterialServiceSpy.getRawMaterials.and.returnValue(throwError(() => new Error('boom')));
-    rawMaterialServiceSpy.getMockRawMaterials.and.returnValue(of([mockMaterial]));
 
     fixture.detectChanges();
 
-    expect(component.rawMaterials).toEqual([mockMaterial]);
+    expect(component.rawMaterials).toEqual([]);
+    expect(component.loadError).toContain('Failed to load raw materials');
   });
 
   it('should filter by name or unit', () => {
@@ -108,7 +108,7 @@ describe('RawMaterialsComponent', () => {
     expect(component.showForm).toBeFalse();
   });
 
-  it('should add a locally-generated material when create fails', () => {
+  it('should surface an error and not fabricate a material when create fails', () => {
     fixture.detectChanges();
     component.openAddForm();
     component.form.name = 'Ghee';
@@ -116,7 +116,9 @@ describe('RawMaterialsComponent', () => {
 
     component.saveRawMaterial();
 
-    expect(component.rawMaterials.some(m => m.name === 'Ghee')).toBeTrue();
+    expect(component.rawMaterials.some(m => m.name === 'Ghee')).toBeFalse();
+    expect(component.showForm).toBeTrue();
+    expect(component.formError).toContain('Failed to create');
   });
 
   it('should update an existing material', () => {
@@ -129,7 +131,7 @@ describe('RawMaterialsComponent', () => {
     expect(rawMaterialServiceSpy.updateRawMaterial).toHaveBeenCalledWith(1, component.form);
   });
 
-  it('should apply the edit locally when update fails', () => {
+  it('should surface an error and not apply the edit locally when update fails', () => {
     fixture.detectChanges();
     component.openEditForm(mockMaterial);
     component.form.currentStock = 99;
@@ -137,7 +139,9 @@ describe('RawMaterialsComponent', () => {
 
     component.saveRawMaterial();
 
-    expect(component.rawMaterials[0].currentStock).toBe(99);
+    expect(component.rawMaterials[0].currentStock).toBe(50);
+    expect(component.showForm).toBeTrue();
+    expect(component.formError).toContain('Failed to update');
   });
 
   it('should delete a material when confirmed', () => {
@@ -159,13 +163,14 @@ describe('RawMaterialsComponent', () => {
     expect(rawMaterialServiceSpy.deleteRawMaterial).not.toHaveBeenCalled();
   });
 
-  it('should remove the material locally when delete fails', () => {
+  it('should surface an error and not remove the material locally when delete fails', () => {
     fixture.detectChanges();
     spyOn(window, 'confirm').and.returnValue(true);
     rawMaterialServiceSpy.deleteRawMaterial.and.returnValue(throwError(() => new Error('boom')));
 
     component.deleteMaterial(mockMaterial);
 
-    expect(component.rawMaterials.length).toBe(0);
+    expect(component.rawMaterials.length).toBe(1);
+    expect(component.loadError).toContain('Failed to delete');
   });
 });

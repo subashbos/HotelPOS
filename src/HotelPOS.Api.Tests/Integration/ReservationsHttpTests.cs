@@ -124,6 +124,23 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task CreateReservation_EndTimeBeforeStartTime_ReturnsBadRequest()
+        {
+            // SaveReservationCommandValidator's "EndTime must be after start time" rule has no
+            // equivalent anywhere else in the request path. SaveReservationCommand is a void
+            // IRequest, the same shape documented as bypassing ValidationBehavior for
+            // Save/UpdatePurchaseCommand and UpdateOrderCommand (QA_REVIEW_AND_TEST_GAPS.md item
+            // 8) - ReservationService now validates directly rather than relying on that pipeline.
+            var tableId = await SeedTableAsync("Inverted Time Table");
+            var client = CreateClient(RoleNames.Admin, "reservations.admin-inverted-time");
+
+            var response = await client.PostAsJsonAsync("/api/reservations",
+                ValidReservationPayload(tableId, new DateTime(2026, 9, 7), start: "20:00:00", end: "19:00:00"));
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task GetReservation_UnknownId_ReturnsNotFound()
         {
             var client = CreateClient(RoleNames.Admin, "reservations.admin-get-missing");

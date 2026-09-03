@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Purchase, SavePurchaseRequest } from '../models/purchase.model';
+import { PagedPurchases, Purchase, SavePurchaseRequest } from '../models/purchase.model';
 import { Supplier } from '../models/supplier.model';
 import { environment } from '../../environments/environment';
 
@@ -13,8 +13,8 @@ export class PurchaseService {
 
   constructor(private readonly http: HttpClient) { }
 
-  getPurchases(): Observable<Purchase[]> {
-    return this.http.get<Purchase[]>(this.apiUrl);
+  getPurchases(page: number, pageSize: number): Observable<PagedPurchases> {
+    return this.http.get<PagedPurchases>(this.apiUrl, { params: { page, pageSize } });
   }
 
   getSuppliers(): Observable<Supplier[]> {

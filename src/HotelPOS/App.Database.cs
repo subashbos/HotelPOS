@@ -66,8 +66,8 @@ namespace HotelPOS
                 try
                 {
 
-                // 1. Ensure the Migrations History table exists
-                context.Database.ExecuteSqlRaw(@"
+                    // 1. Ensure the Migrations History table exists
+                    context.Database.ExecuteSqlRaw(@"
                     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '__EFMigrationsHistory')
                     BEGIN
                         CREATE TABLE [__EFMigrationsHistory] (
@@ -77,15 +77,15 @@ namespace HotelPOS
                         );
                     END");
 
-                // Captured before Migrate() applies anything: a database that has never had a single
-                // migration recorded is a genuinely fresh install, as opposed to an existing database
-                // just picking up new migrations. Determines whether the migration-seeded 'admin' row
-                // (from Phase4AuthUpdate) should route to first-run registration instead of the usual
-                // one-time-password remediation below - see the admin bootstrap block after Migrate().
-                var wasFreshDatabase = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM __EFMigrationsHistory").AsEnumerable().FirstOrDefault() == 0;
+                    // Captured before Migrate() applies anything: a database that has never had a single
+                    // migration recorded is a genuinely fresh install, as opposed to an existing database
+                    // just picking up new migrations. Determines whether the migration-seeded 'admin' row
+                    // (from Phase4AuthUpdate) should route to first-run registration instead of the usual
+                    // one-time-password remediation below - see the admin bootstrap block after Migrate().
+                    var wasFreshDatabase = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM __EFMigrationsHistory").AsEnumerable().FirstOrDefault() == 0;
 
-                // 1.1 Ensure Tables table exists
-                context.Database.ExecuteSqlRaw(@"
+                    // 1.1 Ensure Tables table exists
+                    context.Database.ExecuteSqlRaw(@"
                     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Tables')
                     BEGIN
                         CREATE TABLE [Tables] (
@@ -106,21 +106,21 @@ namespace HotelPOS
                         END
                     END");
 
-                // 2. If 'Orders' table exists, baseline the history to prevent 'Already Exists' errors
-                // We check if the InitialCreate migration is already in history
-                var historyCount = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId = '20260414123141_InitialCreate'").AsEnumerable().FirstOrDefault();
+                    // 2. If 'Orders' table exists, baseline the history to prevent 'Already Exists' errors
+                    // We check if the InitialCreate migration is already in history
+                    var historyCount = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId = '20260414123141_InitialCreate'").AsEnumerable().FirstOrDefault();
 
-                if (historyCount == 0)
-                {
-                    // Check if the Orders table actually exists on disk
-                    var ordersExist = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM sys.tables WHERE name = 'Orders'").AsEnumerable().FirstOrDefault() > 0;
-
-                    if (ordersExist)
+                    if (historyCount == 0)
                     {
-                        Log.Warning("Existing database detected without migration history. Basclining migrations...");
+                        // Check if the Orders table actually exists on disk
+                        var ordersExist = context.Database.SqlQueryRaw<int>("SELECT COUNT(*) FROM sys.tables WHERE name = 'Orders'").AsEnumerable().FirstOrDefault() > 0;
 
-                        var migrationsToBaseline = new[]
+                        if (ordersExist)
                         {
+                            Log.Warning("Existing database detected without migration history. Basclining migrations...");
+
+                            var migrationsToBaseline = new[]
+                            {
                             "20260414123141_InitialCreate",
                             "20260415161324_AddItemsTable",
                             "20260416134035_Phase2Update",
@@ -145,21 +145,21 @@ namespace HotelPOS
                             "20260501140601_SyncModel"
                         };
 
-                        foreach (var mId in migrationsToBaseline)
-                        {
-                            context.Database.ExecuteSqlRaw("IF NOT EXISTS (SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId = {0}) INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ({0}, '9.0.0')", mId);
+                            foreach (var mId in migrationsToBaseline)
+                            {
+                                context.Database.ExecuteSqlRaw("IF NOT EXISTS (SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId = {0}) INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ({0}, '9.0.0')", mId);
+                            }
                         }
                     }
-                }
 
-                // 3. Now run Migrate() normally. It will only apply NEW migrations.
-                context.Database.Migrate();
+                    // 3. Now run Migrate() normally. It will only apply NEW migrations.
+                    context.Database.Migrate();
 
-                // Ensure Items table has its CostPrice/MinStockThreshold columns. No EF migration actually
-                // adds these (only this runtime patch does - they only ever exist in the model snapshot),
-                // so it must run after Migrate() - not before - to guarantee Items already exists, including
-                // on a genuinely fresh database.
-                context.Database.ExecuteSqlRaw(@"
+                    // Ensure Items table has its CostPrice/MinStockThreshold columns. No EF migration actually
+                    // adds these (only this runtime patch does - they only ever exist in the model snapshot),
+                    // so it must run after Migrate() - not before - to guarantee Items already exists, including
+                    // on a genuinely fresh database.
+                    context.Database.ExecuteSqlRaw(@"
                     IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Items')
                     BEGIN
                         IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Items') AND name = 'CostPrice')
@@ -172,11 +172,11 @@ namespace HotelPOS
                         END
                     END");
 
-                // Ensure Orders table has its billing/refund/void columns. No EF migration actually adds
-                // these (only this runtime patch does - they only ever exist in the model snapshot), so it
-                // must run after Migrate() - not before - to guarantee Orders already exists, including on
-                // a genuinely fresh database.
-                context.Database.ExecuteSqlRaw(@"
+                    // Ensure Orders table has its billing/refund/void columns. No EF migration actually adds
+                    // these (only this runtime patch does - they only ever exist in the model snapshot), so it
+                    // must run after Migrate() - not before - to guarantee Orders already exists, including on
+                    // a genuinely fresh database.
+                    context.Database.ExecuteSqlRaw(@"
                     IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
                     BEGIN
                         IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Orders') AND name = 'Status')
@@ -213,11 +213,11 @@ namespace HotelPOS
                         END
                     END");
 
-                // Ensure SystemSettings table has its backup columns. No EF migration actually adds these
-                // (only this runtime patch does - they only ever exist in the model snapshot), so it must
-                // run after Migrate() - not before - to guarantee SystemSettings already exists, including
-                // on a genuinely fresh database.
-                context.Database.ExecuteSqlRaw(@"
+                    // Ensure SystemSettings table has its backup columns. No EF migration actually adds these
+                    // (only this runtime patch does - they only ever exist in the model snapshot), so it must
+                    // run after Migrate() - not before - to guarantee SystemSettings already exists, including
+                    // on a genuinely fresh database.
+                    context.Database.ExecuteSqlRaw(@"
                     IF EXISTS (SELECT * FROM sys.tables WHERE name = 'SystemSettings')
                     BEGIN
                         IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('SystemSettings') AND name = 'EnableAutomatedBackups')
@@ -230,10 +230,10 @@ namespace HotelPOS
                         END
                     END");
 
-                // Ensure WastageEntries table exists. No EF migration actually creates this table (only
-                // this runtime patch does), so it must run after Migrate() - not before - to guarantee
-                // Items (its FK target) already exists, including on a genuinely fresh database.
-                context.Database.ExecuteSqlRaw(@"
+                    // Ensure WastageEntries table exists. No EF migration actually creates this table (only
+                    // this runtime patch does), so it must run after Migrate() - not before - to guarantee
+                    // Items (its FK target) already exists, including on a genuinely fresh database.
+                    context.Database.ExecuteSqlRaw(@"
                     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'WastageEntries')
                     BEGIN
                         CREATE TABLE [WastageEntries] (
@@ -249,73 +249,73 @@ namespace HotelPOS
                         );
                     END");
 
-                // Ensure 'admin' user exists in the database. Known historical seed hashes
-                // (from earlier migrations that shipped a fixed password: "admin" for every
-                // install) are treated the same as "missing" so already-deployed databases
-                // get remediated on next startup, not just fresh installs.
-                var knownDefaultHashes = new[]
-                {
+                    // Ensure 'admin' user exists in the database. Known historical seed hashes
+                    // (from earlier migrations that shipped a fixed password: "admin" for every
+                    // install) are treated the same as "missing" so already-deployed databases
+                    // get remediated on next startup, not just fresh installs.
+                    var knownDefaultHashes = new[]
+                    {
                     "ZxXEc9YNfli38Nb+Xl7bjQG7defoGXYkZ0YJX6aWmKA=",
                     "j0ELYUC68BKe6srtcJVHNf0i2poprPPid/Q4Q6A+Ayc="
                 };
 
-                var adminUser = context.Users.FirstOrDefault(u => u.Username == "admin");
-                var needsAdminRegistration = false;
+                    var adminUser = context.Users.FirstOrDefault(u => u.Username == "admin");
+                    var needsAdminRegistration = false;
 
-                if (wasFreshDatabase && adminUser != null && knownDefaultHashes.Contains(adminUser.PasswordHash))
-                {
-                    // Genuinely fresh install: Migrate() just applied the migration-seeded 'admin' row
-                    // (from Phase4AuthUpdate) with one of the known hardcoded hashes. Rather than silently
-                    // rotating it to a password the operator has to go dig out of a file, remove the seed
-                    // and have them register the account themselves. See ShowRegistrationWindowIfStillOnLogin.
-                    context.Users.Remove(adminUser);
-                    context.SaveChanges();
-                    adminUser = null;
-                    needsAdminRegistration = true;
-                    Log.Information("Fresh database detected; removed the migration-seeded 'admin' account and will prompt the operator to register the initial administrator account.");
-                }
-
-                if (adminUser == null && !needsAdminRegistration)
-                {
-                    // Existing database with no 'admin' row at all (shouldn't normally happen once past
-                    // Phase4AuthUpdate, but keep this as a safety net for unusual states).
-                    var generatedPassword = GenerateRandomPassword();
-                    var (hash, salt) = HashPassword(generatedPassword);
-
-                    adminUser = new HotelPOS.Domain.Entities.User
+                    if (wasFreshDatabase && adminUser != null && knownDefaultHashes.Contains(adminUser.PasswordHash))
                     {
-                        Username = "admin",
-                        PasswordHash = hash,
-                        Salt = salt,
-                        Role = HotelPOS.Domain.Common.Constants.RoleNames.Admin,
-                        RoleId = 1,
-                        IsActive = true,
-                        MustChangePassword = true
-                    };
-                    context.Users.Add(adminUser);
-                    context.SaveChanges();
-                    WriteInitialAdminCredentialFile(generatedPassword);
-                    Log.Information("Default Admin user was missing; seeded 'admin' with a randomly generated one-time password. See {Path} to retrieve it.", GetInitialAdminCredentialPath());
-                }
-                else if (adminUser != null && knownDefaultHashes.Contains(adminUser.PasswordHash))
-                {
-                    // Existing (previously-deployed) database still carrying a known hardcoded hash -
-                    // remediate in place rather than deleting a possibly-in-use account.
-                    var generatedPassword = GenerateRandomPassword();
-                    var (hash, salt) = HashPassword(generatedPassword);
-                    adminUser.PasswordHash = hash;
-                    adminUser.Salt = salt;
-                    adminUser.MustChangePassword = true;
-                    adminUser.IsActive = true;
-                    context.SaveChanges();
-                    WriteInitialAdminCredentialFile(generatedPassword);
-                    Log.Information("Detected known default admin password hash; reset to a randomly generated one-time password. See {Path} to retrieve it.", GetInitialAdminCredentialPath());
-                }
+                        // Genuinely fresh install: Migrate() just applied the migration-seeded 'admin' row
+                        // (from Phase4AuthUpdate) with one of the known hardcoded hashes. Rather than silently
+                        // rotating it to a password the operator has to go dig out of a file, remove the seed
+                        // and have them register the account themselves. See ShowRegistrationWindowIfStillOnLogin.
+                        context.Users.Remove(adminUser);
+                        context.SaveChanges();
+                        adminUser = null;
+                        needsAdminRegistration = true;
+                        Log.Information("Fresh database detected; removed the migration-seeded 'admin' account and will prompt the operator to register the initial administrator account.");
+                    }
 
-                // Ensure HeldOrders table exists (database-agnostic approach)
-                if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
-                {
-                    context.Database.ExecuteSqlRaw(@"
+                    if (adminUser == null && !needsAdminRegistration)
+                    {
+                        // Existing database with no 'admin' row at all (shouldn't normally happen once past
+                        // Phase4AuthUpdate, but keep this as a safety net for unusual states).
+                        var generatedPassword = GenerateRandomPassword();
+                        var (hash, salt) = HashPassword(generatedPassword);
+
+                        adminUser = new HotelPOS.Domain.Entities.User
+                        {
+                            Username = "admin",
+                            PasswordHash = hash,
+                            Salt = salt,
+                            Role = HotelPOS.Domain.Common.Constants.RoleNames.Admin,
+                            RoleId = 1,
+                            IsActive = true,
+                            MustChangePassword = true
+                        };
+                        context.Users.Add(adminUser);
+                        context.SaveChanges();
+                        WriteInitialAdminCredentialFile(generatedPassword);
+                        Log.Information("Default Admin user was missing; seeded 'admin' with a randomly generated one-time password. See {Path} to retrieve it.", GetInitialAdminCredentialPath());
+                    }
+                    else if (adminUser != null && knownDefaultHashes.Contains(adminUser.PasswordHash))
+                    {
+                        // Existing (previously-deployed) database still carrying a known hardcoded hash -
+                        // remediate in place rather than deleting a possibly-in-use account.
+                        var generatedPassword = GenerateRandomPassword();
+                        var (hash, salt) = HashPassword(generatedPassword);
+                        adminUser.PasswordHash = hash;
+                        adminUser.Salt = salt;
+                        adminUser.MustChangePassword = true;
+                        adminUser.IsActive = true;
+                        context.SaveChanges();
+                        WriteInitialAdminCredentialFile(generatedPassword);
+                        Log.Information("Detected known default admin password hash; reset to a randomly generated one-time password. See {Path} to retrieve it.", GetInitialAdminCredentialPath());
+                    }
+
+                    // Ensure HeldOrders table exists (database-agnostic approach)
+                    if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+                    {
+                        context.Database.ExecuteSqlRaw(@"
                         CREATE TABLE IF NOT EXISTS HeldOrders (
                             Id TEXT PRIMARY KEY,
                             HoldName TEXT NOT NULL,
@@ -323,10 +323,10 @@ namespace HotelPOS
                             TableNumber INTEGER NOT NULL,
                             SerializedItems TEXT NOT NULL
                         );");
-                }
-                else if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer")
-                {
-                    context.Database.ExecuteSqlRaw(@"
+                    }
+                    else if (context.Database.ProviderName == "Microsoft.EntityFrameworkCore.SqlServer")
+                    {
+                        context.Database.ExecuteSqlRaw(@"
                         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='HeldOrders' and xtype='U')
                         CREATE TABLE HeldOrders (
                             Id UNIQUEIDENTIFIER PRIMARY KEY,
@@ -335,10 +335,10 @@ namespace HotelPOS
                             TableNumber INT NOT NULL,
                             SerializedItems NVARCHAR(MAX) NOT NULL
                         );");
-                }
+                    }
 
-                Log.Information("Database synchronization complete.");
-                return needsAdminRegistration;
+                    Log.Information("Database synchronization complete.");
+                    return needsAdminRegistration;
 
                 }
                 finally

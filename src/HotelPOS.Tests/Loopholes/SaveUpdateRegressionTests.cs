@@ -545,6 +545,7 @@ namespace HotelPOS.Tests
             var updated = new Order
             {
                 Id = original.Id,
+                TableNumber = 1,
                 PaymentMode = PaymentModes.Cash,
                 Items = new List<OrderItem>
                 {

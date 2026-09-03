@@ -18,7 +18,7 @@ namespace HotelPOS.Tests
         private readonly Mock<IPurchaseRepository> _purchaseRepoMock;
         private readonly Mock<IItemRepository> _itemRepoMock;
         private readonly PurchaseService _purchaseService;
-        
+
         private readonly Mock<IItemService> _itemServiceMock;
         private readonly Mock<INotificationService> _notificationServiceMock;
 
@@ -42,7 +42,7 @@ namespace HotelPOS.Tests
         {
             // Arrange
             var supplier = new Supplier { Id = 1, Name = "Metro Wholesalers" };
-            
+
             var item1 = new Item { Id = 10, Name = "Milk Packet", StockQuantity = 20, TrackInventory = true };
             var item2 = new Item { Id = 11, Name = "Cheese Slices", StockQuantity = 5, TrackInventory = true };
             var item3 = new Item { Id = 12, Name = "Paper Cups", StockQuantity = 100, TrackInventory = false }; // track inventory false

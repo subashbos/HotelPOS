@@ -245,17 +245,18 @@ namespace HotelPOS.Tests.Unit.Controllers
         public async Task Purchases_GetPurchases_ReturnsMappedDtos()
         {
             var svc = new Mock<IPurchaseService>();
-            svc.Setup(s => s.GetPurchasesAsync()).ReturnsAsync(new List<Purchase>
+            svc.Setup(s => s.GetPagedPurchasesAsync(1, 20, It.IsAny<PurchaseQueryFilter>())).ReturnsAsync((new List<Purchase>
             {
                 new Purchase { Id = 1, InvoiceNumber = "INV-1" }
-            });
+            }, 1));
 
             var controller = new PurchasesController(svc.Object, Mapper);
-            var result = await controller.GetPurchases();
+            var result = await controller.GetPurchases(new PurchaseListQueryRequest());
 
             var ok = Assert.IsType<OkObjectResult>(result.Result);
-            var dtos = Assert.IsAssignableFrom<IEnumerable<PurchaseDto>>(ok.Value);
-            Assert.Single(dtos);
+            var response = Assert.IsType<PagedPurchasesResponse>(ok.Value);
+            Assert.Single(response.Items);
+            Assert.Equal(1, response.TotalCount);
         }
 
         [Fact]

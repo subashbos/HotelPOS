@@ -310,6 +310,29 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task GetBiAnalyticsOverview_AdminToken_ReturnsOkWithKpisAndMonthlyTrends()
+        {
+            var client = CreateClient(RoleNames.Admin, "reports.admin-bi-analytics");
+
+            var response = await client.GetAsync("/api/reports/bi-analytics?fromDate=2026-01-01&toDate=2026-12-31");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+            Assert.True(body.TryGetProperty("kpis", out _));
+            Assert.True(body.TryGetProperty("monthlyTrends", out _));
+        }
+
+        [Fact]
+        public async Task GetBiAnalyticsOverview_CashierFallback_ReturnsForbidden()
+        {
+            var client = CreateClient(RoleNames.Cashier, "reports.cashier-bi-analytics");
+
+            var response = await client.GetAsync("/api/reports/bi-analytics");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
         public async Task LogWastage_CashierFallback_ReturnsForbidden()
         {
             var itemId = await SeedItemAsync("Reports Wastage Forbidden Item");

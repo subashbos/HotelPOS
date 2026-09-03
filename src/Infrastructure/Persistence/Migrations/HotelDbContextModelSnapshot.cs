@@ -670,6 +670,9 @@ namespace HotelPOS.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("MinStockThreshold")
                         .HasColumnType("int");
 

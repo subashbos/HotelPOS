@@ -63,7 +63,7 @@ namespace HotelPOS.Tests
 
                     // Bypassing XAML loading and constructor using modern RuntimeHelpers to avoid Application.Current resource resolution issues
                     var view = (BillingView)RuntimeHelpers.GetUninitializedObject(typeof(BillingView));
-                    
+
                     typeof(BillingView)
                         .GetField("_viewModel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                         ?.SetValue(view, vm);
@@ -81,9 +81,9 @@ namespace HotelPOS.Tests
 
                     // Act - Invoke the private event handler directly via reflection
                     var previewKeyDownMethod = typeof(BillingView).GetMethod(
-                        "UserControl_PreviewKeyDown", 
+                        "UserControl_PreviewKeyDown",
                         System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    
+
                     Assert.NotNull(previewKeyDownMethod);
                     previewKeyDownMethod!.Invoke(view, new object[] { view, keyEventArgs });
 

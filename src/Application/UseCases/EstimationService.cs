@@ -1,5 +1,6 @@
 #nullable enable
 
+using FluentValidation;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Estimations.Commands;
 using HotelPOS.Application.UseCases.Estimations.Queries;
@@ -50,6 +51,12 @@ namespace HotelPOS.Application.UseCases
         {
             if (estimation == null) throw new ArgumentNullException(nameof(estimation));
 
+            // ValidationBehavior doesn't reliably run for void IRequest commands (see
+            // QA_REVIEW_AND_TEST_GAPS.md item 8) - validate directly so it isn't the only gate.
+            var saveValResult = new SaveEstimationCommandValidator().Validate(new SaveEstimationCommand(estimation));
+            if (!saveValResult.IsValid)
+                throw new ArgumentException(saveValResult.Errors[0].ErrorMessage);
+
             if (_mediator != null)
             {
                 await _mediator.Send(new SaveEstimationCommand(estimation));
@@ -65,6 +72,12 @@ namespace HotelPOS.Application.UseCases
         public async Task UpdateEstimationAsync(Estimation estimation)
         {
             if (estimation == null) throw new ArgumentNullException(nameof(estimation));
+
+            // ValidationBehavior doesn't reliably run for void IRequest commands (see
+            // QA_REVIEW_AND_TEST_GAPS.md item 8) - validate directly so it isn't the only gate.
+            var updateValResult = new UpdateEstimationCommandValidator().Validate(new UpdateEstimationCommand(estimation));
+            if (!updateValResult.IsValid)
+                throw new ArgumentException(updateValResult.Errors[0].ErrorMessage);
 
             if (_mediator != null)
             {

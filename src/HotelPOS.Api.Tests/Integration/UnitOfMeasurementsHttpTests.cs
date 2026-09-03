@@ -100,6 +100,26 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task UpdateUnitOfMeasurement_EmptyName_ReturnsBadRequest()
+        {
+            // UpdateUnitOfMeasurementCommand is a void IRequest, unlike
+            // CreateUnitOfMeasurementCommand (IRequest<int>, already correctly validated) - the
+            // same shape documented as bypassing ValidationBehavior for Save/UpdatePurchaseCommand
+            // and UpdateOrderCommand (QA_REVIEW_AND_TEST_GAPS.md item 8). UnitOfMeasurementService
+            // already held the right validator for its legacy path; it just wasn't reached before
+            // the mediator branch returned. Now validates directly for both paths.
+            var adminClient = CreateClient(RoleNames.Admin, "units.admin-update-empty-name");
+            var create = await adminClient.PostAsJsonAsync("/api/unitofmeasurements", new { Name = "Crate" });
+            Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+            var created = await create.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+            var unitId = created.GetProperty("id").GetInt32();
+
+            var response = await adminClient.PutAsJsonAsync($"/api/unitofmeasurements/{unitId}", new { Name = "" });
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task UpdateUnitOfMeasurement_UnknownId_ReturnsNotFound()
         {
             var client = CreateClient(RoleNames.Admin, "units.admin-update-missing");

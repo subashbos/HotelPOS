@@ -25,7 +25,7 @@ namespace HotelPOS.Application.UseCases
             _itemRepository = itemRepository;
             _mediator = mediator;
             _validator = validator ?? new CreateItemCommandValidator();
-            
+
             if (mapper == null)
             {
                 var cfg = new AutoMapper.MapperConfiguration(

@@ -86,6 +86,26 @@ namespace HotelPOS.Tests.Integration
         }
 
         [Fact]
+        public async Task UpdateTable_ZeroNumber_ReturnsBadRequest()
+        {
+            // UpdateTableCommand is a void IRequest, unlike CreateTableCommand (IRequest<int>,
+            // already correctly validated) - the same shape documented as bypassing
+            // ValidationBehavior for Save/UpdatePurchaseCommand and UpdateOrderCommand
+            // (QA_REVIEW_AND_TEST_GAPS.md item 8). TableService already held the right validator
+            // for its legacy path; it just wasn't reached before the mediator branch returned.
+            // Now validates directly for both paths.
+            var adminClient = CreateClient(RoleNames.Admin, "tables.admin-update-zero-number");
+            var create = await adminClient.PostAsJsonAsync("/api/tables", new { Number = 501, Name = "T501", Capacity = 4 });
+            Assert.Equal(HttpStatusCode.Created, create.StatusCode);
+            var created = await create.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+            var tableId = created.GetProperty("id").GetInt32();
+
+            var response = await adminClient.PutAsJsonAsync($"/api/tables/{tableId}", new { Number = 0, Name = "T501", Capacity = 4 });
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task UpdateTable_UnknownId_ReturnsNotFound()
         {
             var client = CreateClient(RoleNames.Admin, "tables.admin-update-missing");
