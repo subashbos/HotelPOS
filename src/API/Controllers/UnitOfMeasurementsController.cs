@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.UnitOfMeasurement;
 using HotelPOS.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;

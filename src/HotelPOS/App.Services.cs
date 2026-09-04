@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentValidation;
 using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.DTOs.Table;
@@ -18,6 +17,7 @@ using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure;
 using HotelPOS.Infrastructure.Persistence;
 using HotelPOS.Services;
+using MapsterMapper;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
 using MediatR;
@@ -91,11 +91,8 @@ namespace HotelPOS
             // Auth validators
             services.AddScoped<IValidator<LoginCommand>, LoginCommandValidator>();
 
-            // ── AutoMapper Configuration ──────────────────────────────────────────
-            IMapper mapper = new AutoMapper.MapperConfiguration(
-                mc => mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance)
-                .CreateMapper();
+            // ── Mapster Configuration ──────────────────────────────────────────
+            IMapper mapper = HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
             services.AddSingleton(mapper);
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, HotelPOS.Infrastructure.Services.SmtpEmailService>();

@@ -1,4 +1,3 @@
-using AutoMapper;
 using HotelPOS.Application.Common.Models;
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.DTOs.Supplier;
@@ -30,9 +29,8 @@ namespace HotelPOS.Tests.Integration
     /// </summary>
     public class GenericPermissionEnforcementTests
     {
-        private static IMapper CreateMapper() => new MapperConfiguration(
-            cfg => cfg.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static MapsterMapper.IMapper CreateMapper() =>
+            HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
 
         // ---------- Categories ----------
 

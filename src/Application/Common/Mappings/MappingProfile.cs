@@ -1,4 +1,3 @@
-using AutoMapper;
 using HotelPOS.Application.DTOs.Attendance;
 using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.DTOs.Category;
@@ -17,158 +16,175 @@ using HotelPOS.Application.DTOs.UnitOfMeasurement;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Users.Commands;
 using HotelPOS.Domain.Entities;
+using Mapster;
+using MapsterMapper;
 
 namespace HotelPOS.Application.Common.Mappings
 {
-    public class MappingProfile : Profile
+    /// <summary>
+    /// Central Mapster configuration, mirroring what used to be an AutoMapper Profile.
+    /// Each call site builds its own isolated TypeAdapterConfig via CreateMapper()/CreateConfig()
+    /// rather than mutating the process-wide TypeAdapterConfig.GlobalSettings, matching the
+    /// previously-isolated per-call-site MapperConfiguration instances.
+    /// </summary>
+    public static class MappingProfile
     {
-        public MappingProfile()
+        public static TypeAdapterConfig CreateConfig()
         {
-            CreateCatalogMaps();
-            CreateUserOrderAndAuditMaps();
-            CreateEmployeeAndAttendanceMaps();
-            CreateLeaveAndPayrollMaps();
-            CreatePurchaseMaps();
-            CreateEstimationMaps();
-            CreateReservationMaps();
+            var config = new TypeAdapterConfig();
+            Configure(config);
+            return config;
         }
 
-        private void CreateCatalogMaps()
+        public static IMapper CreateMapper() => new Mapper(CreateConfig());
+
+        public static void Configure(TypeAdapterConfig config)
+        {
+            CreateCatalogMaps(config);
+            CreateUserOrderAndAuditMaps(config);
+            CreateEmployeeAndAttendanceMaps(config);
+            CreateLeaveAndPayrollMaps(config);
+            CreatePurchaseMaps(config);
+            CreateEstimationMaps(config);
+            CreateReservationMaps(config);
+        }
+
+        private static void CreateCatalogMaps(TypeAdapterConfig config)
         {
             // ── Item ──────────────────────────────────────────────────────────
-            CreateMap<CreateItemDto, CreateItemCommand>();
-            CreateMap<CreateItemDto, Item>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()));
-            CreateMap<CreateItemDto, UpdateItemCommand>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore()); // Id comes from route
-            CreateMap<Item, ItemDto>().ReverseMap();
+            config.NewConfig<CreateItemDto, CreateItemCommand>();
+            config.NewConfig<CreateItemDto, Item>()
+                .Map(dest => dest.Name, src => src.Name.Trim());
+            config.NewConfig<CreateItemDto, UpdateItemCommand>()
+                .Ignore(dest => dest.Id); // Id comes from route
+            config.NewConfig<Item, ItemDto>().TwoWays();
 
             // ── Table ─────────────────────────────────────────────────────────
-            CreateMap<CreateTableDto, Table>();
-            CreateMap<Table, TableDto>().ReverseMap();
-            CreateMap<CreateTableDto, TableDto>();
+            config.NewConfig<CreateTableDto, Table>();
+            config.NewConfig<Table, TableDto>().TwoWays();
+            config.NewConfig<CreateTableDto, TableDto>();
 
             // ── Category ─────────────────────────────────────────────────────
-            CreateMap<SaveCategoryDto, Category>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()));
-            CreateMap<Category, CategoryDto>().ReverseMap();
+            config.NewConfig<SaveCategoryDto, Category>()
+                .Map(dest => dest.Name, src => src.Name.Trim());
+            config.NewConfig<Category, CategoryDto>().TwoWays();
 
             // ── Unit of Measurement ─────────────────────────────────────────────
-            CreateMap<SaveUnitOfMeasurementDto, HotelPOS.Domain.Entities.UnitOfMeasurement>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()));
-            CreateMap<HotelPOS.Domain.Entities.UnitOfMeasurement, UnitOfMeasurementDto>().ReverseMap();
+            config.NewConfig<SaveUnitOfMeasurementDto, HotelPOS.Domain.Entities.UnitOfMeasurement>()
+                .Map(dest => dest.Name, src => src.Name.Trim());
+            config.NewConfig<HotelPOS.Domain.Entities.UnitOfMeasurement, UnitOfMeasurementDto>().TwoWays();
 
             // ── Supplier ──────────────────────────────────────────────────────
-            CreateMap<SaveSupplierDto, Supplier>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()))
-                .ForMember(dest => dest.Gstin, opt => opt.MapFrom(src =>
-                    string.IsNullOrWhiteSpace(src.Gstin) ? null : src.Gstin.Trim().ToUpperInvariant()));
-            CreateMap<Supplier, SaveSupplierDto>();
-            CreateMap<Supplier, SupplierDto>().ReverseMap();
+            config.NewConfig<SaveSupplierDto, Supplier>()
+                .Map(dest => dest.Name, src => src.Name.Trim())
+                .Map(dest => dest.Gstin, src =>
+                    string.IsNullOrWhiteSpace(src.Gstin) ? null : src.Gstin.Trim().ToUpperInvariant());
+            config.NewConfig<Supplier, SaveSupplierDto>();
+            config.NewConfig<Supplier, SupplierDto>().TwoWays();
 
             // ── Expense ───────────────────────────────────────────────────────
-            CreateMap<Expense, SaveExpenseDto>();
-            CreateMap<SaveExpenseDto, Expense>()
-                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title.Trim()))
-                .ForMember(dest => dest.User, opt => opt.Ignore());
-            CreateMap<Expense, ExpenseDto>()
-                .ForMember(dest => dest.CreatedByUsername, opt => opt.MapFrom(src => src.User != null ? src.User.Username : null));
+            config.NewConfig<Expense, SaveExpenseDto>();
+            config.NewConfig<SaveExpenseDto, Expense>()
+                .Map(dest => dest.Title, src => src.Title.Trim())
+                .Ignore(dest => dest.User);
+            config.NewConfig<Expense, ExpenseDto>()
+                .Map(dest => dest.CreatedByUsername, src => src.User != null ? src.User.Username : null);
 
             // ── Cash Session (Shift) ─────────────────────────────────────────
-            CreateMap<CashSession, CashSessionDto>();
+            config.NewConfig<CashSession, CashSessionDto>();
 
             // ── Customer ──────────────────────────────────────────────────────
-            CreateMap<SaveCustomerDto, Customer>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name.Trim()))
-                .ForMember(dest => dest.Gstin, opt => opt.MapFrom(src =>
-                    string.IsNullOrWhiteSpace(src.Gstin) ? null : src.Gstin.Trim().ToUpperInvariant()));
-            CreateMap<Customer, CustomerDto>().ReverseMap();
+            config.NewConfig<SaveCustomerDto, Customer>()
+                .Map(dest => dest.Name, src => src.Name.Trim())
+                .Map(dest => dest.Gstin, src =>
+                    string.IsNullOrWhiteSpace(src.Gstin) ? null : src.Gstin.Trim().ToUpperInvariant());
+            config.NewConfig<Customer, CustomerDto>().TwoWays();
         }
 
-        private void CreateUserOrderAndAuditMaps()
+        private static void CreateUserOrderAndAuditMaps(TypeAdapterConfig config)
         {
             // ── User ──────────────────────────────────────────────────────────
-            CreateMap<AddUserCommand, User>()
-                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Username.Trim()))
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
-                .ForMember(dest => dest.Salt, opt => opt.Ignore())
-                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true));
-            CreateMap<User, HotelPOS.Application.DTOs.User.UserDto>().ReverseMap();
-            CreateMap<Role, HotelPOS.Application.DTOs.User.RoleDto>().ReverseMap();
+            config.NewConfig<AddUserCommand, User>()
+                .Map(dest => dest.Username, src => src.Username.Trim())
+                .Ignore(dest => dest.PasswordHash)
+                .Ignore(dest => dest.Salt)
+                .Map(dest => dest.IsActive, src => true);
+            config.NewConfig<User, HotelPOS.Application.DTOs.User.UserDto>().TwoWays();
+            config.NewConfig<Role, HotelPOS.Application.DTOs.User.RoleDto>().TwoWays();
 
             // ── Order ─────────────────────────────────────────────────────────
-            CreateMap<Order, HotelPOS.Application.DTOs.Order.OrderDto>().ReverseMap();
-            CreateMap<OrderItem, HotelPOS.Application.DTOs.Order.OrderItemDto>().ReverseMap();
+            config.NewConfig<Order, HotelPOS.Application.DTOs.Order.OrderDto>().TwoWays();
+            config.NewConfig<OrderItem, HotelPOS.Application.DTOs.Order.OrderItemDto>().TwoWays();
 
             // ── Audit ─────────────────────────────────────────────────────────
-            CreateMap<AuditLog, HotelPOS.Application.DTOs.Audit.AuditLogDto>().ReverseMap();
+            config.NewConfig<AuditLog, HotelPOS.Application.DTOs.Audit.AuditLogDto>().TwoWays();
         }
 
-        private void CreateEmployeeAndAttendanceMaps()
+        private static void CreateEmployeeAndAttendanceMaps(TypeAdapterConfig config)
         {
             // ── Human Resources: Employee / Department / Designation ────────────
-            CreateMap<Department, DepartmentDto>();
-            CreateMap<Designation, DesignationDto>()
-                .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department != null ? src.Department.Name : null));
+            config.NewConfig<Department, DepartmentDto>();
+            config.NewConfig<Designation, DesignationDto>()
+                .Map(dest => dest.DepartmentName, src => src.Department != null ? src.Department.Name : null);
 
-            CreateMap<Employee, EmployeeDto>()
-                .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department != null ? src.Department.Name : null))
-                .ForMember(dest => dest.DesignationTitle, opt => opt.MapFrom(src => src.Designation != null ? src.Designation.Title : null));
+            config.NewConfig<Employee, EmployeeDto>()
+                .Map(dest => dest.DepartmentName, src => src.Department != null ? src.Department.Name : null)
+                .Map(dest => dest.DesignationTitle, src => src.Designation != null ? src.Designation.Title : null);
 
-            CreateMap<SaveEmployeeDto, Employee>()
-                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName.Trim()))
-                .ForMember(dest => dest.EmployeeCode, opt => opt.MapFrom(src => (src.EmployeeCode ?? string.Empty).Trim()));
+            config.NewConfig<SaveEmployeeDto, Employee>()
+                .Map(dest => dest.FirstName, src => src.FirstName.Trim())
+                .Map(dest => dest.EmployeeCode, src => (src.EmployeeCode ?? string.Empty).Trim());
 
             // ── Human Resources: Attendance ──────────────────────────────────
-            CreateMap<Attendance, AttendanceDto>()
-                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
-                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null));
-            CreateMap<MarkAttendanceDto, Attendance>();
+            config.NewConfig<Attendance, AttendanceDto>()
+                .Map(dest => dest.EmployeeName, src =>
+                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null);
+            config.NewConfig<MarkAttendanceDto, Attendance>();
         }
 
-        private void CreateLeaveAndPayrollMaps()
+        private static void CreateLeaveAndPayrollMaps(TypeAdapterConfig config)
         {
             // ── Human Resources: Leave ────────────────────────────────────────
-            CreateMap<LeaveType, LeaveTypeDto>();
-            CreateMap<LeaveBalance, LeaveBalanceDto>()
-                .ForMember(dest => dest.LeaveTypeName, opt => opt.MapFrom(src => src.LeaveType != null ? src.LeaveType.Name : null));
-            CreateMap<LeaveRequest, LeaveRequestDto>()
-                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
-                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null))
-                .ForMember(dest => dest.LeaveTypeName, opt => opt.MapFrom(src => src.LeaveType != null ? src.LeaveType.Name : null));
-            CreateMap<ApplyLeaveDto, LeaveRequest>();
+            config.NewConfig<LeaveType, LeaveTypeDto>();
+            config.NewConfig<LeaveBalance, LeaveBalanceDto>()
+                .Map(dest => dest.LeaveTypeName, src => src.LeaveType != null ? src.LeaveType.Name : null);
+            config.NewConfig<LeaveRequest, LeaveRequestDto>()
+                .Map(dest => dest.EmployeeName, src =>
+                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null)
+                .Map(dest => dest.LeaveTypeName, src => src.LeaveType != null ? src.LeaveType.Name : null);
+            config.NewConfig<ApplyLeaveDto, LeaveRequest>();
 
             // ── Human Resources: Payroll ──────────────────────────────────────
-            CreateMap<SalaryStructure, SalaryStructureDto>();
-            CreateMap<SaveSalaryStructureDto, SalaryStructure>();
-            CreateMap<Payslip, PayslipDto>()
-                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src =>
-                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null));
-            CreateMap<PayrollRun, PayrollRunDto>();
+            config.NewConfig<SalaryStructure, SalaryStructureDto>();
+            config.NewConfig<SaveSalaryStructureDto, SalaryStructure>();
+            config.NewConfig<Payslip, PayslipDto>()
+                .Map(dest => dest.EmployeeName, src =>
+                    src.Employee != null ? (src.Employee.FirstName + " " + src.Employee.LastName).Trim() : null);
+            config.NewConfig<PayrollRun, PayrollRunDto>();
         }
 
-        private void CreatePurchaseMaps()
+        private static void CreatePurchaseMaps(TypeAdapterConfig config)
         {
             // ── Purchases ─────────────────────────────────────────────────────
-            CreateMap<Purchase, PurchaseDto>()
-                .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : null))
-                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.PurchaseItems));
-            CreateMap<PurchaseItem, PurchaseItemDto>();
+            config.NewConfig<Purchase, PurchaseDto>()
+                .Map(dest => dest.SupplierName, src => src.Supplier != null ? src.Supplier.Name : null)
+                .Map(dest => dest.Items, src => src.PurchaseItems.Adapt<List<PurchaseItemDto>>());
+            config.NewConfig<PurchaseItem, PurchaseItemDto>();
         }
 
-        private void CreateEstimationMaps()
+        private static void CreateEstimationMaps(TypeAdapterConfig config)
         {
             // ── Estimations ───────────────────────────────────────────────────
-            CreateMap<Estimation, EstimationDto>()
-                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.EstimationItems));
-            CreateMap<EstimationItem, EstimationItemDto>();
+            config.NewConfig<Estimation, EstimationDto>()
+                .Map(dest => dest.Items, src => src.EstimationItems.Adapt<List<EstimationItemDto>>());
+            config.NewConfig<EstimationItem, EstimationItemDto>();
         }
 
-        private void CreateReservationMaps()
+        private static void CreateReservationMaps(TypeAdapterConfig config)
         {
             // ── Reservations ──────────────────────────────────────────────────
-            CreateMap<Reservation, ReservationDto>()
-                .ForMember(dest => dest.TableName, opt => opt.MapFrom(src => src.Table != null ? src.Table.Name : null));
+            config.NewConfig<Reservation, ReservationDto>()
+                .Map(dest => dest.TableName, src => src.Table != null ? src.Table.Name : null);
         }
     }
 }

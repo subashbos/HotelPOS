@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.Estimation;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common.Constants;

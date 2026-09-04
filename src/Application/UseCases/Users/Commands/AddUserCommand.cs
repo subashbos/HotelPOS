@@ -2,7 +2,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Common;
 using HotelPOS.Domain.Entities;
 using MediatR;
-using AutoMapper;
+using MapsterMapper;
 
 namespace HotelPOS.Application.UseCases.Users.Commands
 {

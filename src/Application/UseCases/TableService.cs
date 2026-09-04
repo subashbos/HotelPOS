@@ -4,7 +4,7 @@ using HotelPOS.Application.DTOs.Table;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Domain.Entities;
 using FluentValidation;
-using AutoMapper;
+using MapsterMapper;
 using HotelPOS.Application.Common.Validators;
 using MediatR;
 using HotelPOS.Application.UseCases.Tables.Commands;
@@ -35,17 +35,7 @@ namespace HotelPOS.Application.UseCases
             _tableRepository = tableRepository;
             _validator = validator ?? new CreateTableDtoValidator();
 
-            if (mapper == null)
-            {
-                var cfg = new AutoMapper.MapperConfiguration(
-                    expr => expr.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-                _mapper = cfg.CreateMapper();
-            }
-            else
-            {
-                _mapper = mapper;
-            }
+            _mapper = mapper ?? HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
         }
 
         public async Task<int> AddTableAsync(CreateTableDto dto)

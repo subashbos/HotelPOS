@@ -1,4 +1,3 @@
-using AutoMapper;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.DTOs.UnitOfMeasurement;
 using HotelPOS.Application.Interfaces;
@@ -11,9 +10,7 @@ namespace HotelPOS.Tests.Unit.Controllers
 {
     public class UnitOfMeasurementsControllerTests
     {
-        private static readonly IMapper Mapper = new MapperConfiguration(
-            cfg => cfg.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static readonly MapsterMapper.IMapper Mapper = HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
 
         private readonly Mock<IUnitOfMeasurementService> _unitService = new();
         private readonly UnitOfMeasurementsController _controller;

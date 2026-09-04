@@ -7,7 +7,7 @@ using HotelPOS.Application.UseCases.Expenses.Queries;
 using HotelPOS.Domain.Entities;
 using HotelPOS.Domain.Events;
 using MediatR;
-using AutoMapper;
+using MapsterMapper;
 
 namespace HotelPOS.Application.UseCases
 {
@@ -33,13 +33,8 @@ namespace HotelPOS.Application.UseCases
             _mapper = mapper ?? CreateDefaultMapper();
         }
 
-        private static IMapper CreateDefaultMapper()
-        {
-            var cfg = new MapperConfiguration(
-                expr => expr.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-            return cfg.CreateMapper();
-        }
+        private static IMapper CreateDefaultMapper() =>
+            HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
 
         public async Task<List<Expense>> GetExpensesAsync(DateTime? from, DateTime? to)
         {

@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentValidation;
 using HotelPOS.Api;
 using HotelPOS.Api.Configuration;
@@ -9,6 +8,7 @@ using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Infrastructure;
 using HotelPOS.Infrastructure.Persistence;
+using MapsterMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -72,16 +72,11 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddValidatorsFromAssembly(typeof(HotelPOS.Application.UseCases.Items.Commands.CreateItemCommandValidator).Assembly);
 
-// ── AutoMapper Configuration ──────────────────────────────────────────
-var mapperCfg = new AutoMapper.MapperConfiguration(
-    mc =>
-    {
-        mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile());
-        mc.CreateMap<HotelPOS.Api.Controllers.CreateItemRequest, HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand>();
-        mc.CreateMap<HotelPOS.Api.Controllers.CreateOrderRequest, HotelPOS.Application.UseCases.Orders.Commands.CreateOrderCommand>();
-    },
-    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-AutoMapper.IMapper mapper = mapperCfg.CreateMapper();
+// ── Mapster Configuration ──────────────────────────────────────────
+var mapperConfig = HotelPOS.Application.Common.Mappings.MappingProfile.CreateConfig();
+mapperConfig.NewConfig<HotelPOS.Api.Controllers.CreateItemRequest, HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand>();
+mapperConfig.NewConfig<HotelPOS.Api.Controllers.CreateOrderRequest, HotelPOS.Application.UseCases.Orders.Commands.CreateOrderCommand>();
+MapsterMapper.IMapper mapper = new MapsterMapper.Mapper(mapperConfig);
 builder.Services.AddSingleton(mapper);
 
 // ── CORS Configuration ────────────────────────────────────────────────────

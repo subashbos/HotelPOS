@@ -1,4 +1,3 @@
-using AutoMapper;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.DTOs.Attendance;
 using HotelPOS.Application.DTOs.Employee;
@@ -14,14 +13,12 @@ namespace HotelPOS.Tests.Unit.Controllers
 {
     /// <summary>
     /// Direct-instantiation tests for the HR API controllers (Employees, Leave,
-    /// Payroll, Attendance) with mocked services and the real AutoMapper profile,
+    /// Payroll, Attendance) with mocked services and the real mapping profile,
     /// mirroring the AuthControllerTests approach.
     /// </summary>
     public class HrControllersTests
     {
-        private static readonly IMapper Mapper = new MapperConfiguration(
-            cfg => cfg.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static readonly MapsterMapper.IMapper Mapper = HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
 
         private static Employee Zara() => new()
         {

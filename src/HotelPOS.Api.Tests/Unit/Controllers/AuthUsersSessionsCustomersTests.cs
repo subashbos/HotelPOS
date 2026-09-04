@@ -1,7 +1,7 @@
-using AutoMapper;
 using HotelPOS.Api.Configuration;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.Common.Mappings;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.CashSession;
 using HotelPOS.Application.DTOs.Customer;
 using HotelPOS.Application.DTOs.User;
@@ -23,9 +23,7 @@ namespace HotelPOS.Tests.Unit.Controllers
     /// </summary>
     public class AuthUsersSessionsCustomersTests
     {
-        private static readonly IMapper Mapper = new MapperConfiguration(
-            cfg => cfg.AddProfile(new MappingProfile()),
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static readonly IMapper Mapper = MappingProfile.CreateMapper();
 
         private static IOptions<JwtOptions> CreateJwtOptions() =>
             Options.Create(new JwtOptions

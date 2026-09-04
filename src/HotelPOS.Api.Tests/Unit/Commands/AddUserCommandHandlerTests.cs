@@ -1,4 +1,3 @@
-using AutoMapper;
 using HotelPOS.Application.Common.Mappings;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Users.Commands;
@@ -15,9 +14,7 @@ namespace HotelPOS.Tests.Unit.Commands
 
         public AddUserCommandHandlerTests()
         {
-            var mapper = new MapperConfiguration(
-                cfg => cfg.AddProfile(new MappingProfile()),
-                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+            var mapper = MappingProfile.CreateMapper();
             _handler = new AddUserCommandHandler(_userRepo.Object, mapper);
         }
 

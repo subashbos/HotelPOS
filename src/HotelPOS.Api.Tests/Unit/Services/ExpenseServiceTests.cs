@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.UseCases;
 using HotelPOS.Application.UseCases.Expenses.Commands;

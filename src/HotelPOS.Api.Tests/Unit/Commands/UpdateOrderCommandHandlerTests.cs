@@ -1,4 +1,3 @@
-using FluentAssertions;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Orders.Commands;
 using HotelPOS.Domain.Entities;
@@ -39,6 +38,7 @@ public class UpdateOrderCommandHandlerTests
 
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Order #1 not found.");
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(act);
+        Assert.Equal("Order #1 not found.", ex.Message);
     }
 }

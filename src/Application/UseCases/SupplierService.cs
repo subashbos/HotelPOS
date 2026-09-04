@@ -7,7 +7,7 @@ using HotelPOS.Application.UseCases.Suppliers.Queries;
 using HotelPOS.Domain.Common.Constants;
 using HotelPOS.Domain.Entities;
 using MediatR;
-using AutoMapper;
+using MapsterMapper;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,34 +23,14 @@ namespace HotelPOS.Application.UseCases
         public SupplierService(IMediator mediator, IMapper? mapper = null)
         {
             _mediator = mediator;
-            if (mapper == null)
-            {
-                var cfg = new AutoMapper.MapperConfiguration(
-                    expr => expr.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-                _mapper = cfg.CreateMapper();
-            }
-            else
-            {
-                _mapper = mapper;
-            }
+            _mapper = mapper ?? HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
         }
 
         /// <summary>Legacy constructor for unit tests that inject a repository directly.</summary>
         public SupplierService(ISupplierRepository supplierRepository, IMapper? mapper = null)
         {
             _supplierRepository = supplierRepository;
-            if (mapper == null)
-            {
-                var cfg = new AutoMapper.MapperConfiguration(
-                    expr => expr.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-                _mapper = cfg.CreateMapper();
-            }
-            else
-            {
-                _mapper = mapper;
-            }
+            _mapper = mapper ?? HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
         }
 
         public async Task<List<Supplier>> GetSuppliersAsync()
