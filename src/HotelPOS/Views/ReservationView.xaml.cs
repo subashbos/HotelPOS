@@ -18,6 +18,35 @@ namespace HotelPOS.Views
             PreviewKeyDown += ReservationView_PreviewKeyDown;
         }
 
+        /// <summary>A reservation block was clicked: select it (surfaces the action bar below the
+        /// timeline) and stop the click bubbling to <see cref="SchedulerCanvas_MouseLeftButtonDown"/>,
+        /// which would otherwise treat it as an empty-slot click.</summary>
+        private void SchedulerBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            if (sender is FrameworkElement { DataContext: ReservationBlock block })
+            {
+                _viewModel.SelectBlockCommand.Execute(block.Reservation);
+            }
+        }
+
+        /// <summary>An empty area of the timeline was clicked: work out which table's row and what
+        /// time it maps to, and prefill the booking form with that slot.</summary>
+        private void SchedulerCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not Canvas canvas) return;
+
+            var position = e.GetPosition(canvas);
+            var rowIndex = (int)(position.Y / ReservationViewModel.RowHeight);
+            if (rowIndex < 0 || rowIndex >= _viewModel.Tables.Count) return;
+
+            var rawMinutes = _viewModel.RangeStartMinutes + position.X / ReservationViewModel.PxPerHour * 60;
+            var snapped = (int)(Math.Round(rawMinutes / 30.0) * 30);
+            snapped = Math.Min(Math.Max(snapped, _viewModel.RangeStartMinutes), _viewModel.RangeEndMinutes - 30);
+
+            _viewModel.OpenFormAt(_viewModel.Tables[rowIndex], snapped);
+        }
+
         private void ReservationView_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             // 1. Ctrl + S to Book Table

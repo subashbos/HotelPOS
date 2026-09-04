@@ -4,7 +4,6 @@ using HotelPOS.Domain.Entities;
 using HotelPOS.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
-using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -13,10 +12,7 @@ namespace HotelPOS.Views
     public partial class ItemReportView : UserControl
     {
         private readonly INotificationService _notificationService;
-        private readonly ObservableCollection<ItemSalesReportRowDto> _items = new();
         private List<ItemSalesReportRowDto> _allRows = new();
-        private int _currentPage = 1;
-        private const int PageSize = 20;
         private bool _isLoading;
 
         public ItemReportView(INotificationService notificationService)
@@ -28,8 +24,6 @@ namespace HotelPOS.Views
             {
                 App.RegisterTestService(notificationService);
             }
-
-            ReportGrid.ItemsSource = _items;
 
             Loaded += async (s, e) =>
             {
@@ -187,9 +181,7 @@ namespace HotelPOS.Views
 
                 // 8. Bind and update totals
                 _allRows = rows;
-                _items.Clear();
-                _currentPage = 1;
-                LoadMore();
+                ReportGrid.ItemsSource = _allRows;
                 TotalQtySold.Text = rows.Sum(x => x.Quantity).ToString();
                 TotalRevenueSum.Text = $"₹{rows.Sum(x => x.LineTotal):N2}";
                 TotalTaxSum.Text = $"₹{rows.Sum(x => x.TaxAmount):N2}";
@@ -201,27 +193,6 @@ namespace HotelPOS.Views
             finally
             {
                 _isLoading = false;
-            }
-        }
-
-        private void LoadMore()
-        {
-            var itemsToLoad = _allRows.Skip((_currentPage - 1) * PageSize).Take(PageSize).ToList();
-            if (itemsToLoad.Any())
-            {
-                foreach (var i in itemsToLoad) _items.Add(i);
-                _currentPage++;
-            }
-        }
-
-        private void ReportGrid_ScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            var sv = e.OriginalSource as ScrollViewer;
-            if (sv == null) return;
-
-            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
-            {
-                LoadMore();
             }
         }
 
