@@ -204,6 +204,9 @@ namespace HotelPOS.Tests.Unit.ViewModels
             Assert.Equal(15, _vm.HourMarks.Count);
             Assert.Equal("09:00", _vm.HourMarks[0].Label);
             Assert.Equal("23:00", _vm.HourMarks[^1].Label);
+            Assert.Equal(0, _vm.HourMarks[0].Left, precision: 2);
+            Assert.Equal(ReservationViewModel.PxPerHour, _vm.HourMarks[1].Left, precision: 2);
+            Assert.Equal(14 * ReservationViewModel.PxPerHour, _vm.TimelineWidth, precision: 2);
         }
 
         [Fact]
@@ -243,6 +246,8 @@ namespace HotelPOS.Tests.Unit.ViewModels
             var block = Assert.Single(_vm.SchedulerBlocks);
             Assert.Equal(1 * ReservationViewModel.RowHeight + 4, block.Top, precision: 2);
             Assert.Equal((10 * 60 - 9 * 60) / 60.0 * ReservationViewModel.PxPerHour, block.Left, precision: 2);
+            Assert.Equal(ReservationViewModel.PxPerHour, block.Width, precision: 2);
+            Assert.Equal(ReservationViewModel.RowHeight - 8, block.Height, precision: 2);
             Assert.Equal(2 * ReservationViewModel.RowHeight, _vm.TimelineHeight, precision: 2);
             Assert.Equal(reservations[0], block.Reservation);
             Assert.Equal("10:00 Walk-in", block.Label);
@@ -343,6 +348,14 @@ namespace HotelPOS.Tests.Unit.ViewModels
             Assert.Equal("11:30", _vm.FormEndTimeText);
             Assert.Equal(_vm.SelectedDate, _vm.FormDate);
             Assert.Equal(2, _vm.FormPartySize);
+        }
+
+        [Fact]
+        public async Task OpenFormAt_NullTable_Throws()
+        {
+            await _vm.InitializationTask;
+
+            Assert.Throws<ArgumentNullException>(() => _vm.OpenFormAt(null!, 10 * 60));
         }
 
         [Fact]
