@@ -44,10 +44,20 @@ namespace HotelPOS.ViewModels
         private const int DefaultRangeStartMinutes = 9 * 60;
         private const int DefaultRangeEndMinutes = 23 * 60;
 
-        private static readonly Brush ReservedBrush = new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1));
-        private static readonly Brush CheckedInBrush = new SolidColorBrush(Color.FromRgb(0xBA, 0xE6, 0xFD));
-        private static readonly Brush CompletedBrush = new SolidColorBrush(Color.FromRgb(0xA7, 0xF3, 0xD0));
-        private static readonly Brush CancelledBrush = new SolidColorBrush(Color.FromRgb(0xFE, 0xCA, 0xCA));
+        private static readonly Brush ReservedBrush = CreateFrozenBrush(0xCB, 0xD5, 0xE1);
+        private static readonly Brush CheckedInBrush = CreateFrozenBrush(0xBA, 0xE6, 0xFD);
+        private static readonly Brush CompletedBrush = CreateFrozenBrush(0xA7, 0xF3, 0xD0);
+        private static readonly Brush CancelledBrush = CreateFrozenBrush(0xFE, 0xCA, 0xCA);
+
+        /// <summary>These brushes are shared static instances reused across every scheduler block,
+        /// so they're frozen: an unfrozen <see cref="Freezable"/> is mutable and not thread-safe,
+        /// which is exactly the kind of shared-mutable-state bug a static analyzer flags.</summary>
+        private static Brush CreateFrozenBrush(byte r, byte g, byte b)
+        {
+            var brush = new SolidColorBrush(Color.FromRgb(r, g, b));
+            brush.Freeze();
+            return brush;
+        }
 
         [ObservableProperty]
         private bool _isSchedulerView = true;
@@ -305,6 +315,8 @@ namespace HotelPOS.ViewModels
         /// empty slot instead of cleared.</summary>
         public void OpenFormAt(Table table, int startMinutes)
         {
+            ArgumentNullException.ThrowIfNull(table);
+
             var endMinutes = Math.Min(startMinutes + 60, RangeEndMinutes);
             FormTable = table;
             FormCustomer = null;
