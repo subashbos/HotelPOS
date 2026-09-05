@@ -37,9 +37,14 @@ open" entry in `QA_REVIEW_AND_TEST_GAPS.md`, the risk register in
 | Item | Source | Hours |
 |---|---|---:|
 | Column-level encryption/masking for PII (PAN, Aadhaar, UAN, ESIC number, bank details) | `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 7 | 70 |
-| Investigate & fix systemic gap: void `IRequest` commands with FluentValidation validators not reliably passing through `ValidationBehavior` (only Purchases has a narrow patch) | `QA_REVIEW_AND_TEST_GAPS.md` item 8 | 30 |
 | Deployment checklist step + tooling to rotate/disable the bootstrap admin account post go-live | `KNOWLEDGE_TRANSFER.md` Risk 5, remaining action | 8 |
-| **Subtotal** | | **108** |
+| **Subtotal** | | **78** |
+
+**Closed** — the systemic gap where void `IRequest` commands with FluentValidation
+validators didn't reliably pass through `ValidationBehavior` (previously listed
+here at 30 hrs) was root-caused and fixed in `ValidationBehavior.cs` on
+2026-09-03. See `QA_REVIEW_AND_TEST_GAPS.md` item 8, "Root-caused and fixed
+2026-09-03".
 
 ### 2.2 Reliability & Architecture
 
@@ -94,15 +99,15 @@ web/desktop parity.
 
 | Category | Hours |
 |---|---:|
-| Security & compliance hardening | 108 |
+| Security & compliance hardening | 78 |
 | Reliability & architecture | 60 |
 | Access control granularity | 0 (closed) |
 | Employee self-service completeness | 55 |
 | Test coverage closure | 68 |
 | Documentation | 8 |
-| Subtotal (delivery) | 299 |
-| PM/coordination & PR-review overlay (12%) | 36 |
-| **Grand total** | **≈ 335 hours** |
+| Subtotal (delivery) | 269 |
+| PM/coordination & PR-review overlay (12%) | 32 |
+| **Grand total** | **≈ 301 hours** |
 
 ---
 
@@ -110,9 +115,9 @@ web/desktop parity.
 
 | Team composition | Effective capacity/week | Estimated duration |
 |---|---:|---:|
-| 1 full-stack developer (solo) | 40 hrs | ~8.5 weeks (≈ 2 months) |
-| 2 developers (backend + full-stack) sharing QA | ~72 hrs (~90% efficiency) | ~4.5 weeks |
-| 3 people (2 dev, 1 QA) | ~100 hrs (~85% efficiency) | ~3.5 weeks |
+| 1 full-stack developer (solo) | 40 hrs | ~7.5 weeks (≈ 1.75 months) |
+| 2 developers (backend + full-stack) sharing QA | ~72 hrs (~90% efficiency) | ~4 weeks |
+| 3 people (2 dev, 1 QA) | ~100 hrs (~85% efficiency) | ~3 weeks |
 
 A 2-person team is the recommended baseline — most items are independent
 (security, ESS, tests, docs can proceed in parallel with minimal shared-file
@@ -123,10 +128,11 @@ coordination tax a larger team would add for a backlog this size.
 
 ## 5. Suggested Priority Order
 
-1. **Security & compliance** (§2.1) — PII exposure and the validation-pipeline
-   gap are the highest-risk items remaining. (TDS auto-computation, previously
-   listed here as hardcoded to 0, has already shipped — see
-   `HUMAN_RESOURCES_DEEP_DIVE.md` §7 item 5.)
+1. **Security & compliance** (§2.1) — PII exposure is the highest-risk item
+   remaining; the validation-pipeline gap previously called out here is now
+   closed (see §2.1). (TDS auto-computation, previously listed here as
+   hardcoded to 0, has already shipped — see `HUMAN_RESOURCES_DEEP_DIVE.md`
+   §7 item 5.)
 2. **Reliability & architecture** (§2.2) — singleton/scoped audit reduces risk
    of hard-to-debug production incidents as usage grows.
 3. **Test coverage closure** (§2.5) — cheap, well-defined, de-risks the above
@@ -150,5 +156,5 @@ coordination tax a larger team would add for a backlog this size.
   database-native/HSM-backed approach would cost more.
 - Excludes any new feature requests not already tracked as an open item in
   the repo's own documentation.
-- A **15% contingency** (≈ 50 hours) on top of the grand total is recommended,
+- A **15% contingency** (≈ 45 hours) on top of the grand total is recommended,
   consistent with the main `PROJECT_ESTIMATION.md`.
