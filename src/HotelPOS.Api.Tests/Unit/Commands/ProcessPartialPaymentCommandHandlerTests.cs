@@ -1,4 +1,3 @@
-using FluentAssertions;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Orders.Commands;
 using Moq;
@@ -36,6 +35,7 @@ public class ProcessPartialPaymentCommandHandlerTests
 
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await act.Should().ThrowAsync<KeyNotFoundException>().WithMessage("Order #1 not found.");
+        var ex = await Assert.ThrowsAsync<KeyNotFoundException>(act);
+        Assert.Equal("Order #1 not found.", ex.Message);
     }
 }

@@ -14,17 +14,19 @@ using Microsoft.EntityFrameworkCore;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Api;
 using HotelPOS.Api.Configuration;
+using HotelPOS.Application.DTOs.Expense;
+using HotelPOS.Application.UseCases.Expenses.Commands;
 using MediatR;
 using FluentValidation;
-using AutoMapper;
+using MapsterMapper;
+using System.Threading.Tasks;
 
 
 namespace HotelPOS.Tests.Integration
 {
     public class DependencyInjectionTests
     {
-        [Fact]
-        public void Verify_Wpf_DependencyInjection_CanResolveAllServices()
+        private static ServiceProvider BuildWpfServiceProvider()
         {
             var services = new ServiceCollection();
 
@@ -77,16 +79,26 @@ namespace HotelPOS.Tests.Integration
             services.AddTransient<SupplierEntryViewModel>();
             services.AddTransient<PurchaseReportViewModel>();
 
-            // MediatR
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
+            // MediatR - mirrors App.Services.cs: the ValidationBehavior pipeline behavior and the
+            // FluentValidation validators must both be registered, or FluentValidation validators
+            // silently never run (HotelPOS.WPF previously omitted both).
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly);
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(HotelPOS.Application.Common.Behaviors.ValidationBehavior<,>));
+            });
+            services.AddValidatorsFromAssembly(typeof(HotelPOS.Application.UseCases.Items.Commands.CreateItemCommandValidator).Assembly);
 
-            // AutoMapper
-            var mapperCfg = new AutoMapper.MapperConfiguration(
-                mc => mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-            services.AddSingleton<IMapper>(mapperCfg.CreateMapper());
+            // Mapster
+            services.AddSingleton<IMapper>(HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper());
 
-            var provider = services.BuildServiceProvider();
+            return services.BuildServiceProvider();
+        }
+
+        [Fact]
+        public void Verify_Wpf_DependencyInjection_CanResolveAllServices()
+        {
+            var provider = BuildWpfServiceProvider();
 
             // Verify resolution of key services, viewmodels
             using (var scope = provider.CreateScope())
@@ -130,6 +142,26 @@ namespace HotelPOS.Tests.Integration
 
                 Assert.Empty(errors);
             }
+        }
+
+        [Fact]
+        public async Task Verify_Wpf_MediatR_Pipeline_RejectsInvalidCommand()
+        {
+            // Regression test for a gap where HotelPOS.WPF's AddMediatR call registered no
+            // pipeline behaviors and never called AddValidatorsFromAssembly, so every
+            // FluentValidation validator in the app - reachable only through ValidationBehavior -
+            // silently never ran in the desktop app, even though the same commands were validated
+            // correctly through the API. SaveExpenseCommandHandler has no defensive checks of its
+            // own (unlike some other handlers), so this would previously have saved a negative
+            // Amount straight to the database instead of throwing.
+            var provider = BuildWpfServiceProvider();
+            using var scope = provider.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+            var invalidExpense = new SaveExpenseDto { Date = DateTime.UtcNow, Title = "Test", Amount = -100m, Category = "Misc" };
+
+            await Assert.ThrowsAsync<FluentValidation.ValidationException>(
+                () => mediator.Send(new SaveExpenseCommand(invalidExpense)));
         }
 
         [Fact]
@@ -177,16 +209,11 @@ namespace HotelPOS.Tests.Integration
             services.AddScoped<IEmailService, HotelPOS.Infrastructure.Services.SmtpEmailService>();
             services.AddScoped<IPasswordResetService, PasswordResetService>();
 
-            // AutoMapper
-            var mapperCfg = new AutoMapper.MapperConfiguration(
-                mc =>
-                {
-                    mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile());
-                    mc.CreateMap<HotelPOS.Api.Controllers.CreateItemRequest, HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand>();
-                    mc.CreateMap<HotelPOS.Api.Controllers.CreateOrderRequest, HotelPOS.Application.UseCases.Orders.Commands.CreateOrderCommand>();
-                },
-                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-            AutoMapper.IMapper mapper = mapperCfg.CreateMapper();
+            // Mapster
+            var mapperConfig = HotelPOS.Application.Common.Mappings.MappingProfile.CreateConfig();
+            mapperConfig.NewConfig<HotelPOS.Api.Controllers.CreateItemRequest, HotelPOS.Application.UseCases.Items.Commands.CreateItemCommand>();
+            mapperConfig.NewConfig<HotelPOS.Api.Controllers.CreateOrderRequest, HotelPOS.Application.UseCases.Orders.Commands.CreateOrderCommand>();
+            IMapper mapper = new Mapper(mapperConfig);
             services.AddSingleton(mapper);
 
             // Controllers

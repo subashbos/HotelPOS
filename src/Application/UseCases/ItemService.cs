@@ -6,7 +6,7 @@ using HotelPOS.Domain.Entities;
 using FluentValidation;
 using HotelPOS.Application.UseCases.Items.Commands;
 using HotelPOS.Application.UseCases.Items.Queries;
-using AutoMapper;
+using MapsterMapper;
 
 using MediatR;
 
@@ -26,17 +26,7 @@ namespace HotelPOS.Application.UseCases
             _mediator = mediator;
             _validator = validator ?? new CreateItemCommandValidator();
 
-            if (mapper == null)
-            {
-                var cfg = new AutoMapper.MapperConfiguration(
-                    expr => expr.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                    Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
-                _mapper = cfg.CreateMapper();
-            }
-            else
-            {
-                _mapper = mapper;
-            }
+            _mapper = mapper ?? HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
         }
 
         public async Task<int> AddItemAsync(CreateItemDto dto)

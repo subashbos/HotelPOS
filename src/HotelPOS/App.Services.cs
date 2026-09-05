@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentValidation;
 using HotelPOS.Application.Common.Validators;
 using HotelPOS.Application.DTOs.Table;
@@ -18,6 +17,7 @@ using HotelPOS.Domain.Entities;
 using HotelPOS.Infrastructure;
 using HotelPOS.Infrastructure.Persistence;
 using HotelPOS.Services;
+using MapsterMapper;
 using HotelPOS.ViewModels;
 using HotelPOS.Views;
 using MediatR;
@@ -91,11 +91,8 @@ namespace HotelPOS
             // Auth validators
             services.AddScoped<IValidator<LoginCommand>, LoginCommandValidator>();
 
-            // ── AutoMapper Configuration ──────────────────────────────────────────
-            IMapper mapper = new AutoMapper.MapperConfiguration(
-                mc => mc.AddProfile(new HotelPOS.Application.Common.Mappings.MappingProfile()),
-                Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance)
-                .CreateMapper();
+            // ── Mapster Configuration ──────────────────────────────────────────
+            IMapper mapper = HotelPOS.Application.Common.Mappings.MappingProfile.CreateMapper();
             services.AddSingleton(mapper);
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IEmailService, HotelPOS.Infrastructure.Services.SmtpEmailService>();
@@ -192,7 +189,13 @@ namespace HotelPOS
             services.AddTransient<ExpenseView>();
             services.AddTransient<CustomerView>();
 
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly));
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(OrderService).Assembly);
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(HotelPOS.Application.Common.Behaviors.ValidationBehavior<,>));
+            });
+
+            services.AddValidatorsFromAssembly(typeof(CreateItemCommandValidator).Assembly);
 
             // ── Windows & Views ──────────────────────────────────────────────
             // CLEANUP: Redundant individual view registrations were removed here as they are 

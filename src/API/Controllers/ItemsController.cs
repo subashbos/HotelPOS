@@ -15,9 +15,9 @@ namespace HotelPOS.Api.Controllers
     public class ItemsController : BaseApiController
     {
         private readonly IMediator _mediator;
-        private readonly AutoMapper.IMapper _mapper;
+        private readonly MapsterMapper.IMapper _mapper;
 
-        public ItemsController(IMediator mediator, AutoMapper.IMapper mapper)
+        public ItemsController(IMediator mediator, MapsterMapper.IMapper mapper)
         {
             _mediator = mediator;
             _mapper = mapper;

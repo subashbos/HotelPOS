@@ -1,6 +1,6 @@
-using AutoMapper;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.Common.Mappings;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.Category;
 using HotelPOS.Application.DTOs.Customer;
 using HotelPOS.Application.DTOs.Expense;
@@ -30,9 +30,7 @@ namespace HotelPOS.Tests.Unit.Controllers
 {
     public class CoreControllersTests
     {
-        private static readonly IMapper Mapper = new MapperConfiguration(
-            cfg => cfg.AddProfile(new MappingProfile()),
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static readonly IMapper Mapper = MappingProfile.CreateMapper();
 
         // ---------- CategoriesController ----------
         [Fact]

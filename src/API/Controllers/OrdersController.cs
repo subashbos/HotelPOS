@@ -16,11 +16,11 @@ namespace HotelPOS.Api.Controllers
     {
         private readonly IMediator _mediator;
         private readonly IUserContext _userContext;
-        private readonly AutoMapper.IMapper _mapper;
+        private readonly MapsterMapper.IMapper _mapper;
 
         private const string InvalidOrderIdErrorMessage = "Invalid order ID.";
 
-        public OrdersController(IMediator mediator, IUserContext userContext, AutoMapper.IMapper mapper)
+        public OrdersController(IMediator mediator, IUserContext userContext, MapsterMapper.IMapper mapper)
         {
             _mediator = mediator;
             _userContext = userContext;

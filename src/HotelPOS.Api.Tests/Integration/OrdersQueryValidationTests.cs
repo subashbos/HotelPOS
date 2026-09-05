@@ -1,4 +1,3 @@
-using FluentAssertions;
 using FluentValidation;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases;
@@ -48,7 +47,7 @@ namespace HotelPOS.Tests
 
             Func<Task> act = async () => await mediator.Send(query);
 
-            await act.Should().ThrowAsync<ValidationException>();
+            await Assert.ThrowsAsync<ValidationException>(act);
         }
 
         [Fact]
@@ -59,8 +58,8 @@ namespace HotelPOS.Tests
 
             var (items, totalCount) = await mediator.Send(query);
 
-            items.Should().BeEmpty();
-            totalCount.Should().Be(0);
+            Assert.Empty(items);
+            Assert.Equal(0, totalCount);
         }
     }
 }

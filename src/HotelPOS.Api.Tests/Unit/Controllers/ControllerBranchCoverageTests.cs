@@ -1,6 +1,6 @@
-using AutoMapper;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.Common.Mappings;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.Item;
 using HotelPOS.Application.DTOs.Order;
 using HotelPOS.Application.Interfaces;
@@ -21,20 +21,19 @@ namespace HotelPOS.Tests.Unit.Controllers
     /// </summary>
     public class ControllerBranchCoverageTests
     {
-        private static readonly IMapper Mapper = new MapperConfiguration(
-            cfg => cfg.AddProfile(new MappingProfile()),
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static readonly IMapper Mapper = MappingProfile.CreateMapper();
 
         // Mirrors the extra CreateMap calls that HotelPOS.Api's Program.cs registers on top of
         // MappingProfile (CreateOrderRequest/CreateItemRequest live in the API project, which
         // Application can't reference, so they're wired up at composition-root time instead).
-        private static readonly IMapper MapperWithApiRequestMaps = new MapperConfiguration(
-            cfg =>
-            {
-                cfg.AddProfile(new MappingProfile());
-                cfg.CreateMap<CreateOrderRequest, CreateOrderCommand>();
-            },
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static readonly IMapper MapperWithApiRequestMaps = BuildMapperWithApiRequestMaps();
+
+        private static IMapper BuildMapperWithApiRequestMaps()
+        {
+            var config = MappingProfile.CreateConfig();
+            config.NewConfig<CreateOrderRequest, CreateOrderCommand>();
+            return new Mapper(config);
+        }
 
         // ================= ItemsController.UpdateItem =================
 

@@ -1,4 +1,4 @@
-using AutoMapper;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.Audit;
 using HotelPOS.Application.Interfaces;
 using MediatR;

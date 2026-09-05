@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:HotelPOS.ViewModels"
              mc:Ignorable="d" d:DesignHeight="900" d:DesignWidth="1400">
 
     <UserControl.Resources>
@@ -18,6 +19,20 @@
             <Setter Property="Padding" Value="10,6"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="Margin" Value="2,0"/>
+        </Style>
+
+        <Style x:Key="ViewToggleBtn" TargetType="Button" BasedOn="{StaticResource SecondaryBtn}">
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Positions an ItemsControl's items on a Canvas via Left/Top on each item's VM. -->
+        <Style x:Key="BlockContainerStyle" TargetType="ContentPresenter">
+            <Setter Property="Canvas.Left" Value="{Binding Left}"/>
+            <Setter Property="Canvas.Top" Value="{Binding Top}"/>
+        </Style>
+        <Style x:Key="HourMarkContainerStyle" TargetType="ContentPresenter">
+            <Setter Property="Canvas.Left" Value="{Binding Left}"/>
         </Style>
     </UserControl.Resources>
 
@@ -40,6 +55,10 @@
                                Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="📅 Scheduler" Style="{StaticResource ViewToggleBtn}" Margin="0,0,8,0"
+                            Command="{Binding ShowSchedulerViewCommand}"/>
+                    <Button Content="☰ List" Style="{StaticResource ViewToggleBtn}" Margin="0,0,16,0"
+                            Command="{Binding ShowListViewCommand}"/>
                     <TextBlock Text="Date:" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold"/>
                     <DatePicker SelectedDate="{Binding SelectedDate}" Height="36" VerticalContentAlignment="Center"/>
                 </StackPanel>
@@ -117,6 +136,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <Grid Grid.Row="0" Margin="0,0,0,12">
@@ -133,7 +153,101 @@
                                     Style="{StaticResource SecondaryBtn}" Padding="16,8"/>
                         </Grid>
 
+                        <!-- ── SCHEDULER TIMELINE ── -->
+                        <ScrollViewer Grid.Row="1" Height="600"
+                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                                      Visibility="{Binding IsSchedulerView, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Frozen table-name column -->
+                                <StackPanel Grid.Column="0">
+                                    <Border Height="32"/>
+                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Height="{x:Static viewModels:ReservationViewModel.RowHeight}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,1" Padding="8,0">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <!-- Hour-scrollable timeline: header + body share one ScrollViewer so they can never drift out of sync -->
+                                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                                    <StackPanel>
+                                        <Canvas Height="32" Width="{Binding TimelineWidth}" Background="{DynamicResource SurfaceBrush}">
+                                            <ItemsControl ItemsSource="{Binding HourMarks}" ItemContainerStyle="{StaticResource HourMarkContainerStyle}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Label}" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="4,6,0,0"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Canvas>
+
+                                        <Canvas Height="{Binding TimelineHeight}" Width="{Binding TimelineWidth}" Background="{DynamicResource AppBackground}"
+                                                MouseLeftButtonDown="SchedulerCanvas_MouseLeftButtonDown">
+                                            <!-- Now line -->
+                                            <Border Width="2" Background="{DynamicResource DangerBrush}"
+                                                    Height="{Binding TimelineHeight}"
+                                                    Canvas.Left="{Binding NowLineLeft}"
+                                                    Visibility="{Binding ShowNowLine, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                    IsHitTestVisible="False"/>
+
+                                            <!-- Reservation blocks -->
+                                            <ItemsControl ItemsSource="{Binding SchedulerBlocks}" ItemContainerStyle="{StaticResource BlockContainerStyle}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Width="{Binding Width}" Height="{Binding Height}" Background="{Binding Brush}"
+                                                                CornerRadius="4" Padding="6,0" Cursor="Hand"
+                                                                MouseLeftButtonDown="SchedulerBlock_MouseLeftButtonDown">
+                                                            <TextBlock Text="{Binding Label}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="#1E293B"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Canvas>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </ScrollViewer>
+
+                        <!-- ── SELECTED RESERVATION ACTIONS (scheduler view) ── -->
+                        <Border Grid.Row="2" Margin="0,12,0,0" Padding="12" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" CornerRadius="6"
+                                Visibility="{Binding IsSchedulerView, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock FontSize="12" Foreground="{DynamicResource TextMuted}">
+                                    <Run Text="Selected: "/>
+                                    <Run Text="{Binding SelectedReservationSummary}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}"/>
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <Button Content="Check In" Style="{StaticResource RowActionBtn}"
+                                            Command="{Binding MarkCheckedInCommand}" CommandParameter="{Binding SelectedReservation}"/>
+                                    <Button Content="Complete" Style="{StaticResource RowActionBtn}"
+                                            Command="{Binding MarkCompletedCommand}" CommandParameter="{Binding SelectedReservation}"/>
+                                    <Button Content="No-Show" Style="{StaticResource RowActionBtn}"
+                                            Command="{Binding MarkNoShowCommand}" CommandParameter="{Binding SelectedReservation}"/>
+                                    <Button Content="Cancel" Style="{StaticResource RowActionBtn}"
+                                            Command="{Binding MarkCancelledCommand}" CommandParameter="{Binding SelectedReservation}"/>
+                                    <Button Content="🗑️ Delete" Style="{StaticResource RowActionBtn}"
+                                            Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedReservation}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
                         <DataGrid Grid.Row="1"
+                                  Visibility="{Binding IsSchedulerView, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}"
                                   ItemsSource="{Binding Reservations}"
                                   Style="{StaticResource PremiumGrid}"
                                   SelectionMode="Single"

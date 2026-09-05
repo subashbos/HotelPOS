@@ -1,4 +1,3 @@
-using FluentAssertions;
 using HotelPOS.Application.Interfaces;
 using HotelPOS.Application.UseCases.Orders.Commands;
 using Moq;
@@ -36,6 +35,7 @@ public class DeleteOrderCommandHandlerTests
 
         Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Cannot delete.");
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(act);
+        Assert.Equal("Cannot delete.", ex.Message);
     }
 }

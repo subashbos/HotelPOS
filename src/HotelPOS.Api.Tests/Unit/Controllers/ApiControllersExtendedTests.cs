@@ -1,6 +1,6 @@
-using AutoMapper;
 using HotelPOS.Api.Controllers;
 using HotelPOS.Application.Common.Mappings;
+using MapsterMapper;
 using HotelPOS.Application.DTOs.Audit;
 using HotelPOS.Application.DTOs.Expense;
 using HotelPOS.Application.DTOs.Purchase;
@@ -22,9 +22,7 @@ namespace HotelPOS.Tests.Unit.Controllers
     /// </summary>
     public class ApiControllersExtendedTests
     {
-        private static readonly IMapper Mapper = new MapperConfiguration(
-            cfg => cfg.AddProfile(new MappingProfile()),
-            Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance).CreateMapper();
+        private static readonly IMapper Mapper = MappingProfile.CreateMapper();
 
         // ================= AuditController =================
 
