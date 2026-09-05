@@ -234,7 +234,7 @@ namespace HotelPOS.ViewModels
             {
                 HourMarks.Add(new HourMark
                 {
-                    Label = TimeSpan.FromMinutes(m).ToString("hh\\:mm"),
+                    Label = FormatHourMarkLabel(m),
                     Left = (m - rangeStart) / 60.0 * PxPerHour
                 });
             }
@@ -265,6 +265,12 @@ namespace HotelPOS.ViewModels
             ShowNowLine = nowLine.HasValue;
             NowLineLeft = nowLine ?? 0;
         }
+
+        /// <summary>Formats an hour-ruler tick as "HH:mm" without TimeSpan's 24h wraparound, so a
+        /// range extending to midnight reads as "24:00" instead of "00:00" - TimeSpan.FromMinutes(1440)
+        /// rolls over into a 1-day, 0-hour TimeSpan, so its "hh" component (and thus ToString("hh\:mm"))
+        /// prints "00:00" for that tick. Matches the Angular scheduler's formatHourMarkLabel().</summary>
+        private static string FormatHourMarkLabel(int minutes) => $"{minutes / 60:00}:{minutes % 60:00}";
 
         private static double? MinutesToLineLeft(int minutes, int rangeStart, int rangeEnd) =>
             minutes >= rangeStart && minutes <= rangeEnd ? (minutes - rangeStart) / 60.0 * PxPerHour : null;
