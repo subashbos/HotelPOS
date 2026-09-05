@@ -227,6 +227,23 @@ namespace HotelPOS.Tests.Unit.ViewModels
         }
 
         [Fact]
+        public async Task RecomputeScheduler_ReservationEndingAfter11pm_LastHourMarkReads2400NotWrapped()
+        {
+            var tables = new List<Table> { new() { Id = 1, Name = "T1", Capacity = 4, IsActive = true } };
+            _mockTableService.Setup(s => s.GetTablesAsync()).ReturnsAsync(tables);
+            var reservations = new List<Reservation>
+            {
+                new() { Id = 1, TableId = 1, StartTime = TimeSpan.FromHours(23), EndTime = new TimeSpan(23, 30, 0) }
+            };
+            _mockReservationService.Setup(s => s.GetReservationsAsync(It.IsAny<DateTime?>())).ReturnsAsync(reservations);
+
+            await _vm.LoadDataAsync();
+
+            Assert.Equal(24 * 60, _vm.RangeEndMinutes);
+            Assert.Equal("24:00", _vm.HourMarks[^1].Label);
+        }
+
+        [Fact]
         public async Task RecomputeScheduler_BuildsBlockPositionedByTableRowAndTime()
         {
             var tables = new List<Table>
