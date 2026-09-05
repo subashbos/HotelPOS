@@ -34,6 +34,16 @@ function minutesToTime(value: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
+/** Same as minutesToTime but without the 24h wraparound, so a range that extends to
+ * midnight reads as "24:00" instead of "00:00" - matches the WPF scheduler's TimeSpan
+ * formatting for the same hour-ruler tick. Only for display; form time inputs still
+ * need minutesToTime's wrapped, HTML-valid output. */
+function formatHourMarkLabel(value: number): string {
+  const h = Math.floor(value / 60);
+  const m = value % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 @Component({
   standalone: false,
   selector: 'app-reservations',
@@ -57,6 +67,12 @@ export class ReservationsComponent implements OnInit {
   pxPerHour = PX_PER_HOUR;
   selectedBlockId: number | null = null;
 
+  // Derived from `reservations`; recomputed by recomputeSchedulerRange() whenever that
+  // changes, instead of on every template/change-detection pass.
+  rangeStartMinutes = DEFAULT_RANGE_START_MIN;
+  rangeEndMinutes = DEFAULT_RANGE_END_MIN;
+  hourMarks: { label: string; left: number }[] = [];
+
   // ── Entry form ──
   showForm = false;
   formTableId: number | null = null;
@@ -76,6 +92,7 @@ export class ReservationsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.recomputeSchedulerRange();
     this.loadReservations();
     this.tableService.getTables().subscribe({
       next: (tables) => (this.tables = tables.filter((t) => t.isActive && !t.isDeleted)),
@@ -93,6 +110,7 @@ export class ReservationsComponent implements OnInit {
     this.reservationService.getReservations(this.selectedDate).subscribe({
       next: (reservations) => {
         this.reservations = [...reservations].sort((a, b) => a.startTime.localeCompare(b.startTime));
+        this.recomputeSchedulerRange();
         this.isLoading = false;
       },
       error: (err) => {
@@ -144,28 +162,27 @@ export class ReservationsComponent implements OnInit {
 
   // ── Scheduler view helpers ──
 
-  get rangeStartMinutes(): number {
+  /** Recomputes rangeStartMinutes/rangeEndMinutes/hourMarks from the current
+   * `reservations` array. Call after `reservations` changes - these three only ever
+   * depend on it, so there's no need to rebuild them on every change-detection pass. */
+  private recomputeSchedulerRange(): void {
     const starts = this.reservations.map((r) => timeToMinutes(r.startTime));
     const earliest = starts.length ? Math.min(...starts) : DEFAULT_RANGE_START_MIN;
-    return Math.floor(Math.min(DEFAULT_RANGE_START_MIN, earliest) / 60) * 60;
-  }
+    this.rangeStartMinutes = Math.floor(Math.min(DEFAULT_RANGE_START_MIN, earliest) / 60) * 60;
 
-  get rangeEndMinutes(): number {
     const ends = this.reservations.map((r) => timeToMinutes(r.endTime));
     const latest = ends.length ? Math.max(...ends) : DEFAULT_RANGE_END_MIN;
-    return Math.ceil(Math.max(DEFAULT_RANGE_END_MIN, latest) / 60) * 60;
+    this.rangeEndMinutes = Math.ceil(Math.max(DEFAULT_RANGE_END_MIN, latest) / 60) * 60;
+
+    const marks: { label: string; left: number }[] = [];
+    for (let m = this.rangeStartMinutes; m <= this.rangeEndMinutes; m += 60) {
+      marks.push({ label: formatHourMarkLabel(m), left: ((m - this.rangeStartMinutes) / 60) * this.pxPerHour });
+    }
+    this.hourMarks = marks;
   }
 
   get timelineWidthPx(): number {
     return ((this.rangeEndMinutes - this.rangeStartMinutes) / 60) * this.pxPerHour;
-  }
-
-  get hourMarks(): { label: string; left: number }[] {
-    const marks: { label: string; left: number }[] = [];
-    for (let m = this.rangeStartMinutes; m <= this.rangeEndMinutes; m += 60) {
-      marks.push({ label: minutesToTime(m), left: ((m - this.rangeStartMinutes) / 60) * this.pxPerHour });
-    }
-    return marks;
   }
 
   get nowLineLeft(): number | null {
