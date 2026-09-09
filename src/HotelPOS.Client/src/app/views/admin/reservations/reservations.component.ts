@@ -62,6 +62,16 @@ export class ReservationsComponent implements OnInit {
 
   selectedDate = today();
 
+  get selectedDateLabel(): string {
+    const [y, m, d] = this.selectedDate.split('-').map((p) => parseInt(p, 10));
+    return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+
   // ── Scheduler view ──
   viewMode: 'scheduler' | 'list' = 'scheduler';
   pxPerHour = PX_PER_HOUR;

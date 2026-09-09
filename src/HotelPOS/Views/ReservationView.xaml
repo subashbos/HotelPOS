@@ -50,7 +50,12 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="📅  Table Reservations" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📅  Table Reservations" Style="{StaticResource HeroTextBlockStyle}" Foreground="White"/>
+                        <TextBlock Text="{Binding SelectedDate, StringFormat='ddd, MMM d, yyyy'}"
+                                   Margin="12,0,0,0" VerticalAlignment="Bottom" Padding="0,0,0,4"
+                                   Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
+                    </StackPanel>
                     <TextBlock Text="Book dining tables for future dates/times, separate from live Billing table status."
                                Margin="0,4,0,0" Style="{StaticResource BodySmallTextBlockStyle}" Foreground="White" Opacity="0.8"/>
                 </StackPanel>
